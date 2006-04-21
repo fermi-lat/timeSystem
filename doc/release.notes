@@ -1,0 +1,11 @@
+/** \file release.notes
+    \brief Log of changes to timeSystem package.
+    \author Masaharu Hirayama, 
+            James Peachey, HEASARC/GSSC
+
+\verbatim
+--------------------------------------------------------------------------------
+21-apr-2006        v0 JP  Initial import.
+--------------------------------------------------------------------------------
+\endverbatim
+*/
