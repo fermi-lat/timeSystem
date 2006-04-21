@@ -1,0 +1,43 @@
+------------------------------------------------------------
+User: peachey  Fri Apr 21 13:56:15 PDT 2006
+timeSystem
+
+Log Message:
+New package timeSystem, for managing times in various systems and
+converting between them.
+
+Status:
+
+Vendor Tag:	GLAST
+Release Tags:	v0
+		
+N timeSystem/cmt/requirements
+N timeSystem/src/AbsoluteTime.cxx
+N timeSystem/src/TimeInterval.cxx
+N timeSystem/src/TimeSystem.cxx
+N timeSystem/src/ElapsedTime.cxx
+N timeSystem/src/axBary.c
+N timeSystem/src/bary.c
+N timeSystem/src/clock.c
+N timeSystem/src/ctatv.c
+N timeSystem/src/dpleph.c
+N timeSystem/src/glastscorbit.c
+N timeSystem/src/phaseHist.c
+N timeSystem/src/scorbit.c
+N timeSystem/src/xCC.c
+N timeSystem/src/bary.h
+N timeSystem/src/mainpage.h
+N timeSystem/src/test/test_timeSystem.cxx
+N timeSystem/src/gtbary/gtbary.cxx
+N timeSystem/timeSystem/Duration.h
+N timeSystem/timeSystem/TimeConstant.h
+N timeSystem/timeSystem/TimeSystem.h
+N timeSystem/timeSystem/AbsoluteTime.h
+N timeSystem/timeSystem/ElapsedTime.h
+N timeSystem/timeSystem/TimeInterval.h
+N timeSystem/doc/release.notes
+N timeSystem/pfiles/gtbary.par
+
+No conflicts created by this import
+
+    *
