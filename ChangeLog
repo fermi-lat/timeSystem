@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: hirayama  Tue Apr 25 08:26:26 PDT 2006
+timeSystem/src
+
+Modified Files:
+	AbsoluteTime.cxx ElapsedTime.cxx 
+Log Message:
+Change AbsoluteTime::computeAbsoluteTime method to take a time system name, not a time system object, for consistency.
+
+    *
+------------------------------------------------------------
 User: peachey  Fri Apr 21 13:56:15 PDT 2006
 timeSystem
 
