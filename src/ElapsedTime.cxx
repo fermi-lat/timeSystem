@@ -17,7 +17,7 @@ namespace timeSystem {
     m_time_system(time_system), m_time(time) {}
 
   AbsoluteTime ElapsedTime::operator +(const AbsoluteTime & absolute_time) const {
-    return absolute_time.computeAbsoluteTime(*m_time_system, m_time);
+    return absolute_time.computeAbsoluteTime(m_time_system->getName(), m_time);
   }
 
   ElapsedTime ElapsedTime::operator -() const { return ElapsedTime(m_time_system, -m_time); }

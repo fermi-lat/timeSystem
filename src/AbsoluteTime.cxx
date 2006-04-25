@@ -61,7 +61,9 @@ namespace timeSystem {
     return ElapsedTime(time_system_name, (m_origin - since.m_origin) + (minuend_time - subtrahend_time));
   }
 
-  AbsoluteTime AbsoluteTime::computeAbsoluteTime(const TimeSystem & time_system, const Duration & delta_t) const {
+  AbsoluteTime AbsoluteTime::computeAbsoluteTime(const std::string & time_system_name, const Duration & delta_t) const {
+    const TimeSystem & time_system(TimeSystem::getSystem(time_system_name));
+
     // Compute m_time for an absolute time to return in time_system
     Duration time1 = time_system.convertFrom(*m_time_system, m_origin, m_time) + delta_t;
 
