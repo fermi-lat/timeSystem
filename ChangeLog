@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: peachey  Wed Apr 26 14:19:08 PDT 2006
+timeSystem/timeSystem
+
+Modified Files:
+	Duration.h 
+Log Message:
+Change Duration to use new TimeValue class in construction and accessors.
+
+    *
+------------------------------------------------------------
 User: peachey  Wed Apr 26 14:18:14 PDT 2006
 timeSystem/timeSystem
 
