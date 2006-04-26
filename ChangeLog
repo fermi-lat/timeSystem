@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: peachey  Wed Apr 26 14:20:23 PDT 2006
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Test TimeValue class and change TestDuration to use new Duration method signatures.
+
+    *
+------------------------------------------------------------
 User: peachey  Wed Apr 26 14:19:37 PDT 2006
 timeSystem/src
 
