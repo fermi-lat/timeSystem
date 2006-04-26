@@ -23,7 +23,10 @@ namespace timeSystem {
   // Unit conversion constants.
   inline double DayPerSec() { static double r = 1. / SecPerDay(); return r; }
 
+  // TODO: use integral value?
   inline double SecPerDay() { static double r = 86400.; return r; }
+
+  // TODO: add HourPerDay() etc.
 
   // Time system conversion constants.
   inline double TaiMinusTtSec() { static double r = -TtMinusTaiSec(); return r; }
