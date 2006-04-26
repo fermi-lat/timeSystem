@@ -14,6 +14,7 @@
 #include "timeSystem/Duration.h"
 #include "timeSystem/TimeInterval.h"
 #include "timeSystem/TimeSystem.h"
+#include "timeSystem/TimeValue.h"
 
 #include <cmath>
 #include <exception>
@@ -33,6 +34,8 @@ namespace {
   void TestElapsedTime();
 
   void TestTimeInterval();
+
+  void TestTimeValue();
 }
 
 using namespace st_app;
@@ -66,6 +69,9 @@ void TestTimeSystemApp::run() {
   // Test TimeInterval class.
   TestTimeInterval();
 
+  // Test TimeValue class.
+  TestTimeValue();
+
   // Interpret failure flag to report error.
   if (s_failed) throw std::runtime_error("Unit test failure");
 }
@@ -80,57 +86,57 @@ namespace {
   void TestDuration() {
     s_os.setMethod("TestDuration");
 
-    time_type time_value;
+    TimeValue time_value;
 
     // Tests of Duration::day() and sec() methods for positive Durations.
     Duration six_days(6);
     time_value = six_days.day();
-    if (!(6 == time_value.first && 0. == time_value.second)) {
-      err() << "After Duration six_days(6), six_days.day() returned (" << time_value.first <<
-	", " << time_value.second << "), not (6, 0.) as expected." << std::endl;
+    if (!(6 == time_value.getIntegerPart() && 0. == time_value.getFractionalPart())) {
+      err() << "After Duration six_days(6), six_days.day() returned (" << time_value.getIntegerPart() <<
+	", " << time_value.getFractionalPart() << "), not (6, 0.) as expected." << std::endl;
     }
     time_value = six_days.sec();
-    if (!(6 * 86400 == time_value.first && 0. == time_value.second)) {
-      err() << "After Duration six_days(6), six_days.sec() returned (" << time_value.first <<
-        ", " << time_value.second << "), not " << 6 * 86400 << ", 0.) as expected." << std::endl;
+    if (!(6 * 86400 == time_value.getIntegerPart() && 0. == time_value.getFractionalPart())) {
+      err() << "After Duration six_days(6), six_days.sec() returned (" << time_value.getIntegerPart() <<
+        ", " << time_value.getFractionalPart() << "), not " << 6 * 86400 << ", 0.) as expected." << std::endl;
     }
 
     Duration six_sec(0, 6.);
     double nano_sec = 1.e-9 / 86400.;
     time_value = six_sec.day();
-    if (!(fabs(6. / 86400. - time_value.second) < nano_sec && 0 == time_value.first)) {
-      err() << "After Duration six_sec(0, 6.), six_sec.day() returned (" << time_value.first <<
-        ", " << time_value.second << "), not (0, " << 6. / 86400. << ") as expected." << std::endl;
+    if (!(fabs(6. / 86400. - time_value.getFractionalPart()) < nano_sec && 0 == time_value.getIntegerPart())) {
+      err() << "After Duration six_sec(0, 6.), six_sec.day() returned (" << time_value.getIntegerPart() <<
+        ", " << time_value.getFractionalPart() << "), not (0, " << 6. / 86400. << ") as expected." << std::endl;
     }
     time_value = six_sec.sec();
-    if (!(6 == time_value.first && 0. == time_value.second)) {
-      err() << "After Duration six_sec(0, 6.), six_sec.sec() returned (" << time_value.first <<
-        ", " << time_value.second << "), not (6, 0.) as expected." << std::endl;
+    if (!(6 == time_value.getIntegerPart() && 0. == time_value.getFractionalPart())) {
+      err() << "After Duration six_sec(0, 6.), six_sec.sec() returned (" << time_value.getIntegerPart() <<
+        ", " << time_value.getFractionalPart() << "), not (6, 0.) as expected." << std::endl;
     }
 
     // Tests of Duration::day() and sec() methods for negative Durations.
     Duration neg_six_days(-6);
     time_value = neg_six_days.day();
-    if (!(-6 == time_value.first && 0. == time_value.second)) {
-      err() << "After Duration neg_six_days(-6), neg_six_days.day() returned (" << time_value.first <<
-	", " << time_value.second << "), not (-6, 0.) as expected." << std::endl;
+    if (!(-6 == time_value.getIntegerPart() && 0. == time_value.getFractionalPart())) {
+      err() << "After Duration neg_six_days(-6), neg_six_days.day() returned (" << time_value.getIntegerPart() <<
+	", " << time_value.getFractionalPart() << "), not (-6, 0.) as expected." << std::endl;
     }
     time_value = neg_six_days.sec();
-    if (!(-6 * 86400 == time_value.first && 0. == time_value.second)) {
-      err() << "After Duration neg_six_days(-6), neg_six_days.sec() returned (" << time_value.first <<
-        ", " << time_value.second << "), not " << -6 * 86400 << ", 0.) as expected." << std::endl;
+    if (!(-6 * 86400 == time_value.getIntegerPart() && 0. == time_value.getFractionalPart())) {
+      err() << "After Duration neg_six_days(-6), neg_six_days.sec() returned (" << time_value.getIntegerPart() <<
+        ", " << time_value.getFractionalPart() << "), not " << -6 * 86400 << ", 0.) as expected." << std::endl;
     }
 
     Duration neg_six_sec(0, -6.);
     time_value = neg_six_sec.day();
-    if (!(fabs(-6. / 86400. - time_value.second) < nano_sec && 0 == time_value.first)) {
-      err() << "After Duration neg_six_sec(0, -6.), neg_six_sec.day() returned (" << time_value.first <<
-        ", " << time_value.second << "), not (0, " << -6. / 86400. << ") as expected." << std::endl;
+    if (!(fabs(-6. / 86400. - time_value.getFractionalPart()) < nano_sec && 0 == time_value.getIntegerPart())) {
+      err() << "After Duration neg_six_sec(0, -6.), neg_six_sec.day() returned (" << time_value.getIntegerPart() <<
+        ", " << time_value.getFractionalPart() << "), not (0, " << -6. / 86400. << ") as expected." << std::endl;
     }
     time_value = neg_six_sec.sec();
-    if (!(-6 == time_value.first && 0. == time_value.second)) {
-      err() << "After Duration neg_six_sec(0, -6.), neg_six_sec.sec() returned (" << time_value.first <<
-        ", " << time_value.second << "), not (-6, 0.) as expected." << std::endl;
+    if (!(-6 == time_value.getIntegerPart() && 0. == time_value.getFractionalPart())) {
+      err() << "After Duration neg_six_sec(0, -6.), neg_six_sec.sec() returned (" << time_value.getIntegerPart() <<
+        ", " << time_value.getFractionalPart() << "), not (-6, 0.) as expected." << std::endl;
     }
 
     // Tests of equality and inequality operators.
@@ -154,19 +160,19 @@ namespace {
     Duration tight_tol(0, .099999);
     if (about_seven.equivalentTo(seven_sec, tight_tol))
       err() << "After Duration about_seven(0, 7.1), about_seven.equivalentTo returned true for " << seven_sec <<
-        " with tolerance of " << tight_tol << " not false, as expected." << std::endl;
+        " with tolerance of " << tight_tol << " not false as expected." << std::endl;
     if (seven_sec.equivalentTo(about_seven, tight_tol))
       err() << "After Duration seven_sec(0, 7.), seven_sec.equivalentTo returned true for " << about_seven <<
-        " with tolerance of " << tight_tol << " not false, as expected." << std::endl;
+        " with tolerance of " << tight_tol << " not false as expected." << std::endl;
 
     // Make comparisons which succeed.
     Duration loose_tol(0, .1);
     if (!about_seven.equivalentTo(seven_sec, loose_tol))
       err() << "After Duration about_seven(0, 7.1), about_seven.equivalentTo returned false for " << seven_sec <<
-        " with tolerance of " << loose_tol << " not true, as expected." << std::endl;
+        " with tolerance of " << loose_tol << " not true as expected." << std::endl;
     if (!seven_sec.equivalentTo(about_seven, loose_tol))
       err() << "After Duration seven_sec(0, 7.1), seven_sec.equivalentTo returned false for " << about_seven <<
-        " with tolerance of " << loose_tol << " not true, as expected." << std::endl;
+        " with tolerance of " << loose_tol << " not true as expected." << std::endl;
 
     // Tests for detection of overflow/underflow:
     // A case which should *not* overflow, but is close to overflowing.
@@ -199,6 +205,7 @@ namespace {
       err() << "Duration::sec method unexpectedly did not underflow for " << underflow_sec << " seconds." << std::endl;
     } catch (const std::exception &) {
     }
+
     // TODO test all Duration comparison operators and all other math.
   }
 
@@ -210,7 +217,7 @@ namespace {
     Duration dest = dest_sys.convertFrom(src_sys, src_origin, src);
     if (!dest.equivalentTo(expected_dest, Duration(0, tolerance))) {
       err() << "Result of converting from " << src << " " << src_sys << " to " << dest_sys << " was " <<
-        dest << ", not " << expected_dest << ", as expected." << std::endl;
+        dest << ", not " << expected_dest << " as expected." << std::endl;
     }
   }
 
@@ -323,7 +330,7 @@ namespace {
     Duration expected_diff(0, 0.);
     if (difference != expected_diff) {
       err() << "Sum of absolute time and elapsed time's duration was " << result.getTime() << ", not " <<
-        expected_result.getTime() << ", as expected." << std::endl;
+        expected_result.getTime() << " as expected." << std::endl;
     }
 
     // Test adding in reverse order.
@@ -332,7 +339,7 @@ namespace {
 
     if (difference != expected_diff) {
       err() << "Sum of elapsed time and absolute time's duration was " << result.getTime() << ", not " <<
-        expected_result.getTime() << ", as expected." << std::endl;
+        expected_result.getTime() << " as expected." << std::endl;
     }
 
     // Test subtraction of elapsed time from absolute time.
@@ -341,7 +348,7 @@ namespace {
     difference = (result - expected_result).computeElapsedTime("TDB").getTime();
     if (difference != expected_diff) {
       err() << "Elapsed time subtracted from absolute time gave " << result.getTime() << ", not " <<
-        expected_result.getTime() << ", as expected." << std::endl;
+        expected_result.getTime() << " as expected." << std::endl;
     }
 
     // Make a test time which is later than the first time.
@@ -384,19 +391,19 @@ namespace {
     ElapsedTime tight_tol("TDB", Duration(0, 99.9999));
     if (abs_time.equivalentTo(later_time, tight_tol))
       err() << "After AbsoluteTime abs_time(TDB, 51910, 1000.), abs_time.equivalentTo returned true for \"" << later_time <<
-        "\" with tolerance of " << tight_tol << ", not false, as expected." << std::endl;
+        "\" with tolerance of " << tight_tol << ", not false as expected." << std::endl;
     if (later_time.equivalentTo(abs_time, tight_tol))
       err() << "After AbsoluteTime later_time(TDB, 51910, 1100.), later_time.equivalentTo returned true for \"" << abs_time <<
-        "\" with tolerance of " << tight_tol << ", not false, as expected." << std::endl;
+        "\" with tolerance of " << tight_tol << ", not false as expected." << std::endl;
 
     // Test situations where they are equivalent.
     ElapsedTime loose_tol("TDB", Duration(0, 100.));
     if (!(abs_time.equivalentTo(later_time, loose_tol)))
       err() << "After AbsoluteTime abs_time(TDB, 51910, 1000.), abs_time.equivalentTo returned false for \"" << later_time <<
-        "\" with tolerance of " << loose_tol << ", not true, as expected." << std::endl;
+        "\" with tolerance of " << loose_tol << ", not true as expected." << std::endl;
     if (!(later_time.equivalentTo(abs_time, loose_tol)))
       err() << "After AbsoluteTime later_time(TDB, 51910, 1100.), later_time.equivalentTo returned false for \"" << abs_time <<
-        "\" with tolerance of " << loose_tol << ", not true, as expected." << std::endl;
+        "\" with tolerance of " << loose_tol << ", not true as expected." << std::endl;
   }
 
   void TestElapsedTime() {
@@ -432,6 +439,48 @@ namespace {
       err() << "After creating interval_a and interval_b, they are not the same." << std::endl;
     }
   }
+
+  static void CompareTimeValue(const std::string & hint, const TimeValue & value, long expected_int_part,
+    double expected_frac_part) {
+    if (expected_int_part != value.getIntegerPart()) {
+      err() << hint << ", integer part of time value was " <<
+        value.getIntegerPart() << ", not " << expected_int_part << " as expected." << std::endl;
+    }
+
+    if (expected_frac_part != value.getFractionalPart()) {
+      err() << hint << ", fractional part of time value was " <<
+        value.getFractionalPart() << ", not " << expected_frac_part << " as expected." << std::endl;
+    }
+  }
+
+  void TestTimeValue() {
+    s_os.setMethod("TestTimeValue");
+    long int_part = 100;
+    double frac_part = .56789567895678956789;
+
+    // Test construction from separate int and frac parts.
+    TimeValue tv(int_part, frac_part);
+
+    std::ostringstream os;
+    os.precision(s_os.err().precision());
+    os << "After TimeValue tv(" << int_part << ", " << frac_part << ")";
+    CompareTimeValue(os.str(), tv, int_part, frac_part);
+
+    // Make sure this value is rounded off in the expected way when converted to a mere double.
+    double expected_dval = 100.567895678957;
+    double dval = tv.reduceToDouble();
+    if (10. * std::numeric_limits<double>::epsilon() < std::fabs((dval - expected_dval) / expected_dval)) {
+      err() << os.str() << ", tv.reduceToDouble() returned " << dval << ", not " << expected_dval << " as expected." << std::endl;
+    }
+
+    // Test construction from a double, making sure the separate int and fractional parts are as expected.
+    dval = 56789.56789567895678956789;
+    tv = TimeValue(dval);
+    os.str("");
+    os << "After tv = TimeValue(" << dval << ")";
+    CompareTimeValue(os.str(), tv, 56789, .567895678900000);
+  }
+
 }
 
 StAppFactory<TestTimeSystemApp> g_factory("test_timeSystem");
