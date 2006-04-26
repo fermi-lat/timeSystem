@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: peachey  Wed Apr 26 14:16:44 PDT 2006
+timeSystem/timeSystem
+
+Added Files:
+	TimeValue.h 
+Log Message:
+New class for representing high precision time values in arbitrary units.
+
+    *
+------------------------------------------------------------
 User: hirayama  Tue Apr 25 08:26:26 PDT 2006
 timeSystem/timeSystem
 
