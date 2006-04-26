@@ -13,13 +13,25 @@
 #include <stdexcept>
 
 #include "timeSystem/TimeConstant.h"
+#include "timeSystem/TimeValue.h"
 
 #include "st_stream/Stream.h"
 
 namespace timeSystem {
 
-  // TODO is there a better place for this?
-  typedef std::pair<long, double> time_type;
+  /** \enum TimeUnit_e Enumerated type representing different time units.
+
+       Note: The four units above are "safe to use" precision-wise. Smaller units (millisecond,
+       microsecond, ...) are not really a distinct unit from seconds. Larger units (Week, Year,
+       Decade, Century, ...) would compromise the precision realized by this approach. The reason
+       is that internally, Duration stores times as a whole number of days + a fractional number
+       of seconds. The act of converting, say .5 years (~ 15768000 seconds) to days plus seconds would
+       yield an intermediate result accurate only to 100 ns, whereas 182.5 days (~ .5 year) would be stored
+       accurate to within 100 picoseconds.
+  */
+  enum TimeUnit_e {
+    Day, Hour, Min, Sec
+  };
 
   /** \class Duration
       \brief Low level class used to represent an amount of time together with its nominal unit of measurement. Objects
@@ -35,13 +47,30 @@ namespace timeSystem {
       Duration(long day = 0, double sec = 0.): m_time(add(time_type(day, 0.), splitSec(sec))) {}
 
       // TODO Implement this?
-//      Duration(time_type time_value, bool day = true): m_time(add(time_type(day, 0.), splitSec(sec))) {}
+      Duration(TimeValue time_value, TimeUnit_e unit) {
+// START HERE and make this right.
+	if (unit == Day) {
+	  m_time.first = time_value.getIntegerPart();
+	  m_time.second = time_value.getFractionalPart() * SecPerDay();
+	} else if (unit == Hour) {
+	  m_time.first = time_value.getIntegerPart() / 24; // integral ratio
+	  m_time.second = ((time_value.getIntegerPart() % 24) + time_value.getFractionalPart()) * 3600.;
+	} else if (unit == Min) {
+	  m_time.first = time_value.getIntegerPart() / 1440; // integral ratio
+	  m_time.second = ((time_value.getIntegerPart() % 1440) + time_value.getFractionalPart()) * 60.;
+	} else if (unit == Sec) {
+	  m_time.first = time_value.getIntegerPart() / 86400; // integral ratio
+	  m_time.second = (time_value.getIntegerPart() % 86400) + time_value.getFractionalPart();
+	}
+      }
 
+      // TODO: add a getter instead of, or in addition to, day()/sec() which takes the unit as an
+      // argument and returns a TimeValue in the right units.
       /// \brief Return the current value of this time in days.
-      time_type day() const;
+      TimeValue day() const;
 
       /// \brief Return the current value of this time in seconds.
-      time_type sec() const;
+      TimeValue sec() const;
 
       Duration operator +(const Duration & dur) const;
 
@@ -75,6 +104,7 @@ namespace timeSystem {
       void write(st_stream::OStream & os) const;
 
     private:
+      typedef std::pair<long, double> time_type;
       Duration(const time_type & new_time): m_time(new_time) {}
 
 #if 0
@@ -165,13 +195,13 @@ namespace timeSystem {
       time_type m_time;
   };
 
-  inline time_type Duration::day() const {
+  inline TimeValue Duration::day() const {
     double day_frac = m_time.second * DayPerSec();
-    return ((m_time.first >= 0 || m_time.second == 0) ? time_type(m_time.first, day_frac) :
-	    time_type(m_time.first + 1, day_frac - 1.));
+    return ((m_time.first >= 0 || m_time.second == 0) ? TimeValue(m_time.first, day_frac) :
+	    TimeValue(m_time.first + 1, day_frac - 1.));
   }
 
-  inline time_type Duration::sec() const {
+  inline TimeValue Duration::sec() const {
     // Let the sec part have the same sign as the day part.
     long signed_day = m_time.first;
     double signed_sec = m_time.second;
@@ -201,7 +231,7 @@ namespace timeSystem {
     }
     long sec_int = long(sec_half_int);
 
-    return time_type(sec_int, sec_frac);
+    return TimeValue(sec_int, sec_frac);
   }
 
   inline Duration Duration::operator +(const Duration & dur) const {
