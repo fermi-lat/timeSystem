@@ -91,9 +91,9 @@ namespace {
     static const long jd_minus_mjd_int = 2400000;
     static const double jd_minus_mjd_frac = .5;
 
-    time_type mjd_time = mjd_tt.day();
+    TimeValue mjd_time = mjd_tt.day();
 
-    return Duration(0, ctatv(mjd_time.first + jd_minus_mjd_int, mjd_time.second + jd_minus_mjd_frac));
+    return Duration(0, ctatv(mjd_time.getIntegerPart() + jd_minus_mjd_int, mjd_time.getFractionalPart() + jd_minus_mjd_frac));
 
 #if 0
     // Algorithm taken from function TTtoTDB() in bary.c by Arnold Rots.
@@ -101,15 +101,15 @@ namespace {
     static double tdbtdtdot ;
     static long oldmjd = 0 ;
 
-    if ( mjd_time.first != oldmjd ) {
-      oldmjd = mjd_time.first;
+    if ( mjd_time.getIntegerPart() != oldmjd ) {
+      oldmjd = mjd_time.getIntegerPart();
       long l = oldmjd + 2400001 ;
 
       tdbtdt = ctatv (l, 0.0) ;
       tdbtdtdot = ctatv (l, 0.5) - ctatv (l, -0.5) ;
     }
 
-    double diff = tdbtdt + (mjd_time.second - 0.5) * tdbtdtdot;
+    double diff = tdbtdt + (mjd_time.getFractionalPart() - 0.5) * tdbtdtdot;
 
     return Duration(0, diff);
 #endif
