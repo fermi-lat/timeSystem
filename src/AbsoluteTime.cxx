@@ -24,22 +24,22 @@ namespace timeSystem {
 
   bool AbsoluteTime::operator >(const AbsoluteTime & other) const {
     Duration other_time = m_time_system->convertFrom(*other.m_time_system, other.m_origin, other.m_time);
-    return m_time + m_origin > other_time + other.m_origin;
+    return m_time > other_time + m_time_system->computeTimeDifference(other.m_origin, m_origin);
   }
 
   bool AbsoluteTime::operator >=(const AbsoluteTime & other) const {
     Duration other_time = m_time_system->convertFrom(*other.m_time_system, other.m_origin, other.m_time);
-    return m_time + m_origin >= other_time + other.m_origin;
+    return m_time >= other_time + m_time_system->computeTimeDifference(other.m_origin, m_origin);
   }
 
   bool AbsoluteTime::operator <(const AbsoluteTime & other) const {
     Duration other_time = m_time_system->convertFrom(*other.m_time_system, other.m_origin, other.m_time);
-    return m_time + m_origin < other_time + other.m_origin;
+    return m_time < other_time + m_time_system->computeTimeDifference(other.m_origin, m_origin);
   }
 
   bool AbsoluteTime::operator <=(const AbsoluteTime & other) const {
     Duration other_time = m_time_system->convertFrom(*other.m_time_system, other.m_origin, other.m_time);
-    return m_time + m_origin <= other_time + other.m_origin;
+    return m_time <= other_time + m_time_system->computeTimeDifference(other.m_origin, m_origin);
   }
 
   bool AbsoluteTime::equivalentTo(const AbsoluteTime & other, const ElapsedTime & tolerance) const {
@@ -58,7 +58,7 @@ namespace timeSystem {
     Duration subtrahend_time = time_system.convertFrom(*(since.m_time_system), since.m_origin, since.m_time);
 
     // Subtract the subtahend's origin and duration from the minuend's and sum the two remainders.
-    return ElapsedTime(time_system_name, (m_origin - since.m_origin) + (minuend_time - subtrahend_time));
+    return ElapsedTime(time_system_name, time_system.computeTimeDifference(m_origin, since.m_origin) + (minuend_time - subtrahend_time));
   }
 
   AbsoluteTime AbsoluteTime::computeAbsoluteTime(const std::string & time_system_name, const Duration & delta_t) const {

@@ -284,20 +284,26 @@ namespace {
 
     // To ensure UTC->TAI is handled correctly, do some tougher conversions, i.e. times which are close to
     // times when leap seconds are inserted.
+    // --- At an exact time of leap second insertion.
     TestOneConversion("UTC", Duration(leap1, 0.), Duration(0, 0.), "TAI", Duration(0, diff1));
+    // --- Slightly before a leap second is inserted.
     TestOneConversion("UTC", Duration(leap1, -.001), Duration(0, 0.), "TAI", Duration(0, diff0));
-    // Although the total time (origin + elapsed) is large enough to cross two leap second boundaries, still
-    // the earliest leap second should be used because the choice of leap second is based only on the origin time.
+    // --- Same as above, but with a large elapsed time.
+    //     Although the total time (origin + elapsed) is large enough to cross two leap second boundaries, still
+    //     the earliest leap second should be used because the choice of leap second is based only on the origin time.
     TestOneConversion("UTC", Duration(leap1, -.001), Duration(delta_leap, 2.002), "TAI", Duration(delta_leap, diff0 + 2.002));
 
     // To ensure TAI->UTC is handled correctly, do some tougher conversions, i.e. times which are close to
     // times when leap seconds are inserted.
+    // --- At the end of a leap second.
     TestOneConversion("TAI", Duration(leap1, diff1), Duration(0, 0.), "UTC", Duration(0, -diff1));
-    TestOneConversion("TAI", Duration(leap1, diff1 - .001), Duration(0, 0.), "UTC", Duration(0, -diff0));
-    // Although the total time (origin + elapsed) is large enough to cross two leap second boundaries, still
-    // the earliest leap second should be used because the choice of leap second is based only on the origin time.
-    TestOneConversion("TAI", Duration(leap1, diff1 - .001), Duration(delta_leap, 2.002), "UTC",
-      Duration(delta_leap, -diff0 + 2.002));
+    // --- During a leap second.
+    TestOneConversion("TAI", Duration(leap1, diff1 - 0.3), Duration(0, 0.), "UTC", Duration(0, -diff1 + 0.3));
+    // --- At the beginning of a leap second.
+    TestOneConversion("TAI", Duration(leap1, diff1 - 1.0), Duration(0, 0.), "UTC", Duration(0, -diff0));
+
+    // TODO: Write tests for leap second removal.
+    // TODO: Need a bogus leapsed.fits that contains a negative leap second.
 
     // Test that conversion uses table keyed by TAI times, not by UTC.
     TestOneConversion("TAI", Duration(leap1, -2.), Duration(1, 0.), "UTC", Duration(1, -diff1 + 1.));
@@ -309,6 +315,47 @@ namespace {
     } catch (const std::exception &) {
       // That's OK!
     }
+
+    // Test case after last time covered by the current UTC definition.
+    // TODO: How to know the last entry in leapsec.fits?
+    // TODO: Keep leapsec.fits locally for testing purpose?
+    long leap_last = 51179;
+    double diff_last = 32.;
+    TestOneConversion("UTC", Duration(leap_last, 100.), Duration(0, 0.), "TAI", Duration(0, diff_last));
+  }
+
+  static void CompareAbsoluteTime(const AbsoluteTime & abs_time, const AbsoluteTime & later_time) {
+    // Test operator >.
+    if (abs_time > later_time) err() << "AbsoluteTime::operator > returned true for \"" << abs_time << "\" > \"" <<
+      later_time << "\"" << std::endl;
+    if (!(later_time > abs_time)) err() << "AbsoluteTime::operator > returned false for \"" << later_time << "\" > \"" <<
+      abs_time << "\"" << std::endl;
+    if (abs_time > abs_time) err() << "AbsoluteTime::operator > returned true for \"" << abs_time << "\" > \"" <<
+      abs_time << "\"" << std::endl;
+
+    // Test operator >=.
+    if (abs_time >= later_time) err() << "AbsoluteTime::operator >= returned true for \"" << abs_time << "\" >= \"" <<
+      later_time << "\"" << std::endl;
+    if (!(later_time >= abs_time)) err() << "AbsoluteTime::operator >= returned false for \"" << later_time << "\" >= \"" <<
+      abs_time << "\"" << std::endl;
+    if (!(abs_time >= abs_time)) err() << "AbsoluteTime::operator >= returned false for \"" << abs_time << "\" >= \"" <<
+      abs_time << "\"" << std::endl;
+
+    // Test operator <.
+    if (!(abs_time < later_time)) err() << "AbsoluteTime::operator < returned false for \"" << abs_time << "\" < \"" <<
+      later_time << "\"" << std::endl;
+    if (later_time < abs_time) err() << "AbsoluteTime::operator < returned true for \"" << later_time << "\" < \"" <<
+      abs_time << "\"" << std::endl;
+    if (abs_time < abs_time) err() << "AbsoluteTime::operator < returned true for \"" << abs_time << "\" < \"" <<
+      abs_time << "\"" << std::endl;
+
+    // Test operator <=.
+    if (!(abs_time <= later_time)) err() << "AbsoluteTime::operator <= returned false for \"" << abs_time << "\" <= \"" <<
+      later_time << "\"" << std::endl;
+    if (later_time <= abs_time) err() << "AbsoluteTime::operator <= returned true for \"" << later_time << "\" <= \"" <<
+      abs_time << "\"" << std::endl;
+    if (!(abs_time <= abs_time)) err() << "AbsoluteTime::operator <= returned false for \"" << abs_time << "\" <= \"" <<
+      abs_time << "\"" << std::endl;
   }
 
   void TestAbsoluteTime() {
@@ -354,37 +401,14 @@ namespace {
     // Make a test time which is later than the first time.
     AbsoluteTime later_time("TDB", mjd_origin, duration + Duration(0, 100.));
 
-    // Test operator >.
-    if (abs_time > later_time) err() << "AbsoluteTime::operator > returned true for \"" << abs_time << "\" > \"" <<
-      later_time << "\"" << std::endl;
-    if (!(later_time > abs_time)) err() << "AbsoluteTime::operator > returned false for \"" << later_time << "\" > \"" <<
-      abs_time << "\"" << std::endl;
-    if (abs_time > abs_time) err() << "AbsoluteTime::operator > returned true for \"" << abs_time << "\" > \"" <<
-      abs_time << "\"" << std::endl;
+    // Test comparison operators: >, >=, <, and <=.
+    CompareAbsoluteTime(abs_time, later_time);
 
-    // Test operator >=.
-    if (abs_time >= later_time) err() << "AbsoluteTime::operator >= returned true for \"" << abs_time << "\" >= \"" <<
-      later_time << "\"" << std::endl;
-    if (!(later_time >= abs_time)) err() << "AbsoluteTime::operator >= returned false for \"" << later_time << "\" >= \"" <<
-      abs_time << "\"" << std::endl;
-    if (!(abs_time >= abs_time)) err() << "AbsoluteTime::operator >= returned false for \"" << abs_time << "\" >= \"" <<
-      abs_time << "\"" << std::endl;
-
-    // Test operator <.
-    if (!(abs_time < later_time)) err() << "AbsoluteTime::operator < returned false for \"" << abs_time << "\" < \"" <<
-      later_time << "\"" << std::endl;
-    if (later_time < abs_time) err() << "AbsoluteTime::operator < returned true for \"" << later_time << "\" < \"" <<
-      abs_time << "\"" << std::endl;
-    if (abs_time < abs_time) err() << "AbsoluteTime::operator < returned true for \"" << abs_time << "\" < \"" <<
-      abs_time << "\"" << std::endl;
-
-    // Test operator <=.
-    if (!(abs_time <= later_time)) err() << "AbsoluteTime::operator <= returned false for \"" << abs_time << "\" <= \"" <<
-      later_time << "\"" << std::endl;
-    if (later_time <= abs_time) err() << "AbsoluteTime::operator <= returned true for \"" << later_time << "\" <= \"" <<
-      abs_time << "\"" << std::endl;
-    if (!(abs_time <= abs_time)) err() << "AbsoluteTime::operator <= returned false for \"" << abs_time << "\" <= \"" <<
-      abs_time << "\"" << std::endl;
+    // Test comparison operators (>, >=, <, and <=) in UTC system.
+    long mjd_leap = 51179;
+    AbsoluteTime abs_time_utc("UTC", Duration(mjd_leap - 1, 86390.0), Duration(0, 10.8));
+    AbsoluteTime later_time_utc("UTC", Duration(mjd_leap, 0.2), Duration(0, 0.));
+    CompareAbsoluteTime(abs_time_utc, later_time_utc);
 
     // Test equivalentTo.
     // Test situations where they are not equivalent.
@@ -404,6 +428,21 @@ namespace {
     if (!(later_time.equivalentTo(abs_time, loose_tol)))
       err() << "After AbsoluteTime later_time(TDB, 51910, 1100.), later_time.equivalentTo returned false for \"" << abs_time <<
         "\" with tolerance of " << loose_tol << ", not true as expected." << std::endl;
+
+    // Test subtraction of absolute time from absolute time.
+    expected_diff = Duration(0, 100.);
+    Duration tolerance(0, 1.e-9); // 1 ns.
+    difference = (later_time - abs_time).computeElapsedTime("TDB").getTime();
+    if (!expected_diff.equivalentTo(difference, tolerance))
+      err() << "Absolute time [" << abs_time << "] subtracted from absolute time [" << later_time << "] gave " << difference <<
+        ", not " << expected_diff << " as expected." << std::endl;
+
+    // Test subtraction of absolute time from absolute time in UTC system
+    expected_diff = Duration(0, .4);
+    difference = (later_time_utc - abs_time_utc).computeElapsedTime("UTC").getTime();
+    if (!expected_diff.equivalentTo(difference, tolerance))
+      err() << "Absolute time [" << abs_time_utc << "] subtracted from absolute time [" << later_time_utc << "] gave " << difference <<
+        ", not " << expected_diff << " as expected." << std::endl;
   }
 
   void TestElapsedTime() {
