@@ -32,6 +32,8 @@ namespace {
 
       virtual Duration convertFrom(const TimeSystem & time_system, const Duration & origin, const Duration & time) const;
 
+      virtual Duration computeTimeDifference(const Duration & mjd1, const Duration & mjd2) const;
+
   };
 
   class TdbSystem : public TimeSystem {
@@ -39,6 +41,8 @@ namespace {
       TdbSystem(): TimeSystem("TDB") {}
 
       virtual Duration convertFrom(const TimeSystem & time_system, const Duration & origin, const Duration & time) const;
+
+      virtual Duration computeTimeDifference(const Duration & mjd1, const Duration & mjd2) const;
 
       Duration computeTdbMinusTt(const Duration & mjd) const;
 
@@ -50,6 +54,8 @@ namespace {
 
       virtual Duration convertFrom(const TimeSystem & time_system, const Duration & origin, const Duration & time) const;
 
+      virtual Duration computeTimeDifference(const Duration & mjd1, const Duration & mjd2) const;
+
   };
 
   class UtcSystem : public TimeSystem {
@@ -58,12 +64,28 @@ namespace {
 
       virtual Duration convertFrom(const TimeSystem & time_system, const Duration & origin, const Duration & time) const;
 
+      virtual Duration computeTimeDifference(const Duration & mjd1, const Duration & mjd2) const;
+
       Duration computeTaiMinusUtc(const Duration & mjd_utc) const;
 
       Duration computeUtcMinusTai(const Duration & mjd_tai) const;
 
     private:
+#if 0
       typedef std::map<Duration, Duration> leaptable_type;
+      leaptable_type m_tai_minus_utc;
+      leaptable_type m_utc_minus_tai;
+#endif
+      struct leapdata_type {
+	leapdata_type(): m_leap_end(Duration(0, 0.)), m_inserted(true), m_time_diff(Duration(0, 0.)) {}
+	leapdata_type(const Duration & leap_end, const bool & inserted, const Duration & time_diff):
+          m_leap_end(leap_end), m_inserted(inserted), m_time_diff(time_diff) {}
+
+        Duration m_leap_end;  // MJD number for a moment immediately after a leap second is inserted or removed.
+        bool m_inserted;      // flag to store whether a leap second is inserted (true) or removed (false).
+        Duration m_time_diff; // time difference between TAI and UTC after a leap second is inserted or removed.
+      };
+      typedef std::map<Duration, leapdata_type> leaptable_type;
       leaptable_type m_tai_minus_utc;
       leaptable_type m_utc_minus_tai;
 
@@ -85,6 +107,10 @@ namespace {
       }
     }
     return time;
+  }
+
+  Duration TaiSystem::computeTimeDifference(const Duration & mjd1, const Duration & mjd2) const {
+    return mjd1 - mjd2;
   }
 
   Duration TdbSystem::computeTdbMinusTt(const Duration & mjd_tt) const {
@@ -131,6 +157,10 @@ namespace {
     return time;
   }
 
+  Duration TdbSystem::computeTimeDifference(const Duration & mjd1, const Duration & mjd2) const {
+    return mjd1 - mjd2;
+  }
+
   Duration TtSystem::convertFrom(const TimeSystem & time_system, const Duration & origin, const Duration & time) const {
     if (&time_system != this) {
       if ("TAI" == time_system.getName()) {
@@ -169,6 +199,10 @@ namespace {
     return time;
   }
 
+  Duration TtSystem::computeTimeDifference(const Duration & mjd1, const Duration & mjd2) const {
+    return mjd1 - mjd2;
+  }
+
   UtcSystem::UtcSystem(): TimeSystem("UTC") {
     using namespace st_facilities;
     // Location of leap sec table.
@@ -176,6 +210,7 @@ namespace {
 
     // Read MJD and number of leap seconds from table.
     std::auto_ptr<const tip::Table> leap_sec_table(tip::IFileSvc::instance().readTable(leap_sec_file_name, "1"));
+#if 0
     double cumulative_leap_sec = 10.;
     for (tip::Table::ConstIterator itor = leap_sec_table->begin(); itor != leap_sec_table->end(); ++itor) {
       // Read the MJD and LEAPSECS from the table.
@@ -192,7 +227,34 @@ namespace {
     // Create a reverse conversion table.
     for (leaptable_type::iterator itor = m_tai_minus_utc.begin(); itor != m_tai_minus_utc.end(); ++itor)
       m_utc_minus_tai[(itor->first + itor->second)] = -(itor->second);
+#endif
 
+    double time_diff = 10.;
+    for (tip::Table::ConstIterator itor = leap_sec_table->begin(); itor != leap_sec_table->end(); ++itor) {
+      // Read the MJD and LEAPSECS from the table.
+      double mjd_dbl = (*itor)["MJD"].get();
+      double leap_sec = (*itor)["LEAPSECS"].get();
+
+      // Make sure the MJD for the leap second is a whole number of days.
+      long mjd = long(mjd_dbl + .5);
+      if (mjd != mjd_dbl) throw std::logic_error("UtcSystem: leapsec.fits unexpectedly contained a non-integral MJD value");
+
+      // Pre-compute leap second data for TAI-minus-UTC table.
+      time_diff += leap_sec;
+      bool inserted = (leap_sec > 0);
+      Duration mjd_end(mjd, 0.);
+      Duration mjd_start = (inserted ? mjd_end : mjd_end + Duration(0, leap_sec));
+
+      // Add an entry to TAI-minus-UTC table.
+      m_tai_minus_utc[mjd_start] = leapdata_type(mjd_end, inserted, Duration(0, time_diff));
+
+      // Pre-compute leap second data for UTC-minus-TAI table.
+      mjd_end = Duration(mjd, time_diff);
+      mjd_start = (inserted ? mjd_end - Duration(0, leap_sec) : mjd_end);
+
+      // Add an entry to UTC-minus-TAI table.
+      m_utc_minus_tai[mjd_start] = leapdata_type(mjd_end, inserted, Duration(0, -time_diff));
+    }
   }
 
   Duration UtcSystem::convertFrom(const TimeSystem & time_system, const Duration & origin, const Duration & time) const {
@@ -210,6 +272,10 @@ namespace {
     return time;
   }
 
+  Duration UtcSystem::computeTimeDifference(const Duration & mjd1, const Duration & mjd2) const {
+    return (mjd1 + computeTaiMinusUtc(mjd1)) - (mjd2 + computeTaiMinusUtc(mjd2));
+  }
+
   Duration UtcSystem::computeTaiMinusUtc(const Duration & mjd_utc) const {
     // Start from the end of the leap second table and go backwards, stopping at the first leap time
     // which is <= the given time.
@@ -221,7 +287,14 @@ namespace {
       os << "UtcSystem::computeTaiMinusUtc cannot convert a time before " << m_tai_minus_utc.begin()->first << " MJD (UTC)";
       throw std::runtime_error(os.str());
     }
+#if 0
     return itor->second;
+#endif
+    if (itor->second.m_inserted || (itor->second.m_leap_end <= mjd_utc)) {
+      return itor->second.m_time_diff;
+    } else {
+      return itor->second.m_time_diff + (itor->second.m_leap_end - mjd_utc);
+    }
   }
 
   Duration UtcSystem::computeUtcMinusTai(const Duration & mjd_tai) const {
@@ -235,7 +308,14 @@ namespace {
       os << "UtcSystem::computeUtcMinusTai cannot convert a time before " << m_utc_minus_tai.begin()->first << " MJD (TAI)";
       throw std::runtime_error(os.str());
     }
+#if 0
     return itor->second;
+#endif
+    if ((!(itor->second.m_inserted)) || (itor->second.m_leap_end <= mjd_tai)) {
+      return itor->second.m_time_diff;
+    } else {
+      return itor->second.m_time_diff + (itor->second.m_leap_end - mjd_tai);
+    }
   }
 
 }

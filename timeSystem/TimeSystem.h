@@ -29,6 +29,9 @@ namespace timeSystem {
 
       virtual Duration convertFrom(const TimeSystem & time_system, const Duration & origin, const Duration & time) const = 0;
 
+      // TODO: write a test code for this.
+      virtual Duration computeTimeDifference(const Duration & mjd1, const Duration & mjd2) const = 0;
+
       std::string getName() const;
 
       void write(st_stream::OStream & os) const;
