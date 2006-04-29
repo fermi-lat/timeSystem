@@ -1,4 +1,26 @@
 ------------------------------------------------------------
+User: hirayama  Sat Apr 29 09:57:05 PDT 2006
+timeSystem/src
+
+Modified Files:
+	AbsoluteTime.cxx TimeSystem.cxx 
+Log Message:
+Debugged AbsoluteTime and revised a test code to reveal them. The bugs are:
+[Bug1] Comparison of AbsoluteTimes may be incorrect in UTC,
+       because m_time + m_origin may not result in a correct MJD,
+       and because m_origin and other.m_origin may be different.
+[Bug2] Subtraction of AbsoluteTimes may be incorrect in UTC,
+       because m_origin - since.m_origin may not result in a correct
+       time difference.
+[Note on Bugs 1 and 2] Buggy arithmetic on m_origin can be found in
+       comparison operators and AbsoluteTime::computeElapsedTime method,
+       and nowhere else.
+[Bug3] Conversion from TAI to UTC is wrong when the origin of the TAI
+       time is during a leap second, where the time difference between
+       them becomes a non-integral number of seconds.
+
+    *
+------------------------------------------------------------
 User: peachey  Wed Apr 26 14:20:23 PDT 2006
 timeSystem/src/test
 
