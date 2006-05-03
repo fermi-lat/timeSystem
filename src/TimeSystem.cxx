@@ -71,11 +71,6 @@ namespace {
       Duration computeUtcMinusTai(const Duration & mjd_tai) const;
 
     private:
-#if 0
-      typedef std::map<Duration, Duration> leaptable_type;
-      leaptable_type m_tai_minus_utc;
-      leaptable_type m_utc_minus_tai;
-#endif
       struct leapdata_type {
 	leapdata_type(): m_leap_end(Duration(0, 0.)), m_inserted(true), m_time_diff(Duration(0, 0.)) {}
 	leapdata_type(const Duration & leap_end, const bool & inserted, const Duration & time_diff):
@@ -121,24 +116,6 @@ namespace {
 
     return Duration(0, ctatv(mjd_time.getIntegerPart() + jd_minus_mjd_int, mjd_time.getFractionalPart() + jd_minus_mjd_frac));
 
-#if 0
-    // Algorithm taken from function TTtoTDB() in bary.c by Arnold Rots.
-    static double tdbtdt ;
-    static double tdbtdtdot ;
-    static long oldmjd = 0 ;
-
-    if ( mjd_time.getIntegerPart() != oldmjd ) {
-      oldmjd = mjd_time.getIntegerPart();
-      long l = oldmjd + 2400001 ;
-
-      tdbtdt = ctatv (l, 0.0) ;
-      tdbtdtdot = ctatv (l, 0.5) - ctatv (l, -0.5) ;
-    }
-
-    double diff = tdbtdt + (mjd_time.getFractionalPart() - 0.5) * tdbtdtdot;
-
-    return Duration(0, diff);
-#endif
   }
 
   Duration TdbSystem::convertFrom(const TimeSystem & time_system, const Duration & origin, const Duration & time) const {
@@ -210,24 +187,6 @@ namespace {
 
     // Read MJD and number of leap seconds from table.
     std::auto_ptr<const tip::Table> leap_sec_table(tip::IFileSvc::instance().readTable(leap_sec_file_name, "1"));
-#if 0
-    double cumulative_leap_sec = 10.;
-    for (tip::Table::ConstIterator itor = leap_sec_table->begin(); itor != leap_sec_table->end(); ++itor) {
-      // Read the MJD and LEAPSECS from the table.
-      double mjd_dbl = (*itor)["MJD"].get();
-      cumulative_leap_sec += (*itor)["LEAPSECS"].get();
-
-      // Make sure the MJD for the leap second is a whole number of days.
-      long mjd = long(mjd_dbl + .5);
-      if (mjd != mjd_dbl) throw std::logic_error("UtcSystem: leapsec.fits unexpectedly contained a non-integral MJD value");
-
-      m_tai_minus_utc[Duration(mjd, 0.)] = Duration(0, cumulative_leap_sec);
-    }
-
-    // Create a reverse conversion table.
-    for (leaptable_type::iterator itor = m_tai_minus_utc.begin(); itor != m_tai_minus_utc.end(); ++itor)
-      m_utc_minus_tai[(itor->first + itor->second)] = -(itor->second);
-#endif
 
     double time_diff = 10.;
     for (tip::Table::ConstIterator itor = leap_sec_table->begin(); itor != leap_sec_table->end(); ++itor) {
@@ -287,14 +246,11 @@ namespace {
       os << "UtcSystem::computeTaiMinusUtc cannot convert a time before " << m_tai_minus_utc.begin()->first << " MJD (UTC)";
       throw std::runtime_error(os.str());
     }
-#if 0
-    return itor->second;
-#endif
+
     if (itor->second.m_inserted || (itor->second.m_leap_end <= mjd_utc)) {
       return itor->second.m_time_diff;
-    } else {
-      return itor->second.m_time_diff + (itor->second.m_leap_end - mjd_utc);
     }
+    return itor->second.m_time_diff + (itor->second.m_leap_end - mjd_utc);
   }
 
   Duration UtcSystem::computeUtcMinusTai(const Duration & mjd_tai) const {
@@ -308,14 +264,11 @@ namespace {
       os << "UtcSystem::computeUtcMinusTai cannot convert a time before " << m_utc_minus_tai.begin()->first << " MJD (TAI)";
       throw std::runtime_error(os.str());
     }
-#if 0
-    return itor->second;
-#endif
+
     if ((!(itor->second.m_inserted)) || (itor->second.m_leap_end <= mjd_tai)) {
       return itor->second.m_time_diff;
-    } else {
-      return itor->second.m_time_diff + (itor->second.m_leap_end - mjd_tai);
     }
+    return itor->second.m_time_diff + (itor->second.m_leap_end - mjd_tai);
   }
 
 }
