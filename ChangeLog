@@ -1,4 +1,15 @@
 ------------------------------------------------------------
+User: peachey  Wed May  3 12:17:52 PDT 2006
+timeSystem/src
+
+Modified Files:
+	TimeSystem.cxx 
+Log Message:
+Clean up some if 0 blocks, and put final return in TimeSystem::computeUtcMinusTai
+and TimeSystem::computeTaiMinusUtc.
+
+    *
+------------------------------------------------------------
 User: hirayama  Sat Apr 29 09:57:05 PDT 2006
 timeSystem/src/test
 
