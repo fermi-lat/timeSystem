@@ -1,4 +1,15 @@
 ------------------------------------------------------------
+User: peachey  Fri May  5 14:05:18 PDT 2006
+timeSystem/src
+
+Modified Files:
+	TimeSystem.cxx 
+Log Message:
+Make it possible for clients to load a specific leap second file. By
+default the standard leapsec.fits is loaded.
+
+    *
+------------------------------------------------------------
 User: peachey  Fri May  5 12:00:52 PDT 2006
 timeSystem/src/test
 
