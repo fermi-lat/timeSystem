@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: peachey  Fri May  5 14:06:12 PDT 2006
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Test loading specific leap second file and negative leap seconds.
+
+    *
+------------------------------------------------------------
 User: peachey  Fri May  5 14:05:37 PDT 2006
 timeSystem/timeSystem
 
