@@ -1,4 +1,16 @@
 ------------------------------------------------------------
+User: peachey  Fri May  5 11:59:59 PDT 2006
+timeSystem/timeSystem
+
+Modified Files:
+	Duration.h 
+Log Message:
+Improve/rationalize implementation of constructor, and nice implementation
+of new getValue method which allows one to get the duration in any
+desired unit.
+
+    *
+------------------------------------------------------------
 User: peachey  Fri May  5 11:58:23 PDT 2006
 timeSystem/src
 
