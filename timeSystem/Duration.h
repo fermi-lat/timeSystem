@@ -197,7 +197,6 @@ namespace timeSystem {
   };
 
   inline TimeValue Duration::getValue(TimeUnit_e unit) const {
-    // TODO: can this be refactored to remove this first "if"?
     if (unit == Day) {
       double day_frac = m_time.second * DayPerSec();
       return ((m_time.first >= 0 || m_time.second == 0) ? TimeValue(m_time.first, day_frac) :
