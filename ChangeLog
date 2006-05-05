@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: peachey  Fri May  5 14:08:10 PDT 2006
+timeSystem/data
+
+Added Files:
+	bogusls.fits 
+Log Message:
+Test leap second file which includes incorrect negative leap second.
+
+    *
+------------------------------------------------------------
 User: peachey  Fri May  5 14:06:24 PDT 2006
 timeSystem/data
 
