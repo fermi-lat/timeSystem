@@ -33,6 +33,23 @@ namespace timeSystem {
     Day, Hour, Min, Sec
   };
 
+  static const char * unit_name[] = { "days", "hours", "minutes", "seconds" };
+
+  // Unit conversion factor.
+  static const double per[][4] = {
+    { 1.,           DayPerHour(), DayPerMin(),  DayPerSec() },
+    { HourPerDay(), 1.,           HourPerMin(), HourPerSec() },
+    { MinPerDay(),  MinPerHour(), 1.,           MinPerSec() },
+    { SecPerDay(),  SecPerHour(), SecPerMin(),  1. }
+  };
+
+  static const long perlong[][4] = {
+    { 1,                0,                0,               0 },
+    { HourPerDayLong(), 1,                0,               0 },
+    { MinPerDayLong(),  MinPerHourLong(), 1,               0 },
+    { SecPerDayLong(),  SecPerHourLong(), SecPerMinLong(), 1 }
+  };
+
   /** \class Duration
       \brief Low level class used to represent an amount of time together with its nominal unit of measurement. Objects
              of this type represent physical lengths of time only if used together with a time system.
@@ -46,31 +63,15 @@ namespace timeSystem {
       */
       Duration(long day = 0, double sec = 0.): m_time(add(time_type(day, 0.), splitSec(sec))) {}
 
-      // TODO Implement this?
       Duration(TimeValue time_value, TimeUnit_e unit) {
-// START HERE and make this right.
-	if (unit == Day) {
-	  m_time.first = time_value.getIntegerPart();
-	  m_time.second = time_value.getFractionalPart() * SecPerDay();
-	} else if (unit == Hour) {
-	  m_time.first = time_value.getIntegerPart() / 24; // integral ratio
-	  m_time.second = ((time_value.getIntegerPart() % 24) + time_value.getFractionalPart()) * 3600.;
-	} else if (unit == Min) {
-	  m_time.first = time_value.getIntegerPart() / 1440; // integral ratio
-	  m_time.second = ((time_value.getIntegerPart() % 1440) + time_value.getFractionalPart()) * 60.;
-	} else if (unit == Sec) {
-	  m_time.first = time_value.getIntegerPart() / 86400; // integral ratio
-	  m_time.second = (time_value.getIntegerPart() % 86400) + time_value.getFractionalPart();
-	}
+        // Note: in C, unit[perlong][Day] is another way of writing perlong[unit][Day].
+        long day = time_value.getIntegerPart() / unit[perlong][Day];
+        double sec = (time_value.getIntegerPart() % unit[perlong][Day] + time_value.getFractionalPart()) * Sec[perlong][unit];
+        m_time = add(time_type(day, 0.), splitSec(sec));
       }
 
-      // TODO: add a getter instead of, or in addition to, day()/sec() which takes the unit as an
-      // argument and returns a TimeValue in the right units.
-      /// \brief Return the current value of this time in days.
-      TimeValue day() const;
-
-      /// \brief Return the current value of this time in seconds.
-      TimeValue sec() const;
+      /// \brief Return the current value of this time in given unit.
+      TimeValue getValue(TimeUnit_e unit) const;
 
       Duration operator +(const Duration & dur) const;
 
@@ -195,43 +196,49 @@ namespace timeSystem {
       time_type m_time;
   };
 
-  inline TimeValue Duration::day() const {
-    double day_frac = m_time.second * DayPerSec();
-    return ((m_time.first >= 0 || m_time.second == 0) ? TimeValue(m_time.first, day_frac) :
-	    TimeValue(m_time.first + 1, day_frac - 1.));
-  }
+  inline TimeValue Duration::getValue(TimeUnit_e unit) const {
+    // TODO: can this be refactored to remove this first "if"?
+    if (unit == Day) {
+      double day_frac = m_time.second * DayPerSec();
+      return ((m_time.first >= 0 || m_time.second == 0) ? TimeValue(m_time.first, day_frac) :
+	      TimeValue(m_time.first + 1, day_frac - 1.));
+    } else {
+      // Let the sec part have the same sign as the day part.
+      long signed_day = m_time.first;
+      double signed_sec = m_time.second;
+      if (m_time.first < 0) {
+        signed_day += 1;
+        signed_sec -= SecPerDay();
+      }
 
-  inline TimeValue Duration::sec() const {
-    // Let the sec part have the same sign as the day part.
-    long signed_day = m_time.first;
-    double signed_sec = m_time.second;
-    if (m_time.first < 0) {
-      signed_day += 1;
-      signed_sec -= SecPerDay();
+      // Compute time in a given unit.
+      // Note: in C, unit[per][Sec] is another way of writing per[unit][Sec].
+      double signed_time = signed_sec * unit[per][Sec];
+
+      // Compute fractional part as a value in range (-1., 1.).
+      double int_part_dbl;
+      double frac_part = std::modf(signed_time, &int_part_dbl);
+
+      // Compute integer part of return value using modf() result.
+      // Note: in C, unit[per][Day] is another way of writing per[unit][Day].
+      int_part_dbl += signed_day * unit[per][Day];
+      int_part_dbl += (int_part_dbl > 0. ? 0.5 : -0.5);
+      if (int_part_dbl >= std::numeric_limits<long>::max() + 1.) {
+        std::ostringstream os;
+        os.precision(std::numeric_limits<double>::digits10);
+        os << "Duration::getValue: overflow while converting " << int_part_dbl << " " << unit_name[unit] << " to a long";
+        throw std::runtime_error(os.str());
+      } else if (int_part_dbl <= std::numeric_limits<long>::min() - 1.) {
+        std::ostringstream os;
+        os.precision(std::numeric_limits<double>::digits10);
+        os << "Duration::getValue: underflow while converting " << int_part_dbl << " " << unit_name[unit] << " to a long";
+        throw std::runtime_error(os.str());
+      }
+      long int_part = long(int_part_dbl);
+
+      // Return int_part and frac_part.
+      return TimeValue(int_part, frac_part);
     }
-
-    // Compute fractional part of second as a value in range (-1., 1.).
-    double int_part;
-    double sec_frac = std::modf(signed_sec, &int_part);
-
-    // Compute integer part of second using modf() result.
-    double sec = signed_day * SecPerDay() + int_part;
-    double rounding = (sec > 0. ? 0.5 : -0.5);
-    double sec_half_int = sec + rounding;
-    if (sec_half_int >= std::numeric_limits<long>::max() + 1.) {
-      std::ostringstream os;
-      os.precision(std::numeric_limits<double>::digits10);
-      os << "Duration::sec: overflow while converting " << sec_half_int << " seconds to a long";
-      throw std::runtime_error(os.str());
-    } else if (sec_half_int <= std::numeric_limits<long>::min() - 1.) {
-      std::ostringstream os;
-      os.precision(std::numeric_limits<double>::digits10);
-      os << "Duration::sec: underflow while converting " << sec_half_int << " seconds to a long";
-      throw std::runtime_error(os.str());
-    }
-    long sec_int = long(sec_half_int);
-
-    return TimeValue(sec_int, sec_frac);
   }
 
   inline Duration Duration::operator +(const Duration & dur) const {
