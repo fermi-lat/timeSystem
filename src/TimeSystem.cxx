@@ -66,6 +66,8 @@ namespace {
 
       virtual Duration computeTimeDifference(const Duration & mjd1, const Duration & mjd2) const;
 
+      void loadLeapSecTable(const std::string & leap_sec_file_name);
+
       Duration computeTaiMinusUtc(const Duration & mjd_utc) const;
 
       Duration computeUtcMinusTai(const Duration & mjd_tai) const;
@@ -94,9 +96,8 @@ namespace {
       } else if ("TT" == time_system.getName()) {
         return time + Duration(0, TaiMinusTtSec());
       } else if ("UTC" == time_system.getName()) {
-        const TimeSystem & utc(getSystem("UTC"));
-        const UtcSystem * utc_system = dynamic_cast<const UtcSystem *>(&utc);
-        return time + utc_system->computeTaiMinusUtc(origin);
+        const UtcSystem & utc_system = dynamic_cast<const UtcSystem &>(getSystem("UTC"));
+        return time + utc_system.computeTaiMinusUtc(origin);
       } else {
         throw std::logic_error("Conversion from " + time_system.getName() + " to " + getName() + " is not implemented");
       }
@@ -182,12 +183,38 @@ namespace {
 
   UtcSystem::UtcSystem(): TimeSystem("UTC") {
     using namespace st_facilities;
-    // Location of leap sec table.
+    // Location of default leap sec table.
     std::string leap_sec_file_name = Env::appendFileName(Env::getEnv("TIMING_DIR"), "leapsec.fits");
+    // TODO: load leap seconds table on demand rather than automatically here in the constructor.
+    loadLeapSecTable(leap_sec_file_name);
+  }
+
+  Duration UtcSystem::convertFrom(const TimeSystem & time_system, const Duration & origin, const Duration & time) const {
+    if (&time_system != this) {
+      if ("TAI" == time_system.getName()) {
+        return time + computeUtcMinusTai(origin);
+      } else if ("TDB" == time_system.getName() || "TT" == time_system.getName()) {
+        const TimeSystem & tai(getSystem("TAI"));
+        return convertFrom(tai, origin, tai.convertFrom(time_system, origin, time));
+      } else {
+        throw std::logic_error("Conversion from " + time_system.getName() + " to " + getName() + " is not implemented");
+      }
+    }
+    
+    return time;
+  }
+
+  Duration UtcSystem::computeTimeDifference(const Duration & mjd1, const Duration & mjd2) const {
+    return (mjd1 + computeTaiMinusUtc(mjd1)) - (mjd2 + computeTaiMinusUtc(mjd2));
+  }
+
+  void UtcSystem::loadLeapSecTable(const std::string & leap_sec_file_name) {
+    // Erase previously loaded leap seconds definitions.
+    m_tai_minus_utc.clear();
+    m_utc_minus_tai.clear();
 
     // Read MJD and number of leap seconds from table.
     std::auto_ptr<const tip::Table> leap_sec_table(tip::IFileSvc::instance().readTable(leap_sec_file_name, "1"));
-
     double time_diff = 10.;
     for (tip::Table::ConstIterator itor = leap_sec_table->begin(); itor != leap_sec_table->end(); ++itor) {
       // Read the MJD and LEAPSECS from the table.
@@ -216,25 +243,6 @@ namespace {
     }
   }
 
-  Duration UtcSystem::convertFrom(const TimeSystem & time_system, const Duration & origin, const Duration & time) const {
-    if (&time_system != this) {
-      if ("TAI" == time_system.getName()) {
-        return time + computeUtcMinusTai(origin);
-      } else if ("TDB" == time_system.getName() || "TT" == time_system.getName()) {
-        const TimeSystem & tai(getSystem("TAI"));
-        return convertFrom(tai, origin, tai.convertFrom(time_system, origin, time));
-      } else {
-        throw std::logic_error("Conversion from " + time_system.getName() + " to " + getName() + " is not implemented");
-      }
-    }
-    
-    return time;
-  }
-
-  Duration UtcSystem::computeTimeDifference(const Duration & mjd1, const Duration & mjd2) const {
-    return (mjd1 + computeTaiMinusUtc(mjd1)) - (mjd2 + computeTaiMinusUtc(mjd2));
-  }
-
   Duration UtcSystem::computeTaiMinusUtc(const Duration & mjd_utc) const {
     // Start from the end of the leap second table and go backwards, stopping at the first leap time
     // which is <= the given time.
@@ -243,7 +251,7 @@ namespace {
     if (itor == m_tai_minus_utc.rend()) {
       // Fell of the rend (that is the beginning) so this time is too early.
       std::ostringstream os;
-      os << "UtcSystem::computeTaiMinusUtc cannot convert a time before " << m_tai_minus_utc.begin()->first << " MJD (UTC)";
+      os << "UtcSystem::computeTaiMinusUtc cannot compute TAI - UTC for time " << mjd_utc << " MJD (UTC)";
       throw std::runtime_error(os.str());
     }
 
@@ -261,7 +269,7 @@ namespace {
     if (itor == m_utc_minus_tai.rend()) {
       // Fell of the rend (that is the beginning) so this time is too early.
       std::ostringstream os;
-      os << "UtcSystem::computeUtcMinusTai cannot convert a time before " << m_utc_minus_tai.begin()->first << " MJD (TAI)";
+      os << "UtcSystem::computeUtcMinusTai cannot compute UTC - TAI for time " << mjd_tai << " MJD (TAI)";
       throw std::runtime_error(os.str());
     }
 
@@ -276,14 +284,23 @@ namespace {
 namespace timeSystem {
 
   const TimeSystem & TimeSystem::getSystem(const std::string & system_name) {
-    std::string uc_system_name = system_name;
-    for (std::string::iterator itor = uc_system_name.begin(); itor != uc_system_name.end(); ++itor) *itor = toupper(*itor);
-    container_type & container(getContainer());
-
     static TaiSystem s_tai_system;
     static TdbSystem s_tdb_system;
     static TtSystem s_tt_system;
     static UtcSystem s_utc_system;
+
+    return getNonConstSystem(system_name);
+  }
+
+  void TimeSystem::loadLeapSeconds(const std::string & leap_sec_file_name) {
+    UtcSystem & utc_sys(dynamic_cast<UtcSystem &>(getNonConstSystem("UTC")));
+    utc_sys.loadLeapSecTable(leap_sec_file_name);
+  }
+
+  TimeSystem & TimeSystem::getNonConstSystem(const std::string & system_name) {
+    std::string uc_system_name = system_name;
+    for (std::string::iterator itor = uc_system_name.begin(); itor != uc_system_name.end(); ++itor) *itor = toupper(*itor);
+    container_type & container(getContainer());
 
     container_type::iterator itor = container.find(uc_system_name);
     if (container.end() == itor) throw std::runtime_error("TimeSystem::getSystem could not find time system " + system_name);

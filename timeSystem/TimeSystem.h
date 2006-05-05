@@ -25,6 +25,8 @@ namespace timeSystem {
     public:
       static const TimeSystem & getSystem(const std::string & system_name);
 
+      static void loadLeapSeconds(const std::string & leap_sec_file_name);
+
       virtual ~TimeSystem();
 
       virtual Duration convertFrom(const TimeSystem & time_system, const Duration & origin, const Duration & time) const = 0;
@@ -44,6 +46,9 @@ namespace timeSystem {
       TimeSystem(const std::string & system_name);
 
       std::string m_system_name;
+
+    private:
+      static TimeSystem & getNonConstSystem(const std::string & system_name);
   };
 
   st_stream::OStream & operator <<(st_stream::OStream & os, const TimeSystem & sys);
