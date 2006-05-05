@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: peachey  Fri May  5 11:58:23 PDT 2006
+timeSystem/src
+
+Modified Files:
+	TimeSystem.cxx 
+Log Message:
+Use new Duration::getValue method instead of day().
+
+    *
+------------------------------------------------------------
 User: peachey  Fri May  5 11:57:45 PDT 2006
 timeSystem/timeSystem
 
