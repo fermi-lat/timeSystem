@@ -6,6 +6,8 @@
 #include "st_app/StApp.h"
 #include "st_app/StAppFactory.h"
 
+#include "st_facilities/Env.h"
+
 #include "st_stream/st_stream.h"
 #include "st_stream/StreamFormatter.h"
 
@@ -338,9 +340,6 @@ namespace {
     // --- At the beginning of a leap second.
     TestOneConversion("TAI", Duration(leap1, diff1 - 1.0), Duration(0, 0.), "UTC", Duration(0, -diff0));
 
-    // TODO: Write tests for leap second removal.
-    // TODO: Need a bogus leapsed.fits that contains a negative leap second.
-
     // Test that conversion uses table keyed by TAI times, not by UTC.
     TestOneConversion("TAI", Duration(leap1, -2.), Duration(1, 0.), "UTC", Duration(1, -diff1 + 1.));
 
@@ -352,12 +351,56 @@ namespace {
       // That's OK!
     }
 
+    try {
+      TimeSystem::loadLeapSeconds("non-existent-file.fits");
+      err() << "TimeSystem::loadLeapSeconds(\"non-existent-file.fits\") did not fail." << std::endl;
+    } catch (const std::exception &) {
+      // That's OK!
+    }
+
+    // This should work. This is a special file with known test properties.
+    using namespace st_facilities;
+    std::string test_leap = Env::appendFileName(Env::getDataDir("timeSystem"), "bogusls.fits");
+    TimeSystem::loadLeapSeconds(test_leap);
+
     // Test case after last time covered by the current UTC definition.
-    // TODO: How to know the last entry in leapsec.fits?
-    // TODO: Keep leapsec.fits locally for testing purpose?
-    long leap_last = 51179;
-    double diff_last = 32.;
+    long leap_last = 53737;
+    double diff_last = 31.;
     TestOneConversion("UTC", Duration(leap_last, 100.), Duration(0, 0.), "TAI", Duration(0, diff_last));
+
+    // Use three leap seconds for generating tests.
+    diff0 = 30.;
+    diff1 = 29.;
+    // diff2 = 30.;
+
+    // Use times for three leap seconds for generating tests.
+    // leap0 = 50083;
+    leap1 = 50630;
+    leap2 = 51179;
+    delta_leap = leap2 - leap1;
+
+    // Test now the case where leap second is negative (Earth speeds up).
+    // To ensure TAI ->UTC is handled correctly, do some tougher conversions, i.e. times which are close to
+    // times when leap seconds are removed.
+    // --- At an exact time of leap second removal.
+    TestOneConversion("TAI", Duration(leap1, diff1), Duration(0, 0.), "UTC", Duration(0, -diff1));
+    // --- Slightly before a leap second is removed.
+    TestOneConversion("TAI", Duration(leap1, diff1 - .001), Duration(0, 0.), "UTC", Duration(0, -diff0));
+    // --- Same as above, but with a large elapsed time.
+    //     Although the total time (origin + elapsed) is large enough to cross two leap second boundaries, still
+    //     the earliest leap second should be used because the choice of leap second is based only on the origin time.
+    TestOneConversion("TAI", Duration(leap1, diff1 - .001), Duration(delta_leap, .002), "UTC",
+      Duration(delta_leap, -diff0 + .002));
+
+    // To ensure UTC->TAI is handled correctly, do some tougher conversions, i.e. times which are close to
+    // times when leap seconds are removed.
+    // --- At the end of a leap second.
+    TestOneConversion("UTC", Duration(leap1, 0.), Duration(0, 0.), "TAI", Duration(0, diff1));
+    // --- During a leap second.
+    TestOneConversion("UTC", Duration(leap1, -0.3), Duration(0, 0.), "TAI", Duration(0, diff1 + 0.3));
+    // --- At the beginning of a leap second.
+    TestOneConversion("UTC", Duration(leap1, -1.0), Duration(0, 0.), "TAI", Duration(0, diff0));
+
   }
 
   static void CompareAbsoluteTime(const AbsoluteTime & abs_time, const AbsoluteTime & later_time) {
