@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: peachey  Fri May  5 11:57:45 PDT 2006
+timeSystem/timeSystem
+
+Modified Files:
+	TimeConstant.h 
+Log Message:
+Add full complement of conversion factors (Hour to Sec etc).
+
+    *
+------------------------------------------------------------
 User: peachey  Wed May  3 12:17:52 PDT 2006
 timeSystem/src
 
