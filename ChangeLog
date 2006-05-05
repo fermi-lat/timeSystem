@@ -1,4 +1,15 @@
 ------------------------------------------------------------
+User: peachey  Fri May  5 12:00:52 PDT 2006
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Add tests for Duration::getValue and remove usage of Duration::sec() and
+Duration::day().
+
+    *
+------------------------------------------------------------
 User: peachey  Fri May  5 11:59:59 PDT 2006
 timeSystem/timeSystem
 
