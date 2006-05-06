@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: hirayama  Sat May  6 13:10:34 PDT 2006
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Add tests of TimeSystem::computeTimeDifference method. Add tests of Duration operators (comparison and computation). Implement basic tests of ElapsedTime class.
+
+    *
+------------------------------------------------------------
 User: peachey  Fri May  5 14:08:10 PDT 2006
 timeSystem/data
 
