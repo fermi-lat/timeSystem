@@ -98,6 +98,46 @@ namespace {
     double m_tolerance;
   };
 
+  void TestOneComparison(const std::string & comparator, const Duration & dur1, const Duration & dur2,
+    bool expected_result) {
+    bool result;
+    if      ("!=" == comparator) result = (dur1 != dur2);
+    else if ("==" == comparator) result = (dur1 == dur2);
+    else if ("<"  == comparator) result = (dur1 <  dur2);
+    else if ("<=" == comparator) result = (dur1 <= dur2);
+    else if (">"  == comparator) result = (dur1 >  dur2);
+    else if (">=" == comparator) result = (dur1 >= dur2);
+    else return;
+    std::string result_string = (result ? "true" : "false");
+    std::string expected_result_string = (expected_result ? "true" : "false");
+    if (result != expected_result) {
+      err() << "Comparison Duration(" << dur1 << ") " << comparator << " Duration(" << dur2 << ") returned " <<
+        result_string << ", not " << expected_result_string << " as expected." << std::endl;
+    }
+  }
+
+  void TestOneComputation(const std::string & computation, const Duration & dur1, const Duration & dur2,
+    const Duration & expected_result, const Duration & tolerance) {
+    Duration result;
+    if      ("+"  == computation) { result = dur1 + dur2; }
+    else if ("+=" == computation) { result = dur1; result += dur2; }
+    else if ("-"  == computation) { result = dur1 - dur2; }
+    else if ("-=" == computation) { result = dur1; result -= dur2; }
+    else if ("u-" == computation) { result = -dur1; }
+    else return;
+    if (!result.equivalentTo(expected_result, tolerance)) {
+      if ("u-" == computation) {
+	err() << "Operation -Duration(" << dur1 << ")" <<
+	  " returned Duration(" << result << "), not equivalent to Duration(" << expected_result <<
+	  ") with tolerance of " << tolerance << "." << std::endl;
+      } else {
+	err() << "Operator Duration("<< dur1 << ") " << computation << " Duration(" << dur2 << ")" <<
+	  " returned Duration(" << result << "), not equivalent to Duration(" << expected_result <<
+	  ") with tolerance of " << tolerance << "." << std::endl;
+      }
+    }
+  }
+
   void TestDuration() {
     s_os.setMethod("TestDuration");
 
@@ -245,6 +285,38 @@ namespace {
     }
 
     // TODO test all Duration comparison operators and all other math.
+
+    // Test comparison operators: !=, ==, <, <=, >, and >=.
+    std::list<std::pair<Duration, int> > test_input;
+    Duration dur0(234, 345.678);
+    test_input.push_back(std::make_pair(Duration(123, 234.567), -1));
+    test_input.push_back(std::make_pair(Duration(123, 345.678), -1));
+    test_input.push_back(std::make_pair(Duration(123, 456.789), -1));
+    test_input.push_back(std::make_pair(Duration(234, 234.567), -1));
+    test_input.push_back(std::make_pair(Duration(234, 345.678),  0));
+    test_input.push_back(std::make_pair(Duration(234, 456.789), +1));
+    test_input.push_back(std::make_pair(Duration(345, 234.567), +1));
+    test_input.push_back(std::make_pair(Duration(345, 345.678), +1));
+    test_input.push_back(std::make_pair(Duration(345, 456.789), +1));
+
+    for (std::list<std::pair<Duration, int> >::iterator itor = test_input.begin(); itor != test_input.end(); itor++) {
+      TestOneComparison("!=", itor->first, dur0, (itor->second != 0));
+      TestOneComparison("==", itor->first, dur0, (itor->second == 0));
+      TestOneComparison("<",  itor->first, dur0, (itor->second <  0));
+      TestOneComparison("<=", itor->first, dur0, (itor->second <= 0));
+      TestOneComparison(">",  itor->first, dur0, (itor->second >  0));
+      TestOneComparison(">=", itor->first, dur0, (itor->second >= 0));
+    }
+
+    // Test computation operators: +, +=, -, -=, and unary .-
+    Duration dur1(321, 654.321);
+    Duration dur2(123, 123.456);
+    Duration tolerance(0, 1.e-9); // 1 nanosecond.
+    TestOneComputation("+",  dur1, dur2, Duration( 444,   777.777), tolerance);
+    TestOneComputation("+=", dur1, dur2, Duration( 444,   777.777), tolerance);
+    TestOneComputation("-",  dur1, dur2, Duration( 198,   530.865), tolerance);
+    TestOneComputation("-=", dur1, dur2, Duration( 198,   530.865), tolerance);
+    TestOneComputation("u-", dur1, dur2, Duration(-322, 85745.679), tolerance);
   }
 
   void TestOneConversion(const std::string & src_name, const Duration & src_origin, const Duration & src,
@@ -401,6 +473,39 @@ namespace {
     // --- At the beginning of a leap second.
     TestOneConversion("UTC", Duration(leap1, -1.0), Duration(0, 0.), "TAI", Duration(0, diff0));
 
+    // Test computeTimeDifference method.
+    std::list<std::pair<Duration, double> > test_input;
+    test_input.push_back(std::make_pair(Duration(51910, 100.),  0.)); // middle of nowhere
+    test_input.push_back(std::make_pair(Duration(51178, 86390.), +1.)); // leap second insertion
+    test_input.push_back(std::make_pair(Duration(50629, 86390.), -1.)); // leap second removal
+    test_input.push_back(std::make_pair(Duration(50629, 86399.3), -.7)); // non-existing time in UTC
+
+    Duration tolerance(0, 1.e-9); // 1 nanosecond.
+
+    for (std::list<std::pair<Duration, double> >::iterator itor = test_input.begin(); itor != test_input.end();
+      itor++) {
+      Duration mjd1(itor->first + Duration(0, 20.));
+      Duration mjd2(itor->first);
+
+      std::map<std::string, Duration> expected_diff;
+      expected_diff["TAI"] = Duration(0, 20.);
+      expected_diff["TDB"] = Duration(0, 20.);
+      expected_diff["TT"]  = Duration(0, 20.);
+      expected_diff["UTC"] = Duration(0, 20. + itor->second);
+
+      for (std::map<std::string, Duration>::iterator itor = expected_diff.begin(); itor != expected_diff.end();
+        itor++) {
+	std::string time_system_name = itor->first;
+	const TimeSystem & time_system(TimeSystem::getSystem(time_system_name));
+	Duration time_diff = time_system.computeTimeDifference(mjd1, mjd2);
+	if (!time_diff.equivalentTo(expected_diff[time_system_name], tolerance)) {
+	  err() << "computeTimeDifference(mjd1, mjd2) of " << time_system_name << " returned " << time_diff <<
+	    " for mjd1 = " << mjd1 << " and mjd2 = " << mjd2 << ", not equivalent to the expected result, " <<
+	    expected_diff[time_system_name] << ", with tolerance of " << tolerance << "." << std::endl;
+	}
+      }
+    }
+
   }
 
   static void CompareAbsoluteTime(const AbsoluteTime & abs_time, const AbsoluteTime & later_time) {
@@ -528,11 +633,27 @@ namespace {
     s_os.setMethod("TestElapsedTime");
 
     // TODO Check the contents somehow?
-    ElapsedTime elapsed("TDB", Duration(0, 1000.));
+    Duration expected_dur(0, 1000.);
+    Duration tolerance(0, 1.e-9); // 1 ns.
+    ElapsedTime elapsed("TDB", expected_dur);
+    Duration returned_dur = elapsed.getTime();
+    if (!returned_dur.equivalentTo(expected_dur, tolerance)) {
+      err() << "After ElapsedTime elapsed(\"TDB\", " << expected_dur << "), its getTime() returned " << returned_dur <<
+        ", not equivalent to " << expected_dur << " with tolerance of " << tolerance << "." << std::endl;
+    }
 
     // TODO Finish this test of unary minus by verifying equality?
     ElapsedTime negative_elapsed = -elapsed;
+#if 0
     ElapsedTime negative_elapsed_expected("TDB", Duration(0, -1000.));
+#endif
+    expected_dur = Duration(0, -1000.);
+    returned_dur = negative_elapsed.getTime();
+    if (!returned_dur.equivalentTo(expected_dur, tolerance)) {
+      err() << "After ElapsedTime negative_elapsed = -elapsed, where elapsed = " << elapsed <<
+        ", its getTime() returned " << returned_dur << ", not equivalent to " << expected_dur <<
+        " with tolerance of " << tolerance << "." << std::endl;
+    }
   }
 
   void TestTimeInterval() {
