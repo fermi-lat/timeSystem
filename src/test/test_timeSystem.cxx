@@ -174,9 +174,13 @@ namespace {
       TimeValue time_value = Duration(itor->m_day, itor->m_sec).getValue(itor->m_unit);
       if (!(itor->m_int_part == time_value.getIntegerPart() && 
             std::fabs(itor->m_frac_part - time_value.getFractionalPart()) < itor->m_tolerance)) {
+#if 0
         err() << "Duration(" << itor->m_day << ", " << itor->m_sec << ").getValue(" << unit_name[itor->m_unit] << ") returned (" <<
           time_value.getIntegerPart() << ", " << time_value.getFractionalPart() << "), not (" << itor->m_int_part << 
           ", " << itor->m_frac_part << ") as expected." << std::endl;
+#endif
+        err() << "Duration(" << itor->m_day << ", " << itor->m_sec << ").getValue(" << unit_name[itor->m_unit] << ") returned " <<
+          time_value << ", not " << TimeValue(itor->m_int_part, itor->m_frac_part) << " as expected." << std::endl;
       }
     }
 

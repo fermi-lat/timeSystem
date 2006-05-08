@@ -56,13 +56,35 @@ namespace timeSystem {
 
       // TODO: implement these.  Use a template?
       //void write(std::ostream & os) const;
-      //void write(st_stream::OStream & os) const;
+
+      void write(st_stream::OStream & os) const {
+
+        if (m_int_part == 0) {
+          os << m_frac_part;
+        } else {
+          os << m_int_part;
+
+          std::ostringstream oss;
+          oss.precision(os.precision());
+          oss.setf(std::ios::fixed);
+          oss << m_frac_part;
+
+          std::string frac_part_string = oss.str();
+          std::string::iterator itor = frac_part_string.begin();
+          for (; (itor != frac_part_string.end()) && (*itor != '.'); ++itor);
+          for (; itor != frac_part_string.end(); ++itor) { os << *itor; }
+        }
+      }
 
     private:
       long m_int_part;
       double m_frac_part;
   };
 
+  inline st_stream::OStream & operator <<(st_stream::OStream & os, const TimeValue & tv) {
+    tv.write(os);
+    return os;
+  }
 }
 
 #endif
