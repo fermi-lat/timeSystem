@@ -66,7 +66,7 @@ namespace {
 
       virtual Duration computeTimeDifference(const Duration & mjd1, const Duration & mjd2) const;
 
-      void loadLeapSecTable(const std::string & leap_sec_file_name);
+      void loadLeapSecTable(const std::string & leap_sec_file_name, bool force_load);
 
       Duration computeTaiMinusUtc(const Duration & mjd_utc) const;
 
@@ -181,13 +181,7 @@ namespace {
     return mjd1 - mjd2;
   }
 
-  UtcSystem::UtcSystem(): TimeSystem("UTC") {
-    using namespace st_facilities;
-    // Location of default leap sec table.
-    std::string leap_sec_file_name = Env::appendFileName(Env::getEnv("TIMING_DIR"), "leapsec.fits");
-    // TODO: load leap seconds table on demand rather than automatically here in the constructor.
-    loadLeapSecTable(leap_sec_file_name);
-  }
+  UtcSystem::UtcSystem(): TimeSystem("UTC") {}
 
   Duration UtcSystem::convertFrom(const TimeSystem & time_system, const Duration & origin, const Duration & time) const {
     if (&time_system != this) {
@@ -208,7 +202,10 @@ namespace {
     return (mjd1 + computeTaiMinusUtc(mjd1)) - (mjd2 + computeTaiMinusUtc(mjd2));
   }
 
-  void UtcSystem::loadLeapSecTable(const std::string & leap_sec_file_name) {
+  void UtcSystem::loadLeapSecTable(const std::string & leap_sec_file_name, bool force_load) {
+    // Prevent loading unless it hasn't been done or caller demands it.
+    if (!(force_load || m_tai_minus_utc.empty() || m_utc_minus_tai.empty())) return;
+
     // Erase previously loaded leap seconds definitions.
     m_tai_minus_utc.clear();
     m_utc_minus_tai.clear();
@@ -289,12 +286,19 @@ namespace timeSystem {
     static TtSystem s_tt_system;
     static UtcSystem s_utc_system;
 
-    return getNonConstSystem(system_name);
+    TimeSystem & system(getNonConstSystem(system_name));
+    if (system.getName() == "UTC") loadLeapSeconds("", false);
+    return system;
   }
 
-  void TimeSystem::loadLeapSeconds(const std::string & leap_sec_file_name) {
+  void TimeSystem::loadLeapSeconds(std::string leap_sec_file_name, bool force_load) {
+    if (leap_sec_file_name.empty()) {
+      using namespace st_facilities;
+      // Location of default leap sec table.
+      leap_sec_file_name = Env::appendFileName(Env::getEnv("TIMING_DIR"), "leapsec.fits");
+    }
     UtcSystem & utc_sys(dynamic_cast<UtcSystem &>(getNonConstSystem("UTC")));
-    utc_sys.loadLeapSecTable(leap_sec_file_name);
+    utc_sys.loadLeapSecTable(leap_sec_file_name, force_load);
   }
 
   TimeSystem & TimeSystem::getNonConstSystem(const std::string & system_name) {
