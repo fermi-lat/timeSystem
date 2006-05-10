@@ -1,5 +1,17 @@
 ------------------------------------------------------------
 User: peachey  Wed May 10 12:23:55 PDT 2006
+timeSystem/src
+
+Modified Files:
+	TimeSystem.cxx 
+Log Message:
+Load leap seconds table the first time a client requests access to the
+UtcSystem object. Add flag to load methods to allow client choice of whether
+to force the load or load only if not already loaded.
+
+    *
+------------------------------------------------------------
+User: peachey  Wed May 10 12:23:55 PDT 2006
 timeSystem/timeSystem
 
 Modified Files:
