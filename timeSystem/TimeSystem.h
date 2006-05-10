@@ -25,7 +25,7 @@ namespace timeSystem {
     public:
       static const TimeSystem & getSystem(const std::string & system_name);
 
-      static void loadLeapSeconds(const std::string & leap_sec_file_name);
+      static void loadLeapSeconds(std::string leap_sec_file_name = "", bool force_load = true);
 
       virtual ~TimeSystem();
 
