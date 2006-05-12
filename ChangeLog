@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: hirayama  Fri May 12 14:36:22 PDT 2006
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Comment out tests of TimeFormat class and include directive for TimeFormat.h.
+
+    *
+------------------------------------------------------------
 User: peachey  Fri May 12 13:58:32 PDT 2006
 timeSystem/timeSystem
 
