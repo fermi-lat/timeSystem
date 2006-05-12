@@ -15,8 +15,6 @@
 
 namespace timeSystem {
 
-  class AbsoluteTime;
-
   /** \class TimeSystem
       \brief Class to convert absolute times and time intervals between different time systems, i.e. TDB (barycentric
              dynamical time), TT (terrestrial time), UTC (coordinated universal time), etc.
