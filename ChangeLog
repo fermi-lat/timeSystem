@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: peachey  Fri May 12 12:25:47 PDT 2006
+timeSystem/timeSystem
+
+Modified Files:
+	TimeSystem.h 
+Log Message:
+Remove unneeded forward declaration of AbsoluteTime.
+
+    *
+------------------------------------------------------------
 User: peachey  Fri May 12 12:24:46 PDT 2006
 timeSystem/timeSystem
 
