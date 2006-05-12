@@ -1,4 +1,15 @@
 ------------------------------------------------------------
+User: peachey  Fri May 12 12:32:04 PDT 2006
+timeSystem/timeSystem
+
+Modified Files:
+	TimeValue.h 
+Log Message:
+Change internal representation of split time to use a pair instead of
+separate long, double.
+
+    *
+------------------------------------------------------------
 User: peachey  Fri May 12 12:26:38 PDT 2006
 timeSystem/timeSystem
 
