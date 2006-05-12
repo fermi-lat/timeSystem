@@ -1,4 +1,15 @@
 ------------------------------------------------------------
+User: peachey  Fri May 12 12:26:38 PDT 2006
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Change signature of TimeValue constructor to accept a pair<long, double>
+instead of long, double.
+
+    *
+------------------------------------------------------------
 User: peachey  Fri May 12 12:25:47 PDT 2006
 timeSystem/timeSystem
 
