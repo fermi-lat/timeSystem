@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: hirayama  Fri May 12 14:37:47 PDT 2006
+timeSystem/timeSystem
+
+Modified Files:
+	TimeValue.h 
+Log Message:
+Add writing of the cary-over part to TimeValue::write method.
+
+    *
+------------------------------------------------------------
 User: hirayama  Fri May 12 14:36:22 PDT 2006
 timeSystem/src/test
 
