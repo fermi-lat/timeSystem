@@ -1,5 +1,16 @@
 ------------------------------------------------------------
 User: peachey  Fri May 12 12:26:38 PDT 2006
+timeSystem/timeSystem
+
+Modified Files:
+	Duration.h 
+Log Message:
+Change signature of TimeValue constructor to accept a pair<long, double>
+instead of long, double.
+
+    *
+------------------------------------------------------------
+User: peachey  Fri May 12 12:26:38 PDT 2006
 timeSystem/src/test
 
 Modified Files:
