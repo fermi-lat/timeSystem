@@ -128,7 +128,12 @@ namespace timeSystem {
       //void write(std::ostream & os) const;
 
       void write(st_stream::OStream & os) const {
+        // write carry over part.
+        for (std::vector<long>::const_reverse_iterator itor = m_carry_over.rbegin(); itor != m_carry_over.rend(); itor++) {
+          os << *itor << ",";
+        }
 
+        // write split value part.
         if (m_split_value.first == 0) {
           os << m_split_value.second;
         } else {
