@@ -1,5 +1,15 @@
 ------------------------------------------------------------
 User: peachey  Fri May 12 13:58:32 PDT 2006
+timeSystem/timeSystem
+
+Modified Files:
+	TimeValue.h 
+Log Message:
+Refactor TimeValue to accept up to 6 carry over time values.
+
+    *
+------------------------------------------------------------
+User: peachey  Fri May 12 13:58:32 PDT 2006
 timeSystem/src/test
 
 Modified Files:
