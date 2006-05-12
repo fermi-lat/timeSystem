@@ -14,6 +14,7 @@
 #include "timeSystem/AbsoluteTime.h"
 #include "timeSystem/ElapsedTime.h"
 #include "timeSystem/Duration.h"
+#include "timeSystem/TimeFormat.h"
 #include "timeSystem/TimeInterval.h"
 #include "timeSystem/TimeSystem.h"
 #include "timeSystem/TimeValue.h"
@@ -40,6 +41,8 @@ namespace {
   void TestTimeInterval();
 
   void TestTimeValue();
+
+  void TestTimeFormat();
 }
 
 using namespace st_app;
@@ -75,6 +78,9 @@ void TestTimeSystemApp::run() {
 
   // Test TimeValue class.
   TestTimeValue();
+
+  // Test TimeFormat class.
+  TestTimeFormat();
 
   // Interpret failure flag to report error.
   if (s_failed) throw std::runtime_error("Unit test failure");
@@ -180,7 +186,8 @@ namespace {
           ", " << itor->m_frac_part << ") as expected." << std::endl;
 #endif
         err() << "Duration(" << itor->m_day << ", " << itor->m_sec << ").getValue(" << unit_name[itor->m_unit] << ") returned " <<
-          time_value << ", not " << TimeValue(itor->m_int_part, itor->m_frac_part) << " as expected." << std::endl;
+          time_value << ", not " << TimeValue(TimeValue::split_type(itor->m_int_part, itor->m_frac_part)) << " as expected." <<
+          std::endl;
       }
     }
 
@@ -190,34 +197,34 @@ namespace {
     TimeUnit_e time_unit = Day;
     Duration expected_result(int_part, frac_part*86400.);
     Duration dur_tol(0, 1.e-9);
-    if (!Duration(TimeValue(int_part, frac_part), time_unit).equivalentTo(expected_result, dur_tol)) {
-      err() << "Duration(TimeValue(" << int_part << ", " << frac_part << "), " << unit_name[time_unit] << 
+    if (!Duration(TimeValue(TimeValue::split_type(int_part, frac_part)), time_unit).equivalentTo(expected_result, dur_tol)) {
+      err() << "Duration(TimeValue(TimeValue::split_type(" << int_part << ", " << frac_part << ")), " << unit_name[time_unit] << 
         ").equivalentTo returned false for " << expected_result << " with tolerance of " << dur_tol <<
-        ", not true as expected." << Duration(TimeValue(int_part, frac_part), time_unit) << std::endl;
+        ", not true as expected." << Duration(TimeValue(TimeValue::split_type(int_part, frac_part)), time_unit) << std::endl;
     }
     time_unit = Hour;
     expected_result = Duration(int_part/24, (int_part%24 + frac_part) * 3600.);
     dur_tol = Duration(0, 1.e-9);
-    if (!Duration(TimeValue(int_part, frac_part), time_unit).equivalentTo(expected_result, dur_tol)) {
-      err() << "Duration(TimeValue(" << int_part << ", " << frac_part << "), " << unit_name[time_unit] << 
+    if (!Duration(TimeValue(TimeValue::split_type(int_part, frac_part)), time_unit).equivalentTo(expected_result, dur_tol)) {
+      err() << "Duration(TimeValue(TimeValue::split_type(" << int_part << ", " << frac_part << ")), " << unit_name[time_unit] << 
         ").equivalentTo returned false for " << expected_result << " with tolerance of " << dur_tol <<
-        ", not true as expected." << Duration(TimeValue(int_part, frac_part), time_unit) << std::endl;
+        ", not true as expected." << Duration(TimeValue(TimeValue::split_type(int_part, frac_part)), time_unit) << std::endl;
     }
     time_unit = Min;
     expected_result = Duration(int_part/1440, (int_part%1440 + frac_part) * 60.);
     dur_tol = Duration(0, 1.e-9);
-    if (!Duration(TimeValue(int_part, frac_part), time_unit).equivalentTo(expected_result, dur_tol)) {
-      err() << "Duration(TimeValue(" << int_part << ", " << frac_part << "), " << unit_name[time_unit] << 
+    if (!Duration(TimeValue(TimeValue::split_type(int_part, frac_part)), time_unit).equivalentTo(expected_result, dur_tol)) {
+      err() << "Duration(TimeValue(TimeValue::split_type(" << int_part << ", " << frac_part << ")), " << unit_name[time_unit] << 
         ").equivalentTo returned false for " << expected_result << " with tolerance of " << dur_tol <<
-        ", not true as expected." << Duration(TimeValue(int_part, frac_part), time_unit) << std::endl;
+        ", not true as expected." << Duration(TimeValue(TimeValue::split_type(int_part, frac_part)), time_unit) << std::endl;
     }
     time_unit = Sec;
     expected_result = Duration(int_part/86400, int_part%86400 + frac_part);
     dur_tol = Duration(0, 1.e-9);
-    if (!Duration(TimeValue(int_part, frac_part), time_unit).equivalentTo(expected_result, dur_tol)) {
-      err() << "Duration(TimeValue(" << int_part << ", " << frac_part << "), " << unit_name[time_unit] << 
+    if (!Duration(TimeValue(TimeValue::split_type(int_part, frac_part)), time_unit).equivalentTo(expected_result, dur_tol)) {
+      err() << "Duration(TimeValue(TimeValue::split_type(" << int_part << ", " << frac_part << ")), " << unit_name[time_unit] << 
         ").equivalentTo returned false for " << expected_result << " with tolerance of " << dur_tol <<
-        ", not true as expected." << Duration(TimeValue(int_part, frac_part), time_unit) << std::endl;
+        ", not true as expected." << Duration(TimeValue(TimeValue::split_type(int_part, frac_part)), time_unit) << std::endl;
     }
 
     // Tests of equality and inequality operators.
@@ -702,26 +709,36 @@ namespace {
     double frac_part = .56789567895678956789;
 
     // Test construction from separate int and frac parts.
-    TimeValue tv(int_part, frac_part);
+    TimeValue tv(TimeValue::split_type(int_part, frac_part));
 
     std::ostringstream os;
     os.precision(s_os.err().precision());
-    os << "After TimeValue tv(" << int_part << ", " << frac_part << ")";
+    os << "After TimeValue tv(TimeValue::split_type(" << int_part << ", " << frac_part << "))";
     CompareTimeValue(os.str(), tv, int_part, frac_part);
 
     // Make sure this value is rounded off in the expected way when converted to a mere double.
+#if 0
     double expected_dval = 100.567895678957;
     double dval = tv.reduceToDouble();
     if (10. * std::numeric_limits<double>::epsilon() < std::fabs((dval - expected_dval) / expected_dval)) {
       err() << os.str() << ", tv.reduceToDouble() returned " << dval << ", not " << expected_dval << " as expected." << std::endl;
     }
+#endif
 
     // Test construction from a double, making sure the separate int and fractional parts are as expected.
-    dval = 56789.56789567895678956789;
+    double dval = 56789.56789567895678956789;
     tv = TimeValue(dval);
     os.str("");
     os << "After tv = TimeValue(" << dval << ")";
     CompareTimeValue(os.str(), tv, 56789, .567895678900000);
+  }
+
+  void TestTimeFormat() {
+    s_os.setMethod("TestTimeFormat");
+    
+    // Create a mission elapsed time, archetypally a "GLAST TIME".
+    MetFormat met_format(51910, 64.814 / 86400.);
+
   }
 
 }

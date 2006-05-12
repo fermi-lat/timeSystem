@@ -11,6 +11,7 @@
 #include <limits>
 #include <sstream>
 #include <stdexcept>
+#include <utility>
 
 #include "st_stream/Stream.h"
 
@@ -18,7 +19,9 @@ namespace timeSystem {
 
   class TimeValue {
     public:
-      TimeValue(long int_part = 0, double frac_part = 0.): m_int_part(int_part), m_frac_part(frac_part) {};
+      typedef std::pair<long, double> split_type;
+
+      TimeValue(const split_type & split_time): m_int_part(split_time.first), m_frac_part(split_time.second) {};
 
       TimeValue(double value) {
 	// split value into integer part and fractional part.
