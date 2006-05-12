@@ -199,8 +199,8 @@ namespace timeSystem {
   inline TimeValue Duration::getValue(TimeUnit_e unit) const {
     if (unit == Day) {
       double day_frac = m_time.second * DayPerSec();
-      return ((m_time.first >= 0 || m_time.second == 0) ? TimeValue(m_time.first, day_frac) :
-	      TimeValue(m_time.first + 1, day_frac - 1.));
+      return ((m_time.first >= 0 || m_time.second == 0) ? TimeValue(TimeValue::split_type(m_time.first, day_frac)) :
+	      TimeValue(TimeValue::split_type(m_time.first + 1, day_frac - 1.)));
     } else {
       // Let the sec part have the same sign as the day part.
       long signed_day = m_time.first;
@@ -236,7 +236,7 @@ namespace timeSystem {
       long int_part = long(int_part_dbl);
 
       // Return int_part and frac_part.
-      return TimeValue(int_part, frac_part);
+      return TimeValue(TimeValue::split_type(int_part, frac_part));
     }
   }
 
