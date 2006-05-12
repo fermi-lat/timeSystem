@@ -14,7 +14,9 @@
 #include "timeSystem/AbsoluteTime.h"
 #include "timeSystem/ElapsedTime.h"
 #include "timeSystem/Duration.h"
+#if 0
 #include "timeSystem/TimeFormat.h"
+#endif
 #include "timeSystem/TimeInterval.h"
 #include "timeSystem/TimeSystem.h"
 #include "timeSystem/TimeValue.h"
@@ -817,10 +819,10 @@ namespace {
 
   void TestTimeFormat() {
     s_os.setMethod("TestTimeFormat");
-
+#if 0
     // Create a mission elapsed time, archetypally a "GLAST TIME".
     MetFormat met_format(51910, 64.814 / 86400.);
-
+#endif
   }
 
 }
