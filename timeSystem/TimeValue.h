@@ -129,7 +129,7 @@ namespace timeSystem {
 
       void write(st_stream::OStream & os) const {
         // write carry over part.
-        for (std::vector<long>::const_reverse_iterator itor = m_carry_over.rbegin(); itor != m_carry_over.rend(); itor++) {
+        for (carry_type::const_reverse_iterator itor = m_carry_over.rbegin(); itor != m_carry_over.rend(); itor++) {
           os << *itor << ",";
         }
 
