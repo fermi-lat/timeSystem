@@ -25,93 +25,57 @@ namespace timeSystem {
 
       TimeValue(const split_type & split_value): m_split_value(split_value), m_carry_over() {}
 
-      TimeValue(long carry0, const split_type & split_value): m_split_value(split_value), m_carry_over(1) {
-        m_carry_over[0] = carry0;
-      }
+      TimeValue(long carry0, const split_type & split_value): m_split_value(split_value), m_carry_over(pack(carry0)) {}
 
-      TimeValue(long carry1, long carry0, const split_type & split_value): m_split_value(split_value), m_carry_over(2) {
-        m_carry_over[0] = carry0;
-        m_carry_over[1] = carry1;
-      }
+      TimeValue(long carry1, long carry0, const split_type & split_value): m_split_value(split_value), m_carry_over(pack(carry1, carry0)) {}
 
       TimeValue(long carry2, long carry1, long carry0, const split_type & split_value): m_split_value(split_value),
-        m_carry_over(3) {
-        m_carry_over[0] = carry0;
-        m_carry_over[1] = carry1;
-        m_carry_over[2] = carry2;
-      }
+        m_carry_over(pack(carry2, carry1, carry0)) {}
 
       TimeValue(long carry3, long carry2, long carry1, long carry0, const split_type & split_value): m_split_value(split_value),
-        m_carry_over(4) {
-        m_carry_over[0] = carry0;
-        m_carry_over[1] = carry1;
-        m_carry_over[2] = carry2;
-        m_carry_over[3] = carry3;
-      }
+        m_carry_over(pack(carry3, carry2, carry1, carry0)) {}
 
       TimeValue(long carry4, long carry3, long carry2, long carry1, long carry0, const split_type & split_value):
-        m_split_value(split_value), m_carry_over(5) {
-        m_carry_over[0] = carry0;
-        m_carry_over[1] = carry1;
-        m_carry_over[2] = carry2;
-        m_carry_over[3] = carry3;
-        m_carry_over[4] = carry4;
-      }
+        m_split_value(split_value), m_carry_over(pack(carry4, carry3, carry2, carry1, carry0)) {}
 
       TimeValue(long carry5, long carry4, long carry3, long carry2, long carry1, long carry0, const split_type & split_value):
-        m_split_value(split_value), m_carry_over(6) {
-        m_carry_over[0] = carry0;
-        m_carry_over[1] = carry1;
-        m_carry_over[2] = carry2;
-        m_carry_over[3] = carry3;
-        m_carry_over[4] = carry4;
-        m_carry_over[5] = carry5;
-      }
+        m_split_value(split_value), m_carry_over(pack(carry5, carry4, carry3, carry2, carry1, carry0)) {}
 
       TimeValue(double value): m_split_value(split(value)), m_carry_over() {}
 
-      TimeValue(long carry0, const double & value): m_split_value(split(value)), m_carry_over(1) {
-        m_carry_over[0] = carry0;
-      }
+      TimeValue(long carry0, const double & value): m_split_value(split(value)), m_carry_over(pack(carry0)) {}
 
-      TimeValue(long carry1, long carry0, const double & value): m_split_value(split(value)), m_carry_over(2) {
-        m_carry_over[0] = carry0;
-        m_carry_over[1] = carry1;
-      }
+      TimeValue(long carry1, long carry0, const double & value): m_split_value(split(value)), m_carry_over(pack(carry1, carry0)) {}
 
       TimeValue(long carry2, long carry1, long carry0, const double & value): m_split_value(split(value)),
-        m_carry_over(3) {
-        m_carry_over[0] = carry0;
-        m_carry_over[1] = carry1;
-        m_carry_over[2] = carry2;
-      }
+        m_carry_over(pack(carry2, carry1, carry0)) {}
 
       TimeValue(long carry3, long carry2, long carry1, long carry0, const double & value): m_split_value(split(value)),
-        m_carry_over(4) {
-        m_carry_over[0] = carry0;
-        m_carry_over[1] = carry1;
-        m_carry_over[2] = carry2;
-        m_carry_over[3] = carry3;
-      }
+        m_carry_over(pack(carry3, carry2, carry1, carry0)) {}
 
       TimeValue(long carry4, long carry3, long carry2, long carry1, long carry0, const double & value):
-        m_split_value(split(value)), m_carry_over(5) {
-        m_carry_over[0] = carry0;
-        m_carry_over[1] = carry1;
-        m_carry_over[2] = carry2;
-        m_carry_over[3] = carry3;
-        m_carry_over[4] = carry4;
-      }
+        m_split_value(split(value)), m_carry_over(pack(carry4, carry3, carry2, carry1, carry0)) {}
 
       TimeValue(long carry5, long carry4, long carry3, long carry2, long carry1, long carry0, const double & value):
-        m_split_value(split(value)), m_carry_over(6) {
-        m_carry_over[0] = carry0;
-        m_carry_over[1] = carry1;
-        m_carry_over[2] = carry2;
-        m_carry_over[3] = carry3;
-        m_carry_over[4] = carry4;
-        m_carry_over[5] = carry5;
-      }
+        m_split_value(split(value)), m_carry_over(pack(carry5, carry4, carry3, carry2, carry1, carry0)) {}
+
+      TimeValue(std::string value): m_split_value(parse(value)), m_carry_over() {}
+
+      TimeValue(long carry0, const std::string & value): m_split_value(parse(value)), m_carry_over(pack(carry0)) {}
+
+      TimeValue(long carry1, long carry0, const std::string & value): m_split_value(parse(value)), m_carry_over(pack(carry1, carry0)) {}
+
+      TimeValue(long carry2, long carry1, long carry0, const std::string & value): m_split_value(parse(value)),
+        m_carry_over(pack(carry2, carry1, carry0)) {}
+
+      TimeValue(long carry3, long carry2, long carry1, long carry0, const std::string & value): m_split_value(parse(value)),
+        m_carry_over(pack(carry3, carry2, carry1, carry0)) {}
+
+      TimeValue(long carry4, long carry3, long carry2, long carry1, long carry0, const std::string & value):
+        m_split_value(parse(value)), m_carry_over(pack(carry4, carry3, carry2, carry1, carry0)) {}
+
+      TimeValue(long carry5, long carry4, long carry3, long carry2, long carry1, long carry0, const std::string & value):
+        m_split_value(parse(value)), m_carry_over(pack(carry5, carry4, carry3, carry2, carry1, carry0)) {}
 
       long getIntegerPart(carry_type::size_type idx = 0) const {
         long result = 0;
@@ -181,6 +145,105 @@ namespace timeSystem {
         split_value.second = std::floor(split_value.second * factor) / factor;
 
         return split_value;
+      }
+
+      split_type parse(std::string value) {
+        // Read number into temporary double variable.
+        double value_dbl;
+        { // TODO: Do we need to enclose below?
+          std::istringstream iss(value);
+          iss >> value_dbl;
+        }
+
+        // Compute integer part.
+        if (value_dbl >= std::numeric_limits<long>::max() + 1.) {
+	  std::ostringstream os;
+	  os.precision(std::numeric_limits<double>::digits10);
+	  os << "TimeValue::TimeValue: overflow while converting " << value_dbl << " to a long";
+	  throw std::runtime_error(os.str());
+        } else if (value_dbl <= std::numeric_limits<long>::min() - 1.) {
+	  std::ostringstream os;
+	  os.precision(std::numeric_limits<double>::digits10);
+	  os << "TimeValue::TimeValue: underflow while converting " << value_dbl << " to a long";
+	  throw std::runtime_error(os.str());
+        }
+        long int_part = long(value_dbl);
+
+        // Compute number of digits of integer part.
+        int num_digit = (int_part == 0 ? 0 : int(std::floor(std::log10(std::fabs(double(int_part)))) + 0.5) + 1);
+
+        // Skip leading zeros.
+        std::string::iterator itor = value.begin();
+        for (; (itor != value.end()) && ((*itor == '0') || !isdigit(*itor)); itor++) {}
+
+        // Erase numbers in integer part.
+        for (int ii_digit = 0; (itor != value.end()) && (ii_digit < num_digit); itor++) {
+          if (isdigit(*itor)) {
+            *itor = '0';
+            ii_digit++;
+          }
+        }
+
+        // Read in fractional part.
+        double frac_part;
+        { // TODO: Do we need to enclose below?
+          std::istringstream iss(value);
+          iss >> frac_part;
+        }
+
+        // Return the pair.
+        return split_type(int_part, frac_part);
+      }
+
+      carry_type pack(long carry0) {
+        carry_type carry_over(1);
+        carry_over[0] = carry0;
+        return carry_over;
+      }
+
+      carry_type pack(long carry1, long carry0) {
+        carry_type carry_over(2);
+        carry_over[0] = carry0;
+        carry_over[1] = carry1;
+        return carry_over;
+      }
+
+      carry_type pack(long carry2, long carry1, long carry0) {
+        carry_type carry_over(3);
+        carry_over[0] = carry0;
+        carry_over[1] = carry1;
+        carry_over[2] = carry2;
+        return carry_over;
+      }
+
+      carry_type pack(long carry3, long carry2, long carry1, long carry0) {
+        carry_type carry_over(4);
+        carry_over[0] = carry0;
+        carry_over[1] = carry1;
+        carry_over[2] = carry2;
+        carry_over[3] = carry3;
+        return carry_over;
+      }
+
+      carry_type pack(long carry4, long carry3, long carry2, long carry1, long carry0) {
+        carry_type carry_over(5);
+        carry_over[0] = carry0;
+        carry_over[1] = carry1;
+        carry_over[2] = carry2;
+        carry_over[3] = carry3;
+        carry_over[4] = carry4;
+        return carry_over;
+      }
+
+      carry_type pack(long carry5, long carry4, long carry3, long carry2, long carry1, long carry0) {
+        carry_type carry_over(6);
+        carry_over[0] = carry0;
+        carry_over[1] = carry1;
+        carry_over[2] = carry2;
+        carry_over[3] = carry3;
+        carry_over[4] = carry4;
+        carry_over[5] = carry5;
+        return carry_over;
       }
 
       split_type m_split_value;
