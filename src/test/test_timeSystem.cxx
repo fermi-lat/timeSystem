@@ -699,7 +699,8 @@ namespace {
         value.getIntegerPart() << ", not " << expected_int_part << " as expected." << std::endl;
     }
 
-    if (expected_frac_part != value.getFractionalPart()) {
+    double epsilon = std::numeric_limits<double>::epsilon() * 10.;
+    if (epsilon < std::fabs(expected_frac_part - value.getFractionalPart())) {
       err() << hint << ", fractional part of time value was " <<
         value.getFractionalPart() << ", not " << expected_frac_part << " as expected." << std::endl;
     }
@@ -812,6 +813,48 @@ namespace {
 
       expected_carry.assign(expected_long + long_size - 7, expected_long + long_size);
       tv = TimeValue(15, 14, 13, 12, 11, 10, dval);
+      CompareTimeValue("After tv = TimeValue(15, 14, 13, 12, 11, 10, " + context + ")", tv, int_part, frac_part, expected_carry);
+    }
+
+    // Test construction from a std::string, making sure the separate int and fractional parts are as expected.
+    std::string sval = "00056789.56789567895678956789";
+    int_part = 56789;
+    frac_part = .56789567895678900000;
+    os << "sval = \"" << sval << "\"";
+    context = os.str();
+    os.str("");
+
+    { long expected_long[] = { 10, 11, 12, 13, 14, 15, 0 };
+      std::size_t long_size = sizeof(expected_long) / sizeof(expected_long[0]);
+      TimeValue::carry_type expected_carry;
+
+      // First use just the "right-most" carry, then gradually build up until all are used.
+      expected_carry.assign(expected_long + long_size - 1, expected_long + long_size);
+      tv = TimeValue(sval);
+      CompareTimeValue("After tv = TimeValue(" + context + ")", tv, int_part, frac_part, expected_carry);
+
+      expected_carry.assign(expected_long + long_size - 2, expected_long + long_size);
+      tv = TimeValue(15, sval);
+      CompareTimeValue("After tv = TimeValue(15, " + context + ")", tv, int_part, frac_part, expected_carry);
+
+      expected_carry.assign(expected_long + long_size - 3, expected_long + long_size);
+      tv = TimeValue(15, 14, sval);
+      CompareTimeValue("After tv = TimeValue(15, 14, " + context + ")", tv, int_part, frac_part, expected_carry);
+
+      expected_carry.assign(expected_long + long_size - 4, expected_long + long_size);
+      tv = TimeValue(15, 14, 13, sval);
+      CompareTimeValue("After tv = TimeValue(15, 14, 13, " + context + ")", tv, int_part, frac_part, expected_carry);
+
+      expected_carry.assign(expected_long + long_size - 5, expected_long + long_size);
+      tv = TimeValue(15, 14, 13, 12, sval);
+      CompareTimeValue("After tv = TimeValue(15, 14, 13, 12, " + context + ")", tv, int_part, frac_part, expected_carry);
+
+      expected_carry.assign(expected_long + long_size - 6, expected_long + long_size);
+      tv = TimeValue(15, 14, 13, 12, 11, sval);
+      CompareTimeValue("After tv = TimeValue(15, 14, 13, 12, 11, " + context + ")", tv, int_part, frac_part, expected_carry);
+
+      expected_carry.assign(expected_long + long_size - 7, expected_long + long_size);
+      tv = TimeValue(15, 14, 13, 12, 11, 10, sval);
       CompareTimeValue("After tv = TimeValue(15, 14, 13, 12, 11, 10, " + context + ")", tv, int_part, frac_part, expected_carry);
     }
 
