@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: hirayama  Mon May 15 15:31:50 PDT 2006
+timeSystem/timeSystem
+
+Modified Files:
+	TimeValue.h 
+Log Message:
+Add new constructors that take std::string as a value.
+
+    *
+------------------------------------------------------------
 User: hirayama  Fri May 12 18:35:42 PDT 2006
 timeSystem/timeSystem
 
