@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: hirayama  Tue May 16 12:16:46 PDT 2006
+timeSystem/src
+
+Modified Files:
+	TimeSystem.cxx AbsoluteTime.cxx 
+Log Message:
+Introduce Moment class and use it in TimeSystem classes and AbsoluteTime class.  Revise the test code accordingly.
+
+    *
+------------------------------------------------------------
 User: hirayama  Mon May 15 15:34:09 PDT 2006
 timeSystem/src/test
 
