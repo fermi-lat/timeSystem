@@ -7,6 +7,8 @@
 #define timeSystem_AbsoluteTime_h
 
 #include "timeSystem/Duration.h"
+// TODO: remove below when Moment is defined somewhere else.
+#include "timeSystem/TimeSystem.h"
 
 #include <string>
 
@@ -64,8 +66,11 @@ namespace timeSystem {
       // AbsoluteTime operator +(const TimeInterval &) const;
       // AbsoluteTime operator -(const TimeInterval &) const;
       const TimeSystem * m_time_system;
+#if 0
       Duration m_origin;
       Duration m_time;
+#endif
+      Moment m_time;
   };
 
   st_stream::OStream & operator <<(st_stream::OStream & os, const AbsoluteTime & time);
