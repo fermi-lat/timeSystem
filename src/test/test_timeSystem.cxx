@@ -332,6 +332,7 @@ namespace {
     TestOneComputation("u-", dur1, dur2, Duration(-322, 85745.679), tolerance);
   }
 
+#if 0
   void TestOneConversion(const std::string & src_name, const Duration & src_origin, const Duration & src,
     const std::string & dest_name, const Duration & expected_dest, double tolerance = 1.e-9) {
     s_os.setMethod("TestOneConversion");
@@ -341,6 +342,21 @@ namespace {
     if (!dest.equivalentTo(expected_dest, Duration(0, tolerance))) {
       err() << "Result of converting from " << src << " " << src_sys << " to " << dest_sys << " was " <<
         dest << ", not " << expected_dest << " as expected." << std::endl;
+    }
+  }
+#endif
+  void TestOneConversion(const std::string & src_name, const Duration & src_origin, const Duration & src,
+    const std::string & dest_name, const Duration & dest_origin, const Duration & expected_dest, double tolerance = 1.e-9) {
+    s_os.setMethod("TestOneConversion");
+    const TimeSystem & src_sys(TimeSystem::getSystem(src_name));
+    const TimeSystem & dest_sys(TimeSystem::getSystem(dest_name));
+    Moment dest_moment = dest_sys.convertFrom(src_sys, Moment(src_origin, src));
+    Duration dest = dest_moment.second + dest_sys.computeTimeDifference(dest_moment.first, dest_origin);
+    if (!dest.equivalentTo(expected_dest, Duration(0, tolerance))) {
+      err() << "Converting from " << src_sys << " to " << dest_sys << ", Moment(" << src_origin << ", " << src <<
+        ") was converted to Moment(" << dest_origin << ", " << dest << "), not Moment(" << dest_origin << ", " << expected_dest <<
+        ") as expected." << std::endl;
+        
     }
   }
 
@@ -369,30 +385,30 @@ namespace {
     double tdb_tolerance = 1.e-7; // 100 ns is the accuracy of algorithms involving TDB.
 
     // Test conversions, reflexive cases.
-    TestOneConversion("TAI", Duration(51910, 0.), tai_ref_time, "TAI", tai_ref_time);
-    TestOneConversion("TDB", Duration(51910, 0.), tdb_ref_time, "TDB", tdb_ref_time);
-    TestOneConversion("TT", Duration(51910, 0.), tt_ref_time, "TT", tt_ref_time);
-    TestOneConversion("UTC", Duration(51910, 0.), utc_ref_time, "UTC", utc_ref_time);
+    TestOneConversion("TAI", Duration(51910, 0.), tai_ref_time, "TAI", Duration(51910, 0.), tai_ref_time);
+    TestOneConversion("TDB", Duration(51910, 0.), tdb_ref_time, "TDB", Duration(51910, 0.), tdb_ref_time);
+    TestOneConversion("TT",  Duration(51910, 0.), tt_ref_time,  "TT",  Duration(51910, 0.), tt_ref_time);
+    TestOneConversion("UTC", Duration(51910, 0.), utc_ref_time, "UTC", Duration(51910, 0.), utc_ref_time);
 
     // Test conversions from TAI to...
-    TestOneConversion("TAI", Duration(51910, 0.), tai_ref_time, "TDB", tdb_ref_time, tdb_tolerance);
-    TestOneConversion("TAI", Duration(51910, 0.), tai_ref_time, "TT", tt_ref_time);
-    TestOneConversion("TAI", Duration(51910, 0.), tai_ref_time, "UTC", utc_ref_time);
+    TestOneConversion("TAI", Duration(51910, 0.), tai_ref_time, "TDB", Duration(51910, 0.), tdb_ref_time, tdb_tolerance);
+    TestOneConversion("TAI", Duration(51910, 0.), tai_ref_time, "TT",  Duration(51910, 0.), tt_ref_time);
+    TestOneConversion("TAI", Duration(51910, 0.), tai_ref_time, "UTC", Duration(51910, 0.), utc_ref_time);
 
     // Test conversions from TDB to...
-    TestOneConversion("TDB", Duration(51910, 0.), tdb_ref_time, "TAI", tai_ref_time, tdb_tolerance);
-    TestOneConversion("TDB", Duration(51910, 0.), tdb_ref_time, "TT", tt_ref_time, tdb_tolerance);
-    TestOneConversion("TDB", Duration(51910, 0.), tdb_ref_time, "UTC", utc_ref_time, tdb_tolerance);
+    TestOneConversion("TDB", Duration(51910, 0.), tdb_ref_time, "TAI", Duration(51910, 0.), tai_ref_time, tdb_tolerance);
+    TestOneConversion("TDB", Duration(51910, 0.), tdb_ref_time, "TT",  Duration(51910, 0.), tt_ref_time, tdb_tolerance);
+    TestOneConversion("TDB", Duration(51910, 0.), tdb_ref_time, "UTC", Duration(51910, 0.), utc_ref_time, tdb_tolerance);
 
     // Test conversions from TT to...
-    TestOneConversion("TT", Duration(51910, 0.), tt_ref_time, "TAI", tai_ref_time);
-    TestOneConversion("TT", Duration(51910, 0.), tt_ref_time, "TDB", tdb_ref_time, tdb_tolerance);
-    TestOneConversion("TT", Duration(51910, 0.), tt_ref_time, "UTC", utc_ref_time);
+    TestOneConversion("TT",  Duration(51910, 0.), tt_ref_time, "TAI", Duration(51910, 0.), tai_ref_time);
+    TestOneConversion("TT",  Duration(51910, 0.), tt_ref_time, "TDB", Duration(51910, 0.), tdb_ref_time, tdb_tolerance);
+    TestOneConversion("TT",  Duration(51910, 0.), tt_ref_time, "UTC", Duration(51910, 0.), utc_ref_time);
 
     // Test conversions from UTC to...
-    TestOneConversion("UTC", Duration(51910, 0.), utc_ref_time, "TAI", tai_ref_time);
-    TestOneConversion("UTC", Duration(51910, 0.), utc_ref_time, "TDB", tdb_ref_time, tdb_tolerance);
-    TestOneConversion("UTC", Duration(51910, 0.), utc_ref_time, "TT", tt_ref_time);
+    TestOneConversion("UTC", Duration(51910, 0.), utc_ref_time, "TAI", Duration(51910, 0.), tai_ref_time);
+    TestOneConversion("UTC", Duration(51910, 0.), utc_ref_time, "TDB", Duration(51910, 0.), tdb_ref_time, tdb_tolerance);
+    TestOneConversion("UTC", Duration(51910, 0.), utc_ref_time, "TT",  Duration(51910, 0.), tt_ref_time);
 
     // Use three leap seconds for generating tests.
     double diff0 = 31.;
@@ -408,29 +424,29 @@ namespace {
     // To ensure UTC->TAI is handled correctly, do some tougher conversions, i.e. times which are close to
     // times when leap seconds are inserted.
     // --- At an exact time of leap second insertion.
-    TestOneConversion("UTC", Duration(leap1, 0.), Duration(0, 0.), "TAI", Duration(0, diff1));
+    TestOneConversion("UTC", Duration(leap1, 0.), Duration(0, 0.), "TAI", Duration(leap1, 0.), Duration(0, diff1));
     // --- Slightly before a leap second is inserted.
-    TestOneConversion("UTC", Duration(leap1, -.001), Duration(0, 0.), "TAI", Duration(0, diff0));
+    TestOneConversion("UTC", Duration(leap1, -.001), Duration(0, 0.), "TAI", Duration(leap1, 0.), Duration(0, diff0 - .001));
     // --- Same as above, but with a large elapsed time.
     //     Although the total time (origin + elapsed) is large enough to cross two leap second boundaries, still
     //     the earliest leap second should be used because the choice of leap second is based only on the origin time.
-    TestOneConversion("UTC", Duration(leap1, -.001), Duration(delta_leap, 2.002), "TAI", Duration(delta_leap, diff0 + 2.002));
+    TestOneConversion("UTC", Duration(leap1, -.001), Duration(delta_leap, 2.002), "TAI", Duration(leap1, 0.), Duration(delta_leap, diff0 + 2.001));
 
     // To ensure TAI->UTC is handled correctly, do some tougher conversions, i.e. times which are close to
     // times when leap seconds are inserted.
     // --- At the end of a leap second.
-    TestOneConversion("TAI", Duration(leap1, diff1), Duration(0, 0.), "UTC", Duration(0, -diff1));
+    TestOneConversion("TAI", Duration(leap1, diff1), Duration(0, 0.), "UTC", Duration(leap1, diff1), Duration(0, -diff1));
     // --- During a leap second.
-    TestOneConversion("TAI", Duration(leap1, diff1 - 0.3), Duration(0, 0.), "UTC", Duration(0, -diff1 + 0.3));
+    TestOneConversion("TAI", Duration(leap1, diff1 - 0.3), Duration(0, 0.), "UTC", Duration(leap1, diff1), Duration(0, -diff1));
     // --- At the beginning of a leap second.
-    TestOneConversion("TAI", Duration(leap1, diff1 - 1.0), Duration(0, 0.), "UTC", Duration(0, -diff0));
+    TestOneConversion("TAI", Duration(leap1, diff1 - 1.0), Duration(0, 0.), "UTC", Duration(leap1, diff1), Duration(0, -diff0 - 1.0));
 
     // Test that conversion uses table keyed by TAI times, not by UTC.
-    TestOneConversion("TAI", Duration(leap1, -2.), Duration(1, 0.), "UTC", Duration(1, -diff1 + 1.));
+    TestOneConversion("TAI", Duration(leap1, -2.), Duration(1, 0.), "UTC", Duration(leap1, 0.), Duration(1, -diff1 - 2.));
 
     // Test case before first time covered by the current UTC definition. This is "undefined" in the current scheme.
     try {
-      TestOneConversion("UTC", Duration(0, 0.), Duration(0, 0.), "TAI", Duration(0, 0.));
+      TestOneConversion("UTC", Duration(0, 0.), Duration(0, 0.), "TAI", Duration(0, 0.), Duration(0, 0.));
       err() << "Conversion of time 0. MJD UTC to TAI did not throw an exception." << std::endl;
     } catch (const std::exception &) {
       // That's OK!
@@ -451,7 +467,7 @@ namespace {
     // Test case after last time covered by the current UTC definition.
     long leap_last = 53737;
     double diff_last = 31.;
-    TestOneConversion("UTC", Duration(leap_last, 100.), Duration(0, 0.), "TAI", Duration(0, diff_last));
+    TestOneConversion("UTC", Duration(leap_last, 100.), Duration(0, 0.), "TAI", Duration(leap_last, 100.), Duration(0, diff_last));
 
     // Use three leap seconds for generating tests.
     diff0 = 30.;
@@ -468,23 +484,23 @@ namespace {
     // To ensure TAI ->UTC is handled correctly, do some tougher conversions, i.e. times which are close to
     // times when leap seconds are removed.
     // --- At an exact time of leap second removal.
-    TestOneConversion("TAI", Duration(leap1, diff1), Duration(0, 0.), "UTC", Duration(0, -diff1));
+    TestOneConversion("TAI", Duration(leap1, diff1), Duration(0, 0.), "UTC", Duration(leap1, diff1), Duration(0, -diff1));
     // --- Slightly before a leap second is removed.
-    TestOneConversion("TAI", Duration(leap1, diff1 - .001), Duration(0, 0.), "UTC", Duration(0, -diff0));
+    TestOneConversion("TAI", Duration(leap1, diff1 - .001), Duration(0, 0.), "UTC", Duration(leap1, diff1), Duration(0, -diff0 - .001));
     // --- Same as above, but with a large elapsed time.
     //     Although the total time (origin + elapsed) is large enough to cross two leap second boundaries, still
     //     the earliest leap second should be used because the choice of leap second is based only on the origin time.
     TestOneConversion("TAI", Duration(leap1, diff1 - .001), Duration(delta_leap, .002), "UTC",
-      Duration(delta_leap, -diff0 + .002));
+      Duration(leap1, diff1), Duration(delta_leap, -diff0 + .001));
 
     // To ensure UTC->TAI is handled correctly, do some tougher conversions, i.e. times which are close to
     // times when leap seconds are removed.
     // --- At the end of a leap second.
-    TestOneConversion("UTC", Duration(leap1, 0.), Duration(0, 0.), "TAI", Duration(0, diff1));
+    TestOneConversion("UTC", Duration(leap1, 0.), Duration(0, 0.), "TAI", Duration(leap1, 0.), Duration(0, diff1));
     // --- During a leap second.
-    TestOneConversion("UTC", Duration(leap1, -0.3), Duration(0, 0.), "TAI", Duration(0, diff1 + 0.3));
+    TestOneConversion("UTC", Duration(leap1, -0.3), Duration(0, 0.), "TAI", Duration(leap1, 0.), Duration(0, diff1));
     // --- At the beginning of a leap second.
-    TestOneConversion("UTC", Duration(leap1, -1.0), Duration(0, 0.), "TAI", Duration(0, diff0));
+    TestOneConversion("UTC", Duration(leap1, -1.0), Duration(0, 0.), "TAI", Duration(leap1, 0.), Duration(0, diff0 - 1.0));
 
     // Test computeTimeDifference method.
     std::list<std::pair<Duration, double> > test_input;

@@ -30,7 +30,11 @@ namespace {
     public:
       TaiSystem(): TimeSystem("TAI") {}
 
+#if 0
       virtual Duration convertFrom(const TimeSystem & time_system, const Duration & origin, const Duration & time) const;
+#endif
+
+      virtual Moment convertFrom(const TimeSystem & time_system, const Moment & time) const;
 
       virtual Duration computeTimeDifference(const Duration & mjd1, const Duration & mjd2) const;
 
@@ -40,7 +44,11 @@ namespace {
     public:
       TdbSystem(): TimeSystem("TDB") {}
 
+#if 0
       virtual Duration convertFrom(const TimeSystem & time_system, const Duration & origin, const Duration & time) const;
+#endif
+
+      virtual Moment convertFrom(const TimeSystem & time_system, const Moment & time) const;
 
       virtual Duration computeTimeDifference(const Duration & mjd1, const Duration & mjd2) const;
 
@@ -52,7 +60,11 @@ namespace {
     public:
       TtSystem(): TimeSystem("TT") {}
 
+#if 0
       virtual Duration convertFrom(const TimeSystem & time_system, const Duration & origin, const Duration & time) const;
+#endif
+
+      virtual Moment convertFrom(const TimeSystem & time_system, const Moment & time) const;
 
       virtual Duration computeTimeDifference(const Duration & mjd1, const Duration & mjd2) const;
 
@@ -62,7 +74,11 @@ namespace {
     public:
       UtcSystem();
 
+#if 0
       virtual Duration convertFrom(const TimeSystem & time_system, const Duration & origin, const Duration & time) const;
+#endif
+
+      virtual Moment convertFrom(const TimeSystem & time_system, const Moment & time) const;
 
       virtual Duration computeTimeDifference(const Duration & mjd1, const Duration & mjd2) const;
 
@@ -88,6 +104,7 @@ namespace {
 
   };
 
+#if 0
   Duration TaiSystem::convertFrom(const TimeSystem & time_system, const Duration & origin, const Duration & time) const {
     if (&time_system != this) {
       if ("TDB" == time_system.getName()) {
@@ -98,6 +115,24 @@ namespace {
       } else if ("UTC" == time_system.getName()) {
         const UtcSystem & utc_system = dynamic_cast<const UtcSystem &>(getSystem("UTC"));
         return time + utc_system.computeTaiMinusUtc(origin);
+      } else {
+        throw std::logic_error("Conversion from " + time_system.getName() + " to " + getName() + " is not implemented");
+      }
+    }
+    return time;
+  }
+#endif
+
+  Moment TaiSystem::convertFrom(const TimeSystem & time_system, const Moment & time) const {
+    if (&time_system != this) {
+      if ("TDB" == time_system.getName()) {
+        const TimeSystem & tt(getSystem("TT"));
+        return convertFrom(tt, tt.convertFrom(time_system, time));
+      } else if ("TT" == time_system.getName()) {
+        return Moment(time.first, time.second + Duration(0, TaiMinusTtSec()));
+      } else if ("UTC" == time_system.getName()) {
+        const UtcSystem & utc_system = dynamic_cast<const UtcSystem &>(getSystem("UTC"));
+        return Moment(time.first, time.second + utc_system.computeTaiMinusUtc(time.first));
       } else {
         throw std::logic_error("Conversion from " + time_system.getName() + " to " + getName() + " is not implemented");
       }
@@ -119,6 +154,7 @@ namespace {
 
   }
 
+#if 0
   Duration TdbSystem::convertFrom(const TimeSystem & time_system, const Duration & origin, const Duration & time) const {
     if (&time_system != this) {
       if ("TAI" == time_system.getName() || "UTC" == time_system.getName()) {
@@ -134,11 +170,29 @@ namespace {
     }
     return time;
   }
+#endif
+
+  Moment TdbSystem::convertFrom(const TimeSystem & time_system, const Moment & time) const {
+    if (&time_system != this) {
+      if ("TAI" == time_system.getName() || "UTC" == time_system.getName()) {
+        const TimeSystem & tt(getSystem("TT"));
+        return convertFrom(tt, tt.convertFrom(time_system, time));
+      } else if ("TT" == time_system.getName()) {
+        Duration src = time.first + time.second;
+        Duration dest = src + computeTdbMinusTt(src);
+        return Moment(dest, Duration(0, 0.));
+      } else {
+        throw std::logic_error("Conversion from " + time_system.getName() + " to " + getName() + " is not implemented");
+      }
+    }
+    return time;
+  }
 
   Duration TdbSystem::computeTimeDifference(const Duration & mjd1, const Duration & mjd2) const {
     return mjd1 - mjd2;
   }
 
+#if 0
   Duration TtSystem::convertFrom(const TimeSystem & time_system, const Duration & origin, const Duration & time) const {
     if (&time_system != this) {
       if ("TAI" == time_system.getName()) {
@@ -176,6 +230,45 @@ namespace {
     }
     return time;
   }
+#endif
+
+  Moment TtSystem::convertFrom(const TimeSystem & time_system, const Moment & time) const {
+    if (&time_system != this) {
+      if ("TAI" == time_system.getName()) {
+        return Moment(time.first, time.second + Duration(0, TtMinusTaiSec()));
+      } else if ("TDB" == time_system.getName()) {
+        // Prepare for time conversion from TDB to TT.
+        static const TdbSystem & tdb_system = dynamic_cast<const TdbSystem &>(getSystem("TDB"));
+        const int max_iteration = 100;
+        const Duration epsilon(0, 100.e-9); // 100 ns, to match Arnold Rots's function ctatv().
+
+        // Compute MJD number for input time
+        Duration src = time.first + time.second;
+
+        // 1st approximation of MJD time in TT system.
+        Duration dest = src;
+
+        // iterative approximation of dest.
+        for (int ii=0; ii<max_iteration; ii++) {
+
+          // compute next candidate of dest.
+          dest = src - tdb_system.computeTdbMinusTt(dest);
+
+          // check whether binary demodulation successfully converged or not
+          if (src.equivalentTo(dest + tdb_system.computeTdbMinusTt(dest), epsilon)) return Moment(dest, Duration(0, 0.));
+        }
+
+        // Conversion from TDB to TT not converged (error)
+        throw std::runtime_error("Conversion from " + time_system.getName() + " to " + getName() + " did not converge");
+      } else if ("UTC" == time_system.getName()) {
+        const TimeSystem & tai(getSystem("TAI"));
+        return convertFrom(tai, tai.convertFrom(time_system, time));
+      } else {
+        throw std::logic_error("Conversion from " + time_system.getName() + " to " + getName() + " is not implemented");
+      }
+    }
+    return time;
+  }
 
   Duration TtSystem::computeTimeDifference(const Duration & mjd1, const Duration & mjd2) const {
     return mjd1 - mjd2;
@@ -183,6 +276,7 @@ namespace {
 
   UtcSystem::UtcSystem(): TimeSystem("UTC") {}
 
+#if 0
   Duration UtcSystem::convertFrom(const TimeSystem & time_system, const Duration & origin, const Duration & time) const {
     if (&time_system != this) {
       if ("TAI" == time_system.getName()) {
@@ -195,6 +289,21 @@ namespace {
       }
     }
     
+    return time;
+  }
+#endif
+
+  Moment UtcSystem::convertFrom(const TimeSystem & time_system, const Moment & time) const {
+    if (&time_system != this) {
+      if ("TAI" == time_system.getName()) {
+        return Moment(time.first, time.second + computeUtcMinusTai(time.first));
+      } else if ("TDB" == time_system.getName() || "TT" == time_system.getName()) {
+        const TimeSystem & tai(getSystem("TAI"));
+        return convertFrom(tai, tai.convertFrom(time_system, time));
+      } else {
+        throw std::logic_error("Conversion from " + time_system.getName() + " to " + getName() + " is not implemented");
+      }
+    }
     return time;
   }
 
