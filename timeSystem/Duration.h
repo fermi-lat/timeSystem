@@ -63,7 +63,7 @@ namespace timeSystem {
       */
       Duration(long day = 0, double sec = 0.): m_time(add(time_type(day, 0.), splitSec(sec))) {}
 
-      Duration(TimeValue time_value, TimeUnit_e unit) {
+      Duration(IntFracPair time_value, TimeUnit_e unit) {
         // Note: in C, unit[perlong][Day] is another way of writing perlong[unit][Day].
         long day = time_value.getIntegerPart() / unit[perlong][Day];
         double sec = (time_value.getIntegerPart() % unit[perlong][Day] + time_value.getFractionalPart()) * Sec[perlong][unit];
@@ -71,7 +71,7 @@ namespace timeSystem {
       }
 
       /// \brief Return the current value of this time in given unit.
-      TimeValue getValue(TimeUnit_e unit) const;
+      IntFracPair getValue(TimeUnit_e unit) const;
 
       Duration operator +(const Duration & dur) const;
 
@@ -196,11 +196,11 @@ namespace timeSystem {
       time_type m_time;
   };
 
-  inline TimeValue Duration::getValue(TimeUnit_e unit) const {
+  inline IntFracPair Duration::getValue(TimeUnit_e unit) const {
     if (unit == Day) {
       double day_frac = m_time.second * DayPerSec();
-      return ((m_time.first >= 0 || m_time.second == 0) ? TimeValue(TimeValue::split_type(m_time.first, day_frac)) :
-	      TimeValue(TimeValue::split_type(m_time.first + 1, day_frac - 1.)));
+      return ((m_time.first >= 0 || m_time.second == 0) ? IntFracPair(m_time.first, day_frac) :
+        IntFracPair(m_time.first + 1, day_frac - 1.));
     } else {
       // Let the sec part have the same sign as the day part.
       long signed_day = m_time.first;
@@ -236,7 +236,7 @@ namespace timeSystem {
       long int_part = long(int_part_dbl);
 
       // Return int_part and frac_part.
-      return TimeValue(TimeValue::split_type(int_part, frac_part));
+      return IntFracPair(int_part, frac_part);
     }
   }
 

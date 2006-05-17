@@ -148,7 +148,7 @@ namespace {
     static const long jd_minus_mjd_int = 2400000;
     static const double jd_minus_mjd_frac = .5;
 
-    TimeValue mjd_time = mjd_tt.getValue(Day);
+    IntFracPair mjd_time = mjd_tt.getValue(Day);
 
     return Duration(0, ctatv(mjd_time.getIntegerPart() + jd_minus_mjd_int, mjd_time.getFractionalPart() + jd_minus_mjd_frac));
 
