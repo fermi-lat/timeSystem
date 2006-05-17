@@ -1,5 +1,15 @@
 ------------------------------------------------------------
 User: peachey  Wed May 17 12:46:05 PDT 2006
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Split TimeValue functionality into revised TimeValue + new class IntFracPair.
+
+    *
+------------------------------------------------------------
+User: peachey  Wed May 17 12:46:05 PDT 2006
 timeSystem/timeSystem
 
 Modified Files:
