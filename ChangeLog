@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: peachey  Wed May 17 12:44:23 PDT 2006
+timeSystem/timeSystem
+
+Modified Files:
+	Duration.h 
+Log Message:
+Use IntFracPair instead of TimeValue.
+
+    *
+------------------------------------------------------------
 User: peachey  Wed May 17 12:43:50 PDT 2006
 timeSystem/src
 
