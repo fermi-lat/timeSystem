@@ -18,29 +18,143 @@
 
 namespace timeSystem {
 
+  // TODO: where to put IntFracPair class?
+  class IntFracPair {
+    public:
+      IntFracPair(long int_part = 0, double frac_part = 0.): m_int_part(int_part), m_frac_part(frac_part) {}
+
+      IntFracPair(double value) {
+	// split value into integer part and fractional part.
+        double int_part_dbl;
+        m_frac_part = std::modf(value, &int_part_dbl);
+
+	// round integer part of the value.
+        int_part_dbl += (int_part_dbl > 0. ? 0.5 : -0.5);
+	if (int_part_dbl >= std::numeric_limits<long>::max() + 1.) {
+	  std::ostringstream os;
+	  os.precision(std::numeric_limits<double>::digits10);
+	  os << "TimeValue::TimeValue: overflow while converting " << int_part_dbl << " to a long";
+	  throw std::runtime_error(os.str());
+	} else if (int_part_dbl <= std::numeric_limits<long>::min() - 1.) {
+	  std::ostringstream os;
+	  os.precision(std::numeric_limits<double>::digits10);
+	  os << "TimeValue::TimeValue: underflow while converting " << int_part_dbl << " to a long";
+	  throw std::runtime_error(os.str());
+	}
+	m_int_part = long(int_part_dbl);
+
+	// clean the tail of fractional part.
+        int num_digit_all = std::numeric_limits<double>::digits10;
+        int num_digit_int = m_int_part == 0 ? 0 : int(std::floor(std::log10(std::fabs(double(m_int_part)))) + 0.5) + 1;
+        int num_digit_frac = num_digit_all - num_digit_int;
+        double factor = std::floor(std::exp(num_digit_frac * std::log(10.0)));
+        m_frac_part = std::floor(m_frac_part * factor) / factor;
+      }
+
+      IntFracPair(std::string value) {
+        // Read number into temporary double variable.
+        double value_dbl;
+        { // TODO: Do we need to enclose below?
+          std::istringstream iss(value);
+          iss >> value_dbl;
+        }
+
+        // Compute integer part.
+        if (value_dbl >= std::numeric_limits<long>::max() + 1.) {
+	  std::ostringstream os;
+	  os.precision(std::numeric_limits<double>::digits10);
+	  os << "TimeValue::TimeValue: overflow while converting " << value_dbl << " to a long";
+	  throw std::runtime_error(os.str());
+        } else if (value_dbl <= std::numeric_limits<long>::min() - 1.) {
+	  std::ostringstream os;
+	  os.precision(std::numeric_limits<double>::digits10);
+	  os << "TimeValue::TimeValue: underflow while converting " << value_dbl << " to a long";
+	  throw std::runtime_error(os.str());
+        }
+        m_int_part = long(value_dbl);
+
+        // Compute number of digits of integer part.
+        int num_digit = (m_int_part == 0 ? 0 : int(std::floor(std::log10(std::fabs(double(m_int_part)))) + 0.5) + 1);
+
+        // Skip leading zeros.
+        std::string::iterator itor = value.begin();
+        for (; (itor != value.end()) && ((*itor == '0') || !isdigit(*itor)); itor++) {}
+
+        // Erase numbers in integer part.
+        for (int ii_digit = 0; (itor != value.end()) && (ii_digit < num_digit); itor++) {
+          if (isdigit(*itor)) {
+            *itor = '0';
+            ii_digit++;
+          }
+        }
+
+        // Read in fractional part.
+        { // TODO: Do we need to enclose below?
+          std::istringstream iss(value);
+          iss >> m_frac_part;
+        }
+      }
+
+      long getIntegerPart() const { return m_int_part; }
+
+      double getFractionalPart() const { return m_frac_part; }
+
+      // TODO: implement these.  Use a template?
+      //void write(std::ostream & os) const;
+
+      void write(st_stream::OStream & os) const {
+        // write split value part.
+        if (m_int_part == 0) {
+          os << m_frac_part;
+        } else {
+          os << m_int_part;
+
+          std::ostringstream oss;
+          oss.precision(os.precision());
+          oss.setf(std::ios::fixed);
+          oss << m_frac_part;
+
+          std::string frac_part_string = oss.str();
+          std::string::iterator itor = frac_part_string.begin();
+          for (; (itor != frac_part_string.end()) && (*itor != '.'); ++itor);
+          for (; itor != frac_part_string.end(); ++itor) { os << *itor; }
+        }
+      }
+
+    private:
+      long m_int_part;
+      double m_frac_part;
+  };
+
+  inline st_stream::OStream & operator <<(st_stream::OStream & os, const IntFracPair & int_frac) {
+    int_frac.write(os);
+    return os;
+  }
+
   class TimeValue {
     public:
       typedef std::pair<long, double> split_type;
       typedef std::vector<long> carry_type;
 
-      TimeValue(const split_type & split_value): m_split_value(split_value), m_carry_over() {}
+      TimeValue(const IntFracPair & base_value): m_base_value(base_value), m_carry_over() {}
 
-      TimeValue(long carry0, const split_type & split_value): m_split_value(split_value), m_carry_over(pack(carry0)) {}
+      TimeValue(long carry0, const IntFracPair & base_value): m_base_value(base_value), m_carry_over(pack(carry0)) {}
 
-      TimeValue(long carry1, long carry0, const split_type & split_value): m_split_value(split_value), m_carry_over(pack(carry1, carry0)) {}
+      TimeValue(long carry1, long carry0, const IntFracPair & base_value): m_base_value(base_value), m_carry_over(pack(carry1, carry0)) {}
 
-      TimeValue(long carry2, long carry1, long carry0, const split_type & split_value): m_split_value(split_value),
+      TimeValue(long carry2, long carry1, long carry0, const IntFracPair & base_value): m_base_value(base_value),
         m_carry_over(pack(carry2, carry1, carry0)) {}
 
-      TimeValue(long carry3, long carry2, long carry1, long carry0, const split_type & split_value): m_split_value(split_value),
+      TimeValue(long carry3, long carry2, long carry1, long carry0, const IntFracPair & base_value): m_base_value(base_value),
         m_carry_over(pack(carry3, carry2, carry1, carry0)) {}
 
-      TimeValue(long carry4, long carry3, long carry2, long carry1, long carry0, const split_type & split_value):
-        m_split_value(split_value), m_carry_over(pack(carry4, carry3, carry2, carry1, carry0)) {}
+      TimeValue(long carry4, long carry3, long carry2, long carry1, long carry0, const IntFracPair & base_value):
+        m_base_value(base_value), m_carry_over(pack(carry4, carry3, carry2, carry1, carry0)) {}
 
-      TimeValue(long carry5, long carry4, long carry3, long carry2, long carry1, long carry0, const split_type & split_value):
-        m_split_value(split_value), m_carry_over(pack(carry5, carry4, carry3, carry2, carry1, carry0)) {}
+      TimeValue(long carry5, long carry4, long carry3, long carry2, long carry1, long carry0, const IntFracPair & base_value):
+        m_base_value(base_value), m_carry_over(pack(carry5, carry4, carry3, carry2, carry1, carry0)) {}
 
+#if 0
       TimeValue(double value): m_split_value(split(value)), m_carry_over() {}
 
       TimeValue(long carry0, const double & value): m_split_value(split(value)), m_carry_over(pack(carry0)) {}
@@ -76,15 +190,25 @@ namespace timeSystem {
 
       TimeValue(long carry5, long carry4, long carry3, long carry2, long carry1, long carry0, const std::string & value):
         m_split_value(parse(value)), m_carry_over(pack(carry5, carry4, carry3, carry2, carry1, carry0)) {}
+#endif
 
+#if 0
       long getIntegerPart(carry_type::size_type idx = 0) const {
         long result = 0;
-        if (0 == idx) result = m_split_value.first;
+        if (0 == idx) result = m_base_value.getIntegerPart();
         else if (m_carry_over.size() >= idx) result = m_carry_over[idx - 1];
         return result;
       }
 
-      double getFractionalPart() const { return m_split_value.second; }
+      double getFractionalPart() const { return m_base_value.getFractionalPart(); }
+#endif
+      IntFracPair getBaseValue() const { return m_base_value; }
+
+      long getCarryOver(carry_type::size_type idx = 0) const {
+        long result = 0;
+        if (m_carry_over.size() > idx) result = m_carry_over[idx];
+        return result;
+      }
 
 //      double reduceToDouble() const { return m_split_value.first + m_split_value.second; };
 
@@ -97,16 +221,27 @@ namespace timeSystem {
           os << *itor << ",";
         }
 
+        // write base value.
+        os << m_base_value;
+      }
+
+#if 0
+      void write(st_stream::OStream & os) const {
+        // write carry over part.
+        for (carry_type::const_reverse_iterator itor = m_carry_over.rbegin(); itor != m_carry_over.rend(); itor++) {
+          os << *itor << ",";
+        }
+
         // write split value part.
-        if (m_split_value.first == 0) {
-          os << m_split_value.second;
+        if (m_base_value.getIntegerPart() == 0) {
+          os << m_base_value.getFractionalPart();
         } else {
-          os << m_split_value.first;
+          os << m_base_value.getIntegerPart();
 
           std::ostringstream oss;
           oss.precision(os.precision());
           oss.setf(std::ios::fixed);
-          oss << m_split_value.second;
+          oss << m_base_value.getFractionalPart();
 
           std::string frac_part_string = oss.str();
           std::string::iterator itor = frac_part_string.begin();
@@ -114,8 +249,10 @@ namespace timeSystem {
           for (; itor != frac_part_string.end(); ++itor) { os << *itor; }
         }
       }
+#endif
 
     private:
+#if 0
       split_type split(double value) {
         split_type split_value;
 	// split value into integer part and fractional part.
@@ -194,6 +331,7 @@ namespace timeSystem {
         // Return the pair.
         return split_type(int_part, frac_part);
       }
+#endif
 
       carry_type pack(long carry0) {
         carry_type carry_over(1);
@@ -246,7 +384,10 @@ namespace timeSystem {
         return carry_over;
       }
 
+#if 0
       split_type m_split_value;
+#endif
+      IntFracPair m_base_value;
       carry_type m_carry_over;
   };
 

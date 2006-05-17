@@ -40,6 +40,8 @@ namespace {
 
   void TestElapsedTime();
 
+  void TestIntFracPair();
+
   void TestTimeInterval();
 
   void TestTimeValue();
@@ -179,7 +181,7 @@ namespace {
     // Run the tests prepared above.
     std::string unit_name[] = { "Day", "Hour", "Min", "Sec"};
     for (std::list<TestParameter>::iterator itor = parameter_list.begin(); itor != parameter_list.end(); itor++) {
-      TimeValue time_value = Duration(itor->m_day, itor->m_sec).getValue(itor->m_unit);
+      IntFracPair time_value = Duration(itor->m_day, itor->m_sec).getValue(itor->m_unit);
       if (!(itor->m_int_part == time_value.getIntegerPart() &&
             std::fabs(itor->m_frac_part - time_value.getFractionalPart()) < itor->m_tolerance)) {
 #if 0
@@ -188,45 +190,45 @@ namespace {
           ", " << itor->m_frac_part << ") as expected." << std::endl;
 #endif
         err() << "Duration(" << itor->m_day << ", " << itor->m_sec << ").getValue(" << unit_name[itor->m_unit] << ") returned " <<
-          time_value << ", not " << TimeValue(TimeValue::split_type(itor->m_int_part, itor->m_frac_part)) << " as expected." <<
+          time_value << ", not " << IntFracPair(itor->m_int_part, itor->m_frac_part) << " as expected." <<
           std::endl;
       }
     }
 
-    // Tests of constructor taking TimeValue.
+    // Tests of constructor taking IntFracPair.
     long int_part = 3456789;
     double frac_part = .56789567895678956789;
     TimeUnit_e time_unit = Day;
     Duration expected_result(int_part, frac_part*86400.);
     Duration dur_tol(0, 1.e-9);
-    if (!Duration(TimeValue(TimeValue::split_type(int_part, frac_part)), time_unit).equivalentTo(expected_result, dur_tol)) {
-      err() << "Duration(TimeValue(TimeValue::split_type(" << int_part << ", " << frac_part << ")), " << unit_name[time_unit] <<
+    if (!Duration(IntFracPair(int_part, frac_part), time_unit).equivalentTo(expected_result, dur_tol)) {
+      err() << "Duration(IntFracPair(" << int_part << ", " << frac_part << "), " << unit_name[time_unit] <<
         ").equivalentTo returned false for " << expected_result << " with tolerance of " << dur_tol <<
-        ", not true as expected." << Duration(TimeValue(TimeValue::split_type(int_part, frac_part)), time_unit) << std::endl;
+        ", not true as expected." << Duration(IntFracPair(int_part, frac_part), time_unit) << std::endl;
     }
     time_unit = Hour;
     expected_result = Duration(int_part/24, (int_part%24 + frac_part) * 3600.);
     dur_tol = Duration(0, 1.e-9);
-    if (!Duration(TimeValue(TimeValue::split_type(int_part, frac_part)), time_unit).equivalentTo(expected_result, dur_tol)) {
-      err() << "Duration(TimeValue(TimeValue::split_type(" << int_part << ", " << frac_part << ")), " << unit_name[time_unit] <<
+    if (!Duration(IntFracPair(int_part, frac_part), time_unit).equivalentTo(expected_result, dur_tol)) {
+      err() << "Duration(IntFracPair(" << int_part << ", " << frac_part << "), " << unit_name[time_unit] <<
         ").equivalentTo returned false for " << expected_result << " with tolerance of " << dur_tol <<
-        ", not true as expected." << Duration(TimeValue(TimeValue::split_type(int_part, frac_part)), time_unit) << std::endl;
+        ", not true as expected." << Duration(IntFracPair(int_part, frac_part), time_unit) << std::endl;
     }
     time_unit = Min;
     expected_result = Duration(int_part/1440, (int_part%1440 + frac_part) * 60.);
     dur_tol = Duration(0, 1.e-9);
-    if (!Duration(TimeValue(TimeValue::split_type(int_part, frac_part)), time_unit).equivalentTo(expected_result, dur_tol)) {
-      err() << "Duration(TimeValue(TimeValue::split_type(" << int_part << ", " << frac_part << ")), " << unit_name[time_unit] <<
+    if (!Duration(IntFracPair(int_part, frac_part), time_unit).equivalentTo(expected_result, dur_tol)) {
+      err() << "Duration(IntFracPair(" << int_part << ", " << frac_part << "), " << unit_name[time_unit] <<
         ").equivalentTo returned false for " << expected_result << " with tolerance of " << dur_tol <<
-        ", not true as expected." << Duration(TimeValue(TimeValue::split_type(int_part, frac_part)), time_unit) << std::endl;
+        ", not true as expected." << Duration(IntFracPair(int_part, frac_part), time_unit) << std::endl;
     }
     time_unit = Sec;
     expected_result = Duration(int_part/86400, int_part%86400 + frac_part);
     dur_tol = Duration(0, 1.e-9);
-    if (!Duration(TimeValue(TimeValue::split_type(int_part, frac_part)), time_unit).equivalentTo(expected_result, dur_tol)) {
-      err() << "Duration(TimeValue(TimeValue::split_type(" << int_part << ", " << frac_part << ")), " << unit_name[time_unit] <<
+    if (!Duration(IntFracPair(int_part, frac_part), time_unit).equivalentTo(expected_result, dur_tol)) {
+      err() << "Duration(IntFracPair(" << int_part << ", " << frac_part << "), " << unit_name[time_unit] <<
         ").equivalentTo returned false for " << expected_result << " with tolerance of " << dur_tol <<
-        ", not true as expected." << Duration(TimeValue(TimeValue::split_type(int_part, frac_part)), time_unit) << std::endl;
+        ", not true as expected." << Duration(IntFracPair(int_part, frac_part), time_unit) << std::endl;
     }
 
     // Tests of equality and inequality operators.
@@ -685,6 +687,63 @@ namespace {
     }
   }
 
+  static void CompareIntFracPair(const std::string & hint, const IntFracPair & value, long expected_int_part, double expected_frac_part) {
+    if (expected_int_part != value.getIntegerPart()) {
+      err() << hint << ", integer part of the IntFracPair object was " <<
+        value.getIntegerPart() << ", not " << expected_int_part << " as expected." << std::endl;
+    }
+
+    double epsilon = std::numeric_limits<double>::epsilon() * 10.;
+    if (epsilon < std::fabs(expected_frac_part - value.getFractionalPart())) {
+      err() << hint << ", fractional part of the IntFracPair object was " <<
+        value.getFractionalPart() << ", not " << expected_frac_part << " as expected." << std::endl;
+    }
+  }
+
+  void TestIntFracPair() {
+    s_os.setMethod("TestIntFracPair");
+
+    // Construction a test object.
+    IntFracPair int_frac;
+
+    // Setup string stream for error message.
+    std::ostringstream os;
+    os.precision(s_os.err().precision());
+    std::string context;
+
+    // Test construction from a pair of long and double.
+    long int_part = 100;
+    double frac_part = .56789567895678956789;
+    os << int_part << ", " << frac_part;
+    context = os.str();
+    os.str("");
+
+    int_frac = IntFracPair(int_part, frac_part);
+    CompareIntFracPair("After int_frac = IntFracPair(" + context + ")", int_frac, int_part, frac_part);
+
+    // Test construction from a double, making sure the separate int and fractional parts are as expected.
+    double dval = 56789.56789567895678956789;
+    int_part = 56789;
+    frac_part = .567895678900000;
+    os << "dval = " << dval;
+    context = os.str();
+    os.str("");
+
+    int_frac = IntFracPair(dval);
+    CompareIntFracPair("After int_frac = IntFracPair(" + context + ")", int_frac, int_part, frac_part);
+
+    // Test construction from a std::string, making sure the separate int and fractional parts are as expected.
+    std::string sval = "00056789.56789567895678956789";
+    int_part = 56789;
+    frac_part = .56789567895678900000;
+    os << "sval = \"" << sval << "\"";
+    context = os.str();
+    os.str("");
+
+    int_frac = IntFracPair(sval);
+    CompareIntFracPair("After int_frac = IntFracPair(" + context + ")", int_frac, int_part, frac_part);
+  }
+
   void TestTimeInterval() {
     s_os.setMethod("TestTimeInterval");
 
@@ -710,21 +769,21 @@ namespace {
 
   static void CompareTimeValue(const std::string & hint, const TimeValue & value, long expected_int_part,
     double expected_frac_part, const TimeValue::carry_type & expected_carry_over = TimeValue::carry_type(0)) {
-    if (expected_int_part != value.getIntegerPart()) {
+    if (expected_int_part != value.getBaseValue().getIntegerPart()) {
       err() << hint << ", integer part of time value was " <<
-        value.getIntegerPart() << ", not " << expected_int_part << " as expected." << std::endl;
+        value.getBaseValue().getIntegerPart() << ", not " << expected_int_part << " as expected." << std::endl;
     }
 
     double epsilon = std::numeric_limits<double>::epsilon() * 10.;
-    if (epsilon < std::fabs(expected_frac_part - value.getFractionalPart())) {
+    if (epsilon < std::fabs(expected_frac_part - value.getBaseValue().getFractionalPart())) {
       err() << hint << ", fractional part of time value was " <<
-        value.getFractionalPart() << ", not " << expected_frac_part << " as expected." << std::endl;
+        value.getBaseValue().getFractionalPart() << ", not " << expected_frac_part << " as expected." << std::endl;
     }
 
     // Compare carry over terms.
     for (TimeValue::carry_type::size_type ii = 0; ii < expected_carry_over.size(); ++ii) {
-      if (expected_carry_over[ii] != value.getIntegerPart(ii + 1)) {
-        err() << hint << ", carry over[" << ii << "] of time value was " << value.getIntegerPart(ii + 1) <<
+      if (expected_carry_over[ii] != value.getCarryOver(ii)) {
+        err() << hint << ", carry over[" << ii << "] of time value was " << value.getCarryOver(ii) <<
           ", not " << expected_carry_over[ii] << " as expected." << std::endl;
       }
     }
@@ -734,17 +793,17 @@ namespace {
     s_os.setMethod("TestTimeValue");
     long int_part = 100;
     double frac_part = .56789567895678956789;
-    TimeValue::split_type split_value(int_part, frac_part);
+    IntFracPair base_value(int_part, frac_part);
 
     // Create contextual message.
     std::ostringstream os;
     os.precision(s_os.err().precision());
-    os << "split_value = (" << int_part << ", " << frac_part << ")";
+    os << "base_value = (" << int_part << ", " << frac_part << ")";
     std::string context = os.str();
     os.str("");
 
     // Construction a test object.
-    TimeValue tv(TimeValue::split_type(0, 0.));
+    TimeValue tv(IntFracPair(0, 0.));
 
     // Make sure this value is rounded off in the expected way when converted to a mere double.
 #if 0
@@ -762,35 +821,37 @@ namespace {
 
       // First use just the "right-most" carry, then gradually build up until all are used.
       expected_carry.assign(expected_long + long_size - 1, expected_long + long_size);
-      tv = TimeValue(split_value);
+      tv = TimeValue(base_value);
       CompareTimeValue("After tv = TimeValue(" + context + ")", tv, int_part, frac_part, expected_carry);
 
       expected_carry.assign(expected_long + long_size - 2, expected_long + long_size);
-      tv = TimeValue(15, split_value);
+      tv = TimeValue(15, base_value);
       CompareTimeValue("After tv = TimeValue(15, " + context + ")", tv, int_part, frac_part, expected_carry);
 
       expected_carry.assign(expected_long + long_size - 3, expected_long + long_size);
-      tv = TimeValue(15, 14, split_value);
+      tv = TimeValue(15, 14, base_value);
       CompareTimeValue("After tv = TimeValue(15, 14, " + context + ")", tv, int_part, frac_part, expected_carry);
 
       expected_carry.assign(expected_long + long_size - 4, expected_long + long_size);
-      tv = TimeValue(15, 14, 13, split_value);
+      tv = TimeValue(15, 14, 13, base_value);
       CompareTimeValue("After tv = TimeValue(15, 14, 13, " + context + ")", tv, int_part, frac_part, expected_carry);
 
       expected_carry.assign(expected_long + long_size - 5, expected_long + long_size);
-      tv = TimeValue(15, 14, 13, 12, split_value);
+      tv = TimeValue(15, 14, 13, 12, base_value);
       CompareTimeValue("After tv = TimeValue(15, 14, 13, 12, " + context + ")", tv, int_part, frac_part, expected_carry);
 
       expected_carry.assign(expected_long + long_size - 6, expected_long + long_size);
-      tv = TimeValue(15, 14, 13, 12, 11, split_value);
+      tv = TimeValue(15, 14, 13, 12, 11, base_value);
       CompareTimeValue("After tv = TimeValue(15, 14, 13, 12, 11, " + context + ")", tv, int_part, frac_part, expected_carry);
 
       expected_carry.assign(expected_long + long_size - 7, expected_long + long_size);
-      tv = TimeValue(15, 14, 13, 12, 11, 10, split_value);
+      tv = TimeValue(15, 14, 13, 12, 11, 10, base_value);
       CompareTimeValue("After tv = TimeValue(15, 14, 13, 12, 11, 10, " + context + ")", tv, int_part, frac_part, expected_carry);
     }
 
+#if 0
     // Test construction from a double, making sure the separate int and fractional parts are as expected.
+    // TODO: Not needed any longer.
     double dval = 56789.56789567895678956789;
     int_part = 56789;
     frac_part = .567895678900000;
@@ -833,6 +894,7 @@ namespace {
     }
 
     // Test construction from a std::string, making sure the separate int and fractional parts are as expected.
+    // TODO: Not needed any longer.
     std::string sval = "00056789.56789567895678956789";
     int_part = 56789;
     frac_part = .56789567895678900000;
@@ -873,7 +935,7 @@ namespace {
       tv = TimeValue(15, 14, 13, 12, 11, 10, sval);
       CompareTimeValue("After tv = TimeValue(15, 14, 13, 12, 11, 10, " + context + ")", tv, int_part, frac_part, expected_carry);
     }
-
+#endif
   }
 
   void TestTimeFormat() {
