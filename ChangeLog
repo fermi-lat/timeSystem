@@ -1,4 +1,15 @@
 ------------------------------------------------------------
+User: peachey  Fri May 19 12:19:22 PDT 2006
+timeSystem/timeSystem
+
+Modified Files:
+	TimeValue.h 
+Log Message:
+Refactor pack method so that there is only one of them, used by all the
+different constructors.
+
+    *
+------------------------------------------------------------
 User: peachey  Fri May 19 12:00:50 PDT 2006
 timeSystem/src
 
