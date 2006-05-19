@@ -7,7 +7,6 @@
 #define timeSystem_TimeValue_h
 
 #include <cmath>
-#include <iostream>
 #include <limits>
 #include <sstream>
 #include <stdexcept>
@@ -21,7 +20,9 @@ namespace timeSystem {
   // TODO: where to put IntFracPair class?
   class IntFracPair {
     public:
-      IntFracPair(long int_part = 0, double frac_part = 0.): m_int_part(int_part), m_frac_part(frac_part) {}
+      IntFracPair(): m_int_part(0), m_frac_part(0.) {}
+
+      IntFracPair(long int_part, double frac_part): m_int_part(int_part), m_frac_part(frac_part) {}
 
       IntFracPair(double value) {
 	// split value into integer part and fractional part.
@@ -33,12 +34,12 @@ namespace timeSystem {
 	if (int_part_dbl >= std::numeric_limits<long>::max() + 1.) {
 	  std::ostringstream os;
 	  os.precision(std::numeric_limits<double>::digits10);
-	  os << "TimeValue::TimeValue: overflow while converting " << int_part_dbl << " to a long";
+	  os << "IntFracPair::IntFracPair: overflow while converting " << int_part_dbl << " to a long";
 	  throw std::runtime_error(os.str());
 	} else if (int_part_dbl <= std::numeric_limits<long>::min() - 1.) {
 	  std::ostringstream os;
 	  os.precision(std::numeric_limits<double>::digits10);
-	  os << "TimeValue::TimeValue: underflow while converting " << int_part_dbl << " to a long";
+	  os << "IntFracPair::IntFracPair: underflow while converting " << int_part_dbl << " to a long";
 	  throw std::runtime_error(os.str());
 	}
 	m_int_part = long(int_part_dbl);
@@ -51,24 +52,30 @@ namespace timeSystem {
         m_frac_part = std::floor(m_frac_part * factor) / factor;
       }
 
-      IntFracPair(std::string value) {
+      IntFracPair(const std::string & input_value) {
+        std::string value;
         // Read number into temporary double variable.
-        double value_dbl;
+        double value_dbl = 0.;
         {
+          // Remove trailing space to prevent spurious errors.
+          std::string::size_type trail = input_value.find_last_not_of(" \t\v\n");
+          if (std::string::npos != trail) value = input_value.substr(0, trail + 1);
           std::istringstream iss(value);
           iss >> value_dbl;
+          if (iss.fail() || !iss.eof())
+            throw std::runtime_error("IntFracPair::IntFracPair: cannot construct from \"" + input_value + "\"");
         }
 
         // Compute integer part.
         if (value_dbl >= std::numeric_limits<long>::max() + 1.) {
 	  std::ostringstream os;
 	  os.precision(std::numeric_limits<double>::digits10);
-	  os << "TimeValue::TimeValue: overflow while converting " << value_dbl << " to a long";
+	  os << "IntFracPair::IntFracPair: overflow while converting " << value_dbl << " to a long";
 	  throw std::runtime_error(os.str());
         } else if (value_dbl <= std::numeric_limits<long>::min() - 1.) {
 	  std::ostringstream os;
 	  os.precision(std::numeric_limits<double>::digits10);
-	  os << "TimeValue::TimeValue: underflow while converting " << value_dbl << " to a long";
+	  os << "IntFracPair::IntFracPair: underflow while converting " << value_dbl << " to a long";
 	  throw std::runtime_error(os.str());
         }
         m_int_part = long(value_dbl);
@@ -76,15 +83,15 @@ namespace timeSystem {
         // Compute number of digits of integer part.
         int num_digit = (m_int_part == 0 ? 0 : int(std::floor(std::log10(std::fabs(double(m_int_part)))) + 0.5) + 1);
 
-        // Skip leading zeros.
+        // Skip leading zeros, whitespace, and non-digits.
         std::string::iterator itor = value.begin();
-        for (; (itor != value.end()) && ((*itor == '0') || !isdigit(*itor)); itor++) {}
+        for (; itor != value.end() && ('0' == *itor || 0 == std::isdigit(*itor)); ++itor) {}
 
         // Erase numbers in integer part.
-        for (int ii_digit = 0; (itor != value.end()) && (ii_digit < num_digit); itor++) {
-          if (isdigit(*itor)) {
+        for (int ii_digit = 0; itor != value.end() && ii_digit < num_digit; ++itor) {
+          if (0 != std::isdigit(*itor)) {
             *itor = '0';
-            ii_digit++;
+            ++ii_digit;
           }
         }
 
