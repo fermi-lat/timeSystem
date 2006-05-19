@@ -1,5 +1,15 @@
 ------------------------------------------------------------
 User: peachey  Fri May 19 11:40:59 PDT 2006
+timeSystem/timeSystem
+
+Modified Files:
+	AbsoluteTime.h Duration.h TimeSystem.h TimeValue.h 
+Log Message:
+Clean up resolved issues to do and ifdefed/commented out code.
+
+    *
+------------------------------------------------------------
+User: peachey  Fri May 19 11:40:59 PDT 2006
 timeSystem/src/test
 
 Modified Files:
