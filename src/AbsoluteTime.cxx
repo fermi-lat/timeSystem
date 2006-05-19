@@ -78,11 +78,6 @@ namespace timeSystem {
     return AbsoluteTime(m_time_system->getName(), m_time.first, time2.second + m_time_system->computeTimeDifference(time2.first, m_time.first));
   }
 
-  void AbsoluteTime::write(st_stream::OStream & os) const {
-    // "123 days 456.789 seconds since 54321.987 MJD (TDB)"
-    os << m_time.second << " since " << m_time.first << " MJD (" << m_time_system->getName() << ")";
-  }
-
   std::ostream & operator <<(std::ostream & os, const AbsoluteTime & time) {
     time.write(os);
     return os;
