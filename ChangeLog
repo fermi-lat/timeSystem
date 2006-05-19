@@ -1,4 +1,15 @@
 ------------------------------------------------------------
+User: peachey  Fri May 19 11:53:29 PDT 2006
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Template-ize write method and make sure there are shift operators
+for both st_stream and std::ostream.
+
+    *
+------------------------------------------------------------
 User: peachey  Fri May 19 11:53:28 PDT 2006
 timeSystem/src
 
