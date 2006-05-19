@@ -136,26 +136,26 @@ namespace timeSystem {
 
   class TimeValue {
     public:
-      typedef std::pair<long, double> split_type;
       typedef std::vector<long> carry_type;
 
       TimeValue(const IntFracPair & base_value): m_base_value(base_value), m_carry_over() {}
 
-      TimeValue(long carry0, const IntFracPair & base_value): m_base_value(base_value), m_carry_over(pack(carry0)) {}
+      TimeValue(long carry0, const IntFracPair & base_value): m_base_value(base_value), m_carry_over(pack(1, carry0)) {}
 
-      TimeValue(long carry1, long carry0, const IntFracPair & base_value): m_base_value(base_value), m_carry_over(pack(carry1, carry0)) {}
+      TimeValue(long carry1, long carry0, const IntFracPair & base_value): m_base_value(base_value),
+        m_carry_over(pack(2, carry0, carry1)) {}
 
       TimeValue(long carry2, long carry1, long carry0, const IntFracPair & base_value): m_base_value(base_value),
-        m_carry_over(pack(carry2, carry1, carry0)) {}
+        m_carry_over(pack(3, carry0, carry1, carry2)) {}
 
       TimeValue(long carry3, long carry2, long carry1, long carry0, const IntFracPair & base_value): m_base_value(base_value),
-        m_carry_over(pack(carry3, carry2, carry1, carry0)) {}
+        m_carry_over(pack(4, carry0, carry1, carry2, carry3)) {}
 
       TimeValue(long carry4, long carry3, long carry2, long carry1, long carry0, const IntFracPair & base_value):
-        m_base_value(base_value), m_carry_over(pack(carry4, carry3, carry2, carry1, carry0)) {}
+        m_base_value(base_value), m_carry_over(pack(5, carry0, carry1, carry2, carry3, carry4)) {}
 
       TimeValue(long carry5, long carry4, long carry3, long carry2, long carry1, long carry0, const IntFracPair & base_value):
-        m_base_value(base_value), m_carry_over(pack(carry5, carry4, carry3, carry2, carry1, carry0)) {}
+        m_base_value(base_value), m_carry_over(pack(6, carry0, carry1, carry2, carry3, carry4, carry5)) {}
 
       IntFracPair getBaseValue() const { return m_base_value; }
 
@@ -178,55 +178,12 @@ namespace timeSystem {
 
     private:
 
-      carry_type pack(long carry0) {
-        carry_type carry_over(1);
-        carry_over[0] = carry0;
-        return carry_over;
-      }
-
-      carry_type pack(long carry1, long carry0) {
-        carry_type carry_over(2);
-        carry_over[0] = carry0;
-        carry_over[1] = carry1;
-        return carry_over;
-      }
-
-      carry_type pack(long carry2, long carry1, long carry0) {
-        carry_type carry_over(3);
-        carry_over[0] = carry0;
-        carry_over[1] = carry1;
-        carry_over[2] = carry2;
-        return carry_over;
-      }
-
-      carry_type pack(long carry3, long carry2, long carry1, long carry0) {
-        carry_type carry_over(4);
-        carry_over[0] = carry0;
-        carry_over[1] = carry1;
-        carry_over[2] = carry2;
-        carry_over[3] = carry3;
-        return carry_over;
-      }
-
-      carry_type pack(long carry4, long carry3, long carry2, long carry1, long carry0) {
-        carry_type carry_over(5);
-        carry_over[0] = carry0;
-        carry_over[1] = carry1;
-        carry_over[2] = carry2;
-        carry_over[3] = carry3;
-        carry_over[4] = carry4;
-        return carry_over;
-      }
-
-      carry_type pack(long carry5, long carry4, long carry3, long carry2, long carry1, long carry0) {
-        carry_type carry_over(6);
-        carry_over[0] = carry0;
-        carry_over[1] = carry1;
-        carry_over[2] = carry2;
-        carry_over[3] = carry3;
-        carry_over[4] = carry4;
-        carry_over[5] = carry5;
-        return carry_over;
+      carry_type pack(carry_type::size_type num_carry, long carry0 = 0, long carry1 = 0, long carry2 = 0,
+        long carry3 = 0, long carry4 = 0, long carry5 = 0) {
+        long carry[] = { carry0, carry1, carry2, carry3, carry4, carry5 };
+        carry_type::size_type carry_size = sizeof(carry) / sizeof(carry[0]);
+        carry_type::size_type idx = std::min(carry_size, num_carry);
+        return carry_type(carry, carry + idx);
       }
 
       IntFracPair m_base_value;
