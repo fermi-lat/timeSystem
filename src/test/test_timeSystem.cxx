@@ -714,8 +714,8 @@ namespace {
     CompareIntFracPair("After int_frac = IntFracPair(" + context + ")", int_frac, int_part, frac_part);
 
     // Test construction from a std::string, making sure the separate int and fractional parts are as expected.
-    std::string sval = "00056789.56789567895678956789";
-    int_part = 56789;
+    std::string sval = "00050089.56789567895678956789";
+    int_part = 50089;
     frac_part = .56789567895678900000;
     os << "sval = \"" << sval << "\"";
     context = os.str();
@@ -723,6 +723,74 @@ namespace {
 
     int_frac = IntFracPair(sval);
     CompareIntFracPair("After int_frac = IntFracPair(" + context + ")", int_frac, int_part, frac_part);
+
+    sval = "  +1e+3  ";
+    int_part = 1000;
+    frac_part = 0.;
+    os << "sval = \"" << sval << "\"";
+    context = os.str();
+    os.str("");
+    int_frac = IntFracPair(sval);
+    CompareIntFracPair("After int_frac = IntFracPair(" + context + ")", int_frac, int_part, frac_part);
+
+    sval = "  -2e+3";
+    int_part = -2000;
+    frac_part = 0.;
+    os << "sval = \"" << sval << "\"";
+    context = os.str();
+    os.str("");
+    int_frac = IntFracPair(sval);
+    CompareIntFracPair("After int_frac = IntFracPair(" + context + ")", int_frac, int_part, frac_part);
+
+    sval = "3e+3  ";
+    int_part = 3000;
+    frac_part = 0.;
+    os << "sval = \"" << sval << "\"";
+    context = os.str();
+    os.str("");
+    int_frac = IntFracPair(sval);
+    CompareIntFracPair("After int_frac = IntFracPair(" + context + ")", int_frac, int_part, frac_part);
+
+    // Test errors resulting from bad string conversions.
+    try {
+      sval = "! 1.e6";
+      int_frac = IntFracPair(sval);
+      err() << "IntFracPair(\"" << sval << "\") did not throw exception." << std::endl;
+    } catch (const std::exception &) {
+      // That's good.
+    }
+
+    try {
+      sval = "1.e6 0";
+      int_frac = IntFracPair(sval);
+      err() << "IntFracPair(\"" << sval << "\") did not throw exception." << std::endl;
+    } catch (const std::exception &) {
+      // That's good.
+    }
+
+    try {
+      sval = "1..e6";
+      int_frac = IntFracPair(sval);
+      err() << "IntFracPair(\"" << sval << "\") did not throw exception." << std::endl;
+    } catch (const std::exception &) {
+      // That's good.
+    }
+
+    try {
+      sval = "1 + 6";
+      int_frac = IntFracPair(sval);
+      err() << "IntFracPair(\"" << sval << "\") did not throw exception." << std::endl;
+    } catch (const std::exception &) {
+      // That's good.
+    }
+
+    try {
+      sval = "0. 0.";
+      int_frac = IntFracPair(sval);
+      err() << "IntFracPair(\"" << sval << "\") did not throw exception." << std::endl;
+    } catch (const std::exception &) {
+      // That's good.
+    }
   }
 
   void TestTimeInterval() {
