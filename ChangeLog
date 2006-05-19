@@ -1,5 +1,16 @@
 ------------------------------------------------------------
 User: peachey  Fri May 19 13:59:17 PDT 2006
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Make improvements to test and contructors for IntFracPair, especially
+the conversion of string values.
+
+    *
+------------------------------------------------------------
+User: peachey  Fri May 19 13:59:17 PDT 2006
 timeSystem/timeSystem
 
 Modified Files:
