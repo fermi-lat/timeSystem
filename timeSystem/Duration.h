@@ -100,9 +100,8 @@ namespace timeSystem {
         return (*this > other ? (*this <= other + tolerance) : (other <= *this + tolerance));
       }
 
-      void write(std::ostream & os) const;
-
-      void write(st_stream::OStream & os) const;
+      template <typename StreamType>
+      void write(StreamType & os) const;
 
     private:
       typedef std::pair<long, double> time_type;
@@ -234,16 +233,8 @@ namespace timeSystem {
     return Duration(negate(m_time));
   }
 
-  inline void Duration::write(std::ostream & os) const {
-    os << m_time.first << " day";
-    if (m_time.first != 1) os << "s";
-    std::streamsize prec = os.precision(std::numeric_limits<double>::digits10);
-    os << ", " << m_time.second << " second";
-    if (m_time.second != 1.) os << "s";
-    os.precision(prec);
-  }
-
-  inline void Duration::write(st_stream::OStream & os) const {
+  template <typename StreamType>
+  inline void Duration::write(StreamType & os) const {
     os << m_time.first << " day";
     if (m_time.first != 1) os << "s";
     std::streamsize prec = os.precision(std::numeric_limits<double>::digits10);

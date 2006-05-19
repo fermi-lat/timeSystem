@@ -327,7 +327,10 @@ namespace timeSystem {
     return m_system_name;
   }
 
-  void TimeSystem::write(st_stream::OStream & os) const { os << m_system_name; }
+  std::ostream & operator <<(std::ostream & os, const TimeSystem & sys) {
+    sys.write(os);
+    return os;
+  }
 
   st_stream::OStream & operator <<(st_stream::OStream & os, const TimeSystem & sys) {
     sys.write(os);

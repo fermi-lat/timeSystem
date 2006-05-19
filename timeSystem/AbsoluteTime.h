@@ -7,7 +7,6 @@
 #define timeSystem_AbsoluteTime_h
 
 #include "timeSystem/Duration.h"
-// TODO: remove below when Moment is defined somewhere else.
 #include "timeSystem/TimeSystem.h"
 
 #include <string>
@@ -20,7 +19,6 @@ namespace timeSystem {
 
   class ElapsedTime;
   class TimeInterval;
-  class TimeSystem;
 
   /** \class AbsoluteTime
       \brief Class which represents an absolute moment in time, expressed as a time elapsed from a specific MJD time, in
@@ -56,7 +54,8 @@ namespace timeSystem {
 
       ElapsedTime computeElapsedTime(const std::string & time_system_name, const AbsoluteTime & since) const;
 
-      void write(st_stream::OStream & os) const;
+      template <typename StreamType>
+      void write(StreamType & os) const;
 
     private:
       // Prohibited operations:
@@ -69,7 +68,16 @@ namespace timeSystem {
       Moment m_time;
   };
 
+  template <typename StreamType>
+  inline void AbsoluteTime::write(StreamType & os) const {
+    // "123 days 456.789 seconds since 54321.987 MJD (TDB)"
+    os << m_time.second << " since " << m_time.first << " MJD (" << *m_time_system << ")";
+  }
+
+  std::ostream & operator <<(std::ostream & os, const AbsoluteTime & time);
+
   st_stream::OStream & operator <<(st_stream::OStream & os, const AbsoluteTime & time);
+
 }
 
 #endif
