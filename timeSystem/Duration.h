@@ -108,34 +108,6 @@ namespace timeSystem {
       typedef std::pair<long, double> time_type;
       Duration(const time_type & new_time): m_time(new_time) {}
 
-#if 0
-      // This is commented out because there are problems converting days into days + seconds
-      // without losing precision. Not needed with current scheme because constructors work
-      // directly from long values for days.
-      /** \brief Convert any number of days into days & seconds in range [0, 86400).
-          \param day Input number of days.
-      */
-      time_type splitDay(double day) const {
-        double offset;
-        if (0. > day) {
-          offset = -.5;
-        } else {
-          offset = +.5;
-        }
-        double int_part;
-        double frac_part = std::modf(day, &int_part);
-        int num_digit_all = std::numeric_limits<double>::digits10;
-        int num_digit_int = int_part == 0 ? 0 : int(floor(log10(fabs(int_part))) + 0.5) + 1;
-        int num_digit_frac = num_digit_all - num_digit_int;
-        double factor = floor(exp(num_digit_frac * log(10.0)));
-        frac_part = floor(frac_part * factor) / factor;
-        return time_type(long(int_part + offset), frac_part * SecPerDay());
-
-        long del = long(std::floor(day) + offset);
-        return time_type(del, (day - del) * SecPerDay());
-      }
-#endif
-
       /** \brief Convert any number of seconds into days & seconds in range [0, 86400).
           \param sec Input number of seconds.
       */
@@ -289,6 +261,8 @@ namespace timeSystem {
     dur.write(os);
     return os;
   }
+
+  typedef std::pair<Duration, Duration> Moment;
 
 }
 

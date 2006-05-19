@@ -66,10 +66,6 @@ namespace timeSystem {
       // AbsoluteTime operator +(const TimeInterval &) const;
       // AbsoluteTime operator -(const TimeInterval &) const;
       const TimeSystem * m_time_system;
-#if 0
-      Duration m_origin;
-      Duration m_time;
-#endif
       Moment m_time;
   };
 
