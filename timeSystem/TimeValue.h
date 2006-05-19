@@ -99,7 +99,8 @@ namespace timeSystem {
 
       double getFractionalPart() const { return m_frac_part; }
 
-      void write(st_stream::OStream & os) const {
+      template <typename StreamType>
+      void write(StreamType & os) const {
         // write split value part.
         if (m_int_part == 0) {
           os << m_frac_part;
@@ -122,6 +123,11 @@ namespace timeSystem {
       long m_int_part;
       double m_frac_part;
   };
+
+  inline std::ostream & operator <<(std::ostream & os, const IntFracPair & int_frac) {
+    int_frac.write(os);
+    return os;
+  }
 
   inline st_stream::OStream & operator <<(st_stream::OStream & os, const IntFracPair & int_frac) {
     int_frac.write(os);
@@ -159,7 +165,8 @@ namespace timeSystem {
         return result;
       }
 
-      void write(st_stream::OStream & os) const {
+      template <typename StreamType>
+      void write(StreamType & os) const {
         // write carry over part.
         for (carry_type::const_reverse_iterator itor = m_carry_over.rbegin(); itor != m_carry_over.rend(); itor++) {
           os << *itor << ",";
@@ -225,6 +232,11 @@ namespace timeSystem {
       IntFracPair m_base_value;
       carry_type m_carry_over;
   };
+
+  inline std::ostream & operator <<(std::ostream & os, const TimeValue & tv) {
+    tv.write(os);
+    return os;
+  }
 
   inline st_stream::OStream & operator <<(st_stream::OStream & os, const TimeValue & tv) {
     tv.write(os);

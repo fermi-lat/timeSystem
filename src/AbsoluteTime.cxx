@@ -83,8 +83,14 @@ namespace timeSystem {
     os << m_time.second << " since " << m_time.first << " MJD (" << m_time_system->getName() << ")";
   }
 
+  std::ostream & operator <<(std::ostream & os, const AbsoluteTime & time) {
+    time.write(os);
+    return os;
+  }
+
   st_stream::OStream & operator <<(st_stream::OStream & os, const AbsoluteTime & time) {
     time.write(os);
     return os;
   }
+
 }

@@ -8,13 +8,14 @@
 
 #include "st_stream/Stream.h"
 
+#include "timeSystem/TimeSystem.h"
+
 #include <string>
 
 namespace timeSystem {
 
   class AbsoluteTime;
   class Duration;
-  class TimeSystem;
 
   /** \class ElapsedTime
       \brief Class which represents a duration of time measured in a particular time system ("delta T"). By their nature,
@@ -36,7 +37,8 @@ namespace timeSystem {
 
       void setTime(const Duration & time);
 
-      void write(st_stream::OStream & os) const;
+      template <typename StreamType>
+      void write(StreamType & os) const;
 
     protected:
       ElapsedTime(const TimeSystem * time_system, const Duration & time);
@@ -49,6 +51,13 @@ namespace timeSystem {
       const TimeSystem * m_time_system;
       Duration m_time;
   };
+
+  template <typename StreamType>
+  inline void ElapsedTime::write(StreamType & os) const {
+    os << m_time << " (" << *m_time_system << ")";
+  }
+
+  std::ostream & operator <<(std::ostream & os, const ElapsedTime & time);
 
   st_stream::OStream & operator <<(st_stream::OStream & os, const ElapsedTime & time);
 }

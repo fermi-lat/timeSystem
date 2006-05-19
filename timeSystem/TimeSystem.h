@@ -33,7 +33,8 @@ namespace timeSystem {
 
       std::string getName() const;
 
-      void write(st_stream::OStream & os) const;
+      template <typename StreamType>
+      void write(StreamType & os) const;
 
     protected:
       typedef std::map<std::string, TimeSystem *> container_type;
@@ -48,7 +49,13 @@ namespace timeSystem {
       static TimeSystem & getNonConstSystem(const std::string & system_name);
   };
 
+  template <typename StreamType>
+  inline void TimeSystem::write(StreamType & os) const { os << m_system_name; }
+
+  std::ostream & operator <<(std::ostream & os, const TimeSystem & sys);
+
   st_stream::OStream & operator <<(st_stream::OStream & os, const TimeSystem & sys);
+
 }
 
 #endif

@@ -6,7 +6,6 @@
 #include "timeSystem/AbsoluteTime.h"
 #include "timeSystem/Duration.h"
 #include "timeSystem/ElapsedTime.h"
-#include "timeSystem/TimeSystem.h"
 
 namespace timeSystem {
 
@@ -26,8 +25,9 @@ namespace timeSystem {
 
   void ElapsedTime::setTime(const Duration & time) { m_time = time; }
 
-  void ElapsedTime::write(st_stream::OStream & os) const {
-    os << m_time << " (" << m_time_system->getName() << ")";
+  std::ostream & operator <<(std::ostream & os, const ElapsedTime & time) {
+    time.write(os);
+    return os;
   }
 
   st_stream::OStream & operator <<(st_stream::OStream & os, const ElapsedTime & time) {
