@@ -23,10 +23,6 @@ namespace timeSystem {
   TimeInterval AbsoluteTime::operator -(const AbsoluteTime & time) const { return TimeInterval(time, *this); }
 
   bool AbsoluteTime::operator >(const AbsoluteTime & other) const {
-#if 0
-    Duration other_time = m_time_system->convertFrom(*other.m_time_system, other.m_origin, other.m_time);
-    return m_time > other_time + m_time_system->computeTimeDifference(other.m_origin, m_origin);
-#endif
     Moment other_time = m_time_system->convertFrom(*other.m_time_system, other.m_time);
     return m_time.second > other_time.second + m_time_system->computeTimeDifference(other_time.first, m_time.first);
   }
@@ -56,14 +52,6 @@ namespace timeSystem {
 
   ElapsedTime AbsoluteTime::computeElapsedTime(const std::string & time_system_name, const AbsoluteTime & since) const {
     const TimeSystem & time_system(TimeSystem::getSystem(time_system_name));
-#if 0
-    // Convert both times into the given time system.
-    Duration minuend_time = time_system.convertFrom(*m_time_system, m_origin, m_time);
-    Duration subtrahend_time = time_system.convertFrom(*(since.m_time_system), since.m_origin, since.m_time);
-
-    // Subtract the subtahend's origin and duration from the minuend's and sum the two remainders.
-    return ElapsedTime(time_system_name, time_system.computeTimeDifference(m_origin, since.m_origin) + (minuend_time - subtrahend_time));
-#endif
     // Convert both times into the given time system.
     Moment minuend = time_system.convertFrom(*m_time_system, m_time);
     Moment subtrahend = time_system.convertFrom(*(since.m_time_system), since.m_time);
@@ -75,16 +63,6 @@ namespace timeSystem {
 
   AbsoluteTime AbsoluteTime::computeAbsoluteTime(const std::string & time_system_name, const Duration & delta_t) const {
     const TimeSystem & time_system(TimeSystem::getSystem(time_system_name));
-#if 0
-    // Compute m_time for an absolute time to return in time_system
-    Duration time1 = time_system.convertFrom(*m_time_system, m_origin, m_time) + delta_t;
-
-    // Compute m_time for an absolute time to return in *m_time_system.
-    Duration time2 = m_time_system->convertFrom(time_system, m_origin, time1);
-
-    // Create an absolute time to return
-    return AbsoluteTime(m_time_system->getName(), m_origin, time2);
-#endif
     // Convert this time to a corresponding time in time_system
     Moment time1 = time_system.convertFrom(*m_time_system, m_time);
 
@@ -102,9 +80,6 @@ namespace timeSystem {
 
   void AbsoluteTime::write(st_stream::OStream & os) const {
     // "123 days 456.789 seconds since 54321.987 MJD (TDB)"
-#if 0
-    os << m_time << " since " << m_origin << " MJD (" << m_time_system->getName() << ")";
-#endif
     os << m_time.second << " since " << m_time.first << " MJD (" << m_time_system->getName() << ")";
   }
 
