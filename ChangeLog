@@ -1,4 +1,15 @@
 ------------------------------------------------------------
+User: peachey  Fri May 19 12:00:50 PDT 2006
+timeSystem/src
+
+Modified Files:
+	AbsoluteTime.cxx 
+Log Message:
+Remove old implementation of write method which was added accidentally
+during a merge.
+
+    *
+------------------------------------------------------------
 User: peachey  Fri May 19 11:53:29 PDT 2006
 timeSystem/timeSystem
 
