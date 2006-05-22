@@ -34,6 +34,8 @@ namespace {
 
       virtual Duration computeTimeDifference(const Duration & mjd1, const Duration & mjd2) const;
 
+      virtual Duration findMjdExpression(const Moment & time) const;
+
   };
 
   class TdbSystem : public TimeSystem {
@@ -43,6 +45,8 @@ namespace {
       virtual Moment convertFrom(const TimeSystem & time_system, const Moment & time) const;
 
       virtual Duration computeTimeDifference(const Duration & mjd1, const Duration & mjd2) const;
+
+      virtual Duration findMjdExpression(const Moment & time) const;
 
       Duration computeTdbMinusTt(const Duration & mjd) const;
 
@@ -56,6 +60,8 @@ namespace {
 
       virtual Duration computeTimeDifference(const Duration & mjd1, const Duration & mjd2) const;
 
+      virtual Duration findMjdExpression(const Moment & time) const;
+
   };
 
   class UtcSystem : public TimeSystem {
@@ -65,6 +71,8 @@ namespace {
       virtual Moment convertFrom(const TimeSystem & time_system, const Moment & time) const;
 
       virtual Duration computeTimeDifference(const Duration & mjd1, const Duration & mjd2) const;
+
+      virtual Duration findMjdExpression(const Moment & time) const;
 
       void loadLeapSecTable(const std::string & leap_sec_file_name, bool force_load);
 
@@ -109,6 +117,10 @@ namespace {
     return mjd1 - mjd2;
   }
 
+  Duration TaiSystem::findMjdExpression(const Moment & time) const {
+    return time.first + time.second;
+  }
+
   Duration TdbSystem::computeTdbMinusTt(const Duration & mjd_tt) const {
     static const long jd_minus_mjd_int = 2400000;
     static const double jd_minus_mjd_frac = .5;
@@ -137,6 +149,10 @@ namespace {
 
   Duration TdbSystem::computeTimeDifference(const Duration & mjd1, const Duration & mjd2) const {
     return mjd1 - mjd2;
+  }
+
+  Duration TdbSystem::findMjdExpression(const Moment & time) const {
+    return time.first + time.second;
   }
 
   Moment TtSystem::convertFrom(const TimeSystem & time_system, const Moment & time) const {
@@ -181,6 +197,10 @@ namespace {
     return mjd1 - mjd2;
   }
 
+  Duration TtSystem::findMjdExpression(const Moment & time) const {
+    return time.first + time.second;
+  }
+
   UtcSystem::UtcSystem(): TimeSystem("UTC") {}
 
   Moment UtcSystem::convertFrom(const TimeSystem & time_system, const Moment & time) const {
@@ -199,6 +219,18 @@ namespace {
 
   Duration UtcSystem::computeTimeDifference(const Duration & mjd1, const Duration & mjd2) const {
     return (mjd1 + computeTaiMinusUtc(mjd1)) - (mjd2 + computeTaiMinusUtc(mjd2));
+  }
+
+  Duration UtcSystem::findMjdExpression(const Moment & time) const {
+    const TimeSystem & tai_system(TimeSystem::getSystem("TAI"));
+
+    // "Add" elapsed time to origin. To do it correctly, it should be
+    // done in a time system without a leap second, such as TAI.
+    Moment tai_time = tai_system.convertFrom(*this, time);
+    Duration mjd_tai = tai_time.first + tai_time.second;
+
+    // compute MJD number in UTC system.
+    return mjd_tai + computeUtcMinusTai(mjd_tai);
   }
 
   void UtcSystem::loadLeapSecTable(const std::string & leap_sec_file_name, bool force_load) {
