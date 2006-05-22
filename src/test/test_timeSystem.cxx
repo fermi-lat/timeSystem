@@ -496,26 +496,58 @@ namespace {
 
     Duration tolerance(0, 1.e-9); // 1 nanosecond.
 
-    for (std::list<std::pair<Duration, double> >::iterator itor = test_input.begin(); itor != test_input.end();
-      itor++) {
-      Duration mjd1(itor->first + Duration(0, 20.));
-      Duration mjd2(itor->first);
+    for (std::list<std::pair<Duration, double> >::iterator itor_test = test_input.begin(); itor_test != test_input.end(); ++itor_test) {
+      Duration mjd1(itor_test->first + Duration(0, 20.));
+      Duration mjd2(itor_test->first);
 
       std::map<std::string, Duration> expected_diff;
       expected_diff["TAI"] = Duration(0, 20.);
       expected_diff["TDB"] = Duration(0, 20.);
       expected_diff["TT"]  = Duration(0, 20.);
-      expected_diff["UTC"] = Duration(0, 20. + itor->second);
+      expected_diff["UTC"] = Duration(0, 20. + itor_test->second);
 
-      for (std::map<std::string, Duration>::iterator itor = expected_diff.begin(); itor != expected_diff.end();
-        itor++) {
-	std::string time_system_name = itor->first;
+      for (std::map<std::string, Duration>::iterator itor_exp = expected_diff.begin(); itor_exp != expected_diff.end(); ++itor_exp) {
+	std::string time_system_name = itor_exp->first;
 	const TimeSystem & time_system(TimeSystem::getSystem(time_system_name));
 	Duration time_diff = time_system.computeTimeDifference(mjd1, mjd2);
 	if (!time_diff.equivalentTo(expected_diff[time_system_name], tolerance)) {
 	  err() << "computeTimeDifference(mjd1, mjd2) of " << time_system_name << " returned " << time_diff <<
 	    " for mjd1 = " << mjd1 << " and mjd2 = " << mjd2 << ", not equivalent to the expected result, " <<
 	    expected_diff[time_system_name] << ", with tolerance of " << tolerance << "." << std::endl;
+	}
+      }
+    }
+
+    // Test findMjdExpression method.
+    std::list<std::pair<Moment, Duration> > test_input_moment;
+    // middle of nowhere
+    test_input_moment.push_back(std::make_pair(Moment(Duration(51910, 0.), Duration(0, 100.)), Duration(51910, 100.)));
+    // leap second insertion
+    test_input_moment.push_back(std::make_pair(Moment(Duration(51178, 86390.), Duration(0, 20.)), Duration(51179, 9.)));
+    // leap second removal
+    test_input_moment.push_back(std::make_pair(Moment(Duration(50629, 86390.), Duration(0, 20.)), Duration(50630, 11.)));
+    // non-existing time in UTC
+    test_input_moment.push_back(std::make_pair(Moment(Duration(50629, 86399.3), Duration(0, 20.)), Duration(50630, 20.)));
+
+    for (std::list<std::pair<Moment, Duration> >::iterator itor_test = test_input_moment.begin(); itor_test != test_input_moment.end();
+      ++itor_test) {
+      Moment time = itor_test->first;
+      Duration mjd_utc = itor_test->second;
+
+      std::map<std::string, Duration> expected_mjd;
+      expected_mjd["TAI"] = time.first + time.second;
+      expected_mjd["TDB"] = time.first + time.second;
+      expected_mjd["TT"]  = time.first + time.second;
+      expected_mjd["UTC"] = mjd_utc;
+
+      for (std::map<std::string, Duration>::iterator itor_exp = expected_mjd.begin(); itor_exp != expected_mjd.end(); ++itor_exp) {
+	std::string time_system_name = itor_exp->first;
+	const TimeSystem & time_system(TimeSystem::getSystem(time_system_name));
+	Duration mjd = time_system.findMjdExpression(time);
+	if (!mjd.equivalentTo(expected_mjd[time_system_name], tolerance)) {
+	  err() << "findMjdExpression of " << time_system_name << " returned " << mjd <<
+	    " for Moment(" << time.first << ", " << time.second << "), not equivalent to the expected result, " <<
+	    expected_mjd[time_system_name] << ", with tolerance of " << tolerance << "." << std::endl;
 	}
       }
     }
