@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: hirayama  Mon May 22 12:09:35 PDT 2006
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Add tests of TimeSystem::findMjdExpression method. Rename itor variables that are used in two levels in a nested loop into itor_test and itor_exp to aviod possible confusion.
+
+    *
+------------------------------------------------------------
 User: hirayama  Mon May 22 12:06:25 PDT 2006
 timeSystem/src
 
