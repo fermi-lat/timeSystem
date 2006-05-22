@@ -31,6 +31,8 @@ namespace timeSystem {
 
       virtual Duration computeTimeDifference(const Duration & mjd1, const Duration & mjd2) const = 0;
 
+      virtual Duration findMjdExpression(const Moment & time) const = 0;
+
       std::string getName() const;
 
       template <typename StreamType>
