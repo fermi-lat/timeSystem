@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: hirayama  Thu May 25 13:05:55 PDT 2006
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Replace hard-coded numbers with variables and constants such as leap1 and SecPerDay() to improve readability of the code.
+
+    *
+------------------------------------------------------------
 User: hirayama  Mon May 22 12:09:35 PDT 2006
 timeSystem/src/test
 
