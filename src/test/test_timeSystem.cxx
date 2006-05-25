@@ -488,23 +488,24 @@ namespace {
     TestOneConversion("UTC", Duration(leap1, -1.0), Duration(0, 0.), "TAI", Duration(leap1, 0.), Duration(0, diff0 - 1.0));
 
     // Test computeTimeDifference method.
+    double deltat = 20.;
     std::list<std::pair<Duration, double> > test_input;
     test_input.push_back(std::make_pair(Duration(51910, 100.),  0.)); // middle of nowhere
-    test_input.push_back(std::make_pair(Duration(51178, 86390.), +1.)); // leap second insertion
-    test_input.push_back(std::make_pair(Duration(50629, 86390.), -1.)); // leap second removal
-    test_input.push_back(std::make_pair(Duration(50629, 86399.3), -.7)); // non-existing time in UTC
+    test_input.push_back(std::make_pair(Duration(leap2 - 1, SecPerDay() - 10.), +1.)); // leap second insertion
+    test_input.push_back(std::make_pair(Duration(leap1 - 1, SecPerDay() - 10.), -1.)); // leap second removal
+    test_input.push_back(std::make_pair(Duration(leap1 - 1, SecPerDay() - .7),  -.7)); // non-existing time in UTC
 
     Duration tolerance(0, 1.e-9); // 1 nanosecond.
 
     for (std::list<std::pair<Duration, double> >::iterator itor_test = test_input.begin(); itor_test != test_input.end(); ++itor_test) {
-      Duration mjd1(itor_test->first + Duration(0, 20.));
+      Duration mjd1(itor_test->first + Duration(0, deltat));
       Duration mjd2(itor_test->first);
 
       std::map<std::string, Duration> expected_diff;
-      expected_diff["TAI"] = Duration(0, 20.);
-      expected_diff["TDB"] = Duration(0, 20.);
-      expected_diff["TT"]  = Duration(0, 20.);
-      expected_diff["UTC"] = Duration(0, 20. + itor_test->second);
+      expected_diff["TAI"] = Duration(0, deltat);
+      expected_diff["TDB"] = Duration(0, deltat);
+      expected_diff["TT"]  = Duration(0, deltat);
+      expected_diff["UTC"] = Duration(0, deltat + itor_test->second);
 
       for (std::map<std::string, Duration>::iterator itor_exp = expected_diff.begin(); itor_exp != expected_diff.end(); ++itor_exp) {
 	std::string time_system_name = itor_exp->first;
@@ -523,11 +524,13 @@ namespace {
     // middle of nowhere
     test_input_moment.push_back(std::make_pair(Moment(Duration(51910, 0.), Duration(0, 100.)), Duration(51910, 100.)));
     // leap second insertion
-    test_input_moment.push_back(std::make_pair(Moment(Duration(51178, 86390.), Duration(0, 20.)), Duration(51179, 9.)));
+    test_input_moment.push_back(std::make_pair(Moment(Duration(leap2 - 1, SecPerDay() - 10.), Duration(0, deltat)),
+      Duration(leap2, deltat - 10. - 1.)));
     // leap second removal
-    test_input_moment.push_back(std::make_pair(Moment(Duration(50629, 86390.), Duration(0, 20.)), Duration(50630, 11.)));
+    test_input_moment.push_back(std::make_pair(Moment(Duration(leap1 - 1, SecPerDay() - 10.), Duration(0, deltat)),
+      Duration(leap1, deltat - 10. + 1.)));
     // non-existing time in UTC
-    test_input_moment.push_back(std::make_pair(Moment(Duration(50629, 86399.3), Duration(0, 20.)), Duration(50630, 20.)));
+    test_input_moment.push_back(std::make_pair(Moment(Duration(leap1 - 1, SecPerDay() - .7), Duration(0, deltat)), Duration(leap1, deltat)));
 
     for (std::list<std::pair<Moment, Duration> >::iterator itor_test = test_input_moment.begin(); itor_test != test_input_moment.end();
       ++itor_test) {
