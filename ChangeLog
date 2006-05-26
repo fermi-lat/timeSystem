@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: peachey  Fri May 26 12:46:31 PDT 2006
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Rename findMjdExpression method to computeMjd.
+
+    *
+------------------------------------------------------------
 User: hirayama  Fri May 26 07:05:28 PDT 2006
 timeSystem/src/test
 
