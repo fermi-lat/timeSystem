@@ -140,13 +140,13 @@ namespace {
     else return;
     if (!result.equivalentTo(expected_result, tolerance)) {
       if ("u-" == computation) {
-	err() << "Operation -Duration(" << dur1 << ")" <<
-	  " returned Duration(" << result << "), not equivalent to Duration(" << expected_result <<
-	  ") with tolerance of " << tolerance << "." << std::endl;
+        err() << "Operation -Duration(" << dur1 << ")" <<
+          " returned Duration(" << result << "), not equivalent to Duration(" << expected_result <<
+          ") with tolerance of " << tolerance << "." << std::endl;
       } else {
-	err() << "Operator Duration("<< dur1 << ") " << computation << " Duration(" << dur2 << ")" <<
-	  " returned Duration(" << result << "), not equivalent to Duration(" << expected_result <<
-	  ") with tolerance of " << tolerance << "." << std::endl;
+        err() << "Operator Duration("<< dur1 << ") " << computation << " Duration(" << dur2 << ")" <<
+          " returned Duration(" << result << "), not equivalent to Duration(" << expected_result <<
+          ") with tolerance of " << tolerance << "." << std::endl;
       }
     }
   }
@@ -339,9 +339,8 @@ namespace {
     Duration dest = dest_moment.second + dest_sys.computeTimeDifference(dest_moment.first, dest_origin);
     if (!dest.equivalentTo(expected_dest, Duration(0, tolerance))) {
       err() << "Converting from " << src_sys << " to " << dest_sys << ", Moment(" << src_origin << ", " << src <<
-        ") was converted to Moment(" << dest_origin << ", " << dest << "), not Moment(" << dest_origin << ", " << expected_dest <<
-        ") as expected." << std::endl;
-        
+        ") was converted to Moment(" << dest_moment.first << ", " << dest_moment.second << "), not equivalent to Moment(" <<
+        dest_origin << ", " << expected_dest << ") with tolerance of " << tolerance << "." << std::endl;
     }
   }
 
@@ -398,7 +397,7 @@ namespace {
     // Use three leap seconds for generating tests.
     double diff0 = 31.;
     double diff1 = 32.;
-    // double diff2 = 33.;
+    double diff2 = 33.;
 
     // Use times for three leap seconds for generating tests.
     // long leap0 = 50630;
@@ -436,7 +435,14 @@ namespace {
     } catch (const std::exception &) {
       // That's OK!
     }
+    try {
+      TestOneConversion("TAI", Duration(0, 0.), Duration(0, 0.), "UTC", Duration(0, 0.), Duration(0, 0.));
+      err() << "Conversion of time 0. MJD TAI to UTC did not throw an exception." << std::endl;
+    } catch (const std::exception &) {
+      // That's OK!
+    }
 
+    // Try loading non-existent file for leap second table.
     try {
       TimeSystem::loadLeapSeconds("non-existent-file.fits");
       err() << "TimeSystem::loadLeapSeconds(\"non-existent-file.fits\") did not fail." << std::endl;
@@ -457,7 +463,7 @@ namespace {
     // Use three leap seconds for generating tests.
     diff0 = 30.;
     diff1 = 29.;
-    // diff2 = 30.;
+    diff2 = 30.;
 
     // Use times for three leap seconds for generating tests.
     // leap0 = 50083;
@@ -508,14 +514,14 @@ namespace {
       expected_diff["UTC"] = Duration(0, deltat + itor_test->second);
 
       for (std::map<std::string, Duration>::iterator itor_exp = expected_diff.begin(); itor_exp != expected_diff.end(); ++itor_exp) {
-	std::string time_system_name = itor_exp->first;
-	const TimeSystem & time_system(TimeSystem::getSystem(time_system_name));
-	Duration time_diff = time_system.computeTimeDifference(mjd1, mjd2);
-	if (!time_diff.equivalentTo(expected_diff[time_system_name], tolerance)) {
-	  err() << "computeTimeDifference(mjd1, mjd2) of " << time_system_name << " returned " << time_diff <<
-	    " for mjd1 = " << mjd1 << " and mjd2 = " << mjd2 << ", not equivalent to the expected result, " <<
-	    expected_diff[time_system_name] << ", with tolerance of " << tolerance << "." << std::endl;
-	}
+        std::string time_system_name = itor_exp->first;
+        const TimeSystem & time_system(TimeSystem::getSystem(time_system_name));
+        Duration time_diff = time_system.computeTimeDifference(mjd1, mjd2);
+        if (!time_diff.equivalentTo(expected_diff[time_system_name], tolerance)) {
+          err() << "computeTimeDifference(mjd1, mjd2) of " << time_system_name << " returned " << time_diff <<
+            " for mjd1 = " << mjd1 << " and mjd2 = " << mjd2 << ", not equivalent to the expected result, " <<
+            expected_diff[time_system_name] << ", with tolerance of " << tolerance << "." << std::endl;
+        }
       }
     }
 
@@ -544,16 +550,84 @@ namespace {
       expected_mjd["UTC"] = mjd_utc;
 
       for (std::map<std::string, Duration>::iterator itor_exp = expected_mjd.begin(); itor_exp != expected_mjd.end(); ++itor_exp) {
-	std::string time_system_name = itor_exp->first;
-	const TimeSystem & time_system(TimeSystem::getSystem(time_system_name));
-	Duration mjd = time_system.findMjdExpression(time);
-	if (!mjd.equivalentTo(expected_mjd[time_system_name], tolerance)) {
-	  err() << "findMjdExpression of " << time_system_name << " returned " << mjd <<
-	    " for Moment(" << time.first << ", " << time.second << "), not equivalent to the expected result, " <<
-	    expected_mjd[time_system_name] << ", with tolerance of " << tolerance << "." << std::endl;
-	}
+        std::string time_system_name = itor_exp->first;
+        const TimeSystem & time_system(TimeSystem::getSystem(time_system_name));
+        Duration mjd = time_system.findMjdExpression(time);
+        if (!mjd.equivalentTo(expected_mjd[time_system_name], tolerance)) {
+          err() << "findMjdExpression of " << time_system_name << " returned " << mjd <<
+            " for Moment(" << time.first << ", " << time.second << "), not equivalent to the expected result, " <<
+            expected_mjd[time_system_name] << ", with tolerance of " << tolerance << "." << std::endl;
+        }
       }
     }
+
+// TODO: Following if-0 block fails, revealing a bug (or bugs) that needs to be fixed.
+#if 0
+    // Test proper handling of origin of UTC Moment. It should be adjusted to an existing MJD time in UTC and
+    // special caution is needed for cases of leap second removal. In the test below, note that MJD Duration(leap1, -.7)
+    // does NOT exist in UTC system because it expresses the "removed" second, which requires some adjustment for UTC origin.
+    Duration mjd_tai(leap1, -.7);
+    Duration mjd_utc(leap1, -diff0 -.7);
+    TestOneConversion("UTC", mjd_utc, Duration(0, 0.), "TAI", mjd_tai, Duration(0, 0.)); // easy test.
+    TestOneConversion("TAI", mjd_tai, Duration(0, 0.), "UTC", mjd_utc, Duration(0, 0.)); // tougher test, need handle with care.
+
+    // Another tricky test.  MJD Duration(leap1, 0.) DOES exist in UTC system, too, but it is immediately after the leap
+    // second removal. So, below needs a different kind of careful handling of UTC origin than above.
+    mjd_tai = Duration(leap1, 0.);
+    mjd_utc = Duration(leap1, -diff0);
+    TestOneConversion("UTC", mjd_utc, Duration(0, 0.), "TAI", mjd_tai, Duration(0, 0.)); // easy test.
+    TestOneConversion("TAI", mjd_tai, Duration(0, 0.), "UTC", mjd_utc, Duration(0, 0.)); // tougher test, need handle with care.
+
+    // Test of conversion condition of TAI-to-UTC conversion.
+    // Below must produce identical result for test input of Moment tai_moment(Duration(51910, 0.), Duration(0, 100.));
+    Moment tai_moment(Duration(0, 100.), Duration(51910, 0.));
+    Moment expected_moment(Duration(51910, 0.), Duration(0, 100. - diff2));
+    try {
+      TestOneConversion("TAI", tai_moment.first, tai_moment.second, "UTC", expected_moment.first, expected_moment.second);
+    } catch (const std::exception &) {
+      err() << "Conversion of TAI to UTC for Moment(" << tai_moment.first << ", " << tai_moment.second << ") threw an exception." <<
+        std::endl;
+    }
+
+    // Test findMjdExpression method of UTC for a time during a leap second being inserted.
+    Moment utc_moment = Moment(Duration(leap2 - 1, SecPerDay() - 1.), Duration(0, 1. +  2./3.));
+    Duration result = TimeSystem::getSystem("UTC").findMjdExpression(utc_moment);
+    Duration expected_result(leap2, 0.);
+    if (result != expected_result) {
+      err() << "UTC system's findMjdExpression(" << utc_moment.first << ", " << utc_moment.second << ") returned " <<
+        result << ", not exactly equal to " << expected_result << " as expected." << std::endl;
+    }
+
+    // Test findMjdExpression method of UTC for a Moment object whose origin is during a leap second being removed.
+    utc_moment = Moment(Duration(leap1 - 1, SecPerDay() - 1./3.), Duration(0, 0.));
+    result = TimeSystem::getSystem("UTC").findMjdExpression(utc_moment);
+    expected_result = Duration(leap1, 0.);
+    if (result != expected_result) {
+      err() << "UTC system's findMjdExpression(" << utc_moment.first << ", " << utc_moment.second << ") returned " <<
+        result << ", not exactly equal to " << expected_result << " as expected." << std::endl;
+    }
+
+    // Test computeTimeDifference method of UTC for two Moment objects during a leap second being removed.
+    Duration utc_mjd1 = Duration(leap1 - 1, SecPerDay() - 1./3.);
+    Duration utc_mjd2 = Duration(leap1 - 1, SecPerDay() - 2./3.);
+    result = TimeSystem::getSystem("UTC").computeTimeDifference(utc_mjd1, utc_mjd2);
+    expected_result = Duration(0, 0.);
+    if (result != expected_result) {
+      err() << "UTC system's computeTimeDifference method computed a time difference between " << utc_mjd1.getValue(Day) <<
+      " MJD and " << utc_mjd2.getValue(Day) << " MJD as " << result << ", not " << expected_result << " as expected." <<
+       std::endl;
+    }
+
+    // Test of origin for UTC time that must be after MJD 41317.0 (January 1st, 1972) by definition.
+    long oldest_mjd = 41317;
+    tai_moment = Moment(Duration(oldest_mjd - 1, 0.), Duration(0, SecPerDay() * 2.));
+    utc_moment = TimeSystem::getSystem("UTC").convertFrom(TimeSystem::getSystem("TAI"), tai_moment);
+    if (Duration(oldest_mjd, 0.) > utc_moment.first) {
+      err() << "Conversion from TAI to UTC for input Moment(" << tai_moment.first << ", " << tai_moment.second <<
+      ") returned Moment(" << utc_moment.first << ", " << utc_moment.second <<
+	"), which is earlier than the beginning of the current UTC definition " << oldest_mjd << " MJD." << std::endl;
+    }
+#endif
 
   }
 
