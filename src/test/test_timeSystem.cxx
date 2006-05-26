@@ -525,7 +525,7 @@ namespace {
       }
     }
 
-    // Test findMjdExpression method.
+    // Test computeMjd method.
     std::list<std::pair<Moment, Duration> > test_input_moment;
     // middle of nowhere
     test_input_moment.push_back(std::make_pair(Moment(Duration(51910, 0.), Duration(0, 100.)), Duration(51910, 100.)));
@@ -552,9 +552,9 @@ namespace {
       for (std::map<std::string, Duration>::iterator itor_exp = expected_mjd.begin(); itor_exp != expected_mjd.end(); ++itor_exp) {
         std::string time_system_name = itor_exp->first;
         const TimeSystem & time_system(TimeSystem::getSystem(time_system_name));
-        Duration mjd = time_system.findMjdExpression(time);
+        Duration mjd = time_system.computeMjd(time);
         if (!mjd.equivalentTo(expected_mjd[time_system_name], tolerance)) {
-          err() << "findMjdExpression of " << time_system_name << " returned " << mjd <<
+          err() << "computeMjd of " << time_system_name << " returned " << mjd <<
             " for Moment(" << time.first << ", " << time.second << "), not equivalent to the expected result, " <<
             expected_mjd[time_system_name] << ", with tolerance of " << tolerance << "." << std::endl;
         }
@@ -589,21 +589,21 @@ namespace {
         std::endl;
     }
 
-    // Test findMjdExpression method of UTC for a time during a leap second being inserted.
+    // Test computeMjd method of UTC for a time during a leap second being inserted.
     Moment utc_moment = Moment(Duration(leap2 - 1, SecPerDay() - 1.), Duration(0, 1. +  2./3.));
-    Duration result = TimeSystem::getSystem("UTC").findMjdExpression(utc_moment);
+    Duration result = TimeSystem::getSystem("UTC").computeMjd(utc_moment);
     Duration expected_result(leap2, 0.);
     if (result != expected_result) {
-      err() << "UTC system's findMjdExpression(" << utc_moment.first << ", " << utc_moment.second << ") returned " <<
+      err() << "UTC system's computeMjd(" << utc_moment.first << ", " << utc_moment.second << ") returned " <<
         result << ", not exactly equal to " << expected_result << " as expected." << std::endl;
     }
 
-    // Test findMjdExpression method of UTC for a Moment object whose origin is during a leap second being removed.
+    // Test computeMjd method of UTC for a Moment object whose origin is during a leap second being removed.
     utc_moment = Moment(Duration(leap1 - 1, SecPerDay() - 1./3.), Duration(0, 0.));
-    result = TimeSystem::getSystem("UTC").findMjdExpression(utc_moment);
+    result = TimeSystem::getSystem("UTC").computeMjd(utc_moment);
     expected_result = Duration(leap1, 0.);
     if (result != expected_result) {
-      err() << "UTC system's findMjdExpression(" << utc_moment.first << ", " << utc_moment.second << ") returned " <<
+      err() << "UTC system's computeMjd(" << utc_moment.first << ", " << utc_moment.second << ") returned " <<
         result << ", not exactly equal to " << expected_result << " as expected." << std::endl;
     }
 

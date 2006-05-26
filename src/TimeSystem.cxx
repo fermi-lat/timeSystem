@@ -34,7 +34,7 @@ namespace {
 
       virtual Duration computeTimeDifference(const Duration & mjd1, const Duration & mjd2) const;
 
-      virtual Duration findMjdExpression(const Moment & time) const;
+      virtual Duration computeMjd(const Moment & time) const;
 
   };
 
@@ -46,7 +46,7 @@ namespace {
 
       virtual Duration computeTimeDifference(const Duration & mjd1, const Duration & mjd2) const;
 
-      virtual Duration findMjdExpression(const Moment & time) const;
+      virtual Duration computeMjd(const Moment & time) const;
 
       Duration computeTdbMinusTt(const Duration & mjd) const;
 
@@ -60,7 +60,7 @@ namespace {
 
       virtual Duration computeTimeDifference(const Duration & mjd1, const Duration & mjd2) const;
 
-      virtual Duration findMjdExpression(const Moment & time) const;
+      virtual Duration computeMjd(const Moment & time) const;
 
   };
 
@@ -72,7 +72,7 @@ namespace {
 
       virtual Duration computeTimeDifference(const Duration & mjd1, const Duration & mjd2) const;
 
-      virtual Duration findMjdExpression(const Moment & time) const;
+      virtual Duration computeMjd(const Moment & time) const;
 
       void loadLeapSecTable(const std::string & leap_sec_file_name, bool force_load);
 
@@ -117,7 +117,7 @@ namespace {
     return mjd1 - mjd2;
   }
 
-  Duration TaiSystem::findMjdExpression(const Moment & time) const {
+  Duration TaiSystem::computeMjd(const Moment & time) const {
     return time.first + time.second;
   }
 
@@ -151,7 +151,7 @@ namespace {
     return mjd1 - mjd2;
   }
 
-  Duration TdbSystem::findMjdExpression(const Moment & time) const {
+  Duration TdbSystem::computeMjd(const Moment & time) const {
     return time.first + time.second;
   }
 
@@ -197,7 +197,7 @@ namespace {
     return mjd1 - mjd2;
   }
 
-  Duration TtSystem::findMjdExpression(const Moment & time) const {
+  Duration TtSystem::computeMjd(const Moment & time) const {
     return time.first + time.second;
   }
 
@@ -221,7 +221,7 @@ namespace {
     return (mjd1 + computeTaiMinusUtc(mjd1)) - (mjd2 + computeTaiMinusUtc(mjd2));
   }
 
-  Duration UtcSystem::findMjdExpression(const Moment & time) const {
+  Duration UtcSystem::computeMjd(const Moment & time) const {
     const TimeSystem & tai_system(TimeSystem::getSystem("TAI"));
 
     // "Add" elapsed time to origin. To do it correctly, it should be
