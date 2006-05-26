@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: hirayama  Fri May 26 07:05:28 PDT 2006
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Add tests of TimeSystem that reveal a bug (or bugs) to be fixed. Improve error message from TestOneConversion() function. Replace tabs with white spaces.
+
+    *
+------------------------------------------------------------
 User: hirayama  Thu May 25 13:05:55 PDT 2006
 timeSystem/src/test
 
