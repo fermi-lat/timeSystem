@@ -80,6 +80,10 @@ namespace {
 
       Duration computeUtcMinusTai(const Duration & mjd_tai) const;
 
+      Moment convertTaiToUtc(const Moment & tai_time) const;
+
+      Moment convertUtcToTai(const Moment & utc_time) const;
+
     private:
       struct leapdata_type {
 	leapdata_type(): m_leap_end(Duration(0, 0.)), m_inserted(true), m_time_diff(Duration(0, 0.)) {}
@@ -105,7 +109,7 @@ namespace {
         return Moment(time.first, time.second + Duration(0, TaiMinusTtSec()));
       } else if ("UTC" == time_system.getName()) {
         const UtcSystem & utc_system = dynamic_cast<const UtcSystem &>(getSystem("UTC"));
-        return Moment(time.first, time.second + utc_system.computeTaiMinusUtc(time.first));
+        return utc_system.convertUtcToTai(time);
       } else {
         throw std::logic_error("Conversion from " + time_system.getName() + " to " + getName() + " is not implemented");
       }
@@ -206,7 +210,7 @@ namespace {
   Moment UtcSystem::convertFrom(const TimeSystem & time_system, const Moment & time) const {
     if (&time_system != this) {
       if ("TAI" == time_system.getName()) {
-        return Moment(time.first, time.second + computeUtcMinusTai(time.first));
+        return convertTaiToUtc(time);
       } else if ("TDB" == time_system.getName() || "TT" == time_system.getName()) {
         const TimeSystem & tai(getSystem("TAI"));
         return convertFrom(tai, tai.convertFrom(time_system, time));
@@ -218,7 +222,9 @@ namespace {
   }
 
   Duration UtcSystem::computeTimeDifference(const Duration & mjd1, const Duration & mjd2) const {
-    return (mjd1 + computeTaiMinusUtc(mjd1)) - (mjd2 + computeTaiMinusUtc(mjd2));
+    Moment tai1 = convertUtcToTai(Moment(mjd1, Duration(0, 0.)));
+    Moment tai2 = convertUtcToTai(Moment(mjd2, Duration(0, 0.)));
+    return (tai1.first - tai2.first) + (tai1.second - tai2.second);
   }
 
   Duration UtcSystem::computeMjd(const Moment & time) const {
@@ -227,10 +233,29 @@ namespace {
     // "Add" elapsed time to origin. To do it correctly, it should be
     // done in a time system without a leap second, such as TAI.
     Moment tai_time = tai_system.convertFrom(*this, time);
+
+    // Produce a combined single tai Duration.
     Duration mjd_tai = tai_time.first + tai_time.second;
 
-    // compute MJD number in UTC system.
-    return mjd_tai + computeUtcMinusTai(mjd_tai);
+    // Start from the end of the leap second table and go backwards, stopping at the first leap time
+    // which is <= the given time.
+    leaptable_type::const_reverse_iterator itor = m_utc_minus_tai.rbegin();
+    for (; (itor != m_utc_minus_tai.rend()) && (mjd_tai < itor->first); ++itor) {}
+    if (itor == m_utc_minus_tai.rend()) {
+      // Fell of the rend (that is the beginning) so this time is too early.
+      std::ostringstream os;
+      os << "UtcSystem::computeMjd cannot compute MJD of the Moment(" << time.first << ", " << time.second << ") (UTC)";
+      throw std::runtime_error(os.str());
+    }
+
+    Duration result;
+    if ((!(itor->second.m_inserted)) || (itor->second.m_leap_end <= mjd_tai)) {
+      result = mjd_tai + itor->second.m_time_diff;
+    } else {
+      result = itor->second.m_leap_end + itor->second.m_time_diff;
+    }
+
+    return result;
   }
 
   void UtcSystem::loadLeapSecTable(const std::string & leap_sec_file_name, bool force_load) {
@@ -307,6 +332,54 @@ namespace {
     return itor->second.m_time_diff + (itor->second.m_leap_end - mjd_tai);
   }
 
+  Moment UtcSystem::convertTaiToUtc(const Moment & tai_time) const {
+    // Produce a combined single tai Duration.
+    Duration mjd_tai = tai_time.first + tai_time.second;
+
+    // Start from the end of the leap second table and go backwards, stopping at the first leap time
+    // which is <= the given time.
+    leaptable_type::const_reverse_iterator itor = m_utc_minus_tai.rbegin();
+    for (; (itor != m_utc_minus_tai.rend()) && (mjd_tai < itor->first); ++itor) {}
+    if (itor == m_utc_minus_tai.rend()) {
+      // Fell of the rend (that is the beginning) so this time is too early.
+      std::ostringstream os;
+      os << "UtcSystem::convertTaiToUtc cannot convert to UTC the time " << mjd_tai << " MJD (TAI)";
+      throw std::runtime_error(os.str());
+    }
+
+    Moment result;
+    if ((!(itor->second.m_inserted)) || (itor->second.m_leap_end <= mjd_tai)) {
+      result = Moment(mjd_tai, itor->second.m_time_diff);
+    } else {
+      result = Moment(itor->second.m_leap_end + itor->second.m_time_diff, Duration(0, 0.));
+    }
+
+    return result;
+  }
+
+  Moment UtcSystem::convertUtcToTai(const Moment & utc_time) const {
+    Duration mjd_utc = utc_time.first;
+
+    // Start from the end of the leap second table and go backwards, stopping at the first leap time
+    // which is <= the given time.
+    leaptable_type::const_reverse_iterator itor = m_tai_minus_utc.rbegin();
+    for (; (itor != m_tai_minus_utc.rend()) && (mjd_utc < itor->first); ++itor) {}
+    if (itor == m_tai_minus_utc.rend()) {
+      // Fell of the rend (that is the beginning) so this time is too early.
+      std::ostringstream os;
+      os << "UtcSystem::convertUtcToTai cannot convert to TAI the time " << mjd_utc << " MJD (UTC)";
+      throw std::runtime_error(os.str());
+    }
+
+    Moment result;
+    if (itor->second.m_inserted || (itor->second.m_leap_end <= mjd_utc)) {
+      result = Moment(mjd_utc, utc_time.second + itor->second.m_time_diff);
+    } else {
+      result = Moment(itor->second.m_leap_end + itor->second.m_time_diff, utc_time.second);
+    }
+
+    return result;
+  }
 }
 
 namespace timeSystem {

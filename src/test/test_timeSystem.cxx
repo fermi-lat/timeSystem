@@ -562,7 +562,7 @@ namespace {
     }
 
 // TODO: Following if-0 block fails, revealing a bug (or bugs) that needs to be fixed.
-#if 0
+//#if 0
     // Test proper handling of origin of UTC Moment. It should be adjusted to an existing MJD time in UTC and
     // special caution is needed for cases of leap second removal. In the test below, note that MJD Duration(leap1, -.7)
     // does NOT exist in UTC system because it expresses the "removed" second, which requires some adjustment for UTC origin.
@@ -627,7 +627,7 @@ namespace {
       ") returned Moment(" << utc_moment.first << ", " << utc_moment.second <<
 	"), which is earlier than the beginning of the current UTC definition " << oldest_mjd << " MJD." << std::endl;
     }
-#endif
+//#endif
 
   }
 
