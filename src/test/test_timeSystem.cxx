@@ -408,25 +408,26 @@ namespace {
     // To ensure UTC->TAI is handled correctly, do some tougher conversions, i.e. times which are close to
     // times when leap seconds are inserted.
     // --- At an exact time of leap second insertion.
-    TestOneConversion("UTC", Duration(leap1, 0.), Duration(0, 0.), "TAI", Duration(leap1, 0.), Duration(0, diff1));
+    TestOneConversion("UTC", Duration(leap1, 0.), Duration(0, 0.), "TAI", Duration(leap1, diff1), Duration(0, 0.));
     // --- Slightly before a leap second is inserted.
-    TestOneConversion("UTC", Duration(leap1, -.001), Duration(0, 0.), "TAI", Duration(leap1, 0.), Duration(0, diff0 - .001));
+    TestOneConversion("UTC", Duration(leap1, -.001), Duration(0, 0.), "TAI", Duration(leap1, diff0 - .001), Duration(0, 0.));
     // --- Same as above, but with a large elapsed time.
     //     Although the total time (origin + elapsed) is large enough to cross two leap second boundaries, still
     //     the earliest leap second should be used because the choice of leap second is based only on the origin time.
-    TestOneConversion("UTC", Duration(leap1, -.001), Duration(delta_leap, 2.002), "TAI", Duration(leap1, 0.), Duration(delta_leap, diff0 + 2.001));
+    TestOneConversion("UTC", Duration(leap1, -.001), Duration(delta_leap, 2.002), "TAI", Duration(leap1, diff0 - .001), 
+      Duration(delta_leap, 2.002));
 
     // To ensure TAI->UTC is handled correctly, do some tougher conversions, i.e. times which are close to
     // times when leap seconds are inserted.
     // --- At the end of a leap second.
-    TestOneConversion("TAI", Duration(leap1, diff1), Duration(0, 0.), "UTC", Duration(leap1, diff1), Duration(0, -diff1));
+    TestOneConversion("TAI", Duration(leap1, diff1), Duration(0, 0.), "UTC", Duration(leap1, 0.), Duration(0, 0.));
     // --- During a leap second.
-    TestOneConversion("TAI", Duration(leap1, diff1 - 0.3), Duration(0, 0.), "UTC", Duration(leap1, diff1), Duration(0, -diff1));
+    TestOneConversion("TAI", Duration(leap1, diff1 - 0.3), Duration(0, 0.), "UTC", Duration(leap1, 0.), Duration(0, -0.3));
     // --- At the beginning of a leap second.
-    TestOneConversion("TAI", Duration(leap1, diff1 - 1.0), Duration(0, 0.), "UTC", Duration(leap1, diff1), Duration(0, -diff0 - 1.0));
+    TestOneConversion("TAI", Duration(leap1, diff1 - 1.0), Duration(0, 0.), "UTC", Duration(leap1, 0.), Duration(0, -1.0));
 
     // Test that conversion uses table keyed by TAI times, not by UTC.
-    TestOneConversion("TAI", Duration(leap1, -2.), Duration(1, 0.), "UTC", Duration(leap1, 0.), Duration(1, -diff1 - 2.));
+    TestOneConversion("TAI", Duration(leap1, -2.), Duration(1, 0.), "UTC", Duration(leap1, -diff0 - 2.), Duration(1, 0.));
 
     // Test case before first time covered by the current UTC definition. This is "undefined" in the current scheme.
     try {
@@ -472,26 +473,26 @@ namespace {
     delta_leap = leap2 - leap1;
 
     // Test now the case where leap second is negative (Earth speeds up).
-    // To ensure TAI ->UTC is handled correctly, do some tougher conversions, i.e. times which are close to
+    // To ensure TAI->UTC is handled correctly, do some tougher conversions, i.e. times which are close to
     // times when leap seconds are removed.
     // --- At an exact time of leap second removal.
-    TestOneConversion("TAI", Duration(leap1, diff1), Duration(0, 0.), "UTC", Duration(leap1, diff1), Duration(0, -diff1));
+    TestOneConversion("TAI", Duration(leap1, diff1), Duration(0, 0.), "UTC", Duration(leap1, 0.), Duration(0, 0.));
     // --- Slightly before a leap second is removed.
-    TestOneConversion("TAI", Duration(leap1, diff1 - .001), Duration(0, 0.), "UTC", Duration(leap1, diff1), Duration(0, -diff0 - .001));
+    TestOneConversion("TAI", Duration(leap1, diff1 - .001), Duration(0, 0.), "UTC", Duration(leap1, 0.), Duration(0, -.001));
     // --- Same as above, but with a large elapsed time.
     //     Although the total time (origin + elapsed) is large enough to cross two leap second boundaries, still
     //     the earliest leap second should be used because the choice of leap second is based only on the origin time.
     TestOneConversion("TAI", Duration(leap1, diff1 - .001), Duration(delta_leap, .002), "UTC",
-      Duration(leap1, diff1), Duration(delta_leap, -diff0 + .001));
+      Duration(leap1, 0.), Duration(delta_leap, .001));
 
     // To ensure UTC->TAI is handled correctly, do some tougher conversions, i.e. times which are close to
     // times when leap seconds are removed.
     // --- At the end of a leap second.
-    TestOneConversion("UTC", Duration(leap1, 0.), Duration(0, 0.), "TAI", Duration(leap1, 0.), Duration(0, diff1));
+    TestOneConversion("UTC", Duration(leap1, 0.), Duration(0, 0.), "TAI", Duration(leap1, diff1), Duration(0, 0.));
     // --- During a leap second.
-    TestOneConversion("UTC", Duration(leap1, -0.3), Duration(0, 0.), "TAI", Duration(leap1, 0.), Duration(0, diff1));
+    TestOneConversion("UTC", Duration(leap1, -0.3), Duration(0, 0.), "TAI", Duration(leap1, diff1), Duration(0, 0.));
     // --- At the beginning of a leap second.
-    TestOneConversion("UTC", Duration(leap1, -1.0), Duration(0, 0.), "TAI", Duration(leap1, 0.), Duration(0, diff0 - 1.0));
+    TestOneConversion("UTC", Duration(leap1, -1.0), Duration(0, 0.), "TAI", Duration(leap1, diff1), Duration(0, 0.));
 
     // Test computeTimeDifference method.
     double deltat = 20.;
