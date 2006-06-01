@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: peachey  Thu Jun  1 12:11:15 PDT 2006
+timeSystem/src
+
+Modified Files:
+	TimeSystem.cxx 
+Log Message:
+Removed old deprecated computeTaiMinusUtc and computeUtcMinusTai methods.
+
+    *
+------------------------------------------------------------
 User: peachey  Thu Jun  1 12:09:13 PDT 2006
 timeSystem/src
 
