@@ -304,7 +304,7 @@ namespace {
     if (itor == m_tai_minus_utc.rend()) {
       // Fell of the rend (that is the beginning) so this time is too early.
       std::ostringstream os;
-      os << "UtcSystem::computeTaiMinusUtc cannot compute TAI - UTC for time " << mjd_utc << " MJD (UTC)";
+      os << "UtcSystem::computeTaiMinusUtc cannot compute TAI - UTC for time " << mjd_utc.getValue(Day) << " MJD (UTC)";
       throw std::runtime_error(os.str());
     }
 
@@ -322,7 +322,7 @@ namespace {
     if (itor == m_utc_minus_tai.rend()) {
       // Fell of the rend (that is the beginning) so this time is too early.
       std::ostringstream os;
-      os << "UtcSystem::computeUtcMinusTai cannot compute UTC - TAI for time " << mjd_tai << " MJD (TAI)";
+      os << "UtcSystem::computeUtcMinusTai cannot compute UTC - TAI for time " << mjd_tai.getValue(Day) << " MJD (TAI)";
       throw std::runtime_error(os.str());
     }
 
@@ -333,7 +333,7 @@ namespace {
   }
 
   Moment UtcSystem::convertTaiToUtc(const Moment & tai_time) const {
-    // Produce a combined single tai Duration.
+    // Produce a combined single MJD number in TAI system.
     Duration mjd_tai = tai_time.first + tai_time.second;
 
     // Start from the end of the leap second table and go backwards, stopping at the first leap time
@@ -343,38 +343,47 @@ namespace {
     if (itor == m_utc_minus_tai.rend()) {
       // Fell of the rend (that is the beginning) so this time is too early.
       std::ostringstream os;
-      os << "UtcSystem::convertTaiToUtc cannot convert to UTC the time " << mjd_tai << " MJD (TAI)";
+      os << "UtcSystem::convertTaiToUtc cannot convert to UTC the Moment(" << tai_time.first << ", " << tai_time.second <<
+        " in TAI.";
       throw std::runtime_error(os.str());
     }
 
     Moment result;
     if ((!(itor->second.m_inserted)) || (itor->second.m_leap_end <= mjd_tai)) {
-      result = Moment(mjd_tai, itor->second.m_time_diff);
+      // General case: a numerical difference between MJD (UTC) and MJD (TAI) is constant over time.
+      result = Moment(mjd_tai + itor->second.m_time_diff, Duration(0, 0.));
     } else {
-      result = Moment(itor->second.m_leap_end + itor->second.m_time_diff, Duration(0, 0.));
+      // Leap second(s) being inserted: MJD (UTC) stays constant while MJD (TAI) grows.
+      // In this case, the end of the leap-second insertion is chosen as a time origin of returning Moment,
+      // to avoid any loss of precision in computating a time origin near a leap-second insertion, where
+      // a tiny difference in MJD number can make a big difference in time being pointed by one second.
+      result = Moment(itor->second.m_leap_end + itor->second.m_time_diff, mjd_tai - itor->second.m_leap_end);
     }
 
     return result;
   }
 
   Moment UtcSystem::convertUtcToTai(const Moment & utc_time) const {
-    Duration mjd_utc = utc_time.first;
-
     // Start from the end of the leap second table and go backwards, stopping at the first leap time
     // which is <= the given time.
     leaptable_type::const_reverse_iterator itor = m_tai_minus_utc.rbegin();
-    for (; (itor != m_tai_minus_utc.rend()) && (mjd_utc < itor->first); ++itor) {}
+    for (; (itor != m_tai_minus_utc.rend()) && (utc_time.first < itor->first); ++itor) {}
     if (itor == m_tai_minus_utc.rend()) {
       // Fell of the rend (that is the beginning) so this time is too early.
       std::ostringstream os;
-      os << "UtcSystem::convertUtcToTai cannot convert to TAI the time " << mjd_utc << " MJD (UTC)";
+      os << "UtcSystem::convertUtcToTai cannot convert to TAI the Moment(" << utc_time.first << ", " << utc_time.second <<
+        ") in UTC.";
       throw std::runtime_error(os.str());
     }
 
     Moment result;
-    if (itor->second.m_inserted || (itor->second.m_leap_end <= mjd_utc)) {
-      result = Moment(mjd_utc, utc_time.second + itor->second.m_time_diff);
+    if (itor->second.m_inserted || (itor->second.m_leap_end <= utc_time.first)) {
+      // General case: a numerical difference between MJD (UTC) and MJD (TAI) is constant over time.
+      result = Moment(utc_time.first + itor->second.m_time_diff, utc_time.second);
     } else {
+      // Leap second(s) being removed: any MJD (UTC) corresponds to a single MJD (TAI).
+      // In this case, utc_time.first MJD (UTC) points to an unphysical time during leap second(s) being removed
+      // where any MJD (UTC) is interpreted as the end time of the leap-second removal.
       result = Moment(itor->second.m_leap_end + itor->second.m_time_diff, utc_time.second);
     }
 
