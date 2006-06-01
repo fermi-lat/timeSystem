@@ -76,10 +76,6 @@ namespace {
 
       void loadLeapSecTable(const std::string & leap_sec_file_name, bool force_load);
 
-      Duration computeTaiMinusUtc(const Duration & mjd_utc) const;
-
-      Duration computeUtcMinusTai(const Duration & mjd_tai) const;
-
       Moment convertTaiToUtc(const Moment & tai_time) const;
 
       Moment convertUtcToTai(const Moment & utc_time) const;
@@ -294,42 +290,6 @@ namespace {
       // Add an entry to UTC-minus-TAI table.
       m_utc_minus_tai[mjd_start] = leapdata_type(mjd_end, inserted, Duration(0, -time_diff));
     }
-  }
-
-  Duration UtcSystem::computeTaiMinusUtc(const Duration & mjd_utc) const {
-    // Start from the end of the leap second table and go backwards, stopping at the first leap time
-    // which is <= the given time.
-    leaptable_type::const_reverse_iterator itor = m_tai_minus_utc.rbegin();
-    for (; (itor != m_tai_minus_utc.rend()) && (mjd_utc < itor->first); ++itor) {}
-    if (itor == m_tai_minus_utc.rend()) {
-      // Fell of the rend (that is the beginning) so this time is too early.
-      std::ostringstream os;
-      os << "UtcSystem::computeTaiMinusUtc cannot compute TAI - UTC for time " << mjd_utc.getValue(Day) << " MJD (UTC)";
-      throw std::runtime_error(os.str());
-    }
-
-    if (itor->second.m_inserted || (itor->second.m_leap_end <= mjd_utc)) {
-      return itor->second.m_time_diff;
-    }
-    return itor->second.m_time_diff + (itor->second.m_leap_end - mjd_utc);
-  }
-
-  Duration UtcSystem::computeUtcMinusTai(const Duration & mjd_tai) const {
-    // Start from the end of the leap second table and go backwards, stopping at the first leap time
-    // which is <= the given time.
-    leaptable_type::const_reverse_iterator itor = m_utc_minus_tai.rbegin();
-    for (; (itor != m_utc_minus_tai.rend()) && (mjd_tai < itor->first); ++itor) {}
-    if (itor == m_utc_minus_tai.rend()) {
-      // Fell of the rend (that is the beginning) so this time is too early.
-      std::ostringstream os;
-      os << "UtcSystem::computeUtcMinusTai cannot compute UTC - TAI for time " << mjd_tai.getValue(Day) << " MJD (TAI)";
-      throw std::runtime_error(os.str());
-    }
-
-    if ((!(itor->second.m_inserted)) || (itor->second.m_leap_end <= mjd_tai)) {
-      return itor->second.m_time_diff;
-    }
-    return itor->second.m_time_diff + (itor->second.m_leap_end - mjd_tai);
   }
 
   Moment UtcSystem::convertTaiToUtc(const Moment & tai_time) const {
