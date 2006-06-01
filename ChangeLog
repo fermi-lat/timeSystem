@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: peachey  Thu Jun  1 12:07:29 PDT 2006
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Correct the test for conversions of UTC <-> TAI near leap second insertion/removal.
+
+    *
+------------------------------------------------------------
 User: peachey  Fri May 26 14:18:28 PDT 2006
 timeSystem/src/test
 
