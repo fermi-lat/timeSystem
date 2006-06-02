@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: hirayama  Fri Jun  2 08:52:47 PDT 2006
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Add tests for TimeSystem::computeMjd and TimeSystem::convertFrom method near a leap second insertion and removal, including before and after insertion and removal. Improve comments accordingly.
+
+    *
+------------------------------------------------------------
 User: peachey  Thu Jun  1 12:11:15 PDT 2006
 timeSystem/src
 
