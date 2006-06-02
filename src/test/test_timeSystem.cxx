@@ -328,6 +328,30 @@ namespace {
     TestOneComputation("-",  dur1, dur2, Duration( 198,   530.865), tolerance);
     TestOneComputation("-=", dur1, dur2, Duration( 198,   530.865), tolerance);
     TestOneComputation("u-", dur1, dur2, Duration(-322, 85745.679), tolerance);
+
+    // Test proper handling of small difference in second part when two Duration's are added.
+    epsilon = std::numeric_limits<double>::epsilon() * 10.;
+    long day_part = 0;
+    double sec_part = 0.;
+    std::string unit_part;
+    {
+      std::stringstream os;
+      os << Duration(0, 86399.) + Duration(0, 1. - epsilon);
+      os >> day_part >> unit_part >> sec_part >> unit_part;
+      if (0. > sec_part) {
+        err() << "Duration(0, 86399.) + Duration(0, 1. - " << epsilon <<") returned Duration(" << day_part << ", " << sec_part <<
+          "), whose second part is negative, not positive as expected." << std::endl;
+      }
+    }
+    {
+      std::stringstream os;
+      os << Duration(0, 1. - epsilon) + Duration(0, 86399.);
+      os >> day_part >> unit_part >> sec_part >> unit_part;
+      if (0. > sec_part) {
+        err() << "Duration(0, 1. - " << epsilon <<") + Duration(0, 86399.) returned Duration(" << day_part << ", " << sec_part <<
+          "), whose second part is negative, not positive as expected." << std::endl;
+      }
+    }
   }
 
   void TestOneConversion(const std::string & src_name, const Duration & src_origin, const Duration & src,
