@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: hirayama  Fri Jun  2 08:56:14 PDT 2006
+timeSystem/src
+
+Modified Files:
+	TimeSystem.cxx 
+Log Message:
+Add a new data member to leapdata_type, m_leap_end_dest, for forther precomputation of leap second data. Modify loadLeapSecTable, convertUtcToTai, and convertTaiToUtc methods accordingly.
+
+    *
+------------------------------------------------------------
 User: hirayama  Fri Jun  2 08:52:47 PDT 2006
 timeSystem/src/test
 
