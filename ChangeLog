@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: hirayama  Fri Jun  2 15:08:59 PDT 2006
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Add tests of Duration::add method that reveal a possible bug in the method.
+
+    *
+------------------------------------------------------------
 User: hirayama  Fri Jun  2 08:56:14 PDT 2006
 timeSystem/src
 
