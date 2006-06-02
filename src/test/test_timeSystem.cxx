@@ -425,6 +425,10 @@ namespace {
     TestOneConversion("TAI", Duration(leap1, diff1 - 0.3), Duration(0, 0.), "UTC", Duration(leap1, 0.), Duration(0, -0.3));
     // --- At the beginning of a leap second.
     TestOneConversion("TAI", Duration(leap1, diff1 - 1.0), Duration(0, 0.), "UTC", Duration(leap1, 0.), Duration(0, -1.0));
+    // --- After the end of a leap second.
+    TestOneConversion("TAI", Duration(leap1, diff1 + 0.3), Duration(0, 0.), "UTC", Duration(leap1, 0.), Duration(0, +0.3));
+    // --- Before the beginning of a leap second.
+    TestOneConversion("TAI", Duration(leap1, diff1 - 1.3), Duration(0, 0.), "UTC", Duration(leap1, 0.), Duration(0, -1.3));
 
     // Test that conversion uses table keyed by TAI times, not by UTC.
     TestOneConversion("TAI", Duration(leap1, -2.), Duration(1, 0.), "UTC", Duration(leap1, -diff0 - 2.), Duration(1, 0.));
@@ -493,6 +497,10 @@ namespace {
     TestOneConversion("UTC", Duration(leap1, -0.3), Duration(0, 0.), "TAI", Duration(leap1, diff1), Duration(0, 0.));
     // --- At the beginning of a leap second.
     TestOneConversion("UTC", Duration(leap1, -1.0), Duration(0, 0.), "TAI", Duration(leap1, diff1), Duration(0, 0.));
+    // --- After the end of a leap second.
+    TestOneConversion("UTC", Duration(leap1, +0.3), Duration(0, 0.), "TAI", Duration(leap1, diff1 + 0.3), Duration(0, 0.));
+    // --- Before the beginning of a leap second.
+    TestOneConversion("UTC", Duration(leap1, -1.3), Duration(0, 0.), "TAI", Duration(leap1, diff0 - 1.3), Duration(0, 0.));
 
     // Test computeTimeDifference method.
     double deltat = 20.;
@@ -528,16 +536,40 @@ namespace {
 
     // Test computeMjd method.
     std::list<std::pair<Moment, Duration> > test_input_moment;
-    // middle of nowhere
+    // Middle of nowhere
     test_input_moment.push_back(std::make_pair(Moment(Duration(51910, 0.), Duration(0, 100.)), Duration(51910, 100.)));
-    // leap second insertion
+    // Across leap second insertion in UTC
     test_input_moment.push_back(std::make_pair(Moment(Duration(leap2 - 1, SecPerDay() - 10.), Duration(0, deltat)),
       Duration(leap2, deltat - 10. - 1.)));
-    // leap second removal
+    // Across leap second removal in UTC
     test_input_moment.push_back(std::make_pair(Moment(Duration(leap1 - 1, SecPerDay() - 10.), Duration(0, deltat)),
       Duration(leap1, deltat - 10. + 1.)));
-    // non-existing time in UTC
+    // Non-existing time in UTC
     test_input_moment.push_back(std::make_pair(Moment(Duration(leap1 - 1, SecPerDay() - .7), Duration(0, deltat)), Duration(leap1, deltat)));
+
+    // Tests at times close to times when leap seconds are inserted (in UTC).
+    // --- Before the beginning of a leap second.
+    test_input_moment.push_back(std::make_pair(Moment(Duration(leap2 - 1, 0.), Duration(0, SecPerDay() - 0.3)), Duration(leap2, -0.3)));
+    // --- At the beginning of a leap second.
+    test_input_moment.push_back(std::make_pair(Moment(Duration(leap2 - 1, 0.), Duration(0, SecPerDay())),       Duration(leap2, 0.)));
+    // --- During a leap second.
+    test_input_moment.push_back(std::make_pair(Moment(Duration(leap2 - 1, 0.), Duration(0, SecPerDay() + 0.3)), Duration(leap2, 0.)));
+    // --- At the end of a leap second.
+    test_input_moment.push_back(std::make_pair(Moment(Duration(leap2 - 1, 0.), Duration(0, SecPerDay() + 1.0)), Duration(leap2, 0.)));
+    // --- After the end of a leap second.
+    test_input_moment.push_back(std::make_pair(Moment(Duration(leap2 - 1, 0.), Duration(0, SecPerDay() + 1.3)), Duration(leap2, 0.3)));
+
+    // Tests at times close to times when leap seconds are removed (in UTC).
+    // --- Before the beginning of a leap second.
+    test_input_moment.push_back(std::make_pair(Moment(Duration(leap1 - 1, SecPerDay() - 1.3), Duration(0, 0.)), Duration(leap1, -1.3)));
+    // --- At the beginning of a leap second.
+    test_input_moment.push_back(std::make_pair(Moment(Duration(leap1 - 1, SecPerDay() - 1.0), Duration(0, 0.)), Duration(leap1, 0.)));
+    // --- During a leap second.
+    test_input_moment.push_back(std::make_pair(Moment(Duration(leap1 - 1, SecPerDay() - 0.3), Duration(0, 0.)), Duration(leap1, 0.)));
+    // --- At the end of a leap second.
+    test_input_moment.push_back(std::make_pair(Moment(Duration(leap1 - 1, SecPerDay()),       Duration(0, 0.)), Duration(leap1, 0.)));
+    // --- After the end of a leap second.
+    test_input_moment.push_back(std::make_pair(Moment(Duration(leap1 - 1, SecPerDay() + 0.3), Duration(0, 0.)), Duration(leap1, 0.3)));
 
     for (std::list<std::pair<Moment, Duration> >::iterator itor_test = test_input_moment.begin(); itor_test != test_input_moment.end();
       ++itor_test) {
@@ -562,8 +594,6 @@ namespace {
       }
     }
 
-// TODO: Following if-0 block fails, revealing a bug (or bugs) that needs to be fixed.
-//#if 0
     // Test proper handling of origin of UTC Moment. It should be adjusted to an existing MJD time in UTC and
     // special caution is needed for cases of leap second removal. In the test below, note that MJD Duration(leap1, -.7)
     // does NOT exist in UTC system because it expresses the "removed" second, which requires some adjustment for UTC origin.
@@ -628,7 +658,6 @@ namespace {
       ") returned Moment(" << utc_moment.first << ", " << utc_moment.second <<
 	"), which is earlier than the beginning of the current UTC definition " << oldest_mjd << " MJD." << std::endl;
     }
-//#endif
 
   }
 
