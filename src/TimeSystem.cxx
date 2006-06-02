@@ -82,13 +82,14 @@ namespace {
 
     private:
       struct leapdata_type {
-	leapdata_type(): m_leap_end(Duration(0, 0.)), m_inserted(true), m_time_diff(Duration(0, 0.)) {}
-	leapdata_type(const Duration & leap_end, const bool & inserted, const Duration & time_diff):
-          m_leap_end(leap_end), m_inserted(inserted), m_time_diff(time_diff) {}
+	leapdata_type(): m_leap_end(Duration(0, 0.)), m_inserted(true), m_time_diff(Duration(0, 0.)), m_leap_end_dest(Duration(0, 0.)) {}
+	leapdata_type(const Duration & leap_end, const bool & inserted, const Duration & time_diff, const Duration & leap_end_dest):
+          m_leap_end(leap_end), m_inserted(inserted), m_time_diff(time_diff), m_leap_end_dest(leap_end_dest) {}
 
-        Duration m_leap_end;  // MJD number for a moment immediately after a leap second is inserted or removed.
-        bool m_inserted;      // flag to store whether a leap second is inserted (true) or removed (false).
-        Duration m_time_diff; // time difference between TAI and UTC after a leap second is inserted or removed.
+        Duration m_leap_end;       // MJD number for a moment immediately after a leap second is inserted or removed.
+        bool m_inserted;           // flag to store whether a leap second is inserted (true) or removed (false).
+        Duration m_time_diff;      // time difference between TAI and UTC after a leap second is inserted or removed.
+        Duration m_leap_end_dest;  // Same as m_leap_end, but in a time system to be converted to.
       };
       typedef std::map<Duration, leapdata_type> leaptable_type;
       leaptable_type m_tai_minus_utc;
@@ -246,9 +247,14 @@ namespace {
 
     Duration result;
     if ((!(itor->second.m_inserted)) || (itor->second.m_leap_end <= mjd_tai)) {
+      // General case: a numerical difference between MJD (UTC) and MJD (TAI) is constant over time.
       result = mjd_tai + itor->second.m_time_diff;
     } else {
-      result = itor->second.m_leap_end + itor->second.m_time_diff;
+      // Leap second(s) being inserted: MJD (UTC) stays constant while MJD (TAI) grows.
+      // In this case, the end of the leap-second insertion is chosen as a resultant MJD number,
+      // to avoid any loss of precision in computating a time origin near a leap-second insertion, where
+      // a tiny difference in MJD number can make a big difference in time being pointed by one second.
+      result = itor->second.m_leap_end_dest;
     }
 
     return result;
@@ -274,21 +280,17 @@ namespace {
       long mjd = long(mjd_dbl + .5);
       if (mjd != mjd_dbl) throw std::logic_error("UtcSystem: leapsec.fits unexpectedly contained a non-integral MJD value");
 
-      // Pre-compute leap second data for TAI-minus-UTC table.
+      // Pre-compute leap second data for conversion tables.
       time_diff += leap_sec;
       bool inserted = (leap_sec > 0);
-      Duration mjd_end(mjd, 0.);
-      Duration mjd_start = (inserted ? mjd_end : mjd_end + Duration(0, leap_sec));
+      Duration mjd_end_utc(mjd, 0.);
+      Duration mjd_end_tai(mjd, time_diff);
+      Duration mjd_start_utc = (inserted ? mjd_end_utc : Duration(mjd, leap_sec));
+      Duration mjd_start_tai = (inserted ? Duration(mjd, time_diff - leap_sec) : mjd_end_tai);
 
-      // Add an entry to TAI-minus-UTC table.
-      m_tai_minus_utc[mjd_start] = leapdata_type(mjd_end, inserted, Duration(0, time_diff));
-
-      // Pre-compute leap second data for UTC-minus-TAI table.
-      mjd_end = Duration(mjd, time_diff);
-      mjd_start = (inserted ? mjd_end - Duration(0, leap_sec) : mjd_end);
-
-      // Add an entry to UTC-minus-TAI table.
-      m_utc_minus_tai[mjd_start] = leapdata_type(mjd_end, inserted, Duration(0, -time_diff));
+      // Add an entry to conversion tables.
+      m_tai_minus_utc[mjd_start_utc] = leapdata_type(mjd_end_utc, inserted, Duration(0, time_diff), mjd_end_tai);
+      m_utc_minus_tai[mjd_start_tai] = leapdata_type(mjd_end_tai, inserted, Duration(0, -time_diff), mjd_end_utc);
     }
   }
 
@@ -317,7 +319,7 @@ namespace {
       // In this case, the end of the leap-second insertion is chosen as a time origin of returning Moment,
       // to avoid any loss of precision in computating a time origin near a leap-second insertion, where
       // a tiny difference in MJD number can make a big difference in time being pointed by one second.
-      result = Moment(itor->second.m_leap_end + itor->second.m_time_diff, mjd_tai - itor->second.m_leap_end);
+      result = Moment(itor->second.m_leap_end_dest, mjd_tai - itor->second.m_leap_end);
     }
 
     return result;
@@ -344,7 +346,7 @@ namespace {
       // Leap second(s) being removed: any MJD (UTC) corresponds to a single MJD (TAI).
       // In this case, utc_time.first MJD (UTC) points to an unphysical time during leap second(s) being removed
       // where any MJD (UTC) is interpreted as the end time of the leap-second removal.
-      result = Moment(itor->second.m_leap_end + itor->second.m_time_diff, utc_time.second);
+      result = Moment(itor->second.m_leap_end_dest, utc_time.second);
     }
 
     return result;
