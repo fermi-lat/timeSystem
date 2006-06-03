@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: hirayama  Sat Jun  3 09:06:59 PDT 2006
+timeSystem/timeSystem
+
+Modified Files:
+	Duration.h 
+Log Message:
+Fix a bug of Duration::add method that produces a negative second part when the result of addition is rounded to 86400.0 exact.
+
+    *
+------------------------------------------------------------
 User: hirayama  Fri Jun  2 15:08:59 PDT 2006
 timeSystem/src/test
 
