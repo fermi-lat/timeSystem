@@ -151,7 +151,7 @@ namespace timeSystem {
         if (sec >= SecPerDay()) {
           ++day;
           // Do not reuse sum variable from above, in order to preserve maximum precision.
-          sec = (t1.second - SecPerDay()) + t2.second;
+          sec = std::max(0., (t1.second - SecPerDay()) + t2.second);
         }
         return time_type(day, sec);
       }
