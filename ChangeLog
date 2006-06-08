@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: peachey  Thu Jun  8 12:13:37 PDT 2006
+timeSystem/timeSystem
+
+Modified Files:
+	Duration.h 
+Log Message:
+Add comment to code which prevents negative values in Duration's seconds member.
+
+    *
+------------------------------------------------------------
 User: hirayama  Sat Jun  3 09:06:59 PDT 2006
 timeSystem/timeSystem
 
