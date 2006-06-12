@@ -9,12 +9,15 @@
 #include "timeSystem/Duration.h"
 #include "timeSystem/ElapsedTime.h"
 #include "timeSystem/TimeInterval.h"
+#include "timeSystem/TimeRep.h"
 #include "timeSystem/TimeSystem.h"
 
 namespace timeSystem {
 
   AbsoluteTime::AbsoluteTime(const std::string & time_system_name, const Duration & origin, const Duration & time):
     m_time_system(&TimeSystem::getSystem(time_system_name)), m_time(origin, time) {}
+
+  AbsoluteTime::AbsoluteTime(const TimeRep & rep): m_time_system(0), m_time() { *this = rep.getTime(); }
 
   AbsoluteTime AbsoluteTime::operator +(const ElapsedTime & elapsed_time) const { return elapsed_time + *this; }
 
@@ -49,6 +52,8 @@ namespace timeSystem {
   Duration AbsoluteTime::getTime() const { return m_time.second; }
 
   void AbsoluteTime::setTime(const Duration & time) { m_time.second = time; }
+
+  void AbsoluteTime::getTime(TimeRep & rep) const { rep.setTime(*m_time_system, m_time.first, m_time.second); }
 
   ElapsedTime AbsoluteTime::computeElapsedTime(const std::string & time_system_name, const AbsoluteTime & since) const {
     const TimeSystem & time_system(TimeSystem::getSystem(time_system_name));

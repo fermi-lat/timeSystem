@@ -19,6 +19,7 @@ namespace timeSystem {
 
   class ElapsedTime;
   class TimeInterval;
+  class TimeRep;
 
   /** \class AbsoluteTime
       \brief Class which represents an absolute moment in time, expressed as a time elapsed from a specific MJD time, in
@@ -29,6 +30,8 @@ namespace timeSystem {
   class AbsoluteTime {
     public:
       AbsoluteTime(const std::string & time_system_name, const Duration & origin, const Duration & time);
+
+      AbsoluteTime(const TimeRep & rep);
 
       AbsoluteTime operator +(const ElapsedTime & elapsed_time) const;
 
@@ -49,6 +52,8 @@ namespace timeSystem {
       Duration getTime() const;
 
       void setTime(const Duration & time);
+
+      void getTime(TimeRep & rep) const;
 
       AbsoluteTime computeAbsoluteTime(const std::string & time_system_name, const Duration & delta_t) const;
 
