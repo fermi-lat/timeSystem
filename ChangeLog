@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: peachey  Mon Jun 12 14:05:28 PDT 2006
+timeSystem/timeSystem
+
+Modified Files:
+	AbsoluteTime.h 
+Log Message:
+Add construction from and conversion to TimeRep class.
+
+    *
+------------------------------------------------------------
 User: peachey  Thu Jun  8 12:13:37 PDT 2006
 timeSystem/timeSystem
 
