@@ -1,5 +1,16 @@
 ------------------------------------------------------------
 User: peachey  Mon Jun 12 14:06:19 PDT 2006
+timeSystem/src
+
+Added Files:
+	TimeRep.cxx 
+Log Message:
+New class encapsulating different time representations, e.g. MJD, MET,
+YYYY-MM-DD...
+
+    *
+------------------------------------------------------------
+User: peachey  Mon Jun 12 14:06:19 PDT 2006
 timeSystem/timeSystem
 
 Added Files:
