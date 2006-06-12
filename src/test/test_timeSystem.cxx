@@ -18,6 +18,7 @@
 #include "timeSystem/TimeFormat.h"
 #endif
 #include "timeSystem/TimeInterval.h"
+#include "timeSystem/TimeRep.h"
 #include "timeSystem/TimeSystem.h"
 #include "timeSystem/TimeValue.h"
 
@@ -47,6 +48,8 @@ namespace {
   void TestTimeValue();
 
   void TestTimeFormat();
+
+  void TestTimeRep();
 }
 
 using namespace st_app;
@@ -88,6 +91,9 @@ void TestTimeSystemApp::run() {
 
   // Test TimeFormat class.
   TestTimeFormat();
+
+  // Test TimeRep class.
+  TestTimeRep();
 
   // Interpret failure flag to report error.
   if (s_failed) throw std::runtime_error("Unit test failure");
@@ -1060,6 +1066,83 @@ namespace {
     // Create a mission elapsed time, archetypally a "GLAST TIME".
     MetFormat met_format(51910, 64.814 / 86400.);
 #endif
+  }
+
+  void TestTimeRep() {
+    s_os.setMethod("TestTimeRep");
+    static const double epsilon = std::numeric_limits<double>::epsilon() * 10.;
+    long mjd_ref_int = 51910;
+    double mjd_ref_frac = 64.814 / 86400.;
+    double met = 86400. * 100.;
+    double delta_t = 100.;
+    double expected_met = met;
+
+    // Create a test time object.
+    MetRep glast_tdb("TDB", mjd_ref_int, mjd_ref_frac, met);
+
+    met = glast_tdb.getValue();
+    if (epsilon < std::fabs(met - expected_met)) {
+      err() << "Right after construction, glast_tdb.getValue() returned " << met << ", not " << expected_met <<
+        " as expected." << std::endl;
+    }
+
+    // Create an absolute time from this time expression.
+    AbsoluteTime abs_time(glast_tdb);
+
+    // Compute something which changes this time.
+    abs_time = abs_time + ElapsedTime("TDB", Duration(0, delta_t));
+
+    // Put the changed time back into the representation.
+    glast_tdb.setAbsoluteTime(abs_time);
+
+    // Compare final value.
+    expected_met = met + delta_t;
+    met = glast_tdb.getValue();
+    if (epsilon < std::fabs(met - expected_met)) {
+      err() << "After computation, glast_tdb.getValue() returned " << met << ", not " << expected_met <<
+        " as expected." << std::endl;
+    }
+
+    glast_tdb.setValue(125.0123);
+    expected_met = 125.0123;
+    met = glast_tdb.getValue();
+    if (epsilon < std::fabs(met - expected_met)) {
+      err() << "After setValue(125.0123), glast_tdb.getValue() returned " << met << ", not " << expected_met <<
+        " as expected." << std::endl;
+    }
+
+    // Create a test time object using MJD representation.
+    MjdRep mjd_tdb("TDB", mjd_ref_int, mjd_ref_frac);
+
+    IntFracPair expected_mjd(mjd_ref_int, mjd_ref_frac);
+    IntFracPair mjd = mjd_tdb.getValue();
+    if (expected_mjd.getIntegerPart() != mjd.getIntegerPart() ||
+      epsilon < std::fabs(expected_mjd.getFractionalPart() - mjd.getFractionalPart())) {
+      err() << "Right after construction, mjd_tdb.getValue() returned " << mjd << ", not " << expected_mjd <<
+        " as expected." << std::endl;
+    }
+
+    // Put the previous MET time back into the MJD representation.
+    mjd_tdb.setAbsoluteTime(abs_time);
+
+    // Compare final value.
+    expected_mjd = IntFracPair(mjd_ref_int + 100, mjd_ref_frac + 100. / 86400.);
+    mjd = mjd_tdb.getValue();
+    if (expected_mjd.getIntegerPart() != mjd.getIntegerPart() ||
+      epsilon < std::fabs(expected_mjd.getFractionalPart() - mjd.getFractionalPart())) {
+      err() << "After assignment from abs_time, mjd_tdb.getValue() returned " << mjd << ", not " << expected_mjd <<
+        " as expected." << std::endl;
+    }
+
+    mjd_tdb.setValue(137, .1250123);
+    expected_mjd = IntFracPair(137, .1250123);
+    mjd = mjd_tdb.getValue();
+    if (expected_mjd.getIntegerPart() != mjd.getIntegerPart() ||
+      epsilon < std::fabs(expected_mjd.getFractionalPart() - mjd.getFractionalPart())) {
+      err() << "After setValue(137, .1250123), mjd_tdb.getValue() returned " << mjd << ", not " << expected_mjd <<
+        " as expected." << std::endl;
+    }
+
   }
 
 }
