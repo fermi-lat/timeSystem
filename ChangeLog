@@ -1,5 +1,16 @@
 ------------------------------------------------------------
 User: peachey  Wed Jun 14 12:28:34 PDT 2006
+timeSystem/src
+
+Modified Files:
+	TimeRep.cxx 
+Log Message:
+Add and test TimeRep::getString() method for producing shift-able
+string output.
+
+    *
+------------------------------------------------------------
+User: peachey  Wed Jun 14 12:28:34 PDT 2006
 timeSystem/timeSystem
 
 Modified Files:
