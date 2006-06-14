@@ -12,8 +12,8 @@
 #include <sstream>
 #include <stdexcept>
 
+#include "timeSystem/IntFracPair.h"
 #include "timeSystem/TimeConstant.h"
-#include "timeSystem/TimeValue.h"
 
 #include "st_stream/Stream.h"
 

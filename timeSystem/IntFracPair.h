@@ -1,23 +1,20 @@
-/** \file TimeValue
-    \brief Declaration of TimeValue class.
+/** \file IntFracPair
+    \brief Declaration of IntFracPair class.
     \authors Masaharu Hirayama, GSSC
              James Peachey, HEASARC/GSSC
 */
-#ifndef timeSystem_TimeValue_h
-#define timeSystem_TimeValue_h
+#ifndef timeSystem_IntFracPair_h
+#define timeSystem_IntFracPair_h
 
 #include <cmath>
 #include <limits>
 #include <sstream>
 #include <stdexcept>
-#include <utility>
-#include <vector>
 
 #include "st_stream/Stream.h"
 
 namespace timeSystem {
 
-  // TODO: where to put IntFracPair class?
   class IntFracPair {
     public:
       IntFracPair(): m_int_part(0), m_frac_part(0.) {}
@@ -142,71 +139,6 @@ namespace timeSystem {
     return os;
   }
 
-  class TimeValue {
-    public:
-      typedef std::vector<long> carry_type;
-
-      TimeValue(const IntFracPair & base_value): m_base_value(base_value), m_carry_over() {}
-
-      TimeValue(long carry0, const IntFracPair & base_value): m_base_value(base_value), m_carry_over(pack(1, carry0)) {}
-
-      TimeValue(long carry1, long carry0, const IntFracPair & base_value): m_base_value(base_value),
-        m_carry_over(pack(2, carry0, carry1)) {}
-
-      TimeValue(long carry2, long carry1, long carry0, const IntFracPair & base_value): m_base_value(base_value),
-        m_carry_over(pack(3, carry0, carry1, carry2)) {}
-
-      TimeValue(long carry3, long carry2, long carry1, long carry0, const IntFracPair & base_value): m_base_value(base_value),
-        m_carry_over(pack(4, carry0, carry1, carry2, carry3)) {}
-
-      TimeValue(long carry4, long carry3, long carry2, long carry1, long carry0, const IntFracPair & base_value):
-        m_base_value(base_value), m_carry_over(pack(5, carry0, carry1, carry2, carry3, carry4)) {}
-
-      TimeValue(long carry5, long carry4, long carry3, long carry2, long carry1, long carry0, const IntFracPair & base_value):
-        m_base_value(base_value), m_carry_over(pack(6, carry0, carry1, carry2, carry3, carry4, carry5)) {}
-
-      IntFracPair getBaseValue() const { return m_base_value; }
-
-      long getCarryOver(carry_type::size_type idx = 0) const {
-        long result = 0;
-        if (m_carry_over.size() > idx) result = m_carry_over[idx];
-        return result;
-      }
-
-      template <typename StreamType>
-      void write(StreamType & os) const {
-        // write carry over part.
-        for (carry_type::const_reverse_iterator itor = m_carry_over.rbegin(); itor != m_carry_over.rend(); itor++) {
-          os << *itor << ",";
-        }
-
-        // write base value.
-        os << m_base_value;
-      }
-
-    private:
-
-      carry_type pack(carry_type::size_type num_carry, long carry0 = 0, long carry1 = 0, long carry2 = 0,
-        long carry3 = 0, long carry4 = 0, long carry5 = 0) {
-        long carry[] = { carry0, carry1, carry2, carry3, carry4, carry5 };
-        carry_type::size_type carry_size = sizeof(carry) / sizeof(carry[0]);
-        carry_type::size_type idx = std::min(carry_size, num_carry);
-        return carry_type(carry, carry + idx);
-      }
-
-      IntFracPair m_base_value;
-      carry_type m_carry_over;
-  };
-
-  inline std::ostream & operator <<(std::ostream & os, const TimeValue & tv) {
-    tv.write(os);
-    return os;
-  }
-
-  inline st_stream::OStream & operator <<(st_stream::OStream & os, const TimeValue & tv) {
-    tv.write(os);
-    return os;
-  }
 }
 
 #endif
