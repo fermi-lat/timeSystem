@@ -52,7 +52,7 @@ namespace timeSystem {
         m_frac_part = std::floor(m_frac_part * factor) / factor;
       }
 
-      IntFracPair(const std::string & input_value) {
+      explicit IntFracPair(const std::string & input_value) {
         std::string value;
         // Read number into temporary double variable.
         double value_dbl = 0.;
