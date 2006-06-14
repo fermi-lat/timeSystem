@@ -28,6 +28,8 @@ namespace timeSystem {
 
       virtual std::string getString() const = 0;
 
+      virtual void setString(const std::string & value) = 0;
+
       void setAbsoluteTime(const AbsoluteTime & time);
   };
 
@@ -43,6 +45,8 @@ namespace timeSystem {
       virtual void setTime(const TimeSystem & system, const Duration & origin, const Duration & elapsed);
 
       virtual std::string getString() const;
+
+      virtual void setString(const std::string & value);
 
       double getValue() const;
 
@@ -66,6 +70,8 @@ namespace timeSystem {
       virtual void setTime(const TimeSystem & system, const Duration & origin, const Duration & elapsed);
 
       virtual std::string getString() const;
+
+      virtual void setString(const std::string & value);
 
       IntFracPair getValue() const;
 

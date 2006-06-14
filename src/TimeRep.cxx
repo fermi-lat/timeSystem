@@ -43,6 +43,11 @@ namespace timeSystem {
     return os.str();
   }
 
+  void MetRep::setString(const std::string & value) {
+    IntFracPair pair_value(value);
+    setValue(pair_value.getIntegerPart() + pair_value.getFractionalPart());
+  }
+
   double MetRep::getValue() const { return m_met; }
 
   void MetRep::setValue(double met) { m_met = met; }
@@ -65,6 +70,11 @@ namespace timeSystem {
     std::ostringstream os;
     os << std::setprecision(s_digits) << getValue() << " MJD (" << *m_system << ")";
     return os.str();
+  }
+
+  void MjdRep::setString(const std::string & value) {
+    IntFracPair pair_value(value);
+    setValue(pair_value.getIntegerPart(), pair_value.getFractionalPart());
   }
 
   IntFracPair MjdRep::getValue() const { return m_mjd.getValue(Day); }

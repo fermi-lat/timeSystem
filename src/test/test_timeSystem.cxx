@@ -1103,7 +1103,16 @@ namespace {
         " as expected." << std::endl;
     }
 
-    // Test setValue.
+    // Test setString(string).
+    glast_tdb.setString("125.0123456");
+    expected_met = 125.0123456;
+    met = glast_tdb.getValue();
+    if (epsilon < std::fabs(met - expected_met)) {
+      err() << "After setString(\"125.0123456\"), glast_tdb.getValue() returned " << met << ", not " << expected_met <<
+        " as expected." << std::endl;
+    }
+    
+    // Test setValue(double).
     glast_tdb.setValue(125.0123);
     expected_met = 125.0123;
     met = glast_tdb.getValue();
@@ -1143,7 +1152,17 @@ namespace {
         " as expected." << std::endl;
     }
 
-    // Test setValue.
+    // Test setString(string).
+    mjd_tdb.setString("137.1250123456");
+    expected_mjd = IntFracPair(137, .1250123456);
+    mjd = mjd_tdb.getValue();
+    if (expected_mjd.getIntegerPart() != mjd.getIntegerPart() ||
+      epsilon < std::fabs(expected_mjd.getFractionalPart() - mjd.getFractionalPart())) {
+      err() << "After setString(\"137.1250123456\"), mjd_tdb.getValue() returned " << mjd << ", not " << expected_mjd <<
+        " as expected." << std::endl;
+    }
+    
+    // Test setValue(long, double).
     mjd_tdb.setValue(137, .1250123);
     expected_mjd = IntFracPair(137, .1250123);
     mjd = mjd_tdb.getValue();
