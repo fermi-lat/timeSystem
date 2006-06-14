@@ -1,4 +1,18 @@
 ------------------------------------------------------------
+User: peachey  Wed Jun 14 13:06:45 PDT 2006
+timeSystem/timeSystem
+
+Modified Files:
+	Duration.h 
+Added Files:
+	IntFracPair.h 
+Removed Files:
+	TimeValue.h 
+Log Message:
+Move IntFracPair class into its own header file, and remove TimeValue class.
+
+    *
+------------------------------------------------------------
 User: peachey  Wed Jun 14 12:54:58 PDT 2006
 timeSystem/timeSystem
 
