@@ -74,13 +74,8 @@ namespace timeSystem {
     // Add delta_t in time_system.
     time1.second += delta_t;
 
-    // Convert time1 to a corresponding time in *m_time_system.
-    Moment time2 = m_time_system->convertFrom(time_system, time1);
-
-    // Create an absolute time to return
-    //return AbsoluteTime(m_time_system->getName(), time2.first, time2.second);
-    // TODO: replace below with above after TimeFormat is added to AbsoluteTime.
-    return AbsoluteTime(m_time_system->getName(), m_time.first, time2.second + m_time_system->computeTimeDifference(time2.first, m_time.first));
+    // Return this time expressed as a new absolute time in the input time system.
+    return AbsoluteTime(time_system_name, time1.first, time1.second);
   }
 
   std::ostream & operator <<(std::ostream & os, const AbsoluteTime & time) {
