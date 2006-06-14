@@ -114,6 +114,7 @@ namespace timeSystem {
         } else {
           os << m_int_part;
 
+          // TODO Truncate trailing 0s?
           std::ostringstream oss;
           oss.precision(os.precision());
           oss.setf(std::ios::fixed);
