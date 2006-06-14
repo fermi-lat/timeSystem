@@ -14,13 +14,9 @@
 #include "timeSystem/AbsoluteTime.h"
 #include "timeSystem/ElapsedTime.h"
 #include "timeSystem/Duration.h"
-#if 0
-#include "timeSystem/TimeFormat.h"
-#endif
 #include "timeSystem/TimeInterval.h"
 #include "timeSystem/TimeRep.h"
 #include "timeSystem/TimeSystem.h"
-#include "timeSystem/TimeValue.h"
 
 #include <cmath>
 #include <exception>
@@ -44,10 +40,6 @@ namespace {
   void TestIntFracPair();
 
   void TestTimeInterval();
-
-  void TestTimeValue();
-
-  void TestTimeFormat();
 
   void TestTimeRep();
 }
@@ -85,12 +77,6 @@ void TestTimeSystemApp::run() {
 
   // Test TimeInterval class.
   TestTimeInterval();
-
-  // Test TimeValue class.
-  TestTimeValue();
-
-  // Test TimeFormat class.
-  TestTimeFormat();
 
   // Test TimeRep class.
   TestTimeRep();
@@ -983,89 +969,6 @@ namespace {
     if (dur_a != dur_b) {
       err() << "After creating interval_a and interval_b, they are not the same." << std::endl;
     }
-  }
-
-  static void CompareTimeValue(const std::string & hint, const TimeValue & value, long expected_int_part,
-    double expected_frac_part, const TimeValue::carry_type & expected_carry_over = TimeValue::carry_type(0)) {
-    if (expected_int_part != value.getBaseValue().getIntegerPart()) {
-      err() << hint << ", integer part of time value was " <<
-        value.getBaseValue().getIntegerPart() << ", not " << expected_int_part << " as expected." << std::endl;
-    }
-
-    double epsilon = std::numeric_limits<double>::epsilon() * 10.;
-    if (epsilon < std::fabs(expected_frac_part - value.getBaseValue().getFractionalPart())) {
-      err() << hint << ", fractional part of time value was " <<
-        value.getBaseValue().getFractionalPart() << ", not " << expected_frac_part << " as expected." << std::endl;
-    }
-
-    // Compare carry over terms.
-    for (TimeValue::carry_type::size_type ii = 0; ii < expected_carry_over.size(); ++ii) {
-      if (expected_carry_over[ii] != value.getCarryOver(ii)) {
-        err() << hint << ", carry over[" << ii << "] of time value was " << value.getCarryOver(ii) <<
-          ", not " << expected_carry_over[ii] << " as expected." << std::endl;
-      }
-    }
-  }
-
-  void TestTimeValue() {
-    s_os.setMethod("TestTimeValue");
-    long int_part = 100;
-    double frac_part = .56789567895678956789;
-    IntFracPair base_value(int_part, frac_part);
-
-    // Create contextual message.
-    std::ostringstream os;
-    os.precision(s_os.err().precision());
-    os << "base_value = (" << int_part << ", " << frac_part << ")";
-    std::string context = os.str();
-    os.str("");
-
-    // Construction a test object.
-    TimeValue tv(IntFracPair(0, 0.));
-
-    // Expected carry includes extra 0 at end to make sure the case where index is > size is handled cleanly.
-    { long expected_long[] = { 10, 11, 12, 13, 14, 15, 0 };
-      std::size_t long_size = sizeof(expected_long) / sizeof(expected_long[0]);
-      TimeValue::carry_type expected_carry;
-
-      // First use just the "right-most" carry, then gradually build up until all are used.
-      expected_carry.assign(expected_long + long_size - 1, expected_long + long_size);
-      tv = TimeValue(base_value);
-      CompareTimeValue("After tv = TimeValue(" + context + ")", tv, int_part, frac_part, expected_carry);
-
-      expected_carry.assign(expected_long + long_size - 2, expected_long + long_size);
-      tv = TimeValue(15, base_value);
-      CompareTimeValue("After tv = TimeValue(15, " + context + ")", tv, int_part, frac_part, expected_carry);
-
-      expected_carry.assign(expected_long + long_size - 3, expected_long + long_size);
-      tv = TimeValue(15, 14, base_value);
-      CompareTimeValue("After tv = TimeValue(15, 14, " + context + ")", tv, int_part, frac_part, expected_carry);
-
-      expected_carry.assign(expected_long + long_size - 4, expected_long + long_size);
-      tv = TimeValue(15, 14, 13, base_value);
-      CompareTimeValue("After tv = TimeValue(15, 14, 13, " + context + ")", tv, int_part, frac_part, expected_carry);
-
-      expected_carry.assign(expected_long + long_size - 5, expected_long + long_size);
-      tv = TimeValue(15, 14, 13, 12, base_value);
-      CompareTimeValue("After tv = TimeValue(15, 14, 13, 12, " + context + ")", tv, int_part, frac_part, expected_carry);
-
-      expected_carry.assign(expected_long + long_size - 6, expected_long + long_size);
-      tv = TimeValue(15, 14, 13, 12, 11, base_value);
-      CompareTimeValue("After tv = TimeValue(15, 14, 13, 12, 11, " + context + ")", tv, int_part, frac_part, expected_carry);
-
-      expected_carry.assign(expected_long + long_size - 7, expected_long + long_size);
-      tv = TimeValue(15, 14, 13, 12, 11, 10, base_value);
-      CompareTimeValue("After tv = TimeValue(15, 14, 13, 12, 11, 10, " + context + ")", tv, int_part, frac_part, expected_carry);
-    }
-
-  }
-
-  void TestTimeFormat() {
-    s_os.setMethod("TestTimeFormat");
-#if 0
-    // Create a mission elapsed time, archetypally a "GLAST TIME".
-    MetFormat met_format(51910, 64.814 / 86400.);
-#endif
   }
 
   void TestTimeRep() {
