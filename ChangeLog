@@ -1,4 +1,15 @@
 ------------------------------------------------------------
+User: peachey  Wed Jun 14 13:07:12 PDT 2006
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Move IntFracPair class into its own header file, and remove TimeValue class.
+Clean up some commented-out code.
+
+    *
+------------------------------------------------------------
 User: peachey  Wed Jun 14 13:06:45 PDT 2006
 timeSystem/timeSystem
 
