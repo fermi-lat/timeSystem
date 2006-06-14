@@ -1103,12 +1103,21 @@ namespace {
         " as expected." << std::endl;
     }
 
+    // Test setValue.
     glast_tdb.setValue(125.0123);
     expected_met = 125.0123;
     met = glast_tdb.getValue();
     if (epsilon < std::fabs(met - expected_met)) {
       err() << "After setValue(125.0123), glast_tdb.getValue() returned " << met << ", not " << expected_met <<
         " as expected." << std::endl;
+    }
+    
+    // Test conversions to string.
+    std::string expected_string = "125.0123 MET (TDB) [MJDREF=51910.000750162037037]";
+    std::string glast_tdb_string = glast_tdb.getString();
+    if (expected_string != glast_tdb_string) {
+      err() << "glast_tdb.getString() returned string \"" << glast_tdb_string << "\", not \"" << expected_string <<
+        "\", as expected." << std::endl;
     }
 
     // Create a test time object using MJD representation.
@@ -1134,6 +1143,7 @@ namespace {
         " as expected." << std::endl;
     }
 
+    // Test setValue.
     mjd_tdb.setValue(137, .1250123);
     expected_mjd = IntFracPair(137, .1250123);
     mjd = mjd_tdb.getValue();
@@ -1142,7 +1152,14 @@ namespace {
       err() << "After setValue(137, .1250123), mjd_tdb.getValue() returned " << mjd << ", not " << expected_mjd <<
         " as expected." << std::endl;
     }
-
+    
+    // Test conversions to string.
+    expected_string = "137.125012300000000 MJD (TDB)";
+    std::string mjd_tdb_string = mjd_tdb.getString();
+    if (expected_string != mjd_tdb_string) {
+      err() << "mjd_tdb.getString() returned string \"" << mjd_tdb_string << "\", not \"" << expected_string <<
+        "\", as expected." << std::endl;
+    }
   }
 
 }

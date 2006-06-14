@@ -7,6 +7,14 @@
 #include "timeSystem/TimeRep.h"
 #include "timeSystem/TimeSystem.h"
 
+#include <iomanip>
+#include <limits>
+#include <sstream>
+
+namespace {
+  int s_digits = std::numeric_limits<double>::digits10;
+}
+
 namespace timeSystem {
 
   TimeRep::~TimeRep() {}
@@ -29,6 +37,12 @@ namespace timeSystem {
     m_met = met_pair.getIntegerPart() + met_pair.getFractionalPart();
   }
 
+  std::string MetRep::getString() const {
+    std::ostringstream os;
+    os << std::setprecision(s_digits) << getValue() << " MET (" << *m_system << ") [MJDREF=" << m_mjd_ref.getValue(Day) << "]";
+    return os.str();
+  }
+
   double MetRep::getValue() const { return m_met; }
 
   void MetRep::setValue(double met) { m_met = met; }
@@ -45,6 +59,12 @@ namespace timeSystem {
 
     // Now compute mjd from my_time in this system.
     m_mjd = m_system->computeMjd(my_time);
+  }
+
+  std::string MjdRep::getString() const {
+    std::ostringstream os;
+    os << std::setprecision(s_digits) << getValue() << " MJD (" << *m_system << ")";
+    return os.str();
   }
 
   IntFracPair MjdRep::getValue() const { return m_mjd.getValue(Day); }
