@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: peachey  Wed Jun 14 12:27:34 PDT 2006
+timeSystem/timeSystem
+
+Modified Files:
+	TimeValue.h 
+Log Message:
+Add TODO concerning number of digits in output of shift operators.
+
+    *
+------------------------------------------------------------
 User: peachey  Mon Jun 12 14:06:53 PDT 2006
 timeSystem/src/test
 
