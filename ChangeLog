@@ -1,5 +1,15 @@
 ------------------------------------------------------------
 User: peachey  Wed Jun 14 12:54:20 PDT 2006
+timeSystem/timeSystem
+
+Modified Files:
+	TimeRep.h 
+Log Message:
+Add and test TimeRep::setString() for converting strings into TimeRep objects.
+
+    *
+------------------------------------------------------------
+User: peachey  Wed Jun 14 12:54:20 PDT 2006
 timeSystem/src
 
 Modified Files:
