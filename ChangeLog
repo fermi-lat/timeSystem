@@ -1,5 +1,21 @@
 ------------------------------------------------------------
 User: peachey  Mon Jun 26 12:24:55 PDT 2006
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Change some methods in TimeRep:
+  o getTime() is moved to base class.
+  o setAbsoluteTime(AbsTime &) becomes setTime(AbsTime &) in base class.
+  o getTime/setTime in hierarchy becomes get/set.
+  o setString becomes assign.
+Clean up in AbsoluteTime: remove getTime and setTime. Use TimeRep where
+these were needed in the test code.
+
+    *
+------------------------------------------------------------
+User: peachey  Mon Jun 26 12:24:55 PDT 2006
 timeSystem/src
 
 Modified Files:
