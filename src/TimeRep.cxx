@@ -19,17 +19,27 @@ namespace timeSystem {
 
   TimeRep::~TimeRep() {}
 
-  void TimeRep::setAbsoluteTime(const AbsoluteTime & time) { time.getTime(*this); }
+  AbsoluteTime TimeRep::getTime() const {
+    std::string system_name;
+    Duration origin;
+    Duration elapsed;
+    get(system_name, origin, elapsed);
+    return AbsoluteTime(system_name, origin, elapsed);
+  }
+
+  void TimeRep::setTime(const AbsoluteTime & time) { time.getTime(*this); }
 
 
   MetRep::MetRep(const std::string & system_name, long mjd_ref_int, double mjd_ref_frac, double met):
     m_system(&TimeSystem::getSystem(system_name)), m_mjd_ref(IntFracPair(mjd_ref_int, mjd_ref_frac), Day), m_met(met) {}
 
-  AbsoluteTime MetRep::getTime() const { return AbsoluteTime(m_system->getName(), m_mjd_ref, Duration(0, m_met)); }
+  void MetRep::get(std::string & system_name, Duration & origin, Duration & elapsed) const {
+    system_name = m_system->getName(); origin = m_mjd_ref, elapsed = Duration(0, m_met);
+  }
 
-  void MetRep::setTime(const TimeSystem & system, const Duration & origin, const Duration & elapsed) {
+  void MetRep::set(const std::string & system_name, const Duration & origin, const Duration & elapsed) {
     // Convert from the given time into "this" system.
-    Moment my_time = m_system->convertFrom(system, Moment(origin, elapsed));
+    Moment my_time = m_system->convertFrom(TimeSystem::getSystem(system_name), Moment(origin, elapsed));
 
     // Now compute met from my_time in this system.
     Duration met = my_time.second + m_system->computeTimeDifference(my_time.first, m_mjd_ref);
@@ -43,7 +53,7 @@ namespace timeSystem {
     return os.str();
   }
 
-  void MetRep::setString(const std::string & value) {
+  void MetRep::assign(const std::string & value) {
     IntFracPair pair_value(value);
     setValue(pair_value.getIntegerPart() + pair_value.getFractionalPart());
   }
@@ -56,11 +66,13 @@ namespace timeSystem {
   MjdRep::MjdRep(const std::string & system_name, long mjd_int, double mjd_frac):
     m_system(&TimeSystem::getSystem(system_name)), m_mjd(IntFracPair(mjd_int, mjd_frac), Day) {}
 
-  AbsoluteTime MjdRep::getTime() const { return AbsoluteTime(m_system->getName(), m_mjd, Duration(0, 0.)); }
+  void MjdRep::get(std::string & system_name, Duration & origin, Duration & elapsed) const {
+    system_name = m_system->getName(); origin = m_mjd, elapsed = Duration(0, 0.);
+  }
 
-  void MjdRep::setTime(const TimeSystem & system, const Duration & origin, const Duration & elapsed) {
+  void MjdRep::set(const std::string & system_name, const Duration & origin, const Duration & elapsed) {
     // Convert from the given time into "this" system.
-    Moment my_time = m_system->convertFrom(system, Moment(origin, elapsed));
+    Moment my_time = m_system->convertFrom(TimeSystem::getSystem(system_name), Moment(origin, elapsed));
 
     // Now compute mjd from my_time in this system.
     m_mjd = m_system->computeMjd(my_time);
@@ -72,7 +84,7 @@ namespace timeSystem {
     return os.str();
   }
 
-  void MjdRep::setString(const std::string & value) {
+  void MjdRep::assign(const std::string & value) {
     IntFracPair pair_value(value);
     setValue(pair_value.getIntegerPart(), pair_value.getFractionalPart());
   }

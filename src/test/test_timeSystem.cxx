@@ -731,9 +731,14 @@ namespace {
     AbsoluteTime expected_result("TDB", mjd_origin, duration + delta_t);
     Duration difference = (result - expected_result).computeElapsedTime("TDB").getTime();
     Duration expected_diff(0, 0.);
+    MjdRep mjd_rep("TDB", 0, 0.);
     if (difference != expected_diff) {
-      err() << "Sum of absolute time and elapsed time's duration was " << result.getTime() << ", not " <<
-        expected_result.getTime() << " as expected." << std::endl;
+      mjd_rep.setTime(result);
+      std::string result_string = mjd_rep.getString();
+      mjd_rep.setTime(expected_result);
+      std::string expected_string = mjd_rep.getString();
+      err() << "Sum of absolute time and elapsed time was " << result_string << ", not " <<
+        expected_string << " as expected." << std::endl;
     }
 
     // Test adding in reverse order.
@@ -741,8 +746,12 @@ namespace {
     difference = (result - expected_result).computeElapsedTime("TDB").getTime();
 
     if (difference != expected_diff) {
-      err() << "Sum of elapsed time and absolute time's duration was " << result.getTime() << ", not " <<
-        expected_result.getTime() << " as expected." << std::endl;
+      mjd_rep.setTime(result);
+      std::string result_string = mjd_rep.getString();
+      mjd_rep.setTime(expected_result);
+      std::string expected_string = mjd_rep.getString();
+      err() << "Sum of elapsed time and absolute time's duration was " << result_string << ", not " <<
+        expected_string << " as expected." << std::endl;
     }
 
     // Test subtraction of elapsed time from absolute time.
@@ -750,8 +759,12 @@ namespace {
     expected_result = AbsoluteTime("TDB", mjd_origin, duration - delta_t);
     difference = (result - expected_result).computeElapsedTime("TDB").getTime();
     if (difference != expected_diff) {
-      err() << "Elapsed time subtracted from absolute time gave " << result.getTime() << ", not " <<
-        expected_result.getTime() << " as expected." << std::endl;
+      mjd_rep.setTime(result);
+      std::string result_string = mjd_rep.getString();
+      mjd_rep.setTime(expected_result);
+      std::string expected_string = mjd_rep.getString();
+      err() << "Elapsed time subtracted from absolute time gave " << result_string << ", not " <<
+        expected_string << " as expected." << std::endl;
     }
 
     // Make a test time which is later than the first time.
@@ -996,7 +1009,7 @@ namespace {
     abs_time = abs_time + ElapsedTime("TDB", Duration(0, delta_t));
 
     // Put the changed time back into the representation.
-    glast_tdb.setAbsoluteTime(abs_time);
+    glast_tdb.setTime(abs_time);
 
     // Compare final value.
     expected_met = met + delta_t;
@@ -1006,12 +1019,12 @@ namespace {
         " as expected." << std::endl;
     }
 
-    // Test setString(string).
-    glast_tdb.setString("125.0123456");
+    // Test assignment from string.
+    glast_tdb.assign("125.0123456");
     expected_met = 125.0123456;
     met = glast_tdb.getValue();
     if (epsilon < std::fabs(met - expected_met)) {
-      err() << "After setString(\"125.0123456\"), glast_tdb.getValue() returned " << met << ", not " << expected_met <<
+      err() << "After assign(\"125.0123456\"), glast_tdb.getValue() returned " << met << ", not " << expected_met <<
         " as expected." << std::endl;
     }
     
@@ -1044,7 +1057,7 @@ namespace {
     }
 
     // Put the previous MET time back into the MJD representation.
-    mjd_tdb.setAbsoluteTime(abs_time);
+    mjd_tdb.setTime(abs_time);
 
     // Compare final value.
     expected_mjd = IntFracPair(mjd_ref_int + 100, mjd_ref_frac + 100. / 86400.);
@@ -1055,13 +1068,13 @@ namespace {
         " as expected." << std::endl;
     }
 
-    // Test setString(string).
-    mjd_tdb.setString("137.1250123456");
+    // Test assignment from string.
+    mjd_tdb.assign("137.1250123456");
     expected_mjd = IntFracPair(137, .1250123456);
     mjd = mjd_tdb.getValue();
     if (expected_mjd.getIntegerPart() != mjd.getIntegerPart() ||
       epsilon < std::fabs(expected_mjd.getFractionalPart() - mjd.getFractionalPart())) {
-      err() << "After setString(\"137.1250123456\"), mjd_tdb.getValue() returned " << mjd << ", not " << expected_mjd <<
+      err() << "After assign(\"137.1250123456\"), mjd_tdb.getValue() returned " << mjd << ", not " << expected_mjd <<
         " as expected." << std::endl;
     }
     

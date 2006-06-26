@@ -49,11 +49,7 @@ namespace timeSystem {
     return (*this > other ? (*this <= other + tolerance) : (other <= *this + tolerance));
   }
 
-  Duration AbsoluteTime::getTime() const { return m_time.second; }
-
-  void AbsoluteTime::setTime(const Duration & time) { m_time.second = time; }
-
-  void AbsoluteTime::getTime(TimeRep & rep) const { rep.setTime(*m_time_system, m_time.first, m_time.second); }
+  void AbsoluteTime::getTime(TimeRep & rep) const { rep.set(m_time_system->getName(), m_time.first, m_time.second); }
 
   ElapsedTime AbsoluteTime::computeElapsedTime(const std::string & time_system_name, const AbsoluteTime & since) const {
     const TimeSystem & time_system(TimeSystem::getSystem(time_system_name));

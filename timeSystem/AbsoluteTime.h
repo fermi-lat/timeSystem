@@ -49,10 +49,6 @@ namespace timeSystem {
 
       bool equivalentTo(const AbsoluteTime & other, const ElapsedTime & tolerance) const;
 
-      Duration getTime() const;
-
-      void setTime(const Duration & time);
-
       void getTime(TimeRep & rep) const;
 
       AbsoluteTime computeAbsoluteTime(const std::string & time_system_name, const Duration & delta_t) const;
