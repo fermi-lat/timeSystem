@@ -22,15 +22,17 @@ namespace timeSystem {
     public:
       virtual ~TimeRep();
 
-      virtual AbsoluteTime getTime() const = 0;
+      virtual void get(std::string & system_name, Duration & origin, Duration & elapsed) const = 0;
 
-      virtual void setTime(const TimeSystem & system, const Duration & origin, const Duration & elapsed) = 0;
+      virtual void set(const std::string & system_name, const Duration & origin, const Duration & elapsed) = 0;
 
       virtual std::string getString() const = 0;
 
-      virtual void setString(const std::string & value) = 0;
+      virtual void assign(const std::string & value) = 0;
 
-      void setAbsoluteTime(const AbsoluteTime & time);
+      AbsoluteTime getTime() const;
+
+      void setTime(const AbsoluteTime & time);
   };
 
   /** \class MetRep
@@ -40,13 +42,13 @@ namespace timeSystem {
     public:
       MetRep(const std::string & system_name, long mjd_ref_int, double mjd_ref_frac, double met);
 
-      virtual AbsoluteTime getTime() const;
+      virtual void get(std::string & system_name, Duration & origin, Duration & elapsed) const;
 
-      virtual void setTime(const TimeSystem & system, const Duration & origin, const Duration & elapsed);
+      virtual void set(const std::string & system_name, const Duration & origin, const Duration & elapsed);
 
       virtual std::string getString() const;
 
-      virtual void setString(const std::string & value);
+      virtual void assign(const std::string & value);
 
       double getValue() const;
 
@@ -65,13 +67,13 @@ namespace timeSystem {
     public:
       MjdRep(const std::string & system_name, long mjd_int, double mjd_frac);
 
-      virtual AbsoluteTime getTime() const;
+      virtual void get(std::string & system_name, Duration & origin, Duration & elapsed) const;
 
-      virtual void setTime(const TimeSystem & system, const Duration & origin, const Duration & elapsed);
+      virtual void set(const std::string & system_name, const Duration & origin, const Duration & elapsed);
 
       virtual std::string getString() const;
 
-      virtual void setString(const std::string & value);
+      virtual void assign(const std::string & value);
 
       IntFracPair getValue() const;
 
