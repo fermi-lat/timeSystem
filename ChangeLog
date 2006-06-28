@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: peachey  Wed Jun 28 13:51:30 PDT 2006
+timeSystem/src
+
+Modified Files:
+	AbsoluteTime.cxx 
+Log Message:
+Add operator +=(ElapsedTime)  and operator -=(ElapsedTime).
+
+    *
+------------------------------------------------------------
 User: peachey  Mon Jun 26 12:24:55 PDT 2006
 timeSystem/timeSystem
 
