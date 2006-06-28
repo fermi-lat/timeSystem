@@ -37,6 +37,10 @@ namespace timeSystem {
 
       AbsoluteTime operator -(const ElapsedTime & elapsed_time) const;
 
+      AbsoluteTime & operator +=(const ElapsedTime & elapsed_time);
+
+      AbsoluteTime & operator -=(const ElapsedTime & elapsed_time);
+
       TimeInterval operator -(const AbsoluteTime & time) const;
 
       bool operator >(const AbsoluteTime & other) const;
