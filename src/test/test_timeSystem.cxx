@@ -737,12 +737,40 @@ namespace {
       std::string result_string = mjd_rep.getString();
       mjd_rep.setTime(expected_result);
       std::string expected_string = mjd_rep.getString();
-      err() << "Sum of absolute time and elapsed time was " << result_string << ", not " <<
+      err() << "Sum of absolute time and elapsed time using operator + was " << result_string << ", not " <<
+        expected_string << " as expected." << std::endl;
+    }
+
+    // Test AbsoluteTime::operator +=.
+    result = abs_time;
+    result += elapsed_time;
+    difference = (result - expected_result).computeElapsedTime("TDB").getTime();
+    if (difference != expected_diff) {
+      mjd_rep.setTime(result);
+      std::string result_string = mjd_rep.getString();
+      mjd_rep.setTime(expected_result);
+      std::string expected_string = mjd_rep.getString();
+      err() << "Sum of absolute time and elapsed time using operator += was " << result_string << ", not " <<
+        expected_string << " as expected." << std::endl;
+    }
+
+    // Test AbsoluteTime::operator -=.
+    result = abs_time;
+    result -= elapsed_time;
+    expected_result = AbsoluteTime("TDB", mjd_origin, duration - delta_t);
+    difference = (result - expected_result).computeElapsedTime("TDB").getTime();
+    if (difference != expected_diff) {
+      mjd_rep.setTime(result);
+      std::string result_string = mjd_rep.getString();
+      mjd_rep.setTime(expected_result);
+      std::string expected_string = mjd_rep.getString();
+      err() << "Sum of absolute time and elapsed time using operator -= was " << result_string << ", not " <<
         expected_string << " as expected." << std::endl;
     }
 
     // Test adding in reverse order.
     result = elapsed_time + abs_time;
+    expected_result = AbsoluteTime("TDB", mjd_origin, duration + delta_t);
     difference = (result - expected_result).computeElapsedTime("TDB").getTime();
 
     if (difference != expected_diff) {
