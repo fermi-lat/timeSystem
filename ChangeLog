@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: hirayama  Thu Jun 29 12:45:46 PDT 2006
+timeSystem/src
+
+Modified Files:
+	TimeSystem.cxx 
+Log Message:
+Improve time system conversion from TDB to TT in TtSystem::convertFrom method by reducing the number of function calls of TdbSystem::computeTdbMinusTt method.
+
+    *
+------------------------------------------------------------
 User: peachey  Wed Jun 28 13:51:30 PDT 2006
 timeSystem/timeSystem
 
