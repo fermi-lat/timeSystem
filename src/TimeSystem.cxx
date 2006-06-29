@@ -172,14 +172,20 @@ namespace {
         // 1st approximation of MJD time in TT system.
         Duration dest = src;
 
+        // 1st approximation of time difference between TT and TDB.
+        Duration diff = tdb_system.computeTdbMinusTt(dest);
+
         // iterative approximation of dest.
         for (int ii=0; ii<max_iteration; ii++) {
 
           // compute next candidate of dest.
-          dest = src - tdb_system.computeTdbMinusTt(dest);
+          dest = src - diff;
+
+          // compute time difference between TT and TDB at dest.
+          diff = tdb_system.computeTdbMinusTt(dest);
 
           // check whether binary demodulation successfully converged or not
-          if (src.equivalentTo(dest + tdb_system.computeTdbMinusTt(dest), epsilon)) return Moment(dest, Duration(0, 0.));
+          if (src.equivalentTo(dest + diff, epsilon)) return Moment(dest, Duration(0, 0.));
         }
 
         // Conversion from TDB to TT not converged (error)
