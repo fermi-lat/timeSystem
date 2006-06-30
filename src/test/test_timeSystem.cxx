@@ -729,71 +729,39 @@ namespace {
     ElapsedTime elapsed_time("TDB", delta_t);
     AbsoluteTime result = abs_time + elapsed_time;
     AbsoluteTime expected_result("TDB", mjd_origin, duration + delta_t);
-    Duration difference = (result - expected_result).computeElapsedTime("TDB").getTime();
-    Duration expected_diff(0, 0.);
-    MjdRep mjd_rep("TDB", 0, 0.);
-    if (difference != expected_diff) {
-      mjd_rep.setTime(result);
-      std::string result_string = mjd_rep.getString();
-      mjd_rep.setTime(expected_result);
-      std::string expected_string = mjd_rep.getString();
-      err() << "Sum of absolute time and elapsed time using operator + was " << result_string << ", not " <<
-        expected_string << " as expected." << std::endl;
-    }
+    ElapsedTime epsilon("TDB", Duration(0, 1.e-9)); // 1 nanosecond.
+    if (!result.equivalentTo(expected_result, epsilon))
+      err() << "Sum of absolute time and elapsed time using operator + was " << result << ", not " <<
+        expected_result << " as expected." << std::endl;
 
     // Test AbsoluteTime::operator +=.
     result = abs_time;
     result += elapsed_time;
-    difference = (result - expected_result).computeElapsedTime("TDB").getTime();
-    if (difference != expected_diff) {
-      mjd_rep.setTime(result);
-      std::string result_string = mjd_rep.getString();
-      mjd_rep.setTime(expected_result);
-      std::string expected_string = mjd_rep.getString();
-      err() << "Sum of absolute time and elapsed time using operator += was " << result_string << ", not " <<
-        expected_string << " as expected." << std::endl;
-    }
+    if (!result.equivalentTo(expected_result, epsilon))
+      err() << "Sum of absolute time and elapsed time using operator += was " << result << ", not " <<
+        expected_result << " as expected." << std::endl;
 
     // Test AbsoluteTime::operator -=.
     result = abs_time;
     result -= elapsed_time;
     expected_result = AbsoluteTime("TDB", mjd_origin, duration - delta_t);
-    difference = (result - expected_result).computeElapsedTime("TDB").getTime();
-    if (difference != expected_diff) {
-      mjd_rep.setTime(result);
-      std::string result_string = mjd_rep.getString();
-      mjd_rep.setTime(expected_result);
-      std::string expected_string = mjd_rep.getString();
-      err() << "Sum of absolute time and elapsed time using operator -= was " << result_string << ", not " <<
-        expected_string << " as expected." << std::endl;
-    }
+    if (!result.equivalentTo(expected_result, epsilon))
+      err() << "Sum of absolute time and elapsed time using operator -= was " << result << ", not " <<
+        expected_result << " as expected." << std::endl;
 
     // Test adding in reverse order.
     result = elapsed_time + abs_time;
     expected_result = AbsoluteTime("TDB", mjd_origin, duration + delta_t);
-    difference = (result - expected_result).computeElapsedTime("TDB").getTime();
-
-    if (difference != expected_diff) {
-      mjd_rep.setTime(result);
-      std::string result_string = mjd_rep.getString();
-      mjd_rep.setTime(expected_result);
-      std::string expected_string = mjd_rep.getString();
-      err() << "Sum of elapsed time and absolute time's duration was " << result_string << ", not " <<
-        expected_string << " as expected." << std::endl;
-    }
+    if (!result.equivalentTo(expected_result, epsilon))
+      err() << "Sum of elapsed time and absolute time in that order was " << result << ", not " <<
+        expected_result << " as expected." << std::endl;
 
     // Test subtraction of elapsed time from absolute time.
     result = abs_time - elapsed_time;
     expected_result = AbsoluteTime("TDB", mjd_origin, duration - delta_t);
-    difference = (result - expected_result).computeElapsedTime("TDB").getTime();
-    if (difference != expected_diff) {
-      mjd_rep.setTime(result);
-      std::string result_string = mjd_rep.getString();
-      mjd_rep.setTime(expected_result);
-      std::string expected_string = mjd_rep.getString();
-      err() << "Elapsed time subtracted from absolute time gave " << result_string << ", not " <<
-        expected_string << " as expected." << std::endl;
-    }
+    if (!result.equivalentTo(expected_result, epsilon))
+      err() << "Elapsed time subtracted from absolute time gave " << result << ", not " <<
+        expected_result << " as expected." << std::endl;
 
     // Make a test time which is later than the first time.
     AbsoluteTime later_time("TDB", mjd_origin, duration + Duration(0, 100.));
@@ -827,9 +795,9 @@ namespace {
         "\" with tolerance of " << loose_tol << ", not true as expected." << std::endl;
 
     // Test subtraction of absolute time from absolute time.
-    expected_diff = Duration(0, 100.);
+    Duration expected_diff(0, 100.);
     Duration tolerance(0, 1.e-9); // 1 ns.
-    difference = (later_time - abs_time).computeElapsedTime("TDB").getTime();
+    Duration difference = (later_time - abs_time).computeElapsedTime("TDB").getTime();
     if (!expected_diff.equivalentTo(difference, tolerance))
       err() << "Absolute time [" << abs_time << "] subtracted from absolute time [" << later_time << "] gave " << difference <<
         ", not " << expected_diff << " as expected." << std::endl;
