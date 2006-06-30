@@ -33,7 +33,17 @@ namespace timeSystem {
       AbsoluteTime getTime() const;
 
       void setTime(const AbsoluteTime & time);
+
+      template <typename StreamType>
+      void write(StreamType & os) const;
   };
+
+  template <typename StreamType>
+  inline void TimeRep::write(StreamType & os) const { os << getString(); }
+
+  std::ostream & operator <<(std::ostream & os, const TimeRep & time_rep);
+
+  st_stream::OStream & operator <<(st_stream::OStream & os, const TimeRep & time_rep);
 
   /** \class MetRep
       \brief

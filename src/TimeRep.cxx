@@ -29,6 +29,16 @@ namespace timeSystem {
 
   void TimeRep::setTime(const AbsoluteTime & time) { time.getTime(*this); }
 
+  std::ostream & operator <<(std::ostream & os, const TimeRep & time_rep) {
+    time_rep.write(os);
+    return os;
+  }
+
+  st_stream::OStream & operator <<(st_stream::OStream & os, const TimeRep & time_rep) {
+    time_rep.write(os);
+    return os;
+  }
+
 
   MetRep::MetRep(const std::string & system_name, long mjd_ref_int, double mjd_ref_frac, double met):
     m_system(&TimeSystem::getSystem(system_name)), m_mjd_ref(IntFracPair(mjd_ref_int, mjd_ref_frac), Day), m_met(met) {}
