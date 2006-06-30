@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: hirayama  Fri Jun 30 12:37:53 PDT 2006
+timeSystem/timeSystem
+
+Modified Files:
+	IntFracPair.h 
+Log Message:
+Improve write method by truncating trailing zeros and removing a decimal point when it comes at the end.
+
+    *
+------------------------------------------------------------
 User: hirayama  Thu Jun 29 12:45:46 PDT 2006
 timeSystem/src
 
