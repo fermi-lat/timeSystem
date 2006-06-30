@@ -1117,7 +1117,7 @@ namespace {
     }
     
     // Test conversions to string.
-    expected_string = "137.125012300000000 MJD (TDB)";
+    expected_string = "137.1250123 MJD (TDB)";
     std::string mjd_tdb_string = mjd_tdb.getString();
     if (expected_string != mjd_tdb_string) {
       err() << "mjd_tdb.getString() returned string \"" << mjd_tdb_string << "\", not \"" << expected_string <<
