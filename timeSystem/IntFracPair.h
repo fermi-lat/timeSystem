@@ -105,19 +105,31 @@ namespace timeSystem {
 
       template <typename StreamType>
       void write(StreamType & os) const {
-        // write split value part.
         if (m_int_part == 0) {
+          // Write fractional part only.
           os << m_frac_part;
         } else {
+          // Write integer part first.
           os << m_int_part;
 
-          // TODO Truncate trailing 0s?
+          // Write fractional part into a temporary string.
           std::ostringstream oss;
+          // TODO: Handle other settings/flags of "os" other than precision?
           oss.precision(os.precision());
+          // TODO: Handle the case that "os" comes with std::ios::scientific?
           oss.setf(std::ios::fixed);
           oss << m_frac_part;
-
           std::string frac_part_string = oss.str();
+
+          // Truncate trailing 0s.
+          std::string::size_type pos = frac_part_string.find_last_not_of("0 \t\v\n");
+          if (std::string::npos != pos) frac_part_string.erase(pos+1);
+
+          // Remove a decimal point ('.') at the end.
+          pos = frac_part_string.size() - 1;
+          if ('.' == frac_part_string[pos]) frac_part_string.erase(pos);
+
+          // Skip until a decimal point ('.') is found, then output the rest.
           std::string::iterator itor = frac_part_string.begin();
           for (; (itor != frac_part_string.end()) && (*itor != '.'); ++itor);
           for (; itor != frac_part_string.end(); ++itor) { os << *itor; }
