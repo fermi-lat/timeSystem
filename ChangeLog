@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: hirayama  Fri Jun 30 12:39:13 PDT 2006
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Modify a test of IntFracPair::write method to match the latest improvement (removal of trailing zeros).
+
+    *
+------------------------------------------------------------
 User: hirayama  Fri Jun 30 12:37:53 PDT 2006
 timeSystem/timeSystem
 
