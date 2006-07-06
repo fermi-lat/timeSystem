@@ -1,4 +1,15 @@
 ------------------------------------------------------------
+User: peachey  Thu Jul  6 12:21:30 PDT 2006
+timeSystem/src
+
+Modified Files:
+	TimeRep.cxx 
+Log Message:
+Add IntFracPair::getDouble method to avoid repeatedly adding
+integer and fraction parts by hand.
+
+    *
+------------------------------------------------------------
 User: hirayama  Fri Jun 30 13:23:20 PDT 2006
 timeSystem/timeSystem
 
