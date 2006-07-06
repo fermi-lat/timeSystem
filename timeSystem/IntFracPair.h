@@ -103,6 +103,8 @@ namespace timeSystem {
 
       double getFractionalPart() const { return m_frac_part; }
 
+      double getDouble() const { return m_int_part + m_frac_part; }
+
       template <typename StreamType>
       void write(StreamType & os) const {
         if (m_int_part == 0) {

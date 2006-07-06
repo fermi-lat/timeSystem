@@ -54,7 +54,7 @@ namespace timeSystem {
     // Now compute met from my_time in this system.
     Duration met = my_time.second + m_system->computeTimeDifference(my_time.first, m_mjd_ref);
     IntFracPair met_pair = met.getValue(Sec);
-    m_met = met_pair.getIntegerPart() + met_pair.getFractionalPart();
+    m_met = met_pair.getDouble();
   }
 
   std::string MetRep::getString() const {
@@ -65,7 +65,7 @@ namespace timeSystem {
 
   void MetRep::assign(const std::string & value) {
     IntFracPair pair_value(value);
-    setValue(pair_value.getIntegerPart() + pair_value.getFractionalPart());
+    setValue(pair_value.getDouble());
   }
 
   double MetRep::getValue() const { return m_met; }

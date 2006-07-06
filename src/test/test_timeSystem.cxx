@@ -955,6 +955,15 @@ namespace {
     } catch (const std::exception &) {
       // That's good.
     }
+
+    int_frac = IntFracPair(125, .0123456789012345);
+    int_part = int_frac.getIntegerPart();
+    frac_part = int_frac.getFractionalPart();
+    dval = int_frac.getDouble();
+    double dval_expected = int_part + frac_part;
+
+    if (dval != dval_expected)
+      err() << "getDouble returned " << dval << ", not " << dval_expected << ", as expected." << std::endl;
   }
 
   void TestTimeInterval() {
