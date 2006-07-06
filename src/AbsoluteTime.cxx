@@ -17,7 +17,7 @@ namespace timeSystem {
   AbsoluteTime::AbsoluteTime(const std::string & time_system_name, const Duration & origin, const Duration & time):
     m_time_system(&TimeSystem::getSystem(time_system_name)), m_time(origin, time) {}
 
-  AbsoluteTime::AbsoluteTime(const TimeRep & rep): m_time_system(0), m_time() { *this = rep.getTime(); }
+  AbsoluteTime::AbsoluteTime(const TimeRep & rep): m_time_system(0), m_time() { setTime(rep); }
 
   AbsoluteTime AbsoluteTime::operator +(const ElapsedTime & elapsed_time) const { return elapsed_time + *this; }
 
@@ -54,6 +54,15 @@ namespace timeSystem {
   }
 
   void AbsoluteTime::getTime(TimeRep & rep) const { rep.set(m_time_system->getName(), m_time.first, m_time.second); }
+
+  void AbsoluteTime::setTime(const TimeRep & rep) {
+    std::string system_name;
+    Duration origin;
+    Duration elapsed;
+    rep.get(system_name, origin, elapsed);
+    m_time_system = &TimeSystem::getSystem(system_name);
+    m_time = Moment(origin, elapsed);
+  }
 
   ElapsedTime AbsoluteTime::computeElapsedTime(const std::string & time_system_name, const AbsoluteTime & since) const {
     const TimeSystem & time_system(TimeSystem::getSystem(time_system_name));

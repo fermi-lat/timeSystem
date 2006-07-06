@@ -55,6 +55,8 @@ namespace timeSystem {
 
       void getTime(TimeRep & rep) const;
 
+      void setTime(const TimeRep & rep);
+
       AbsoluteTime computeAbsoluteTime(const std::string & time_system_name, const Duration & delta_t) const;
 
       ElapsedTime computeElapsedTime(const std::string & time_system_name, const AbsoluteTime & since) const;

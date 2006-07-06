@@ -30,10 +30,6 @@ namespace timeSystem {
 
       virtual void assign(const std::string & value) = 0;
 
-      AbsoluteTime getTime() const;
-
-      void setTime(const AbsoluteTime & time);
-
       template <typename StreamType>
       void write(StreamType & os) const;
   };

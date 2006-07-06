@@ -19,16 +19,6 @@ namespace timeSystem {
 
   TimeRep::~TimeRep() {}
 
-  AbsoluteTime TimeRep::getTime() const {
-    std::string system_name;
-    Duration origin;
-    Duration elapsed;
-    get(system_name, origin, elapsed);
-    return AbsoluteTime(system_name, origin, elapsed);
-  }
-
-  void TimeRep::setTime(const AbsoluteTime & time) { time.getTime(*this); }
-
   std::ostream & operator <<(std::ostream & os, const TimeRep & time_rep) {
     time_rep.write(os);
     return os;
