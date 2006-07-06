@@ -1,4 +1,15 @@
 ------------------------------------------------------------
+User: peachey  Thu Jul  6 13:13:28 PDT 2006
+timeSystem/src
+
+Modified Files:
+	AbsoluteTime.cxx TimeRep.cxx 
+Log Message:
+Remove TimeRep::getTime and setTime, and add AbsoluteTime::setTime to provide
+the same functionality.
+
+    *
+------------------------------------------------------------
 User: peachey  Thu Jul  6 12:21:31 PDT 2006
 timeSystem/timeSystem
 
