@@ -22,6 +22,8 @@ namespace timeSystem {
     public:
       virtual ~TimeRep();
 
+      virtual TimeRep & operator =(const AbsoluteTime & abs_time);
+
       virtual void get(std::string & system_name, Duration & origin, Duration & elapsed) const = 0;
 
       virtual void set(const std::string & system_name, const Duration & origin, const Duration & elapsed) = 0;
@@ -48,6 +50,8 @@ namespace timeSystem {
     public:
       MetRep(const std::string & system_name, long mjd_ref_int, double mjd_ref_frac, double met);
 
+      virtual MetRep & operator =(const AbsoluteTime & abs_time);
+
       virtual void get(std::string & system_name, Duration & origin, Duration & elapsed) const;
 
       virtual void set(const std::string & system_name, const Duration & origin, const Duration & elapsed);
@@ -72,6 +76,8 @@ namespace timeSystem {
   class MjdRep : public TimeRep {
     public:
       MjdRep(const std::string & system_name, long mjd_int, double mjd_frac);
+
+      virtual MjdRep & operator =(const AbsoluteTime & abs_time);
 
       virtual void get(std::string & system_name, Duration & origin, Duration & elapsed) const;
 
