@@ -19,6 +19,11 @@ namespace timeSystem {
 
   TimeRep::~TimeRep() {}
 
+  TimeRep & TimeRep::operator =(const AbsoluteTime & abs_time) {
+    abs_time.exportTimeRep(*this);
+    return *this;
+  }
+
   std::ostream & operator <<(std::ostream & os, const TimeRep & time_rep) {
     time_rep.write(os);
     return os;
@@ -32,6 +37,8 @@ namespace timeSystem {
 
   MetRep::MetRep(const std::string & system_name, long mjd_ref_int, double mjd_ref_frac, double met):
     m_system(&TimeSystem::getSystem(system_name)), m_mjd_ref(IntFracPair(mjd_ref_int, mjd_ref_frac), Day), m_met(met) {}
+
+  MetRep & MetRep::operator =(const AbsoluteTime & abs_time) { TimeRep::operator =(abs_time); return *this; }
 
   void MetRep::get(std::string & system_name, Duration & origin, Duration & elapsed) const {
     system_name = m_system->getName(); origin = m_mjd_ref, elapsed = Duration(0, m_met);
@@ -65,6 +72,8 @@ namespace timeSystem {
 
   MjdRep::MjdRep(const std::string & system_name, long mjd_int, double mjd_frac):
     m_system(&TimeSystem::getSystem(system_name)), m_mjd(IntFracPair(mjd_int, mjd_frac), Day) {}
+
+  MjdRep & MjdRep::operator =(const AbsoluteTime & abs_time) { TimeRep::operator =(abs_time); return *this; }
 
   void MjdRep::get(std::string & system_name, Duration & origin, Duration & elapsed) const {
     system_name = m_system->getName(); origin = m_mjd, elapsed = Duration(0, 0.);
