@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Fri Jul 21 13:39:14 PDT 2006
+timeSystem/timeSystem
+
+Modified Files:
+	TimeRep.h 
+Log Message:
+Add TimeRep::operator =(AbsoluteTime) to improve readability of application codes.
+    *
+------------------------------------------------------------
 User: hirayama  Fri Jul 21 13:38:11 PDT 2006
 timeSystem/timeSystem
 
