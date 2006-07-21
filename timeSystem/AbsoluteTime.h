@@ -53,9 +53,7 @@ namespace timeSystem {
 
       bool equivalentTo(const AbsoluteTime & other, const ElapsedTime & tolerance) const;
 
-      void getTime(TimeRep & rep) const;
-
-      void setTime(const TimeRep & rep);
+      void exportTimeRep(TimeRep & rep) const;
 
       AbsoluteTime computeAbsoluteTime(const std::string & time_system_name, const Duration & delta_t) const;
 
@@ -65,6 +63,8 @@ namespace timeSystem {
       void write(StreamType & os) const;
 
     private:
+      void importTimeRep(const TimeRep & rep);
+
       // Prohibited operations:
       // These are not physical because TimeInterval is "anchored" to its endpoints, which are absolute moments in time.
       // In general, neither endpoint of the TimeInterval is the same as "this" AbsoluteTime. Note that similar operators
