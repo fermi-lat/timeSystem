@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Fri Jul 21 13:40:13 PDT 2006
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Replace AbsoluteTime::getTime and setTime with TimeRep::operator =(AbsoluteTime).
+    *
+------------------------------------------------------------
 User: hirayama  Fri Jul 21 13:39:14 PDT 2006
 timeSystem/src
 
