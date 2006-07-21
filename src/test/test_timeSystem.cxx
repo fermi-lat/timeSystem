@@ -1014,7 +1014,7 @@ namespace {
     abs_time = abs_time + ElapsedTime("TDB", Duration(0, delta_t));
 
     // Put the changed time back into the representation.
-    abs_time.getTime(glast_tdb);
+    glast_tdb = abs_time;
 
     // Compare final value.
     expected_met = met + delta_t;
@@ -1062,7 +1062,7 @@ namespace {
     }
 
     // Put the previous MET time back into the MJD representation.
-    abs_time.getTime(mjd_tdb);
+    mjd_tdb = abs_time;
 
     // Compare final value.
     expected_mjd = IntFracPair(mjd_ref_int + 100, mjd_ref_frac + 100. / 86400.);
