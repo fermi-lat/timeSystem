@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Fri Jul 21 13:38:11 PDT 2006
+timeSystem/timeSystem
+
+Modified Files:
+	AbsoluteTime.h 
+Log Message:
+Rename AbsoluteTime::setTime and getTime methods to importTimeRep and exportTimeRep for clarity.
+    *
+------------------------------------------------------------
 User: hirayama  Fri Jul 21 13:37:41 PDT 2006
 timeSystem/src
 
