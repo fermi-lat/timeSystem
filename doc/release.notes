@@ -5,6 +5,9 @@
 
 \verbatim
 --------------------------------------------------------------------------------
+26-jul-2006        v1 JP  Major improvements to abstractions; TimeRep class
+                          was added with a central role in allowing
+                          MJD time values to be mixed with MET time values.
 21-apr-2006        v0 JP  Initial import.
 --------------------------------------------------------------------------------
 \endverbatim
