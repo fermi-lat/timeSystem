@@ -64,9 +64,8 @@ namespace timeSystem {
       Duration(long day = 0, double sec = 0.): m_time(add(time_type(day, 0.), splitSec(sec))) {}
 
       Duration(IntFracPair time_value, TimeUnit_e unit) {
-        // Note: in C, unit[perlong][Day] is another way of writing perlong[unit][Day].
-        long day = time_value.getIntegerPart() / unit[perlong][Day];
-        double sec = (time_value.getIntegerPart() % unit[perlong][Day] + time_value.getFractionalPart()) * Sec[perlong][unit];
+        long day = time_value.getIntegerPart() / perlong[unit][Day];
+        double sec = (time_value.getIntegerPart() % perlong[unit][Day] + time_value.getFractionalPart()) * perlong[Sec][unit];
         m_time = add(time_type(day, 0.), splitSec(sec));
       }
 
@@ -183,16 +182,14 @@ namespace timeSystem {
       }
 
       // Compute time in a given unit.
-      // Note: in C, unit[per][Sec] is another way of writing per[unit][Sec].
-      double signed_time = signed_sec * unit[per][Sec];
+      double signed_time = signed_sec * per[unit][Sec];
 
       // Compute fractional part as a value in range (-1., 1.).
       double int_part_dbl;
       double frac_part = std::modf(signed_time, &int_part_dbl);
 
       // Compute integer part of return value using modf() result.
-      // Note: in C, unit[per][Day] is another way of writing per[unit][Day].
-      int_part_dbl += signed_day * unit[per][Day];
+      int_part_dbl += signed_day * per[unit][Day];
       int_part_dbl += (int_part_dbl > 0. ? 0.5 : -0.5);
       if (int_part_dbl >= std::numeric_limits<long>::max() + 1.) {
         std::ostringstream os;
