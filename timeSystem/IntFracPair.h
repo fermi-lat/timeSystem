@@ -6,6 +6,7 @@
 #ifndef timeSystem_IntFracPair_h
 #define timeSystem_IntFracPair_h
 
+#include <cctype>
 #include <cmath>
 #include <limits>
 #include <sstream>
