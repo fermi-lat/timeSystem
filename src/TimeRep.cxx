@@ -4,12 +4,17 @@
              James Peachey, HEASARC/GSSC
 */
 #include "timeSystem/AbsoluteTime.h"
+#include "timeSystem/GlastMetRep.h"
 #include "timeSystem/TimeRep.h"
 #include "timeSystem/TimeSystem.h"
 
+#include "tip/Header.h"
+
+#include <cctype>
 #include <iomanip>
 #include <limits>
 #include <sstream>
+#include <stdexcept>
 
 namespace {
   int s_digits = std::numeric_limits<double>::digits10;
@@ -37,6 +42,57 @@ namespace timeSystem {
 
   MetRep::MetRep(const std::string & system_name, long mjd_ref_int, double mjd_ref_frac, double met):
     m_system(&TimeSystem::getSystem(system_name)), m_mjd_ref(IntFracPair(mjd_ref_int, mjd_ref_frac), Day), m_met(met) {}
+
+  MetRep::MetRep(const tip::Header & header, double met): m_system(0), m_mjd_ref(), m_met(met) {
+    std::string system_name;
+    header["TIMESYS"].get(system_name);
+
+    bool found_mjd_ref = false;
+
+    if (!found_mjd_ref) {
+      try {
+        int mjd_ref_int = 0;
+        double mjd_ref_frac = 0.;
+        header["MJDREFI"].get(mjd_ref_int);
+        header["MJDREFF"].get(mjd_ref_frac);
+        m_mjd_ref = Duration(IntFracPair(mjd_ref_int, mjd_ref_frac), Day);
+        found_mjd_ref = true;
+      } catch (const std::exception &) {}
+    }
+
+    if (!found_mjd_ref) {
+      try {
+        double mjd_ref = 0.;
+        header["MJDREF"].get(mjd_ref);
+        IntFracPair mjd(mjd_ref);
+        int mjd_ref_int = mjd.getIntegerPart();
+        double mjd_ref_frac = mjd.getFractionalPart();
+        m_mjd_ref = Duration(IntFracPair(mjd_ref_int, mjd_ref_frac), Day);
+        found_mjd_ref = true;
+      } catch (const std::exception &) {}
+    }
+
+#if 0
+    if (!found_mjd_ref) {
+      try {
+        std::string telescope = header["TELESCOP"].get();
+        for (std::string::iterator itor = telescope.begin(); itor != telescope.end(); ++itor) *itor = std::toupper(*itor);
+        // TODO To support more missions, use prototypes looked up by telescope name instead of hardwired GlastMetRep.
+        if (telescope == "GLAST") {
+          GlastMetRep glast_met(system_name, met);
+          m_mjd_ref = glast_met.m_mjd_ref;
+          found_mjd_ref = true;
+        }
+      } catch (const std::exception &) {}
+    }
+#endif
+
+    if (!found_mjd_ref) {
+      throw std::runtime_error("MetRep could not find MJDREFI/MJDREFF or MJDREF.");
+    }
+
+    m_system = &TimeSystem::getSystem(system_name);
+  }
 
   MetRep & MetRep::operator =(const AbsoluteTime & abs_time) { TimeRep::operator =(abs_time); return *this; }
 
