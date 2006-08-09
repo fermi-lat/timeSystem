@@ -10,6 +10,10 @@
 
 #include <string>
 
+namespace tip {
+  class Header;
+}
+
 namespace timeSystem {
 
   class AbsoluteTime;
@@ -50,6 +54,10 @@ namespace timeSystem {
     public:
       MetRep(const std::string & system_name, long mjd_ref_int, double mjd_ref_frac, double met);
 
+      /** \brief Create a mission elapsed time, using information from a tip file header containing standard time keywords.
+      */
+      MetRep(const tip::Header & header, double met);
+
       virtual MetRep & operator =(const AbsoluteTime & abs_time);
 
       virtual void get(std::string & system_name, Duration & origin, Duration & elapsed) const;
@@ -66,7 +74,7 @@ namespace timeSystem {
 
     private:
       const TimeSystem * m_system;
-      const Duration m_mjd_ref;
+      Duration m_mjd_ref;
       double m_met;
   };
 
