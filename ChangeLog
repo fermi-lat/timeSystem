@@ -1,4 +1,15 @@
 ------------------------------------------------------------
+User: peachey  Wed Aug  9 14:24:43 PDT 2006
+timeSystem/timeSystem
+
+Modified Files:
+	TimeRep.h 
+Log Message:
+Add new constructor which gets all information about the time system
+and MJDREF from a tip::Header object.
+
+    *
+------------------------------------------------------------
 User: peachey  Wed Aug  9 13:33:57 PDT 2006
 timeSystem/src
 
