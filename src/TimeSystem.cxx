@@ -387,9 +387,9 @@ namespace timeSystem {
     for (std::string::iterator itor = uc_system_name.begin(); itor != uc_system_name.end(); ++itor) *itor = toupper(*itor);
     container_type & container(getContainer());
 
-    container_type::iterator itor = container.find(uc_system_name);
-    if (container.end() == itor) throw std::runtime_error("TimeSystem::getSystem could not find time system " + system_name);
-    return *itor->second;
+    container_type::iterator cont_itor = container.find(uc_system_name);
+    if (container.end() == cont_itor) throw std::runtime_error("TimeSystem::getSystem could not find time system " + system_name);
+    return *cont_itor->second;
   }
 
   TimeSystem::container_type & TimeSystem::getContainer() {
