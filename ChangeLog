@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: peachey  Tue Aug 15 09:39:59 PDT 2006
+timeSystem/cmt
+
+Modified Files:
+	requirements 
+Log Message:
+Fix bug which was preventing EXTFILESSYS from expanding on Windows.
+
+    *
+------------------------------------------------------------
 TAG
 Tag name: v1r1, operation: add
 Package: timeSystem
