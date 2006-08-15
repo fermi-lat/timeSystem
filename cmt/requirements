@@ -13,7 +13,7 @@ use st_app *
 apply_pattern ST_library option=-no_share
 macro_append lib_source "*.c"
 
-set TIMING_DIR "$EXTFILESSYS/jplephem"
+set TIMING_DIR "$(EXTFILESSYS)/jplephem"
 
 apply_pattern ST_pfiles
 
