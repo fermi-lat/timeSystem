@@ -1,4 +1,15 @@
 ------------------------------------------------------------
+User: peachey  Mon Aug 21 12:55:32 PDT 2006
+timeSystem/pfiles
+
+Modified Files:
+	gtbary.par 
+Log Message:
+Change prompts, add outfile parameter and change default for debug
+parameter to no.
+
+    *
+------------------------------------------------------------
 TAG
 Tag name: v1r1p1, operation: add
 Package: timeSystem
