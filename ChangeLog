@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: peachey  Mon Aug 21 13:23:43 PDT 2006
+timeSystem/src/gtbary
+
+Modified Files:
+	gtbary.cxx 
+Log Message:
+Allow outfile to be 'default' in which case evfile (input file) is used.
+
+    *
+------------------------------------------------------------
 User: peachey  Mon Aug 21 13:10:14 PDT 2006
 timeSystem/src/gtbary
 
