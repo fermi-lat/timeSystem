@@ -1,4 +1,15 @@
 ------------------------------------------------------------
+User: peachey  Mon Aug 21 13:10:14 PDT 2006
+timeSystem/src/gtbary
+
+Modified Files:
+	gtbary.cxx 
+Log Message:
+Bug fix: open for append when testing writability, so as to
+avoid truncating output file.
+
+    *
+------------------------------------------------------------
 User: peachey  Mon Aug 21 12:56:03 PDT 2006
 timeSystem/src/gtbary
 
