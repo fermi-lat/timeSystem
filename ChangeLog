@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: peachey  Mon Aug 21 12:56:03 PDT 2006
+timeSystem/src/gtbary
+
+Modified Files:
+	gtbary.cxx 
+Log Message:
+Allow output file to be specified separately from input file.
+
+    *
+------------------------------------------------------------
 User: peachey  Mon Aug 21 12:55:32 PDT 2006
 timeSystem/pfiles
 
