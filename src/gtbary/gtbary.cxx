@@ -56,7 +56,7 @@ void GbaryApp::run() {
   // Confirm that outfile is writable.
   bool file_writable = false;
   try {
-    std::ofstream os(outFile_s.c_str());
+    std::ofstream os(outFile_s.c_str(), std::ios::out | std::ios::app);
     if (os.good()) file_writable = true;
   } catch (const std::exception &) {}
   if (!file_writable)
