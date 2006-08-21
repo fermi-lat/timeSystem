@@ -1,6 +1,6 @@
 evfile,         f, a, , , , "Input event data file name"
 scfile,         f, a, , , , "Spacecraft data file name"
-outfile,        f, a, , , , "Output event data file name"
+outfile,        f, a, default, , , "Output event data file name (type 'default' for evfile)"
 ra,             r, a, 0., , , "True RA of point source (degrees)"
 dec,            r, a, 0., , , "True DEC of point source (degrees)"
 chatter,        i, h, 2, 0, 4, "Chattiness of output"

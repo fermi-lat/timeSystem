@@ -1,3 +1,4 @@
+#include <cctype>
 #include <cstdio>
 #include <fstream>
 #include <iostream>
@@ -41,8 +42,11 @@ void GbaryApp::run() {
   bool debug = pars["debug"];
   char refFrame[32] = "";
 
-  // If output file name is blank, let output file be input file.
-  if (outFile_s.empty()) {
+  // If output file name is blank or "default" (case insensitive), let output file be input file.
+  std::string outFile_uc = outFile_s;
+  for (std::string::iterator itor = outFile_uc.begin(); itor != outFile_uc.end(); ++itor) *itor = std::toupper(*itor);
+
+  if (outFile_s.empty() || "DEFAULT" == outFile_uc) {
     outFile_s = inFile_s;
   } else if (!clobber) {
     bool file_readable = false;
