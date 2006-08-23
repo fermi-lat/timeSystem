@@ -362,11 +362,6 @@ namespace {
 namespace timeSystem {
 
   const TimeSystem & TimeSystem::getSystem(const std::string & system_name) {
-    static TaiSystem s_tai_system;
-    static TdbSystem s_tdb_system;
-    static TtSystem s_tt_system;
-    static UtcSystem s_utc_system;
-
     TimeSystem & system(getNonConstSystem(system_name));
     if (system.getName() == "UTC") loadLeapSeconds("", false);
     return system;
@@ -383,6 +378,11 @@ namespace timeSystem {
   }
 
   TimeSystem & TimeSystem::getNonConstSystem(const std::string & system_name) {
+    static TaiSystem s_tai_system;
+    static TdbSystem s_tdb_system;
+    static TtSystem s_tt_system;
+    static UtcSystem s_utc_system;
+
     std::string uc_system_name = system_name;
     for (std::string::iterator itor = uc_system_name.begin(); itor != uc_system_name.end(); ++itor) *itor = toupper(*itor);
     container_type & container(getContainer());
