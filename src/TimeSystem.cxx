@@ -26,6 +26,8 @@ using namespace timeSystem;
 
 namespace {
 
+  std::string TimeSystem::s_default_leap_sec_file;
+
   class TaiSystem : public TimeSystem {
     public:
       TaiSystem(): TimeSystem("TAI") {}
@@ -96,6 +98,21 @@ namespace {
       leaptable_type m_utc_minus_tai;
 
   };
+
+  std::string TimeSystem::getDefaultLeapSecFileName() {
+    std::string uc_file_name = s_default_leap_sec_file;
+    for (std::string::iterator itor = uc_file_name.begin(); itor != uc_file_name.end(); ++itor) *itor = std::toupper(*itor);
+    if (uc_file_name.empty() || "DEFAULT" == uc_file_name) {
+      using namespace st_facilities;
+      // Location of default leap sec table.
+      return Env::appendFileName(Env::getEnv("TIMING_DIR"), "leapsec.fits");
+    }
+    return s_default_leap_sec_file;
+  }
+
+  void TimeSystem::setDefaultLeapSecFileName(const std::string & leap_sec_file_name) {
+    s_default_leap_sec_file = leap_sec_file_name;
+  }
 
   Moment TaiSystem::convertFrom(const TimeSystem & time_system, const Moment & time) const {
     if (&time_system != this) {
@@ -368,11 +385,10 @@ namespace timeSystem {
   }
 
   void TimeSystem::loadLeapSeconds(std::string leap_sec_file_name, bool force_load) {
-    if (leap_sec_file_name.empty()) {
-      using namespace st_facilities;
-      // Location of default leap sec table.
-      leap_sec_file_name = Env::appendFileName(Env::getEnv("TIMING_DIR"), "leapsec.fits");
-    }
+    std::string uc_file_name = leap_sec_file_name;
+    for (std::string::iterator itor = uc_file_name.begin(); itor != uc_file_name.end(); ++itor) *itor = std::toupper(*itor);
+    if (uc_file_name.empty() || "DEFAULT" == uc_file_name)
+      leap_sec_file_name = getDefaultLeapSecFileName();
     UtcSystem & utc_sys(dynamic_cast<UtcSystem &>(getNonConstSystem("UTC")));
     utc_sys.loadLeapSecTable(leap_sec_file_name, force_load);
   }
@@ -384,7 +400,7 @@ namespace timeSystem {
     static UtcSystem s_utc_system;
 
     std::string uc_system_name = system_name;
-    for (std::string::iterator itor = uc_system_name.begin(); itor != uc_system_name.end(); ++itor) *itor = toupper(*itor);
+    for (std::string::iterator itor = uc_system_name.begin(); itor != uc_system_name.end(); ++itor) *itor = std::toupper(*itor);
     container_type & container(getContainer());
 
     container_type::iterator cont_itor = container.find(uc_system_name);
@@ -399,7 +415,7 @@ namespace timeSystem {
 
   TimeSystem::TimeSystem(const std::string & system_name): m_system_name(system_name) {
     std::string uc_system_name = system_name;
-    for (std::string::iterator itor = uc_system_name.begin(); itor != uc_system_name.end(); ++itor) *itor = toupper(*itor);
+    for (std::string::iterator itor = uc_system_name.begin(); itor != uc_system_name.end(); ++itor) *itor = std::toupper(*itor);
     getContainer()[uc_system_name] = this;
   }
 
