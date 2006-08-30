@@ -1,5 +1,16 @@
 ------------------------------------------------------------
 User: peachey  Wed Aug 30 12:06:36 PDT 2006
+timeSystem/timeSystem
+
+Modified Files:
+	TimeSystem.h 
+Log Message:
+Add and test get/setDefaultLeapSecFile for controlling initial
+load of leap second data.
+
+    *
+------------------------------------------------------------
+User: peachey  Wed Aug 30 12:06:36 PDT 2006
 timeSystem/src/test
 
 Modified Files:
