@@ -25,6 +25,10 @@ namespace timeSystem {
 
       static void loadLeapSeconds(std::string leap_sec_file_name = "", bool force_load = true);
 
+      static std::string getDefaultLeapSecFileName();
+
+      static void setDefaultLeapSecFileName(const std::string & leap_sec_file_name);
+
       virtual ~TimeSystem();
 
       virtual Moment convertFrom(const TimeSystem & time_system, const Moment & time) const = 0;
@@ -42,6 +46,8 @@ namespace timeSystem {
       typedef std::map<std::string, TimeSystem *> container_type;
 
       static container_type & getContainer();
+
+      static std::string s_default_leap_sec_file;
 
       TimeSystem(const std::string & system_name);
 

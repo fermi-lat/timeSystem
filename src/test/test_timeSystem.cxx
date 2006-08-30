@@ -471,14 +471,42 @@ namespace {
       // That's OK!
     }
 
-    // This should work. This is a special file with known test properties.
+    // Try loading non-existent file for leap second table, by first setting the default file name to something wrong.
+    try {
+      TimeSystem::setDefaultLeapSecFileName("non-existent-file.fits");
+      TimeSystem::loadLeapSeconds("deFAULT");
+      err() << "After TimeSystem::setDefaultLeapSecFileName(\"non-existent-file.fits\"), loadLeapSeconds(\"deFAULT\") did not fail."
+        << std::endl;
+    } catch (const std::exception &) {
+      // That's OK!
+    }
+
     using namespace st_facilities;
     std::string test_leap = Env::appendFileName(Env::getDataDir("timeSystem"), "bogusls.fits");
-    TimeSystem::loadLeapSeconds(test_leap);
+
+    // Test loading specific file for leap second table, by first setting the default file name.
+    TimeSystem::setDefaultLeapSecFileName(test_leap);
+
+    if (test_leap != TimeSystem::getDefaultLeapSecFileName()) 
+      err() << "After setting default leap second file name, default leap second file name was " <<
+        TimeSystem::getDefaultLeapSecFileName() << ", not " << test_leap << " as expected." << std::endl;
+
+    TimeSystem::loadLeapSeconds();
 
     // Test case after last time covered by the current UTC definition.
     long leap_last = 53737;
     double diff_last = 31.;
+    TestOneConversion("UTC", Duration(leap_last, 100.), Duration(0, 0.), "TAI", Duration(leap_last, 100.), Duration(0, diff_last));
+
+    // Reset default leap second file name.
+    TimeSystem::setDefaultLeapSecFileName("");
+
+    // Finally, test loading the real leap seconds file.
+    TimeSystem::loadLeapSeconds(test_leap);
+
+    // Test case after last time covered by the current UTC definition.
+    leap_last = 53737;
+    diff_last = 31.;
     TestOneConversion("UTC", Duration(leap_last, 100.), Duration(0, 0.), "TAI", Duration(leap_last, 100.), Duration(0, diff_last));
 
     // Use three leap seconds for generating tests.
