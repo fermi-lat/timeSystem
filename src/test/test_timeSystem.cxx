@@ -1035,6 +1035,15 @@ namespace {
         " as expected." << std::endl;
     }
 
+    // Test construction directly from IntFracPair.
+    MetRep int_frac_glast_tdb("TDB", IntFracPair(mjd_ref_int, mjd_ref_frac), met);
+
+    met = int_frac_glast_tdb.getValue();
+    if (epsilon < std::fabs(met - expected_met)) {
+      err() << "Right after construction, int_frac_glast_tdb.getValue() returned " << met << ", not " << expected_met <<
+        " as expected." << std::endl;
+    }
+
     // Create an absolute time from this time expression.
     AbsoluteTime abs_time(glast_tdb);
 

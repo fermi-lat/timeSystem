@@ -19,6 +19,11 @@ namespace timeSystem {
   class AbsoluteTime;
   class TimeSystem;
 
+  class MjdRefDatabase {
+    public:
+      IntFracPair operator ()(const tip::Header & header) const;
+  };
+
   /** \class TimeRep
       \brief
   */
@@ -54,9 +59,7 @@ namespace timeSystem {
     public:
       MetRep(const std::string & system_name, long mjd_ref_int, double mjd_ref_frac, double met);
 
-      /** \brief Create a mission elapsed time, using information from a tip file header containing standard time keywords.
-      */
-      MetRep(const tip::Header & header, double met);
+      MetRep(const std::string & system_name, const IntFracPair & mjd_ref, double met);
 
       virtual MetRep & operator =(const AbsoluteTime & abs_time);
 
