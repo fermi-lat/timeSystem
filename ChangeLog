@@ -1,4 +1,15 @@
 ------------------------------------------------------------
+User: peachey  Wed Sep  6 13:53:25 PDT 2006
+timeSystem/src
+
+Modified Files:
+	TimeRep.cxx 
+Log Message:
+Replace construction of MetRep from tip::Header functionality
+with a new MjdRefDatabase functor to handle just the complex MJDREF/I/F reading.
+
+    *
+------------------------------------------------------------
 TAG
 Tag name: v2r1, operation: add
 Package: timeSystem
