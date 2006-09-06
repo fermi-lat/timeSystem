@@ -22,31 +22,8 @@ namespace {
 
 namespace timeSystem {
 
-  TimeRep::~TimeRep() {}
-
-  TimeRep & TimeRep::operator =(const AbsoluteTime & abs_time) {
-    abs_time.exportTimeRep(*this);
-    return *this;
-  }
-
-  std::ostream & operator <<(std::ostream & os, const TimeRep & time_rep) {
-    time_rep.write(os);
-    return os;
-  }
-
-  st_stream::OStream & operator <<(st_stream::OStream & os, const TimeRep & time_rep) {
-    time_rep.write(os);
-    return os;
-  }
-
-
-  MetRep::MetRep(const std::string & system_name, long mjd_ref_int, double mjd_ref_frac, double met):
-    m_system(&TimeSystem::getSystem(system_name)), m_mjd_ref(IntFracPair(mjd_ref_int, mjd_ref_frac), Day), m_met(met) {}
-
-  MetRep::MetRep(const tip::Header & header, double met): m_system(0), m_mjd_ref(), m_met(met) {
-    std::string system_name;
-    header["TIMESYS"].get(system_name);
-
+  IntFracPair MjdRefDatabase::operator ()(const tip::Header & header) const {
+    IntFracPair mjd_ref_pair;
     bool found_mjd_ref = false;
 
     if (!found_mjd_ref) {
@@ -55,7 +32,7 @@ namespace timeSystem {
         double mjd_ref_frac = 0.;
         header["MJDREFI"].get(mjd_ref_int);
         header["MJDREFF"].get(mjd_ref_frac);
-        m_mjd_ref = Duration(IntFracPair(mjd_ref_int, mjd_ref_frac), Day);
+        mjd_ref_pair = IntFracPair(mjd_ref_int, mjd_ref_frac);
         found_mjd_ref = true;
       } catch (const std::exception &) {}
     }
@@ -67,7 +44,7 @@ namespace timeSystem {
         IntFracPair mjd(mjd_ref);
         int mjd_ref_int = mjd.getIntegerPart();
         double mjd_ref_frac = mjd.getFractionalPart();
-        m_mjd_ref = Duration(IntFracPair(mjd_ref_int, mjd_ref_frac), Day);
+        mjd_ref_pair = IntFracPair(mjd_ref_int, mjd_ref_frac);
         found_mjd_ref = true;
       } catch (const std::exception &) {}
     }
@@ -91,8 +68,32 @@ namespace timeSystem {
       throw std::runtime_error("MetRep could not find MJDREFI/MJDREFF or MJDREF.");
     }
 
-    m_system = &TimeSystem::getSystem(system_name);
+    return mjd_ref_pair;
   }
+
+  TimeRep::~TimeRep() {}
+
+  TimeRep & TimeRep::operator =(const AbsoluteTime & abs_time) {
+    abs_time.exportTimeRep(*this);
+    return *this;
+  }
+
+  std::ostream & operator <<(std::ostream & os, const TimeRep & time_rep) {
+    time_rep.write(os);
+    return os;
+  }
+
+  st_stream::OStream & operator <<(st_stream::OStream & os, const TimeRep & time_rep) {
+    time_rep.write(os);
+    return os;
+  }
+
+
+  MetRep::MetRep(const std::string & system_name, long mjd_ref_int, double mjd_ref_frac, double met):
+    m_system(&TimeSystem::getSystem(system_name)), m_mjd_ref(IntFracPair(mjd_ref_int, mjd_ref_frac), Day), m_met(met) {}
+
+  MetRep::MetRep(const std::string & system_name, const IntFracPair & mjd_ref, double met):
+    m_system(&TimeSystem::getSystem(system_name)), m_mjd_ref(mjd_ref, Day), m_met(met) {}
 
   MetRep & MetRep::operator =(const AbsoluteTime & abs_time) { TimeRep::operator =(abs_time); return *this; }
 
