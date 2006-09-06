@@ -5,6 +5,8 @@
 
 \verbatim
 --------------------------------------------------------------------------------
+06-sep-2006      v2r1 JP  Add TimeSystem::get/setDefaultLeapSecFile method to
+                          control the source of leap second information.
 21-aug-2006        v2 JP  Restore outfile parameter, allowing one to specify a
                           different output file from input file, or to operate
                           in place.
