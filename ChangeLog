@@ -1,5 +1,16 @@
 ------------------------------------------------------------
 User: peachey  Wed Sep  6 13:53:25 PDT 2006
+timeSystem/timeSystem
+
+Modified Files:
+	TimeRep.h 
+Log Message:
+Replace construction of MetRep from tip::Header functionality
+with a new MjdRefDatabase functor to handle just the complex MJDREF/I/F reading.
+
+    *
+------------------------------------------------------------
+User: peachey  Wed Sep  6 13:53:25 PDT 2006
 timeSystem/src/test
 
 Modified Files:
