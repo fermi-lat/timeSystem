@@ -5,6 +5,8 @@
 
 \verbatim
 --------------------------------------------------------------------------------
+13-sep-2006    v2r1p1 JP  Fix bug in which members of TimeSystem (2 methods and
+                          1 static variable) were defined at the wrong scope.
 06-sep-2006      v2r1 JP  Add TimeSystem::get/setDefaultLeapSecFile method to
                           control the source of leap second information.
 21-aug-2006        v2 JP  Restore outfile parameter, allowing one to specify a
