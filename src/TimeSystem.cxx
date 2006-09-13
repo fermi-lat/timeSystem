@@ -24,9 +24,9 @@ extern "C" {
 
 using namespace timeSystem;
 
-namespace {
+std::string timeSystem::TimeSystem::s_default_leap_sec_file;
 
-  std::string TimeSystem::s_default_leap_sec_file;
+namespace {
 
   class TaiSystem : public TimeSystem {
     public:
@@ -98,21 +98,6 @@ namespace {
       leaptable_type m_utc_minus_tai;
 
   };
-
-  std::string TimeSystem::getDefaultLeapSecFileName() {
-    std::string uc_file_name = s_default_leap_sec_file;
-    for (std::string::iterator itor = uc_file_name.begin(); itor != uc_file_name.end(); ++itor) *itor = std::toupper(*itor);
-    if (uc_file_name.empty() || "DEFAULT" == uc_file_name) {
-      using namespace st_facilities;
-      // Location of default leap sec table.
-      return Env::appendFileName(Env::getEnv("TIMING_DIR"), "leapsec.fits");
-    }
-    return s_default_leap_sec_file;
-  }
-
-  void TimeSystem::setDefaultLeapSecFileName(const std::string & leap_sec_file_name) {
-    s_default_leap_sec_file = leap_sec_file_name;
-  }
 
   Moment TaiSystem::convertFrom(const TimeSystem & time_system, const Moment & time) const {
     if (&time_system != this) {
@@ -391,6 +376,21 @@ namespace timeSystem {
       leap_sec_file_name = getDefaultLeapSecFileName();
     UtcSystem & utc_sys(dynamic_cast<UtcSystem &>(getNonConstSystem("UTC")));
     utc_sys.loadLeapSecTable(leap_sec_file_name, force_load);
+  }
+
+  std::string TimeSystem::getDefaultLeapSecFileName() {
+    std::string uc_file_name = s_default_leap_sec_file;
+    for (std::string::iterator itor = uc_file_name.begin(); itor != uc_file_name.end(); ++itor) *itor = std::toupper(*itor);
+    if (uc_file_name.empty() || "DEFAULT" == uc_file_name) {
+      using namespace st_facilities;
+      // Location of default leap sec table.
+      return Env::appendFileName(Env::getEnv("TIMING_DIR"), "leapsec.fits");
+    }
+    return s_default_leap_sec_file;
+  }
+
+  void TimeSystem::setDefaultLeapSecFileName(const std::string & leap_sec_file_name) {
+    s_default_leap_sec_file = leap_sec_file_name;
   }
 
   TimeSystem & TimeSystem::getNonConstSystem(const std::string & system_name) {
