@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: peachey  Wed Sep 13 13:01:07 PDT 2006
+timeSystem/src
+
+Modified Files:
+	TimeSystem.cxx 
+Log Message:
+Fix bug in which static members (2 methods and one variable) were definedat the wrong scope.
+    *
+------------------------------------------------------------
 User: peachey  Wed Sep  6 13:53:25 PDT 2006
 timeSystem/timeSystem
 
