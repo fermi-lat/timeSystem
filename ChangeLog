@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: peachey  Mon Sep 18 13:06:26 PDT 2006
+timeSystem/src
+
+Modified Files:
+	mainpage.h 
+Log Message:
+function with respect to error recovery and outfile parameter behavior.
+
+    *
+------------------------------------------------------------
 TAG
 Tag name: v3, operation: add
 Package: timeSystem
