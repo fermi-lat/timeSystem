@@ -5,6 +5,7 @@
 
 \verbatim
 --------------------------------------------------------------------------------
+20-sep-2006    v3r0p1 JP  Update mainpage.h.
 13-sep-2006        v3 JP  Change interface for TimeRep to be smarter about using
                           MJDREF/MJDREFI/MJDREFF, independent of time system.
 13-sep-2006    v2r1p1 JP  Fix bug in which members of TimeSystem (2 methods and
