@@ -82,6 +82,8 @@ namespace timeSystem {
 
       Duration operator -() const;
 
+      double operator /(const Duration & dur) const;
+
       bool operator !=(const Duration & dur) const
         { return m_time.first != dur.m_time.first || m_time.second != dur.m_time.second; }
       bool operator ==(const Duration & dur) const
@@ -229,6 +231,17 @@ namespace timeSystem {
 
   inline Duration Duration::operator -() const {
     return Duration(negate(m_time));
+  }
+
+  inline double Duration::operator /(const Duration & dur) const {
+    TimeUnit_e unit = Day;
+
+    // If both times are less than a day, use seconds to preserve precision. This is not safe if either Duration
+    // is longer than one day, because getValue does integer math when the units are seconds, and days converted
+    // to seconds can overflow in this case.
+    if (0 == m_time.first && 0 == dur.m_time.first) unit = Sec;
+
+    return getValue(unit).getDouble() / dur.getValue(unit).getDouble();
   }
 
   template <typename StreamType>
