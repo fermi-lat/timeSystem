@@ -344,6 +344,16 @@ namespace {
           "), whose second part is negative, not positive as expected." << std::endl;
       }
     }
+
+    // Test operator /.
+    double quotient = dur1 / dur2;
+    double expected_quotient = 2.60978735011036818488;
+
+    // 
+    if (std::fabs(quotient / expected_quotient - 1.) > epsilon) {
+      err() << "Operator Duration(" << dur1 << ") / Duration(" << dur2 << ") returned " << quotient << ", not " <<
+        expected_quotient << ", as expected." << std::endl;
+    }
   }
 
   void TestOneConversion(const std::string & src_name, const Duration & src_origin, const Duration & src,
