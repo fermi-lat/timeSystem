@@ -1,5 +1,15 @@
 ------------------------------------------------------------
 User: peachey  Mon Nov 27 13:17:55 PST 2006
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Add support for taking a ratio of two Duration objects, using operator /.
+
+    *
+------------------------------------------------------------
+User: peachey  Mon Nov 27 13:17:55 PST 2006
 timeSystem/timeSystem
 
 Modified Files:
