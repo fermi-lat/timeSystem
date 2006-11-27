@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: peachey  Mon Nov 27 13:17:55 PST 2006
+timeSystem/timeSystem
+
+Modified Files:
+	Duration.h 
+Log Message:
+Add support for taking a ratio of two Duration objects, using operator /.
+
+    *
+------------------------------------------------------------
 TAG
 Tag name: v3r0p1, operation: add
 Package: timeSystem
