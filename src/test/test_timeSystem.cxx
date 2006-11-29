@@ -349,11 +349,34 @@ namespace {
     double quotient = dur1 / dur2;
     double expected_quotient = 2.60978735011036818488;
 
-    // 
     if (std::fabs(quotient / expected_quotient - 1.) > epsilon) {
       err() << "Operator Duration(" << dur1 << ") / Duration(" << dur2 << ") returned " << quotient << ", not " <<
         expected_quotient << ", as expected." << std::endl;
     }
+
+    // Test limits of addition and subtraction.
+    Duration one(1, 0.);
+    Duration zero(0, 0.);
+    Duration min(std::numeric_limits<long>::min(), 0.);
+    Duration max(std::numeric_limits<long>::max(), 0.);
+    Duration max_minus_one(std::numeric_limits<long>::max() - 1, 0.);
+    Duration min_plus_one(std::numeric_limits<long>::min() + 1, 0.);
+
+    // Additive identity.
+    TestOneComputation("+",  max, zero, max, tolerance);
+    TestOneComputation("+",  zero, max, max, tolerance);
+    TestOneComputation("+",  min, zero, min, tolerance);
+    TestOneComputation("+",  zero, min, min, tolerance);
+    TestOneComputation("-",  max, zero, max, tolerance);
+    TestOneComputation("-",  min, zero, min, tolerance);
+
+    // Test addition of two numbers adding up to max.
+    TestOneComputation("+",  max_minus_one, one, max, tolerance);
+    TestOneComputation("+",  one, max_minus_one, max, tolerance);
+    TestOneComputation("+",  min, one, min_plus_one, tolerance);
+    TestOneComputation("+",  one, min, min_plus_one, tolerance);
+    TestOneComputation("-",  max, one, max_minus_one, tolerance);
+    TestOneComputation("-",  min_plus_one, one, min, tolerance);
   }
 
   void TestOneConversion(const std::string & src_name, const Duration & src_origin, const Duration & src,
