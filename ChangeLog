@@ -1,4 +1,16 @@
 ------------------------------------------------------------
+User: peachey  Wed Nov 29 13:26:04 PST 2006
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Test corner cases of addition and subtraction, to guarantee that
+Duration can handle sums and differences in the range of (MJD) min and max long
+integer.
+
+    *
+------------------------------------------------------------
 User: peachey  Mon Nov 27 13:17:55 PST 2006
 timeSystem/src/test
 
