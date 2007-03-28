@@ -5,6 +5,7 @@
 
 \verbatim
 --------------------------------------------------------------------------------
+29-mar-2007      v3r1 JP  Add division of Duration by Duration, returning double.
 20-sep-2006    v3r0p1 JP  Update mainpage.h.
 13-sep-2006        v3 JP  Change interface for TimeRep to be smarter about using
                           MJDREF/MJDREFI/MJDREFF, independent of time system.
