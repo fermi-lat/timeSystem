@@ -14,6 +14,7 @@
 #include "timeSystem/AbsoluteTime.h"
 #include "timeSystem/ElapsedTime.h"
 #include "timeSystem/Duration.h"
+#include "timeSystem/Field.h"
 #include "timeSystem/TimeInterval.h"
 #include "timeSystem/TimeRep.h"
 #include "timeSystem/TimeSystem.h"
@@ -42,6 +43,8 @@ namespace {
   void TestTimeInterval();
 
   void TestTimeRep();
+
+  void TestField();
 }
 
 using namespace st_app;
@@ -80,6 +83,9 @@ void TestTimeSystemApp::run() {
 
   // Test TimeRep class.
   TestTimeRep();
+
+  // Test TimeRep class.
+  TestField();
 
   // Interpret failure flag to report error.
   if (s_failed) throw std::runtime_error("Unit test failure");
@@ -1170,6 +1176,29 @@ namespace {
       err() << "mjd_tdb.getString() returned string \"" << mjd_tdb_string << "\", not \"" << expected_string <<
         "\", as expected." << std::endl;
     }
+  }
+
+  void TestField() {
+    s_os.setMethod("TestField");
+    Field<double> d_field("Year", 2000.1);
+
+    double d_value = 0.;
+    d_field.get(d_value);
+    if (2000.1 != d_value) err() << "Field<double>::get(double &) returned " << d_value << ", not 2000.1, as expected" << std::endl;
+
+    long l_value = 0;
+    d_field.get(l_value);
+    if (2000 != l_value) err() << "Field<double>::get(long &) returned " << l_value << ", not 2000, as expected" << std::endl;
+
+    Field<long> l_field("Year", 2000);
+
+    d_value = 0.;
+    l_field.get(d_value);
+    if (2000. != d_value) err() << "Field<long>::get(double &) returned " << d_value << ", not 2000., as expected" << std::endl;
+
+    l_value = 0;
+    l_field.get(l_value);
+    if (2000 != l_value) err() << "Field<long>::get(long &) returned " << l_value << ", not 2000, as expected" << std::endl;
   }
 
 }
