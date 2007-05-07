@@ -1,4 +1,15 @@
 ------------------------------------------------------------
+User: peachey  Mon May  7 13:19:03 PDT 2007
+timeSystem/timeSystem
+
+Added Files:
+	Field.h 
+Log Message:
+Add new helper class hierarchy: IField and templated Field
+subclass to handle arrays of mixed arithmetic types.
+
+    *
+------------------------------------------------------------
 TAG
 Tag name: v1r3, operation: add
 Package: timeSystem
