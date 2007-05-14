@@ -95,7 +95,6 @@ namespace timeSystem {
     private:
       const TimeSystem * m_system;
       Duration m_mjd_ref;
-      double m_met;
   };
 
   /** \class MjdRep
