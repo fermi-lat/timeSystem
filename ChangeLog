@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: peachey  Mon May 14 14:09:08 PDT 2007
+timeSystem/timeSystem
+
+Modified Files:
+	TimeRep.h 
+Log Message:
+Convert MetRep to use base class member of TimeRep to store MET.
+
+    *
+------------------------------------------------------------
 User: peachey  Mon May 14 13:56:50 PDT 2007
 timeSystem/src
 
