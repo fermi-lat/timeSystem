@@ -7,7 +7,9 @@
 #define timeSystem_TimeRep_h
 
 #include "timeSystem/Duration.h"
+#include "timeSystem/Field.h"
 
+#include <map>
 #include <string>
 
 namespace tip {
@@ -43,6 +45,21 @@ namespace timeSystem {
 
       template <typename StreamType>
       void write(StreamType & os) const;
+
+    protected:
+      typedef std::map<std::string, IField *> cont_type;
+
+      // Warning this leaks if you call it more than once.
+      template<typename ValueType>
+      void addField(const std::string & field_name, const ValueType & field_value) {
+        // Destroy previous instance of this field if it exists already.
+        cont_type::iterator itor = m_field_cont.find(field_name);
+        if (m_field_cont.end() != itor ) delete itor->second;
+        // Create new field of the given type with the given value.
+        m_field_cont[field_name] = new Field<ValueType>(field_name, field_value);
+      }
+
+      cont_type m_field_cont;
   };
 
   template <typename StreamType>
@@ -104,7 +121,6 @@ namespace timeSystem {
 
     private:
       const TimeSystem * m_system;
-      Duration m_mjd;
   };
 
 }
