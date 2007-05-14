@@ -1,5 +1,16 @@
 ------------------------------------------------------------
 User: peachey  Mon May 14 13:56:50 PDT 2007
+timeSystem/src
+
+Modified Files:
+	TimeRep.cxx 
+Log Message:
+Store time representations as a container of pointers to IField objects
+in the base class (TimeRep). Modify MjdRep to use this new representation.
+
+    *
+------------------------------------------------------------
+User: peachey  Mon May 14 13:56:50 PDT 2007
 timeSystem/timeSystem
 
 Modified Files:
