@@ -1,5 +1,15 @@
 ------------------------------------------------------------
 User: peachey  Wed May 16 12:31:10 PDT 2007
+timeSystem/src
+
+Modified Files:
+	TimeRep.cxx 
+Log Message:
+Undo last changes to MetRep for now; stick with simpler implementation.
+
+    *
+------------------------------------------------------------
+User: peachey  Wed May 16 12:31:10 PDT 2007
 timeSystem/timeSystem
 
 Modified Files:
