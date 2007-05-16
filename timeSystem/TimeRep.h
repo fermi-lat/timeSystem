@@ -37,7 +37,35 @@ namespace timeSystem {
 
       virtual void get(std::string & system_name, Duration & origin, Duration & elapsed) const = 0;
 
+      virtual void get(const std::string & field_name, double & value) const {
+        cont_type::const_iterator itor = m_field_cont.find(field_name);
+        // TODO Put in subclass-specific name instead of TimeRep.
+        if (m_field_cont.end() == itor) throw std::runtime_error("Field " + field_name + " is not valid for TimeRep");
+        itor->second->get(value);
+      }
+
+      virtual void get(const std::string & field_name, long & value) const {
+        cont_type::const_iterator itor = m_field_cont.find(field_name);
+        // TODO Put in subclass-specific name instead of TimeRep.
+        if (m_field_cont.end() == itor) throw std::runtime_error("Field " + field_name + " is not valid for TimeRep");
+        itor->second->get(value);
+      }
+
       virtual void set(const std::string & system_name, const Duration & origin, const Duration & elapsed) = 0;
+
+      virtual void set(const std::string & field_name, const double & value) {
+        cont_type::iterator itor = m_field_cont.find(field_name);
+        // TODO Put in subclass-specific name instead of TimeRep.
+        if (m_field_cont.end() == itor) throw std::runtime_error("Field " + field_name + " is not valid for TimeRep");
+        itor->second->set(value);
+      }
+
+      virtual void set(const std::string & field_name, const long & value) {
+        cont_type::iterator itor = m_field_cont.find(field_name);
+        // TODO Put in subclass-specific name instead of TimeRep.
+        if (m_field_cont.end() == itor) throw std::runtime_error("Field " + field_name + " is not valid for TimeRep");
+        itor->second->set(value);
+      }
 
       virtual std::string getString() const = 0;
 
@@ -82,7 +110,15 @@ namespace timeSystem {
 
       virtual void get(std::string & system_name, Duration & origin, Duration & elapsed) const;
 
+      virtual void get(const std::string & field_name, double & value) const;
+
+      virtual void get(const std::string & field_name, long & value) const;
+
       virtual void set(const std::string & system_name, const Duration & origin, const Duration & elapsed);
+
+      virtual void set(const std::string & field_name, const double & value);
+
+      virtual void set(const std::string & field_name, const long & value);
 
       virtual std::string getString() const;
 
