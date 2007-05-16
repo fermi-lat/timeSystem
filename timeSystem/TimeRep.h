@@ -124,8 +124,10 @@ namespace timeSystem {
 
       virtual void assign(const std::string & value);
 
+      // TODO Remove this method after all usages are converted to get(string, double) etc.
       double getValue() const;
 
+      // TODO Remove this method after all usages are converted to set(string, double) etc.
       void setValue(double met);
 
     private:
@@ -151,8 +153,10 @@ namespace timeSystem {
 
       virtual void assign(const std::string & value);
 
+      // TODO Remove this method after all usages are converted to get(string, double) etc.
       IntFracPair getValue() const;
 
+      // TODO Remove this method after all usages are converted to set(string, double) etc.
       void setValue(long mjd_int, double mjd_frac);
 
     private:
