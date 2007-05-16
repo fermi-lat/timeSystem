@@ -104,6 +104,17 @@ namespace timeSystem {
     system_name = m_system->getName(); origin = m_mjd_ref; elapsed = Duration(0, m_met);
   }
 
+  void MetRep::get(const std::string & /* field_name */, double & value) const {
+    // TODO Ignore field_name or throw exception?
+    value = m_met;
+  }
+
+  void MetRep::get(const std::string & /* field_name */, long & value) const {
+    // TODO Ignore field_name or throw exception?
+    // TODO Should this conversion work?
+    value = long(m_met);
+  }
+
   void MetRep::set(const std::string & system_name, const Duration & origin, const Duration & elapsed) {
     // Convert from the given time into "this" system.
     Moment my_time = m_system->convertFrom(TimeSystem::getSystem(system_name), Moment(origin, elapsed));
@@ -112,6 +123,17 @@ namespace timeSystem {
     Duration met = my_time.second + m_system->computeTimeDifference(my_time.first, m_mjd_ref);
     IntFracPair met_pair = met.getValue(Sec);
     m_met = met_pair.getDouble();
+  }
+
+  void MetRep::set(const std::string & /* field_name */, const double & value) {
+    // TODO Ignore field_name or throw exception?
+    m_met = value;
+  }
+
+  void MetRep::set(const std::string & /* field_name */, const long & value) {
+    // TODO Ignore field_name or throw exception?
+    // TODO Should this conversion work?
+    m_met = double(value);
   }
 
   std::string MetRep::getString() const {
@@ -142,9 +164,9 @@ namespace timeSystem {
     system_name = m_system->getName();
 
     long int_part = 0;
-    m_field_cont.find("MJDI")->second->get(int_part);
+    TimeRep::get("MJDI", int_part);
     double frac_part = 0.;
-    m_field_cont.find("MJDI")->second->get(frac_part);
+    TimeRep::get("MJDF", frac_part);
     origin = Duration(IntFracPair(int_part, frac_part), Day);
 
     elapsed = Duration(0, 0.);
@@ -161,8 +183,8 @@ namespace timeSystem {
     IntFracPair int_frac(mjd.getValue(Day));
 
     // Save value in two pieces.
-    m_field_cont["MJDI"]->set(int_frac.getIntegerPart());
-    m_field_cont["MJDF"]->set(int_frac.getFractionalPart());
+    TimeRep::set("MJDI", int_frac.getIntegerPart());
+    TimeRep::set("MJDF", int_frac.getFractionalPart());
   }
 
   std::string MjdRep::getString() const {
@@ -178,16 +200,16 @@ namespace timeSystem {
 
   IntFracPair MjdRep::getValue() const {
     long int_part = 0;
-    m_field_cont.find("MJDI")->second->get(int_part);
+    TimeRep::get("MJDI", int_part);
     double frac_part = 0.;
-    m_field_cont.find("MJDF")->second->get(frac_part);
+    TimeRep::get("MJDF", frac_part);
     return IntFracPair(int_part, frac_part);
   }
 
   void MjdRep::setValue(long mjd_int, double mjd_frac) {
     IntFracPair int_frac(mjd_int, mjd_frac);
-    m_field_cont["MJDI"]->set(int_frac.getIntegerPart());
-    m_field_cont["MJDF"]->set(int_frac.getFractionalPart());
+    TimeRep::set("MJDI", int_frac.getIntegerPart());
+    TimeRep::set("MJDF", int_frac.getFractionalPart());
   }
 
 }
