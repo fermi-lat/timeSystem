@@ -1,5 +1,16 @@
 ------------------------------------------------------------
 User: peachey  Wed May 16 12:54:39 PDT 2007
+timeSystem/src
+
+Modified Files:
+	TimeRep.cxx 
+Log Message:
+Add get/set methods to base class and derived classes for setting/getting
+fields of TimeRep objects as doubles and longs.
+
+    *
+------------------------------------------------------------
+User: peachey  Wed May 16 12:54:39 PDT 2007
 timeSystem/timeSystem
 
 Modified Files:
