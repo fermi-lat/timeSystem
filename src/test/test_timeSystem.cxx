@@ -1066,20 +1066,21 @@ namespace {
     double expected_met = met;
 
     // Create a test time object.
-    MetRep glast_tdb("TDB", mjd_ref_int, mjd_ref_frac, met);
+    MetRep glast_tdb_object("TDB", mjd_ref_int, mjd_ref_frac, met);
+    TimeRep & glast_tdb(glast_tdb_object);
 
-    met = glast_tdb.getValue();
+    glast_tdb.get("", met);
     if (epsilon < std::fabs(met - expected_met)) {
-      err() << "Right after construction, glast_tdb.getValue() returned " << met << ", not " << expected_met <<
+      err() << "Right after construction, glast_tdb.get(\"\", met) returned " << met << ", not " << expected_met <<
         " as expected." << std::endl;
     }
 
     // Test construction directly from IntFracPair.
     MetRep int_frac_glast_tdb("TDB", IntFracPair(mjd_ref_int, mjd_ref_frac), met);
 
-    met = int_frac_glast_tdb.getValue();
+    int_frac_glast_tdb.get("", met);
     if (epsilon < std::fabs(met - expected_met)) {
-      err() << "Right after construction, int_frac_glast_tdb.getValue() returned " << met << ", not " << expected_met <<
+      err() << "Right after construction, int_frac_glast_tdb.get(\"\", met) returned " << met << ", not " << expected_met <<
         " as expected." << std::endl;
     }
 
@@ -1094,27 +1095,27 @@ namespace {
 
     // Compare final value.
     expected_met = met + delta_t;
-    met = glast_tdb.getValue();
+    glast_tdb.get("", met);
     if (epsilon < std::fabs(met - expected_met)) {
-      err() << "After computation, glast_tdb.getValue() returned " << met << ", not " << expected_met <<
+      err() << "After computation, glast_tdb.get(\"\", met) returned " << met << ", not " << expected_met <<
         " as expected." << std::endl;
     }
 
     // Test assignment from string.
     glast_tdb.assign("125.0123456");
     expected_met = 125.0123456;
-    met = glast_tdb.getValue();
+    glast_tdb.get("", met);
     if (epsilon < std::fabs(met - expected_met)) {
-      err() << "After assign(\"125.0123456\"), glast_tdb.getValue() returned " << met << ", not " << expected_met <<
+      err() << "After assign(\"125.0123456\"), glast_tdb.get(\"\", met) returned " << met << ", not " << expected_met <<
         " as expected." << std::endl;
     }
     
-    // Test setValue(double).
-    glast_tdb.setValue(125.0123);
+    // Test set(string, double).
+    glast_tdb.set("", 125.0123);
     expected_met = 125.0123;
-    met = glast_tdb.getValue();
+    glast_tdb.get("", met);
     if (epsilon < std::fabs(met - expected_met)) {
-      err() << "After setValue(125.0123), glast_tdb.getValue() returned " << met << ", not " << expected_met <<
+      err() << "After set(\"\", 125.0123), glast_tdb.get(\"\", met) returned " << met << ", not " << expected_met <<
         " as expected." << std::endl;
     }
     
@@ -1127,13 +1128,15 @@ namespace {
     }
 
     // Create a test time object using MJD representation.
-    MjdRep mjd_tdb("TDB", mjd_ref_int, mjd_ref_frac);
+    MjdRep mjd_tdb_object("TDB", mjd_ref_int, mjd_ref_frac);
+    TimeRep & mjd_tdb(mjd_tdb_object);
 
     IntFracPair expected_mjd(mjd_ref_int, mjd_ref_frac);
-    IntFracPair mjd = mjd_tdb.getValue();
-    if (expected_mjd.getIntegerPart() != mjd.getIntegerPart() ||
-      epsilon < std::fabs(expected_mjd.getFractionalPart() - mjd.getFractionalPart())) {
-      err() << "Right after construction, mjd_tdb.getValue() returned " << mjd << ", not " << expected_mjd <<
+    long mjd_int = 0; double mjd_frac = 0.;
+    mjd_tdb.get("MJDI", mjd_int); mjd_tdb.get("MJDF", mjd_frac);
+    if (expected_mjd.getIntegerPart() != mjd_int ||
+      epsilon < std::fabs(expected_mjd.getFractionalPart() - mjd_frac)) {
+      err() << "Right after construction, mjd_tdb contains " << mjd_int << " + " << mjd_frac << ", not " << expected_mjd <<
         " as expected." << std::endl;
     }
 
@@ -1142,31 +1145,35 @@ namespace {
 
     // Compare final value.
     expected_mjd = IntFracPair(mjd_ref_int + 100, mjd_ref_frac + 100. / 86400.);
-    mjd = mjd_tdb.getValue();
-    if (expected_mjd.getIntegerPart() != mjd.getIntegerPart() ||
-      epsilon < std::fabs(expected_mjd.getFractionalPart() - mjd.getFractionalPart())) {
-      err() << "After assignment from abs_time, mjd_tdb.getValue() returned " << mjd << ", not " << expected_mjd <<
+    mjd_int = 0; mjd_frac = 0.;
+    mjd_tdb.get("MJDI", mjd_int); mjd_tdb.get("MJDF", mjd_frac);
+    if (expected_mjd.getIntegerPart() != mjd_int ||
+      epsilon < std::fabs(expected_mjd.getFractionalPart() - mjd_frac)) {
+      err() << "After assignment from abs_time, mjd_tdb contains " << mjd_int << " + " << mjd_frac << ", not " << expected_mjd <<
         " as expected." << std::endl;
     }
 
     // Test assignment from string.
     mjd_tdb.assign("137.1250123456");
     expected_mjd = IntFracPair(137, .1250123456);
-    mjd = mjd_tdb.getValue();
-    if (expected_mjd.getIntegerPart() != mjd.getIntegerPart() ||
-      epsilon < std::fabs(expected_mjd.getFractionalPart() - mjd.getFractionalPart())) {
-      err() << "After assign(\"137.1250123456\"), mjd_tdb.getValue() returned " << mjd << ", not " << expected_mjd <<
+    mjd_int = 0; mjd_frac = 0.;
+    mjd_tdb.get("MJDI", mjd_int); mjd_tdb.get("MJDF", mjd_frac);
+    if (expected_mjd.getIntegerPart() != mjd_int ||
+      epsilon < std::fabs(expected_mjd.getFractionalPart() - mjd_frac)) {
+      err() << "After assign(\"137.1250123456\"), mjd_tdb contains " << mjd_int << " + " << mjd_frac << ", not " << expected_mjd <<
         " as expected." << std::endl;
     }
     
-    // Test setValue(long, double).
-    mjd_tdb.setValue(137, .1250123);
+    // Test set for long, double.
+    mjd_tdb.set("MJDI", 137l);
+    mjd_tdb.set("MJDF", .1250123);
     expected_mjd = IntFracPair(137, .1250123);
-    mjd = mjd_tdb.getValue();
-    if (expected_mjd.getIntegerPart() != mjd.getIntegerPart() ||
-      epsilon < std::fabs(expected_mjd.getFractionalPart() - mjd.getFractionalPart())) {
-      err() << "After setValue(137, .1250123), mjd_tdb.getValue() returned " << mjd << ", not " << expected_mjd <<
-        " as expected." << std::endl;
+    mjd_int = 0; mjd_frac = 0.;
+    mjd_tdb.get("MJDI", mjd_int); mjd_tdb.get("MJDF", mjd_frac);
+    if (expected_mjd.getIntegerPart() != mjd_int ||
+      epsilon < std::fabs(expected_mjd.getFractionalPart() - mjd_frac)) {
+      err() << "After set(\"MJDI\", 137); set(\"MJDF\", .1250123), mjd_tdb contains " << mjd_int << " + " << mjd_frac <<
+        ", not " << expected_mjd << " as expected." << std::endl;
     }
     
     // Test conversions to string.
