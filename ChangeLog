@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: peachey  Wed May 16 13:23:00 PDT 2007
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Change test code to use get/set instead of getValue/setValue for TimeRep.
+
+    *
+------------------------------------------------------------
 User: peachey  Wed May 16 12:54:39 PDT 2007
 timeSystem/src
 
