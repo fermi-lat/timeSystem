@@ -93,21 +93,15 @@ namespace timeSystem {
 
 
   MetRep::MetRep(const std::string & system_name, long mjd_ref_int, double mjd_ref_frac, double met):
-    m_system(&TimeSystem::getSystem(system_name)), m_mjd_ref(IntFracPair(mjd_ref_int, mjd_ref_frac), Day) {
-    addField<double>("TIME", met);
-  }
+    m_system(&TimeSystem::getSystem(system_name)), m_mjd_ref(IntFracPair(mjd_ref_int, mjd_ref_frac), Day), m_met(met) {}
 
   MetRep::MetRep(const std::string & system_name, const IntFracPair & mjd_ref, double met):
-    m_system(&TimeSystem::getSystem(system_name)), m_mjd_ref(mjd_ref, Day) {
-    addField<double>("TIME", met);
-  }
+    m_system(&TimeSystem::getSystem(system_name)), m_mjd_ref(mjd_ref, Day), m_met(met) {}
 
   MetRep & MetRep::operator =(const AbsoluteTime & abs_time) { TimeRep::operator =(abs_time); return *this; }
 
   void MetRep::get(std::string & system_name, Duration & origin, Duration & elapsed) const {
-    double met = 0.;
-    m_field_cont.find("TIME")->second->get(met);
-    system_name = m_system->getName(); origin = m_mjd_ref; elapsed = Duration(0, met);
+    system_name = m_system->getName(); origin = m_mjd_ref; elapsed = Duration(0, m_met);
   }
 
   void MetRep::set(const std::string & system_name, const Duration & origin, const Duration & elapsed) {
@@ -117,7 +111,7 @@ namespace timeSystem {
     // Now compute met from my_time in this system.
     Duration met = my_time.second + m_system->computeTimeDifference(my_time.first, m_mjd_ref);
     IntFracPair met_pair = met.getValue(Sec);
-    m_field_cont["TIME"]->set(met_pair.getDouble());
+    m_met = met_pair.getDouble();
   }
 
   std::string MetRep::getString() const {
@@ -131,13 +125,9 @@ namespace timeSystem {
     setValue(pair_value.getDouble());
   }
 
-  double MetRep::getValue() const {
-    double met = 0.;
-    m_field_cont.find("TIME")->second->get(met);
-    return met;
-  }
+  double MetRep::getValue() const { return m_met; }
 
-  void MetRep::setValue(double met) { m_field_cont["TIME"]->set(met); }
+  void MetRep::setValue(double met) { m_met = met; }
 
   MjdRep::MjdRep(const std::string & system_name, long mjd_int, double mjd_frac):
     m_system(&TimeSystem::getSystem(system_name)) {
