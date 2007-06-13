@@ -1,4 +1,4 @@
-evfile,         f, a, , , , "Input event data file name"
+evfile,         f, a, , , , "Event data file name"
 scfile,         f, a, , , , "Spacecraft data file name"
 outfile,        f, a, default, , , "Output event data file name (type 'default' for evfile)"
 ra,             r, a, 0., , , "True RA of point source (degrees)"
