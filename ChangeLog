@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: peachey  Wed Jun 13 13:00:48 PDT 2007
+timeSystem/pfiles
+
+Modified Files:
+	gtbary.par 
+Log Message:
+Rationalize prompts.
+
+    *
+------------------------------------------------------------
 TAG
 Tag name: v3r2, operation: add
 Package: timeSystem
