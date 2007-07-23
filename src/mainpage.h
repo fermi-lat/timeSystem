@@ -2,7 +2,7 @@
     \mainpage timeSystem package
 
     \author Masaharu Hirayama hirayama@jca.umbc.edu
-            James Peachey peachey@milkyway.gsfc.nasa.gov
+            James Peachey James.Peachey-1@nasa.gov
 
     \section intro Introduction
     The timeSystem package contains a rational and extensible set of
