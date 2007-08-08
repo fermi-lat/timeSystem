@@ -5,6 +5,8 @@
 
 \verbatim
 --------------------------------------------------------------------------------
+08-aug-2007    v3r2p1 JP  Rationalize a prompt in the par file and update to
+                          use One-NASA email address.
 05-jun-2007      v3r2 JP  First round of refactorings to support generic access
                           to TimeRep objects via base class methods.
 29-mar-2007      v3r1 JP  Add division of Duration by Duration, returning double.
