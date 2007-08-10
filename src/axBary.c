@@ -1,4 +1,4 @@
-/* $Id: axBary.c,v 1.3 2006/02/24 22:28:07 peachey Exp $ */
+/* $Id: axBary.c,v 1.1.1.1 2006/04/21 20:56:15 peachey Exp $ */
 /*--------------------------------------------------------------------
  *
  *    File:        axBary.c
@@ -86,7 +86,7 @@ int axBary (char *inFile, char *orbitFile, char *outFile,
 	    double ra, double dec, char *refFrame, int debug)
 {
 
-  char *version = "axBary - $Revision: 1.3 $ $Date: 2006/02/24 22:28:07 $" ;
+  char *version = "axBary - $Revision: 1.1.1.1 $ $Date: 2006/04/21 20:56:15 $" ;
   char *toTDB = "TDB" ;  /* could give user option of TCB, but be careful,
 			  * the radio database assumes TDB */
   fitsfile *fits_file = NULL ;
@@ -226,8 +226,8 @@ int axBary (char *inFile, char *orbitFile, char *outFile,
   }
   else if ( !strcmp(missionk, "GLAST") ) {
     mission = GLAST ;
-    mjdrefi = 58300 ;
-    mjdreff = 0. ;
+    mjdrefi = 51910 ;
+    mjdreff = 0.0007428703703703703 ;
     strcpy (timesys, "TT") ;
   }
   fits_read_key   (fits_file, TDOUBLE, "TIERRELA",&tierrela, comment, &error) ;
