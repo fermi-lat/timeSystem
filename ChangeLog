@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: hirayama  Fri Aug 10 14:39:42 PDT 2007
+timeSystem/src
+
+Modified Files:
+	axBary.c 
+Log Message:
+Correct MJD reference for GLAST (from 58300 to 51910.0007428703703703703).
+
+    *
+------------------------------------------------------------
 TAG
 Tag name: v3r2p1, operation: add
 Package: timeSystem
