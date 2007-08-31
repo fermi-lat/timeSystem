@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: hirayama  Fri Aug 31 15:34:10 PDT 2007
+timeSystem/src
+
+Added Files:
+	BaryTimeComputer.cxx 
+Log Message:
+Add BaryTimeComputer class, which performs barycentric corrections for photon arrival times.
+
+    *
+------------------------------------------------------------
 TAG
 Tag name: v3r2p2, operation: add
 Package: timeSystem
