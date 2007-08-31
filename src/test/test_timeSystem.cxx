@@ -12,9 +12,11 @@
 #include "st_stream/StreamFormatter.h"
 
 #include "timeSystem/AbsoluteTime.h"
+#include "timeSystem/BaryTimeComputer.h"
 #include "timeSystem/ElapsedTime.h"
 #include "timeSystem/Duration.h"
 #include "timeSystem/Field.h"
+#include "timeSystem/GlastMetRep.h"
 #include "timeSystem/TimeInterval.h"
 #include "timeSystem/TimeRep.h"
 #include "timeSystem/TimeSystem.h"
@@ -45,6 +47,8 @@ namespace {
   void TestTimeRep();
 
   void TestField();
+
+  void TestBaryTimeComputer();
 }
 
 using namespace st_app;
@@ -84,8 +88,11 @@ void TestTimeSystemApp::run() {
   // Test TimeRep class.
   TestTimeRep();
 
-  // Test TimeRep class.
+  // Test Field class.
   TestField();
+
+  // Test BaryTimeComputer class.
+  TestBaryTimeComputer();
 
   // Interpret failure flag to report error.
   if (s_failed) throw std::runtime_error("Unit test failure");
@@ -1208,6 +1215,32 @@ namespace {
     if (2000 != l_value) err() << "Field<long>::get(long &) returned " << l_value << ", not 2000, as expected" << std::endl;
   }
 
+  void TestBaryTimeComputer() {
+    s_os.setMethod("TestBaryTimeComputer");
+
+    using namespace st_facilities;
+    std::string sc_file = Env::appendFileName(Env::getDataDir("timeSystem"), "my_pulsar_spacecraft_data_v3.fits");
+
+    BaryTimeComputer computer;
+    computer.initialize("JPL DE405", sc_file);
+
+    GlastMetRep glast_met("TT", 2.123393677090199E+08); // TSTART in my_pulsar_events_v3.fits.
+    AbsoluteTime original = glast_met;
+    glast_met = GlastMetRep("TDB", 2.123393824137859E+08); // TSTART in my_pulsar_events_bary_v3.fits.
+    AbsoluteTime expected = glast_met;
+
+    double ra = 85.0482;
+    double dec = -69.3319;
+    AbsoluteTime result = original;
+    computer.correct(ra, dec, result);
+
+    ElapsedTime tolerance("TDB", Duration(0, 1.e-7));
+    if (!result.equivalentTo(expected, tolerance)) {
+      err() << "BaryTimeComputer.correct(" << ra << ", " << dec << ", " << original << ")" <<
+        " returned AbsoluteTime(" << result << "), not equivalent to AbsoluteTime(" << expected <<
+        ") with tolerance of " << tolerance << "." << std::endl;
+    }
+  }
 }
 
 StAppFactory<TestTimeSystemApp> g_factory("test_timeSystem");
