@@ -1,5 +1,15 @@
 ------------------------------------------------------------
 User: hirayama  Thu Sep  6 15:07:40 PDT 2007
+timeSystem/data
+
+Added Files:
+	my_pulsar_events_v3.fits my_pulsar_events_bary_v3.fits 
+Log Message:
+Add tests of EventTimeHandler class and test data for them.
+
+    *
+------------------------------------------------------------
+User: hirayama  Thu Sep  6 15:07:40 PDT 2007
 timeSystem/src/test
 
 Modified Files:
