@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: hirayama  Thu Sep  6 15:06:35 PDT 2007
+timeSystem/timeSystem
+
+Added Files:
+	EventTimeHandler.h 
+Log Message:
+Add EventTimeHandler class.
+
+    *
+------------------------------------------------------------
 User: hirayama  Thu Sep  6 15:06:34 PDT 2007
 timeSystem/src
 
