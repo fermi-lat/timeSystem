@@ -18,23 +18,27 @@ namespace timeSystem {
   */
   class BaryTimeComputer {
     public:
-      BaryTimeComputer();
-
       ~BaryTimeComputer();
 
-      void initialize(const std::string & pl_ephem, const std::string & sc_file);
+      static BaryTimeComputer & getComputer();
 
-      void correct(double ra, double dec, AbsoluteTime & abs_time);
+      std::string getPlanetaryEphemerisName() const;
+
+      void initialize(const std::string & pl_ephem);
+
+      void computeBaryTime(const double ra, const double dec, const double sc_position[], AbsoluteTime & abs_time) const;
 
     private:
+      std::string m_pl_ephem;
       double m_speed_of_light;
       double m_solar_mass;
-      std::string m_sc_file;
-      char * m_sc_file_char;
       TimeRep * m_mjd_tt;
-      TimeRep * m_glast_tt;
 
-      double inner_product(const double vect_x[], const double vect_y[]) const;
+      BaryTimeComputer();
+
+      double computeInnerProduct(const double vect_x[], const double vect_y[]) const;
+
+      void computeThreeVector(const double ra, const double dec, double vect[]) const;
   };
 
 }

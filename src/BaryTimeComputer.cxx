@@ -8,10 +8,10 @@
 #include "timeSystem/AbsoluteTime.h"
 #include "timeSystem/Duration.h"
 #include "timeSystem/ElapsedTime.h"
-#include "timeSystem/GlastMetRep.h"
 #include "timeSystem/IntFracPair.h"
 #include "timeSystem/TimeRep.h"
 
+#include <cmath>
 #include <sstream>
 #include <stdexcept>
 
@@ -21,15 +21,23 @@ extern "C" {
 
 namespace timeSystem {
 
-  BaryTimeComputer::BaryTimeComputer(): m_speed_of_light(0.), m_solar_mass(0.), m_sc_file(), m_mjd_tt(new MjdRep("TT", 0, 0.)),
-    m_glast_tt(new GlastMetRep("TT", 0.)) {}
+  BaryTimeComputer::BaryTimeComputer(): m_pl_ephem(), m_speed_of_light(0.), m_solar_mass(0.),
+    m_mjd_tt(new MjdRep("TT", 0, 0.)) {}
 
   BaryTimeComputer::~BaryTimeComputer() {
-    delete m_glast_tt;
     delete m_mjd_tt;
   }
 
-  void BaryTimeComputer::initialize(const std::string & pl_ephem, const std::string & sc_file) {
+  BaryTimeComputer & BaryTimeComputer::getComputer() {
+    static BaryTimeComputer s_computer;
+    return s_computer;
+  }
+
+  std::string BaryTimeComputer::getPlanetaryEphemerisName() const {
+    return m_pl_ephem;
+  }
+
+  void BaryTimeComputer::initialize(const std::string & pl_ephem) {
     // Convert pl_ephem argument of this method to ephnum argument of initephem C-function.
     int ephnum = 0;
     std::string pl_ephem_uc(pl_ephem);
@@ -45,25 +53,24 @@ namespace timeSystem {
     int status = initephem(ephnum, &denum, &m_speed_of_light, &radsol, &m_solar_mass);
 
     // Check initialization status.
+    std::ostringstream os;
     if (status) {
-      std::ostringstream os;
       os << "Error while initializing ephemeris (status = " << status << ").";
       throw std::runtime_error(os.str());
+    } else {
+      // Store solar system ephemeris name.
+      os << "JPL DE" << denum;
+      m_pl_ephem = os.str();
     }
 
-    // Set space craft file to internal variable.
-    m_sc_file = sc_file;
-    // TODO: Any better way than below?
-    m_sc_file_char = (char *)m_sc_file.c_str();
-
-    // Initialize clock and orbit
-    // TODO: Accept other missions?  What type (and name) of the argument?
-    enum Observatory mission(GLAST);
-    scorbitinit (mission);
-    clockinit (mission);
   }
 
-  void BaryTimeComputer::correct(double ra, double dec, AbsoluteTime & abs_time) {
+  void BaryTimeComputer::computeBaryTime(const double ra, const double dec, const double sc_position[], AbsoluteTime & abs_time) const {
+    // Check whether initialized or not.
+    if (m_pl_ephem.empty()) {
+      throw std::runtime_error("BaryTimeComputer::computeBaryTime was called before initialized.");
+    }
+
     // Set given time to a variable to pass to dpleph C-function.
     double jdt[2];
     *m_mjd_tt = abs_time;
@@ -86,17 +93,6 @@ namespace timeSystem {
       throw std::runtime_error(os.str());
     }
 
-    // Compute Mission Elapsed Time from abs_time.
-    // TODO: Re-consider this design; abs_time is computed from MET outside of this method, in most cases,
-    // and here is needed its reverse operation, suggesting this is a design flaw.
-    *m_glast_tt = abs_time;
-    double met = 0.;
-    m_glast_tt->get("TIME", met);
-
-    // Get space craft position at the given time.
-    int error = 0;
-    double * scposn = xscorbit(m_sc_file_char, met, &error);
-
     // Compute vectors between related objects.
     const double *rce, *rcs, *vce;
     double rca[3], rsa[3];
@@ -105,7 +101,7 @@ namespace timeSystem {
     rcs = eposn + 6;
     for (int idx = 0; idx < 3; ++idx) {
       // Compute SSBC-to-S/C vector.
-      rca[idx] = rce[idx] + scposn[idx]/m_speed_of_light;
+      rca[idx] = rce[idx] + sc_position[idx]/m_speed_of_light;
 
       // Compute Sun-to-S/C vector.
       rsa[idx] = rca[idx] - rcs[idx];
@@ -113,21 +109,26 @@ namespace timeSystem {
 
     // Convert source direction from (RA, Dec) to a three-vector.
     double sourcedir[3];
-    sourcedir[0] = cos(ra/RADEG) * cos(dec/RADEG);
-    sourcedir[1] = sin(ra/RADEG) * cos(dec/RADEG);
-    sourcedir[2] = sin(dec/RADEG);
+    computeThreeVector(ra, dec, sourcedir);
 
     // Compute total propagation delay.
-    double sundis = sqrt(inner_product(rsa, rsa));
-    double cth = inner_product(sourcedir, rsa) / sundis;
-    double delay = inner_product(sourcedir, rca) + inner_product(scposn, vce)/m_speed_of_light + 2*m_solar_mass*log(1.+cth);
+    double sundis = sqrt(computeInnerProduct(rsa, rsa));
+    double cth = computeInnerProduct(sourcedir, rsa) / sundis;
+    double delay = computeInnerProduct(sourcedir, rca) + computeInnerProduct(sc_position, vce)/m_speed_of_light
+      + 2*m_solar_mass*log(1.+cth);
 
     // Compute a barycenteric time for the give arrival time.
     abs_time += ElapsedTime("TDB", Duration(IntFracPair(delay), Sec));
   }
 
-  double BaryTimeComputer::inner_product(const double vect_x[], const double vect_y[]) const {
+  double BaryTimeComputer::computeInnerProduct(const double vect_x[], const double vect_y[]) const {
     return vect_x[0]*vect_y[0] + vect_x[1]*vect_y[1] + vect_x[2]*vect_y[2];
+  }
+
+  void BaryTimeComputer::computeThreeVector(const double ra, const double dec, double vect[]) const {
+    vect[0] = std::cos(ra/RADEG) * std::cos(dec/RADEG);
+    vect[1] = std::sin(ra/RADEG) * std::cos(dec/RADEG);
+    vect[2] = std::sin(dec/RADEG);
   }
 
 }
