@@ -14,7 +14,7 @@
 #include "timeSystem/AbsoluteTime.h"
 #include "timeSystem/BaryTimeComputer.h"
 #include "timeSystem/ElapsedTime.h"
-#include "timeSystem/EventTimeHandler.h"
+#include "timeSystem/GlastTimeHandler.h"
 #include "timeSystem/Duration.h"
 #include "timeSystem/Field.h"
 #include "timeSystem/GlastMetRep.h"
@@ -54,7 +54,7 @@ namespace {
 
   void TestBaryTimeComputer();
 
-  void TestEventTimeHandler();
+  void TestGlastTimeHandler();
 }
 
 using namespace st_app;
@@ -100,8 +100,8 @@ void TestTimeSystemApp::run() {
   // Test BaryTimeComputer class.
   TestBaryTimeComputer();
 
-  // Test EventTimeHandler class.
-  TestEventTimeHandler();
+  // Test GlastTimeHandler class.
+  TestGlastTimeHandler();
 
   // Interpret failure flag to report error.
   if (s_failed) throw std::runtime_error("Unit test failure");
@@ -1227,22 +1227,46 @@ namespace {
   void TestBaryTimeComputer() {
     s_os.setMethod("TestBaryTimeComputer");
 
-    using namespace st_facilities;
-    std::string sc_file = Env::appendFileName(Env::getDataDir("timeSystem"), "my_pulsar_spacecraft_data_v3.fits");
+    // Get a barycentric time computer.
+    BaryTimeComputer & computer = BaryTimeComputer::getComputer();
 
-    BaryTimeComputer computer;
-    computer.initialize("JPL DE405", sc_file);
-
+    // Prepare a time to be barycentered and an expected result after barycentered.
     GlastMetRep glast_met("TT", 2.123393677090199E+08); // TSTART in my_pulsar_events_v3.fits.
     AbsoluteTime original = glast_met;
+    AbsoluteTime result = original;
     glast_met = GlastMetRep("TDB", 2.123393824137859E+08); // TSTART in my_pulsar_events_bary_v3.fits.
     AbsoluteTime expected = glast_met;
 
+    // Set parameters for barycentering.
     double ra = 85.0482;
     double dec = -69.3319;
-    AbsoluteTime result = original;
-    computer.correct(ra, dec, result);
+    double sc_pos[] = {3311146.54815027, 5301968.82897028, 3056651.22812332}; // SC position at TSTART (computed separately).
 
+    // Check initial setting of ephemeris name.
+    std::string ephem_name = computer.getPlanetaryEphemerisName();
+    if (!ephem_name.empty()) {
+      err() << "BaryTimeComputer::getPlanetaryEphemerisName() returned a non-empty string before initialized." << std::endl;
+    }
+
+    // Test error handling for calls before initialization.
+    try {
+      computer.computeBaryTime(ra, dec, sc_pos, result);
+      err() << "BaryTimeComputer::computeBaryTime(" << ra << ", " << dec << ", array(" << sc_pos[0] << ", " << sc_pos[1] << ", " <<
+        sc_pos[2] << "), AbsoluteTime(" << result << ")) did not throw an exception when it should." << std::endl;
+    } catch (const std::exception &) {
+    }
+
+    // Initialize the barycentric time computer.
+    computer.initialize("JPL DE405");
+
+    // Check ephemeris name.
+    ephem_name = computer.getPlanetaryEphemerisName();
+    if ("JPL DE405" != ephem_name) {
+      err() << "BaryTimeComputer::getPlanetaryEphemerisName() returned \"" << ephem_name << "\", not \"JPL DE405\"." << std::endl;
+    }
+
+    // Test barycentric correction.
+    computer.computeBaryTime(ra, dec, sc_pos, result);
     ElapsedTime tolerance("TDB", Duration(0, 1.e-7));
     if (!result.equivalentTo(expected, tolerance)) {
       err() << "BaryTimeComputer::correct(" << ra << ", " << dec << ", " << original << ")" <<
@@ -1251,12 +1275,16 @@ namespace {
     }
   }
 
-  void TestEventTimeHandler() {
-    s_os.setMethod("TestEventTimeHandler");
+  void TestGlastTimeHandler() {
+    s_os.setMethod("TestGlastTimeHandler");
     using namespace st_facilities;
 
     // Set tolerance for AbsoluteTime comparison.
     ElapsedTime time_tolerance("TT", Duration(0, 1.e-7));
+
+    // Get and initialize a barycentric time computer.
+    BaryTimeComputer & computer = BaryTimeComputer::getComputer();
+    computer.initialize("JPL DE405");
 
     // Prepare test parameters in this method.
     std::string sc_file = Env::appendFileName(Env::getDataDir("timeSystem"), "my_pulsar_spacecraft_data_v3.fits");
@@ -1270,110 +1298,108 @@ namespace {
     double dec_wrong = dec + 1.e-8;
     std::string pl_ephem = "JPL DE405";
 
-    // Create an EventTimeHandler object for EVENTS extension of an event file.
+    // Create an GlastTimeHandler object for EVENTS extension of an event file.
     std::string event_file = Env::appendFileName(Env::getDataDir("timeSystem"), "my_pulsar_events_v3.fits");
     tip::Table * event_table = tip::IFileSvc::instance().editTable(event_file, "EVENTS");
-    EventTimeHandler handler(*event_table);
-    handler.initialize(pl_ephem, sc_file);
+    std::auto_ptr<EventTimeHandler> handler(new GlastTimeHandler(*event_table, sc_file));
 
     // Test reading header keyword value.
-    AbsoluteTime result = handler.readHeader("TSTART");
+    AbsoluteTime result = handler->readHeader("TSTART");
     GlastMetRep glast_met("TT", 2.123393677090199E+08); // TSTART in my_pulsar_events_v3.fits.
     AbsoluteTime expected = glast_met;
     if (!result.equivalentTo(expected, time_tolerance)) {
-      err() << "EventTimeHandler::readHeader(\"TSTART\") returned AbsoluteTime(" << result << "), not equivalent to AbsoluteTime(" <<
+      err() << "GlastTimeHandler::readHeader(\"TSTART\") returned AbsoluteTime(" << result << "), not equivalent to AbsoluteTime(" <<
         expected << ") with tolerance of " << time_tolerance << "." << std::endl;
     }
 
     // Test reading header keyword value, requesting barycentering.
-    result = handler.readHeader("TSTART", ra, dec);
+    result = handler->readHeader("TSTART", ra, dec);
     glast_met = GlastMetRep("TDB", 2.123393824137859E+08); // TSTART in my_pulsar_events_bary_v3.fits.
     expected = glast_met;
     if (!result.equivalentTo(expected, time_tolerance)) {
-      err() << "EventTimeHandler::readHeader(\"TSTART\", " << ra << ", " << dec << ") returned AbsoluteTime(" << result <<
+      err() << "GlastTimeHandler::readHeader(\"TSTART\", " << ra << ", " << dec << ") returned AbsoluteTime(" << result <<
         "), not equivalent to AbsoluteTime(" << expected << ") with tolerance of " << time_tolerance << "." << std::endl;
     }
 
     // Test reading TIME column value.
-    handler.setFirstRecord(); // Points to the first event.
-    handler.setNextRecord();  // Points to the second event.
-    handler.setNextRecord();  // Points to the third event.
-    result = handler.readColumn("TIME");
+    handler->setFirstRecord(); // Points to the first event.
+    handler->setNextRecord();  // Points to the second event.
+    handler->setNextRecord();  // Points to the third event.
+    result = handler->readColumn("TIME");
     glast_met = GlastMetRep("TT", 2.123393750454886E+08); // TIME of the third row in my_pulsar_events_v3.fits.
     expected = glast_met;
     if (!result.equivalentTo(expected, time_tolerance)) {
-      err() << "EventTimeHandler::readColumn(\"TIME\", " << ra << ", " << dec << ") returned AbsoluteTime(" << result <<
+      err() << "GlastTimeHandler::readColumn(\"TIME\", " << ra << ", " << dec << ") returned AbsoluteTime(" << result <<
         "), not equivalent to AbsoluteTime(" << expected << ") with tolerance of " << time_tolerance << "." << std::endl;
     }
 
     // Test reading TIME column value, requesting barycentering.
-    handler.setFirstRecord(); // Re-setting to the first event.
-    handler.setNextRecord();  // Points to the second event.
-    handler.setNextRecord();  // Points to the third event.
-    result = handler.readColumn("TIME", ra, dec);
+    handler->setFirstRecord(); // Re-setting to the first event.
+    handler->setNextRecord();  // Points to the second event.
+    handler->setNextRecord();  // Points to the third event.
+    result = handler->readColumn("TIME", ra, dec);
     glast_met = GlastMetRep("TDB", 2.123393897503012E+08); // TIME of the third row in my_pulsar_events_bary_v3.fits.
     expected = glast_met;
     if (!result.equivalentTo(expected, time_tolerance)) {
-      err() << "EventTimeHandler::readColumn(\"TIME\", " << ra << ", " << dec << ") returned AbsoluteTime(" << result <<
+      err() << "GlastTimeHandler::readColumn(\"TIME\", " << ra << ", " << dec << ") returned AbsoluteTime(" << result <<
         "), not equivalent to AbsoluteTime(" << expected << ") with tolerance of " << time_tolerance << "." << std::endl;
     }
 
-    // Create an EventTimeHandler object for EVENTS extension of a barycentered event file.
+    // Create an GlastTimeHandler object for EVENTS extension of a barycentered event file.
     std::string event_file_bary = Env::appendFileName(Env::getDataDir("timeSystem"), "my_pulsar_events_bary_v3.fits");
     tip::Table * event_table_bary = tip::IFileSvc::instance().editTable(event_file_bary, "EVENTS");
-    EventTimeHandler handler_bary(*event_table_bary, position_tolerance);
-    handler_bary.initialize(pl_ephem, sc_file);
+    std::auto_ptr<EventTimeHandler> handler_bary(new GlastTimeHandler(*event_table_bary, sc_file, position_tolerance));
 
     // Test reading header keyword value, requesting barycentering.
-    result = handler_bary.readHeader("TSTART", ra, dec);
+    result = handler_bary->readHeader("TSTART", ra, dec);
     glast_met = GlastMetRep("TDB", 2.123393824137859E+08); // TSTART in my_pulsar_events_bary_v3.fits.
     expected = glast_met;
     if (!result.equivalentTo(expected, time_tolerance)) {
-      err() << "EventTimeHandler::readHeader(\"TSTART\", " << ra << ", " << dec << ") returned AbsoluteTime(" << result <<
+      err() << "GlastTimeHandler::readHeader(\"TSTART\", " << ra << ", " << dec << ") returned AbsoluteTime(" << result <<
         "), not equivalent to AbsoluteTime(" << expected << ") with tolerance of " << time_tolerance << "." << std::endl;
     }
 
     // Test reading header keyword value, requesting barycentering with a wrong sky position (ra, dec).
     try {
-      result = handler_bary.readHeader("TSTART", ra_wrong, dec_wrong);
-      err() << "EventTimeHandler::readHeader(\"TSTART\", " << ra_wrong << ", " << dec_wrong << 
+      result = handler_bary->readHeader("TSTART", ra_wrong, dec_wrong);
+      err() << "GlastTimeHandler::readHeader(\"TSTART\", " << ra_wrong << ", " << dec_wrong << 
         ") did not throw an exception when it should." << std::endl;
     } catch (const std::exception &) {
     }
 
     // Test reading header keyword value, requesting barycentering with a different, but close sky position (ra, dec).
     try {
-      result = handler_bary.readHeader("TSTART", ra_close, dec_close);
+      result = handler_bary->readHeader("TSTART", ra_close, dec_close);
     } catch (const std::exception &) {
-      err() << "EventTimeHandler::readHeader(\"TSTART\", " << ra_close << ", " << dec_close << 
+      err() << "GlastTimeHandler::readHeader(\"TSTART\", " << ra_close << ", " << dec_close << 
         ") threw an exception when it should not." << std::endl;
     }
 
     // Test reading column value, requesting barycentering.
-    handler_bary.setFirstRecord(); // Points to the first event.
-    handler_bary.setNextRecord();  // Points to the second event.
-    handler_bary.setNextRecord();  // Points to the third event.
-    result = handler_bary.readColumn("TIME", ra, dec);
+    handler_bary->setFirstRecord(); // Points to the first event.
+    handler_bary->setNextRecord();  // Points to the second event.
+    handler_bary->setNextRecord();  // Points to the third event.
+    result = handler_bary->readColumn("TIME", ra, dec);
     glast_met = GlastMetRep("TDB", 2.123393897503012E+08); // TIME of the third row in my_pulsar_events_bary_v3.fits.
     expected = glast_met;
     if (!result.equivalentTo(expected, time_tolerance)) {
-      err() << "EventTimeHandler::readColumn(\"TIME\", " << ra << ", " << dec << ") returned AbsoluteTime(" << result <<
+      err() << "GlastTimeHandler::readColumn(\"TIME\", " << ra << ", " << dec << ") returned AbsoluteTime(" << result <<
         "), not equivalent to AbsoluteTime(" << expected << ") with tolerance of " << time_tolerance << "." << std::endl;
     }
 
     // Test reading column value, requesting barycentering with a wrong sky position (ra, dec).
     try {
-      result = handler_bary.readColumn("TIME", ra_wrong, dec_wrong);
-      err() << "EventTimeHandler::readColumn(\"TIME\", " << ra_wrong << ", " << dec_wrong << 
+      result = handler_bary->readColumn("TIME", ra_wrong, dec_wrong);
+      err() << "GlastTimeHandler::readColumn(\"TIME\", " << ra_wrong << ", " << dec_wrong << 
         ") did not throw an exception when it should." << std::endl;
     } catch (const std::exception &) {
     }
 
     // Test reading column value, requesting barycentering with a different, but close sky position (ra, dec).
     try {
-      result = handler_bary.readColumn("TIME", ra_close, dec_close);
+      result = handler_bary->readColumn("TIME", ra_close, dec_close);
     } catch (const std::exception &) {
-      err() << "EventTimeHandler::readHeader(\"TIME\", " << ra_close << ", " << dec_close << 
+      err() << "GlastTimeHandler::readHeader(\"TIME\", " << ra_close << ", " << dec_close << 
         ") threw an exception when it should not." << std::endl;
     }
 
