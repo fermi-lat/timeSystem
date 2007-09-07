@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: hirayama  Fri Sep  7 15:46:37 PDT 2007
+timeSystem/src
+
+Modified Files:
+	BaryTimeComputer.cxx 
+Log Message:
+Remove spacecraft-specific part from BaryTimeComputer and rename the barycentering method from correct to computeBaryTime. Make BaryTimeComputer a singleton. Add a data member to hold a planetary ephemeris name (e.g., JPL DE405) and a method to return it. Add math methods to handle three vectors.
+
+    *
+------------------------------------------------------------
 User: hirayama  Thu Sep  6 15:07:40 PDT 2007
 timeSystem/data
 
