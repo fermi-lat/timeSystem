@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: hirayama  Fri Sep  7 15:56:40 PDT 2007
+timeSystem/src
+
+Added Files:
+	GlastTimeHandler.cxx 
+Log Message:
+Add new class GlastTimeHandler, a sub-class of EventTimeHandler.
+
+    *
+------------------------------------------------------------
 User: hirayama  Fri Sep  7 15:55:42 PDT 2007
 timeSystem/src/test
 
