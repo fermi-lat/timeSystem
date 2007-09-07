@@ -6,13 +6,15 @@
 #ifndef timeSystem_EventTimeHandler_h
 #define timeSystem_EventTimeHandler_h
 
-#include "timeSystem/AbsoluteTime.h"
-
 #include "tip/Table.h"
 
 #include <string>
 
 namespace timeSystem {
+
+  class AbsoluteTime;
+  class BaryTimeComputer;
+  class TimeRep;
 
   /** \class EventTimeHandler
       \brief Class which reads out event times from an event file, creates AbsoluteTime objects for event times,
@@ -22,9 +24,11 @@ namespace timeSystem {
     public:
       EventTimeHandler(tip::Table & table, double position_tolerance = 0.);
 
-      ~EventTimeHandler();
+      virtual ~EventTimeHandler();
 
-      void initialize(const std::string & pl_ephem, const std::string & sc_file);
+      // TODO: Consider adding the following methods to replace TimeRep objects for MET's.
+      //virtual AbsoluteTime readString(const std::string & time_string, const std::string & time_system = "FILE") = 0;
+      //virtual TimeRep * createTimeRep(const std::string & time_system = "FILE") const = 0;
 
       AbsoluteTime readHeader(const std::string & keyword_name);
 
@@ -34,17 +38,33 @@ namespace timeSystem {
 
       AbsoluteTime readColumn(const std::string & column_name, const double ra, const double dec);
 
-      // TODO: Implement this.
-      AbsoluteTime readString(const std::string & time_string);
-
       void setFirstRecord();
 
       void setNextRecord();
 
       bool isEndOfTable() const;
 
-      // TODO: Check whether this method is really needed.
-      TimeRep * createTimeRep(std::string time_system = "FILE") const;
+    protected:
+      virtual AbsoluteTime readHeader(const std::string & keyword_name, const bool request_bary_time,
+        const double ra, const double dec) = 0;
+
+      virtual AbsoluteTime readColumn(const std::string & column_name, const bool request_bary_time,
+        const double ra, const double dec) = 0;
+
+      tip::Header & getHeader() const;
+
+      tip::TableRecord & getCurrentRecord() const;
+
+      void computeBaryTime(const double ra, const double dec, const double sc_position[], AbsoluteTime & abs_time) const;
+
+      // TODO: Should those (computeInnerProduct/OuterProduct/ThreeVector) be replaced by the ones in BaryTimeComputer?
+      double computeInnerProduct(const double vect_x[], const double vect_y[]) const;
+
+      void computeOuterProduct(const double vect_x[], const double vect_y[], double vect_z[]) const;
+
+      void computeThreeVector(const double ra, const double dec, double vect[]) const;
+
+      void checkSkyPosition(const double ra, const double dec) const;
 
     private:
       // Variables for event table handling.
@@ -57,28 +77,8 @@ namespace timeSystem {
       double m_vect_nom[3]; // Three vector representation of m_ra_nom and m_dec_nom.
 
       // Variables for barycentering.
-      double m_speed_of_light;
-      double m_solar_mass;
-      std::string m_sc_file;
-      char * m_sc_file_char;
-      TimeRep * m_mjd_tt;
-
-      // TODO: Consider replacing TimeRep with this class.
-      TimeRep * m_time_rep;
-
-      AbsoluteTime readHeader(const std::string & keyword_name, const bool request_bary_time, const double ra, const double dec);
-
-      AbsoluteTime readColumn(const std::string & column_name, const bool request_bary_time, const double ra, const double dec);
-
-      void computeBaryTime(const double ra, const double dec, const double sc_position[], AbsoluteTime & abs_time) const;
-
-      double computeInnerProduct(const double vect_x[], const double vect_y[]) const;
-
-      void computeOuterProduct(const double vect_x[], const double vect_y[], double vect_z[]) const;
-
-      void computeThreeVector(const double ra, const double dec, double vect[]) const;
-
-      void checkSkyPosition(const double ra, const double dec) const;
+      BaryTimeComputer & m_computer;
+      // TODO: Should BaryTimeComputer be passed as a constructor argument?
   };
 
 }
