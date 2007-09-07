@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: hirayama  Fri Sep  7 15:50:04 PDT 2007
+timeSystem/src
+
+Modified Files:
+	EventTimeHandler.cxx 
+Log Message:
+Change to use BaryTimeComputer to compute barycentric times. Separate mission-specific part from EventTimeHandler to its subclasses.
+
+    *
+------------------------------------------------------------
 User: hirayama  Fri Sep  7 15:46:37 PDT 2007
 timeSystem/timeSystem
 
