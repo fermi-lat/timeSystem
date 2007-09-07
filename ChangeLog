@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: hirayama  Fri Sep  7 15:55:42 PDT 2007
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Modify TestBaryTimeComputer method to adopt its changes. Rename TestEventTimeHandler method to TestGlastTimeHandler, which now tests new class GlastTimeHandler, a sub-class of EventTimeHandler class (which became an abstract class).
+
+    *
+------------------------------------------------------------
 User: hirayama  Fri Sep  7 15:50:04 PDT 2007
 timeSystem/timeSystem
 
