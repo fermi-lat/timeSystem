@@ -8,9 +8,13 @@
 
 #include "timeSystem/EventTimeHandler.h"
 
-#include "tip/Table.h"
-
 #include <string>
+
+namespace tip {
+  class Header;
+  class Table;
+  class TableRecord;
+}
 
 namespace timeSystem {
 
@@ -19,7 +23,7 @@ namespace timeSystem {
   class TimeRep;
 
   /** \class GlastTimeHandler
-      \brief Class which reads out event times from an event file, creates AbsoluteTime objects for event times,
+      \brief Class which reads out event times from a GLAST event file, creates AbsoluteTime objects for event times,
              and performs barycentric correction on event times, typically recorded at a space craft.
   */
   class GlastTimeHandler: public EventTimeHandler {
@@ -29,9 +33,11 @@ namespace timeSystem {
       virtual ~GlastTimeHandler();
 
     protected:
-      virtual AbsoluteTime readHeader(const std::string & keyword_name, const bool request_bary_time, const double ra, const double dec);
+      virtual AbsoluteTime readTime(const tip::Header & header, const std::string & keyword_name, const bool request_bary_time,
+        const double ra, const double dec);
 
-      virtual AbsoluteTime readColumn(const std::string & column_name, const bool request_bary_time, const double ra, const double dec);
+      virtual AbsoluteTime readTime(const tip::TableRecord & record, const std::string & column_name, const bool request_bary_time,
+        const double ra, const double dec);
 
     private:
       std::string m_sc_file;
@@ -39,6 +45,8 @@ namespace timeSystem {
 
       // TODO: Consider replacing MetRep's with classes derived from this class.
       TimeRep * m_time_rep;
+
+    AbsoluteTime computeAbsoluteTime(const double glast_time, const bool request_bary_time, const double ra, const double dec);
   };
 
 }
