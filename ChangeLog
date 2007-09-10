@@ -1,5 +1,15 @@
 ------------------------------------------------------------
 User: hirayama  Mon Sep 10 14:33:11 PDT 2007
+timeSystem/timeSystem
+
+Modified Files:
+	GlastTimeHandler.h 
+Log Message:
+Make it more GLAST-specific. Adopt to the change in EventTimeHandler class (rename of readHeader/Column methods).
+
+    *
+------------------------------------------------------------
+User: hirayama  Mon Sep 10 14:33:11 PDT 2007
 timeSystem/src
 
 Modified Files:
