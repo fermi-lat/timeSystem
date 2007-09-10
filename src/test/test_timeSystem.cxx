@@ -1303,6 +1303,55 @@ namespace {
     tip::Table * event_table = tip::IFileSvc::instance().editTable(event_file, "EVENTS");
     std::auto_ptr<EventTimeHandler> handler(new GlastTimeHandler(*event_table, sc_file));
 
+    // Test getting tip::Header from GlastTimeHandler.
+    tip::Header * header(&(handler->getHeader()));
+    if (header != &(event_table->getHeader())) {
+      err() << "GlastTimeHandler::getHeader() returned a tip::Header object not associated with" <<
+        " the tip::Table object that was given at the time of construction." << std::endl;
+    }
+
+    // Test setting to the first record.
+    handler->setFirstRecord();
+    double glast_time;
+    handler->getCurrentRecord()["TIME"].get(glast_time);
+    double expected_glast_time = 2.123393701794728E+08; // TIME in the first row of my_pulsar_events_v3.fits.
+    double epsilon = 1.e-7; // 100 nano-seconds.
+    if (std::fabs(glast_time - expected_glast_time) > epsilon) {
+      err() << "GlastTimeHandler::getCurrentRecord() did not return the first record after GlastTimeHandler::setFirstRecord()." <<
+        std::endl;
+    }
+
+    // Test setting to the third record.
+    handler->setFirstRecord();
+    handler->setNextRecord();
+    handler->setNextRecord();
+    handler->getCurrentRecord()["TIME"].get(glast_time);
+    expected_glast_time = 2.123393750454886E+08; // TIME in the third row of my_pulsar_events_v3.fits.
+    if (std::fabs(glast_time - expected_glast_time) > epsilon) {
+      err() << "GlastTimeHandler::getCurrentRecord() did not return the third record after GlastTimeHandler::setFirstRecord()" <<
+        " followed by two GlastTimeHandler::setNextRecord() calls." << std::endl;
+    }
+
+    // Test setting to the last record.
+    handler->setLastRecord();
+    handler->getCurrentRecord()["TIME"].get(glast_time);
+    expected_glast_time = 2.124148548657289E+08; // TIME in the last row of my_pulsar_events_v3.fits.
+    if (std::fabs(glast_time - expected_glast_time) > epsilon) {
+      err() << "GlastTimeHandler::getCurrentRecord() did not return the last record after GlastTimeHandler::setLastRecord()." <<
+        std::endl;
+    }
+
+    // Test testing the end of table.
+    handler->setLastRecord();
+    if (handler->isEndOfTable()) {
+      err() << "GlastTimeHandler::isEndOfTable() returned true after GlastTimeHandler::setLastRecord()." << std::endl;
+    }
+    handler->setNextRecord();
+    if (!handler->isEndOfTable()) {
+      err() << "GlastTimeHandler::isEndOfTable() returned false after GlastTimeHandler::setLastRecord()" <<
+        " followed by GlastTimeHandler::setNextRecord()." << std::endl;
+    }
+
     // Test reading header keyword value.
     AbsoluteTime result = handler->readHeader("TSTART");
     GlastMetRep glast_met("TT", 2.123393677090199E+08); // TSTART in my_pulsar_events_v3.fits.
