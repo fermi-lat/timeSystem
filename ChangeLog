@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: hirayama  Mon Sep 10 14:31:31 PDT 2007
+timeSystem/src
+
+Modified Files:
+	EventTimeHandler.cxx 
+Log Message:
+Rename pure virtual methods, readHeader and readColumn, to readTime and add tip::Header and tip::TableRecord to their arguments.
+
+    *
+------------------------------------------------------------
 User: hirayama  Fri Sep  7 15:56:40 PDT 2007
 timeSystem/timeSystem
 
