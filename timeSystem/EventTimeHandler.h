@@ -10,6 +10,10 @@
 
 #include <string>
 
+namespace tip {
+  class Header;
+}
+
 namespace timeSystem {
 
   class AbsoluteTime;
@@ -45,10 +49,10 @@ namespace timeSystem {
       bool isEndOfTable() const;
 
     protected:
-      virtual AbsoluteTime readHeader(const std::string & keyword_name, const bool request_bary_time,
+      virtual AbsoluteTime readTime(const tip::Header & header, const std::string & keyword_name, const bool request_bary_time,
         const double ra, const double dec) = 0;
 
-      virtual AbsoluteTime readColumn(const std::string & column_name, const bool request_bary_time,
+      virtual AbsoluteTime readTime(const tip::TableRecord & record, const std::string & column_name, const bool request_bary_time,
         const double ra, const double dec) = 0;
 
       tip::Header & getHeader() const;
