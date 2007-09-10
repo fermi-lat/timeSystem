@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: hirayama  Mon Sep 10 15:30:39 PDT 2007
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Add tests of EventTimeHandler::getHeader, getCurrentRecord, and setLastRecord methods.
+
+    *
+------------------------------------------------------------
 User: hirayama  Mon Sep 10 15:29:52 PDT 2007
 timeSystem/timeSystem
 
