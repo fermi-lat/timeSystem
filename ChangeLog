@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: hirayama  Mon Sep 10 15:29:52 PDT 2007
+timeSystem/src
+
+Modified Files:
+	EventTimeHandler.cxx 
+Log Message:
+Add setLastRecord method. Make getHeader and getCurrentRecord methods public.
+
+    *
+------------------------------------------------------------
 User: hirayama  Mon Sep 10 14:33:11 PDT 2007
 timeSystem/timeSystem
 
