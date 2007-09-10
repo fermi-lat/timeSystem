@@ -46,7 +46,13 @@ namespace timeSystem {
 
       void setNextRecord();
 
+      void setLastRecord();
+
       bool isEndOfTable() const;
+
+      tip::Header & getHeader() const;
+
+      tip::TableRecord & getCurrentRecord() const;
 
     protected:
       virtual AbsoluteTime readTime(const tip::Header & header, const std::string & keyword_name, const bool request_bary_time,
@@ -54,10 +60,6 @@ namespace timeSystem {
 
       virtual AbsoluteTime readTime(const tip::TableRecord & record, const std::string & column_name, const bool request_bary_time,
         const double ra, const double dec) = 0;
-
-      tip::Header & getHeader() const;
-
-      tip::TableRecord & getCurrentRecord() const;
 
       void computeBaryTime(const double ra, const double dec, const double sc_position[], AbsoluteTime & abs_time) const;
 
