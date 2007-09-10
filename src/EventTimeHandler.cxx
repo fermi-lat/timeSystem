@@ -61,7 +61,7 @@ namespace timeSystem {
   EventTimeHandler::~EventTimeHandler() {}
 
   AbsoluteTime EventTimeHandler::readHeader(const std::string & keyword_name) {
-    return readHeader(keyword_name, false, 0., 0.);
+    return readTime(m_table->getHeader(), keyword_name, false, 0., 0.);
   }
   
   AbsoluteTime EventTimeHandler::readHeader(const std::string & keyword_name, const double ra, const double dec) {
@@ -70,16 +70,16 @@ namespace timeSystem {
       checkSkyPosition(ra, dec);
 
       // Read barycentric time and return it.
-      return readHeader(keyword_name, false, ra, dec);
+      return readTime(m_table->getHeader(), keyword_name, false, ra, dec);
 
     } else {
       // Delegate computation of barycenteric time and return the result.
-      return readHeader(keyword_name, true, ra, dec);
+      return readTime(m_table->getHeader(), keyword_name, true, ra, dec);
     }
   }
 
   AbsoluteTime EventTimeHandler::readColumn(const std::string & column_name) {
-    return readColumn(column_name, false, 0., 0.);
+    return readTime(*m_record_itor, column_name, false, 0., 0.);
   }
   
   AbsoluteTime EventTimeHandler::readColumn(const std::string & column_name, const double ra, const double dec) {
@@ -88,11 +88,11 @@ namespace timeSystem {
       checkSkyPosition(ra, dec);
 
       // Read barycentric time and return it.
-      return readColumn(column_name, false, ra, dec);
+      return readTime(*m_record_itor, column_name, false, ra, dec);
 
     } else {
       // Delegate computation of barycenteric time and return the result.
-      return readColumn(column_name, true, ra, dec);
+      return readTime(*m_record_itor, column_name, true, ra, dec);
     }
   }
 
@@ -101,7 +101,7 @@ namespace timeSystem {
   }
 
   void EventTimeHandler::setNextRecord() {
-    if (!isEndOfTable()) ++m_record_itor;
+    if (m_record_itor != m_table->end()) ++m_record_itor;
   }
 
   bool EventTimeHandler::isEndOfTable() const {
