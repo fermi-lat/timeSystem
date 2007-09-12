@@ -27,7 +27,7 @@ namespace timeSystem {
   */
   class EventTimeHandler {
     public:
-      EventTimeHandler(tip::Table & table, double position_tolerance = 0.);
+      EventTimeHandler(tip::Table & table, double angular_tolerance = 0.);
 
       virtual ~EventTimeHandler();
 
@@ -64,28 +64,26 @@ namespace timeSystem {
 
       void computeBaryTime(const double ra, const double dec, const std::vector<double> sc_position, AbsoluteTime & abs_time) const;
 
-      // TODO: Should those (computeInnerProduct/OuterProduct/ThreeVector) be replaced by the ones in BaryTimeComputer?
-      double computeInnerProduct(const std::vector<double> vect_x, const std::vector<double> vect_y) const;
-
-      std::vector<double> computeOuterProduct(const std::vector<double> vect_x, const std::vector<double> vect_y) const;
-
-      std::vector<double> computeThreeVector(const double ra, const double dec) const;
-
-      void checkSkyPosition(const double ra, const double dec) const;
-
     private:
       // Variables for event table handling.
       tip::Table * m_table;
       tip::Table::Iterator m_record_itor;
       bool m_bary_time;
-      double m_position_tolerance; // In degrees.
       double m_ra_nom;
       double m_dec_nom;
       std::vector<double> m_vect_nom; // Three vector representation of m_ra_nom and m_dec_nom.
+      double m_max_vect_diff;
 
       // Variables for barycentering.
       BaryTimeComputer & m_computer;
       // TODO: Should BaryTimeComputer be passed as a constructor argument?
+
+      // TODO: Should those (computeInnerProduct/ThreeVector) be replaced by the ones in BaryTimeComputer?
+      double computeInnerProduct(const std::vector<double> vect_x, const std::vector<double> vect_y) const;
+
+      std::vector<double> computeThreeVector(const double ra, const double dec) const;
+
+      void checkSkyPosition(const double ra, const double dec) const;
   };
 
 }
