@@ -7,6 +7,7 @@
 #define timeSystem_BaryTimeComputer_h
 
 #include <string>
+#include <vector>
 
 namespace timeSystem {
 
@@ -26,7 +27,7 @@ namespace timeSystem {
 
       void initialize(const std::string & pl_ephem);
 
-      void computeBaryTime(const double ra, const double dec, const double sc_position[], AbsoluteTime & abs_time) const;
+      void computeBaryTime(const double ra, const double dec, const std::vector<double> sc_position, AbsoluteTime & abs_time) const;
 
     private:
       std::string m_pl_ephem;
@@ -36,9 +37,9 @@ namespace timeSystem {
 
       BaryTimeComputer();
 
-      double computeInnerProduct(const double vect_x[], const double vect_y[]) const;
+      double computeInnerProduct(const std::vector<double> vect_x, const std::vector<double> vect_y) const;
 
-      void computeThreeVector(const double ra, const double dec, double vect[]) const;
+      std::vector<double> computeThreeVector(const double ra, const double dec) const;
   };
 
 }

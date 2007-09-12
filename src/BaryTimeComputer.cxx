@@ -14,6 +14,7 @@
 #include <cmath>
 #include <sstream>
 #include <stdexcept>
+#include <vector>
 
 extern "C" {
 #include "bary.h"
@@ -65,10 +66,16 @@ namespace timeSystem {
 
   }
 
-  void BaryTimeComputer::computeBaryTime(const double ra, const double dec, const double sc_position[], AbsoluteTime & abs_time) const {
+  void BaryTimeComputer::computeBaryTime(const double ra, const double dec, const std::vector<double> sc_position,
+    AbsoluteTime & abs_time) const {
     // Check whether initialized or not.
     if (m_pl_ephem.empty()) {
       throw std::runtime_error("BaryTimeComputer::computeBaryTime was called before initialized.");
+    }
+
+    // Check the size of sc_position.
+    if (sc_position.size() < 3) {
+      throw std::runtime_error("Space craft position was given in a wrong format.");
     }
 
     // Set given time to a variable to pass to dpleph C-function.
@@ -94,11 +101,11 @@ namespace timeSystem {
     }
 
     // Compute vectors between related objects.
-    const double *rce, *rcs, *vce;
-    double rca[3], rsa[3];
-    rce = eposn;
-    vce = eposn + 3;
-    rcs = eposn + 6;
+    std::vector<double> rce(eposn,     eposn + 3);
+    std::vector<double> vce(eposn + 3, eposn + 6);
+    std::vector<double> rcs(eposn + 6, eposn + 9);
+    std::vector<double> rca(3);
+    std::vector<double> rsa(3);
     for (int idx = 0; idx < 3; ++idx) {
       // Compute SSBC-to-S/C vector.
       rca[idx] = rce[idx] + sc_position[idx]/m_speed_of_light;
@@ -108,8 +115,7 @@ namespace timeSystem {
     }
 
     // Convert source direction from (RA, Dec) to a three-vector.
-    double sourcedir[3];
-    computeThreeVector(ra, dec, sourcedir);
+    std::vector<double> sourcedir = computeThreeVector(ra, dec);
 
     // Compute total propagation delay.
     double sundis = sqrt(computeInnerProduct(rsa, rsa));
@@ -121,14 +127,18 @@ namespace timeSystem {
     abs_time += ElapsedTime("TDB", Duration(IntFracPair(delay), Sec));
   }
 
-  double BaryTimeComputer::computeInnerProduct(const double vect_x[], const double vect_y[]) const {
+  double BaryTimeComputer::computeInnerProduct(const std::vector<double> vect_x, const std::vector<double> vect_y) const {
     return vect_x[0]*vect_y[0] + vect_x[1]*vect_y[1] + vect_x[2]*vect_y[2];
   }
 
-  void BaryTimeComputer::computeThreeVector(const double ra, const double dec, double vect[]) const {
+  std::vector<double> BaryTimeComputer::computeThreeVector(const double ra, const double dec) const {
+    std::vector<double> vect(3);
+
     vect[0] = std::cos(ra/RADEG) * std::cos(dec/RADEG);
     vect[1] = std::sin(ra/RADEG) * std::cos(dec/RADEG);
     vect[2] = std::sin(dec/RADEG);
+
+    return vect;
   }
 
 }

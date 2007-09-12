@@ -11,6 +11,7 @@
 
 #include <sstream>
 #include <stdexcept>
+#include <vector>
 
 extern "C" {
 #include "bary.h"
@@ -73,12 +74,13 @@ namespace timeSystem {
     if (request_bary_time) {
       // Get space craft position at the given time.
       int error = 0;
-      double * sc_position = glastscorbit(m_sc_file_char, glast_time, &error);
+      double * sc_position_array = glastscorbit(m_sc_file_char, glast_time, &error);
       if (error) {
         std::ostringstream os;
         os << "Error in getting GLAST spacecraft position for " << *m_time_rep << ".";
         throw std::runtime_error(os.str());
       }
+      std::vector<double> sc_position(sc_position_array, sc_position_array + 3);
 
       // Perform barycentric correction on abs_time.
       computeBaryTime(ra, dec, sc_position, abs_time);

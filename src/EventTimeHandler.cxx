@@ -11,6 +11,7 @@
 #include <cmath>
 #include <sstream>
 #include <stdexcept>
+#include <vector>
 
 extern "C" {
 #include "bary.h"
@@ -19,7 +20,7 @@ extern "C" {
 namespace timeSystem {
 
   EventTimeHandler::EventTimeHandler(tip::Table & table, double position_tolerance):
-    m_table(&table), m_bary_time(false), m_position_tolerance(position_tolerance), m_ra_nom(0.), m_dec_nom(0.),
+    m_table(&table), m_bary_time(false), m_position_tolerance(position_tolerance), m_ra_nom(0.), m_dec_nom(0.), m_vect_nom(3),
     m_computer(BaryTimeComputer::getComputer()) {
     // Get table header.
     const tip::Header & header(m_table->getHeader());
@@ -55,7 +56,7 @@ namespace timeSystem {
     }
 
     // Pre-compute three vector version of RA_NOM and DEC_NOM.
-    computeThreeVector(m_ra_nom, m_dec_nom, m_vect_nom);
+    m_vect_nom = computeThreeVector(m_ra_nom, m_dec_nom);
   }
 
   EventTimeHandler::~EventTimeHandler() {}
@@ -122,33 +123,38 @@ namespace timeSystem {
     return *m_record_itor;
   }
 
-  void EventTimeHandler::computeBaryTime(const double ra, const double dec, const double sc_position[], AbsoluteTime & abs_time) const {
+  void EventTimeHandler::computeBaryTime(const double ra, const double dec, const std::vector<double> sc_position,
+    AbsoluteTime & abs_time) const {
     m_computer.computeBaryTime(ra, dec, sc_position, abs_time);
   }
 
-  double EventTimeHandler::computeInnerProduct(const double vect_x[], const double vect_y[]) const {
+  double EventTimeHandler::computeInnerProduct(const std::vector<double> vect_x, const std::vector<double> vect_y) const {
     return vect_x[0]*vect_y[0] + vect_x[1]*vect_y[1] + vect_x[2]*vect_y[2];
   }
 
-  void EventTimeHandler::computeOuterProduct(const double vect_x[], const double vect_y[], double vect_z[]) const {
+  std::vector<double> EventTimeHandler::computeOuterProduct(const std::vector<double> vect_x, const std::vector<double> vect_y) const {
+    std::vector<double> vect_z(3);
+
     vect_z[0] = vect_x[1]*vect_y[2] - vect_x[2]*vect_y[1];
     vect_z[1] = vect_x[2]*vect_y[0] - vect_x[0]*vect_y[2];
     vect_z[2] = vect_x[0]*vect_y[1] - vect_x[1]*vect_y[0];
+
+    return vect_z;
   }
 
-  void EventTimeHandler::computeThreeVector(const double ra, const double dec, double vect[]) const {
+  std::vector<double> EventTimeHandler::computeThreeVector(const double ra, const double dec) const {
+    std::vector<double> vect(3);
+
     vect[0] = std::cos(ra/RADEG) * std::cos(dec/RADEG);
     vect[1] = std::sin(ra/RADEG) * std::cos(dec/RADEG);
     vect[2] = std::sin(dec/RADEG);
+
+    return vect;
   }
 
   void EventTimeHandler::checkSkyPosition(const double ra, const double dec) const {
-    double source[3];
-    computeThreeVector(ra, dec, source);
-
-    double outer[3] = {0., 0., 0.};
-    computeOuterProduct(source, m_vect_nom, outer);
-
+    std::vector<double> source = computeThreeVector(ra, dec);
+    std::vector<double> outer = computeOuterProduct(source, m_vect_nom);
     double separation_angle = std::asin(sqrt(computeInnerProduct(outer, outer))) * RADEG;
 
     if (separation_angle > m_position_tolerance) {
