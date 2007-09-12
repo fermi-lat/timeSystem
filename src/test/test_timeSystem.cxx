@@ -1240,7 +1240,8 @@ namespace {
     // Set parameters for barycentering.
     double ra = 85.0482;
     double dec = -69.3319;
-    double sc_pos[] = {3311146.54815027, 5301968.82897028, 3056651.22812332}; // SC position at TSTART (computed separately).
+    double sc_pos_array[] = {3311146.54815027, 5301968.82897028, 3056651.22812332}; // SC position at TSTART (computed separately).
+    std::vector<double> sc_pos(sc_pos_array, sc_pos_array + 3);
 
     // Check initial setting of ephemeris name.
     std::string ephem_name = computer.getPlanetaryEphemerisName();
