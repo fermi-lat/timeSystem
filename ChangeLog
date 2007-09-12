@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: hirayama  Wed Sep 12 13:40:28 PDT 2007
+timeSystem/src
+
+Modified Files:
+	EventTimeHandler.cxx 
+Log Message:
+Handle an empty tip::Table object properly in setLastRecord method.
+
+    *
+------------------------------------------------------------
 User: hirayama  Wed Sep 12 12:58:34 PDT 2007
 timeSystem/src/test
 
