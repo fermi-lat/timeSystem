@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: hirayama  Wed Sep 12 15:05:01 PDT 2007
+timeSystem/src
+
+Modified Files:
+	EventTimeHandler.cxx 
+Log Message:
+Clean up tip::Table data member in the destructor.
+
+    *
+------------------------------------------------------------
 User: hirayama  Wed Sep 12 14:57:11 PDT 2007
 timeSystem/src/test
 
