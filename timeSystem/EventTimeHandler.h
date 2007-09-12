@@ -9,6 +9,7 @@
 #include "tip/Table.h"
 
 #include <string>
+#include <vector>
 
 namespace tip {
   class Header;
@@ -61,14 +62,14 @@ namespace timeSystem {
       virtual AbsoluteTime readTime(const tip::TableRecord & record, const std::string & column_name, const bool request_bary_time,
         const double ra, const double dec) = 0;
 
-      void computeBaryTime(const double ra, const double dec, const double sc_position[], AbsoluteTime & abs_time) const;
+      void computeBaryTime(const double ra, const double dec, const std::vector<double> sc_position, AbsoluteTime & abs_time) const;
 
       // TODO: Should those (computeInnerProduct/OuterProduct/ThreeVector) be replaced by the ones in BaryTimeComputer?
-      double computeInnerProduct(const double vect_x[], const double vect_y[]) const;
+      double computeInnerProduct(const std::vector<double> vect_x, const std::vector<double> vect_y) const;
 
-      void computeOuterProduct(const double vect_x[], const double vect_y[], double vect_z[]) const;
+      std::vector<double> computeOuterProduct(const std::vector<double> vect_x, const std::vector<double> vect_y) const;
 
-      void computeThreeVector(const double ra, const double dec, double vect[]) const;
+      std::vector<double> computeThreeVector(const double ra, const double dec) const;
 
       void checkSkyPosition(const double ra, const double dec) const;
 
@@ -80,7 +81,7 @@ namespace timeSystem {
       double m_position_tolerance; // In degrees.
       double m_ra_nom;
       double m_dec_nom;
-      double m_vect_nom[3]; // Three vector representation of m_ra_nom and m_dec_nom.
+      std::vector<double> m_vect_nom; // Three vector representation of m_ra_nom and m_dec_nom.
 
       // Variables for barycentering.
       BaryTimeComputer & m_computer;
