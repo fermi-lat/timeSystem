@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: hirayama  Wed Sep 12 14:10:53 PDT 2007
+timeSystem/src
+
+Modified Files:
+	EventTimeHandler.cxx GlastTimeHandler.cxx 
+Log Message:
+Change the constructors to accept a file name and an extension name instead of tip::Header.
+
+    *
+------------------------------------------------------------
 User: hirayama  Wed Sep 12 13:40:28 PDT 2007
 timeSystem/src
 
