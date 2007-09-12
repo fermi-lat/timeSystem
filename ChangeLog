@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: hirayama  Wed Sep 12 11:42:34 PDT 2007
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Change three-vector type in TestBaryTimeComputer method from double[] to std::vector<double>.
+
+    *
+------------------------------------------------------------
 User: hirayama  Wed Sep 12 11:41:45 PDT 2007
 timeSystem/timeSystem
 
