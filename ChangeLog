@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: hirayama  Wed Sep 12 12:58:34 PDT 2007
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Add more tests on Event/GlastTimeHandler classes (more extreme cases in sky position checking).
+
+    *
+------------------------------------------------------------
 User: hirayama  Wed Sep 12 12:56:38 PDT 2007
 timeSystem/timeSystem
 
