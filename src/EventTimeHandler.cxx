@@ -111,8 +111,7 @@ namespace timeSystem {
 
   void EventTimeHandler::setLastRecord() {
     m_record_itor = m_table->end();
-    --m_record_itor;
-    // TODO: What happens if m_table is empty?
+    if (m_table->begin() != m_table->end()) --m_record_itor;
   }
 
   bool EventTimeHandler::isEndOfTable() const {
