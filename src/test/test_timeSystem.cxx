@@ -1303,15 +1303,7 @@ namespace {
 
     // Create an GlastTimeHandler object for EVENTS extension of an event file.
     std::string event_file = Env::appendFileName(Env::getDataDir("timeSystem"), "my_pulsar_events_v3.fits");
-    tip::Table * event_table = tip::IFileSvc::instance().editTable(event_file, "EVENTS");
-    std::auto_ptr<EventTimeHandler> handler(new GlastTimeHandler(*event_table, sc_file));
-
-    // Test getting tip::Header from GlastTimeHandler.
-    tip::Header * header(&(handler->getHeader()));
-    if (header != &(event_table->getHeader())) {
-      err() << "GlastTimeHandler::getHeader() returned a tip::Header object not associated with" <<
-        " the tip::Table object that was given at the time of construction." << std::endl;
-    }
+    std::auto_ptr<EventTimeHandler> handler(new GlastTimeHandler(event_file, "EVENTS", sc_file));
 
     // Test setting to the first record.
     handler->setFirstRecord();
@@ -1399,8 +1391,7 @@ namespace {
 
     // Create an GlastTimeHandler object for EVENTS extension of a barycentered event file.
     std::string event_file_bary = Env::appendFileName(Env::getDataDir("timeSystem"), "my_pulsar_events_bary_v3.fits");
-    tip::Table * event_table_bary = tip::IFileSvc::instance().editTable(event_file_bary, "EVENTS");
-    handler.reset(new GlastTimeHandler(*event_table_bary, sc_file, angular_tolerance));
+    handler.reset(new GlastTimeHandler(event_file_bary, "EVENTS", sc_file, angular_tolerance));
 
     // Test reading header keyword value, requesting barycentering.
     result = handler->readHeader("TSTART", ra, dec);
@@ -1457,7 +1448,7 @@ namespace {
 
     // Test exact match in sky position (ra, dec), with angular tolerance of zero (0) degree.
     angular_tolerance = 0.;
-    handler.reset(new GlastTimeHandler(*event_table_bary, sc_file, angular_tolerance));
+    handler.reset(new GlastTimeHandler(event_file_bary, "EVENTS", sc_file, angular_tolerance));
     try {
       result = handler->readHeader("TSTART", ra, dec);
     } catch (const std::exception &) {
@@ -1467,7 +1458,7 @@ namespace {
 
     // Test large angular tolerance of 180 degrees.
     angular_tolerance = 180.;
-    handler.reset(new GlastTimeHandler(*event_table_bary, sc_file, angular_tolerance));
+    handler.reset(new GlastTimeHandler(event_file_bary, "EVENTS", sc_file, angular_tolerance));
     try {
       result = handler->readHeader("TSTART", ra_wrong, dec_wrong);
     } catch (const std::exception &) {
@@ -1477,7 +1468,7 @@ namespace {
 
     // Test large angular difference, with small angular tolerance.
     angular_tolerance = 1.e-8;
-    handler.reset(new GlastTimeHandler(*event_table_bary, sc_file, angular_tolerance));
+    handler.reset(new GlastTimeHandler(event_file_bary, "EVENTS", sc_file, angular_tolerance));
     try {
       result = handler->readHeader("TSTART", ra_opposite, dec_opposite);
       err() << "GlastTimeHandler::readHeader(\"TSTART\", " << ra_opposite << ", " << dec_opposite << 
@@ -1487,7 +1478,7 @@ namespace {
 
     // Test large angular difference, with large angular tolerance of 180 degrees.
     angular_tolerance = 180.;
-    handler.reset(new GlastTimeHandler(*event_table_bary, sc_file, angular_tolerance));
+    handler.reset(new GlastTimeHandler(event_file_bary, "EVENTS", sc_file, angular_tolerance));
     try {
       result = handler->readHeader("TSTART", ra_opposite, dec_opposite);
     } catch (const std::exception &) {
