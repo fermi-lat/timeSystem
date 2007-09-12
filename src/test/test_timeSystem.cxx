@@ -22,9 +22,6 @@
 #include "timeSystem/TimeRep.h"
 #include "timeSystem/TimeSystem.h"
 
-#include "tip/IFileSvc.h"
-#include "tip/Table.h"
-
 #include <cmath>
 #include <exception>
 #include <limits>
