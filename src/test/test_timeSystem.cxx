@@ -1291,12 +1291,14 @@ namespace {
     std::string sc_file = Env::appendFileName(Env::getDataDir("timeSystem"), "my_pulsar_spacecraft_data_v3.fits");
     double ra = 85.0482;
     double dec = -69.3319;
-    double position_tolerance = 1.e-8; // In degrees.
+    double angular_tolerance = 1.e-8; // In degrees.
     // Note: A difference of 1.e-8 degree produces approx. 90 ns difference in barycentric times at maximum.
     double ra_close = ra + 5.e-9;
     double dec_close = dec + 5.e-9;
     double ra_wrong = ra + 1.e-8;
     double dec_wrong = dec + 1.e-8;
+    double ra_opposite = ra + 180.;
+    double dec_opposite = -dec;
     std::string pl_ephem = "JPL DE405";
 
     // Create an GlastTimeHandler object for EVENTS extension of an event file.
@@ -1398,10 +1400,10 @@ namespace {
     // Create an GlastTimeHandler object for EVENTS extension of a barycentered event file.
     std::string event_file_bary = Env::appendFileName(Env::getDataDir("timeSystem"), "my_pulsar_events_bary_v3.fits");
     tip::Table * event_table_bary = tip::IFileSvc::instance().editTable(event_file_bary, "EVENTS");
-    std::auto_ptr<EventTimeHandler> handler_bary(new GlastTimeHandler(*event_table_bary, sc_file, position_tolerance));
+    handler.reset(new GlastTimeHandler(*event_table_bary, sc_file, angular_tolerance));
 
     // Test reading header keyword value, requesting barycentering.
-    result = handler_bary->readHeader("TSTART", ra, dec);
+    result = handler->readHeader("TSTART", ra, dec);
     glast_met = GlastMetRep("TDB", 2.123393824137859E+08); // TSTART in my_pulsar_events_bary_v3.fits.
     expected = glast_met;
     if (!result.equivalentTo(expected, time_tolerance)) {
@@ -1411,7 +1413,7 @@ namespace {
 
     // Test reading header keyword value, requesting barycentering with a wrong sky position (ra, dec).
     try {
-      result = handler_bary->readHeader("TSTART", ra_wrong, dec_wrong);
+      result = handler->readHeader("TSTART", ra_wrong, dec_wrong);
       err() << "GlastTimeHandler::readHeader(\"TSTART\", " << ra_wrong << ", " << dec_wrong << 
         ") did not throw an exception when it should." << std::endl;
     } catch (const std::exception &) {
@@ -1419,17 +1421,17 @@ namespace {
 
     // Test reading header keyword value, requesting barycentering with a different, but close sky position (ra, dec).
     try {
-      result = handler_bary->readHeader("TSTART", ra_close, dec_close);
+      result = handler->readHeader("TSTART", ra_close, dec_close);
     } catch (const std::exception &) {
       err() << "GlastTimeHandler::readHeader(\"TSTART\", " << ra_close << ", " << dec_close << 
         ") threw an exception when it should not." << std::endl;
     }
 
     // Test reading column value, requesting barycentering.
-    handler_bary->setFirstRecord(); // Points to the first event.
-    handler_bary->setNextRecord();  // Points to the second event.
-    handler_bary->setNextRecord();  // Points to the third event.
-    result = handler_bary->readColumn("TIME", ra, dec);
+    handler->setFirstRecord(); // Points to the first event.
+    handler->setNextRecord();  // Points to the second event.
+    handler->setNextRecord();  // Points to the third event.
+    result = handler->readColumn("TIME", ra, dec);
     glast_met = GlastMetRep("TDB", 2.123393897503012E+08); // TIME of the third row in my_pulsar_events_bary_v3.fits.
     expected = glast_met;
     if (!result.equivalentTo(expected, time_tolerance)) {
@@ -1439,7 +1441,7 @@ namespace {
 
     // Test reading column value, requesting barycentering with a wrong sky position (ra, dec).
     try {
-      result = handler_bary->readColumn("TIME", ra_wrong, dec_wrong);
+      result = handler->readColumn("TIME", ra_wrong, dec_wrong);
       err() << "GlastTimeHandler::readColumn(\"TIME\", " << ra_wrong << ", " << dec_wrong << 
         ") did not throw an exception when it should." << std::endl;
     } catch (const std::exception &) {
@@ -1447,14 +1449,53 @@ namespace {
 
     // Test reading column value, requesting barycentering with a different, but close sky position (ra, dec).
     try {
-      result = handler_bary->readColumn("TIME", ra_close, dec_close);
+      result = handler->readColumn("TIME", ra_close, dec_close);
     } catch (const std::exception &) {
       err() << "GlastTimeHandler::readHeader(\"TIME\", " << ra_close << ", " << dec_close << 
         ") threw an exception when it should not." << std::endl;
     }
 
-  }
+    // Test exact match in sky position (ra, dec), with angular tolerance of zero (0) degree.
+    angular_tolerance = 0.;
+    handler.reset(new GlastTimeHandler(*event_table_bary, sc_file, angular_tolerance));
+    try {
+      result = handler->readHeader("TSTART", ra, dec);
+    } catch (const std::exception &) {
+      err() << "GlastTimeHandler::readHeader(\"TSTART\", " << ra << ", " << dec << 
+        ") threw an exception with angular tolerance of zero (0) degree." << std::endl;
+    }
 
+    // Test large angular tolerance of 180 degrees.
+    angular_tolerance = 180.;
+    handler.reset(new GlastTimeHandler(*event_table_bary, sc_file, angular_tolerance));
+    try {
+      result = handler->readHeader("TSTART", ra_wrong, dec_wrong);
+    } catch (const std::exception &) {
+      err() << "GlastTimeHandler::readHeader(\"TSTART\", " << ra_wrong << ", " << dec_wrong << 
+        ") threw an exception with angular tolerance of 180 degrees." << std::endl;
+    }
+
+    // Test large angular difference, with small angular tolerance.
+    angular_tolerance = 1.e-8;
+    handler.reset(new GlastTimeHandler(*event_table_bary, sc_file, angular_tolerance));
+    try {
+      result = handler->readHeader("TSTART", ra_opposite, dec_opposite);
+      err() << "GlastTimeHandler::readHeader(\"TSTART\", " << ra_opposite << ", " << dec_opposite << 
+        ") did not throw an exception with angular tolerance of zero (0) degrees." << std::endl;
+    } catch (const std::exception &) {
+    }
+
+    // Test large angular difference, with large angular tolerance of 180 degrees.
+    angular_tolerance = 180.;
+    handler.reset(new GlastTimeHandler(*event_table_bary, sc_file, angular_tolerance));
+    try {
+      result = handler->readHeader("TSTART", ra_opposite, dec_opposite);
+    } catch (const std::exception &) {
+      err() << "GlastTimeHandler::readHeader(\"TSTART\", " << ra_opposite << ", " << dec_opposite << 
+        ") threw an exception with angular tolerance of 180 degrees." << std::endl;
+    }
+
+  }
 }
 
 StAppFactory<TestTimeSystemApp> g_factory("test_timeSystem");
