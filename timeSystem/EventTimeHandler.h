@@ -27,7 +27,7 @@ namespace timeSystem {
   */
   class EventTimeHandler {
     public:
-      EventTimeHandler(tip::Table & table, double angular_tolerance = 0.);
+      EventTimeHandler(const std::string & file_name, const std::string & extension_name, double angular_tolerance = 0.);
 
       virtual ~EventTimeHandler();
 

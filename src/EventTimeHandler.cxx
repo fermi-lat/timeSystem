@@ -8,6 +8,8 @@
 #include "timeSystem/AbsoluteTime.h"
 #include "timeSystem/BaryTimeComputer.h"
 
+#include "tip/IFileSvc.h"
+
 #include <cmath>
 #include <sstream>
 #include <stdexcept>
@@ -19,9 +21,12 @@ extern "C" {
 
 namespace timeSystem {
 
-  EventTimeHandler::EventTimeHandler(tip::Table & table, double angular_tolerance):
-    m_table(&table), m_bary_time(false), m_ra_nom(0.), m_dec_nom(0.), m_vect_nom(3), m_max_vect_diff(0.),
+  EventTimeHandler::EventTimeHandler(const std::string & file_name, const std::string & extension_name, double angular_tolerance):
+    m_table(0), m_bary_time(false), m_ra_nom(0.), m_dec_nom(0.), m_vect_nom(3), m_max_vect_diff(0.),
     m_computer(BaryTimeComputer::getComputer()) {
+    // Get the table.
+    m_table = tip::IFileSvc::instance().editTable(file_name, extension_name);
+
     // Get table header.
     const tip::Header & header(m_table->getHeader());
 
