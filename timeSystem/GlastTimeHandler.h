@@ -28,7 +28,8 @@ namespace timeSystem {
   */
   class GlastTimeHandler: public EventTimeHandler {
     public:
-      GlastTimeHandler(tip::Table & table, const std::string & sc_file, double position_tolerance = 0.);
+      GlastTimeHandler(const std::string & file_name, const std::string & extension_name, const std::string & sc_file,
+        double position_tolerance = 0.);
 
       virtual ~GlastTimeHandler();
 

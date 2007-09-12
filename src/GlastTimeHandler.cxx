@@ -19,8 +19,8 @@ extern "C" {
 
 namespace timeSystem {
 
-  GlastTimeHandler::GlastTimeHandler(tip::Table & table, const std::string & sc_file, double position_tolerance):
-    EventTimeHandler(table, position_tolerance), m_sc_file(sc_file) {
+  GlastTimeHandler::GlastTimeHandler(const std::string & file_name, const std::string & extension_name, const std::string & sc_file,
+    double position_tolerance): EventTimeHandler(file_name, extension_name, position_tolerance), m_sc_file(sc_file) {
     // Get time system from TIMESYS keyword.
     const tip::Header & header(getHeader());
     std::string time_system;
