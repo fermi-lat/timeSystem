@@ -68,7 +68,9 @@ namespace timeSystem {
     m_max_vect_diff *= m_max_vect_diff;
   }
 
-  EventTimeHandler::~EventTimeHandler() {}
+  EventTimeHandler::~EventTimeHandler() {
+    delete m_table;
+  }
 
   AbsoluteTime EventTimeHandler::readHeader(const std::string & keyword_name) {
     return readTime(m_table->getHeader(), keyword_name, false, 0., 0.);
