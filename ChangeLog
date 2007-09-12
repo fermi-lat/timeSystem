@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: hirayama  Wed Sep 12 12:56:37 PDT 2007
+timeSystem/src
+
+Modified Files:
+	EventTimeHandler.cxx 
+Log Message:
+Improve checkSkyPosition method and rename related variables. Remove computeOuterProduct method. Make computeInnerProduct and computeThreeVector methods public.
+
+    *
+------------------------------------------------------------
 User: hirayama  Wed Sep 12 11:42:34 PDT 2007
 timeSystem/src/test
 
