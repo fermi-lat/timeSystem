@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: hirayama  Thu Sep 13 16:50:36 PDT 2007
+timeSystem/src
+
+Modified Files:
+	EventTimeHandler.cxx GlastTimeHandler.cxx 
+Log Message:
+Introduce a creation mechanism of EventTimeHandler sub-classes.
+
+    *
+------------------------------------------------------------
 User: hirayama  Wed Sep 12 15:05:01 PDT 2007
 timeSystem/src
 
