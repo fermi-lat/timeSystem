@@ -9,6 +9,8 @@
 #include "timeSystem/GlastMetRep.h"
 #include "timeSystem/TimeRep.h"
 
+#include "tip/IFileSvc.h"
+
 #include <sstream>
 #include <stdexcept>
 #include <vector>
@@ -20,7 +22,7 @@ extern "C" {
 namespace timeSystem {
 
   GlastTimeHandler::GlastTimeHandler(const std::string & file_name, const std::string & extension_name, const std::string & sc_file,
-    double position_tolerance): EventTimeHandler(file_name, extension_name, position_tolerance), m_sc_file(sc_file) {
+    const double position_tolerance): EventTimeHandler(file_name, extension_name, position_tolerance), m_sc_file(sc_file) {
     // Get time system from TIMESYS keyword.
     const tip::Header & header(getHeader());
     std::string time_system;
@@ -43,6 +45,39 @@ namespace timeSystem {
 
   GlastTimeHandler::~GlastTimeHandler() {
     delete m_time_rep;
+  }
+
+  EventTimeHandler * GlastTimeHandler::createInstance(const std::string & file_name, const std::string & extension_name,
+    const std::string & sc_file_name, const std::string & sc_extension_name, const double angular_tolerance) {
+    // Create an object to hold a return value and set a default return value.
+    EventTimeHandler * handler(0);
+
+    // Check header keywords to identify
+    if (checkHeaderKeyword(file_name, extension_name) && checkHeaderKeyword(sc_file_name, sc_extension_name)) {
+      handler = new GlastTimeHandler(file_name, extension_name, sc_file_name, angular_tolerance);
+    }
+
+    // Return the handler (or zero if this class cannot handle it).
+    return handler;
+  }
+
+  bool GlastTimeHandler::checkHeaderKeyword(const std::string & file_name, const std::string & extension_name) {
+    // Get the table and the header.
+    std::auto_ptr<const tip::Table> table(tip::IFileSvc::instance().readTable(file_name, extension_name));
+    const tip::Header & header(table->getHeader());
+
+    // Get TELESCOP keyword value.
+    std::string telescope;
+    header["TELESCOP"].get(telescope);
+    for (std::string::iterator itor = telescope.begin(); itor != telescope.end(); ++itor) *itor = std::toupper(*itor);
+
+    // Get INSTRUME keyword value.
+    std::string instrument;
+    header["INSTRUME"].get(instrument);
+    for (std::string::iterator itor = instrument.begin(); itor != instrument.end(); ++itor) *itor = std::toupper(*itor);
+
+    // Return whether this class can handle the file or not.
+    return (telescope == "GLAST" && instrument == "LAT");
   }
 
   AbsoluteTime GlastTimeHandler::readTime(const tip::Header & header, const std::string & keyword_name, const bool request_bary_time,
