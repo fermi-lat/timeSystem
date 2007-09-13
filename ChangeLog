@@ -1,5 +1,15 @@
 ------------------------------------------------------------
 User: hirayama  Thu Sep 13 16:50:36 PDT 2007
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Introduce a creation mechanism of EventTimeHandler sub-classes.
+
+    *
+------------------------------------------------------------
+User: hirayama  Thu Sep 13 16:50:36 PDT 2007
 timeSystem/timeSystem
 
 Modified Files:
