@@ -21,7 +21,16 @@ extern "C" {
 
 namespace timeSystem {
 
-  EventTimeHandler::EventTimeHandler(const std::string & file_name, const std::string & extension_name, double angular_tolerance):
+  IEventTimeHandlerFactory::IEventTimeHandlerFactory() {
+    getFactoryContainer().push_back(this);
+  }
+
+  static IEventTimeHandlerFactory::cont_type & IEventTimeHandlerFactory::getFactoryContainer() {
+    static cont_type s_factory_cont;
+    return s_factory_cont;
+  }
+
+  EventTimeHandler::EventTimeHandler(const std::string & file_name, const std::string & extension_name, const double angular_tolerance):
     m_table(0), m_bary_time(false), m_ra_nom(0.), m_dec_nom(0.), m_vect_nom(3), m_max_vect_diff(0.),
     m_computer(BaryTimeComputer::getComputer()) {
     // Get the table.
@@ -29,13 +38,6 @@ namespace timeSystem {
 
     // Get table header.
     const tip::Header & header(m_table->getHeader());
-
-    // Check TELESCOP keyword.
-    std::string telescope;
-    header["TELESCOP"].get(telescope);
-    for (std::string::iterator itor = telescope.begin(); itor != telescope.end(); ++itor) *itor = std::toupper(*itor);
-    if (telescope != "GLAST") throw std::runtime_error("Only GLAST supported for now");
-    // TODO: Use dicision-making chain to support multiple missions.
 
     // Set to the first record in the table.
     setFirstRecord();
@@ -70,6 +72,33 @@ namespace timeSystem {
 
   EventTimeHandler::~EventTimeHandler() {
     delete m_table;
+  }
+
+  EventTimeHandler * EventTimeHandler::createHandler(const std::string & file_name, const std::string & extension_name,
+    const std::string & sc_file_name, const std::string & sc_extension_name, const double angular_tolerance) {
+    // Get the factory container.
+    IEventTimeHandlerFactory::cont_type factory_cont(IEventTimeHandlerFactory::getFactoryContainer());
+
+    // Look for an EventTimeHandler that can handle given files.
+    EventTimeHandler * handler(0);
+    for (IEventTimeHandlerFactory::cont_type::iterator itor = factory_cont.begin(); itor != factory_cont.end(); ++itor) {
+      handler = (*itor)->createInstance(file_name, extension_name, sc_file_name, sc_extension_name, angular_tolerance);
+      if (handler) break;
+    }
+
+    // Return the handler if found, or zero (0) if not.
+    if (handler) {
+      return handler;
+    } else {
+      throw std::runtime_error("Unsupported file(s) [filename=\"" + file_name + "\", extension=\"" + extension_name +
+        ", sc_file=\"" + sc_file_name + "\", sc_extension=\"" + sc_extension_name + "\"]");
+    }
+  }
+
+  EventTimeHandler * EventTimeHandler::createInstance(const std::string & file_name, const std::string & extension_name,
+    const std::string & sc_file_name, const std::string & sc_extension_name, const double angular_tolerance) {
+    // TODO: Can/should we remove warning messages like "unused parameter 'file_name'" and such?
+    return 0;
   }
 
   AbsoluteTime EventTimeHandler::readHeader(const std::string & keyword_name) {

@@ -19,7 +19,35 @@ namespace timeSystem {
 
   class AbsoluteTime;
   class BaryTimeComputer;
+  class EventTimeHandler;
   class TimeRep;
+
+  /** \class IEventTimeHandlerFactory
+      \brief Abstract base class for EventTimeHandlerFactory.
+  */
+  class IEventTimeHandlerFactory {
+    public:
+      typedef std::vector<IEventTimeHandlerFactory *> cont_type;
+
+      IEventTimeHandlerFactory();
+
+      static cont_type & getFactoryContainer();
+
+      virtual EventTimeHandler * createInstance(const std::string & file_name, const std::string & extension_name,
+        const std::string & sc_file_name, const std::string & sc_extension_name, const double angular_tolerance = 0.) const = 0;
+  };
+
+  /** \class IEventTimeHandlerFactory
+      \brief Class which registers and creates an EventTimeHandler sub-class given as a template argument.
+  */
+  template <typename HandlerType>
+  class EventTimeHandlerFactory: public IEventTimeHandlerFactory {
+    public:
+      virtual EventTimeHandler * createInstance(const std::string & file_name, const std::string & extension_name,
+        const std::string & sc_file_name, const std::string & sc_extension_name, const double angular_tolerance = 0.) const {
+        return HandlerType::createInstance(file_name, extension_name, sc_file_name, sc_extension_name, angular_tolerance);
+      }
+  };
 
   /** \class EventTimeHandler
       \brief Class which reads out event times from an event file, creates AbsoluteTime objects for event times,
@@ -27,9 +55,13 @@ namespace timeSystem {
   */
   class EventTimeHandler {
     public:
-      EventTimeHandler(const std::string & file_name, const std::string & extension_name, double angular_tolerance = 0.);
-
       virtual ~EventTimeHandler();
+
+      static EventTimeHandler * createHandler(const std::string & file_name, const std::string & extension_name,
+        const std::string & sc_file_name, const std::string & sc_extension_name, const double angular_tolerance = 0.);
+
+      static EventTimeHandler * createInstance(const std::string & file_name, const std::string & extension_name,
+        const std::string & sc_file_name, const std::string & sc_extension_name, const double angular_tolerance = 0.);
 
       // TODO: Consider adding the following methods to replace TimeRep objects for MET's.
       //virtual AbsoluteTime readString(const std::string & time_string, const std::string & time_system = "FILE") = 0;
@@ -56,6 +88,8 @@ namespace timeSystem {
       tip::TableRecord & getCurrentRecord() const;
 
     protected:
+      EventTimeHandler(const std::string & file_name, const std::string & extension_name, const double angular_tolerance = 0.);
+
       virtual AbsoluteTime readTime(const tip::Header & header, const std::string & keyword_name, const bool request_bary_time,
         const double ra, const double dec) = 0;
 
@@ -85,7 +119,6 @@ namespace timeSystem {
 
       void checkSkyPosition(const double ra, const double dec) const;
   };
-
 }
 
 #endif

@@ -28,10 +28,10 @@ namespace timeSystem {
   */
   class GlastTimeHandler: public EventTimeHandler {
     public:
-      GlastTimeHandler(const std::string & file_name, const std::string & extension_name, const std::string & sc_file,
-        double position_tolerance = 0.);
-
       virtual ~GlastTimeHandler();
+
+      static EventTimeHandler * createInstance(const std::string & file_name, const std::string & extension_name,
+        const std::string & sc_file_name, const std::string & sc_extension_name, const double angular_tolerance = 0.);
 
     protected:
       virtual AbsoluteTime readTime(const tip::Header & header, const std::string & keyword_name, const bool request_bary_time,
@@ -44,10 +44,15 @@ namespace timeSystem {
       std::string m_sc_file;
       char * m_sc_file_char;
 
+      GlastTimeHandler(const std::string & file_name, const std::string & extension_name, const std::string & sc_file,
+        const double position_tolerance = 0.);
+
       // TODO: Consider replacing MetRep's with classes derived from this class.
       TimeRep * m_time_rep;
 
-    AbsoluteTime computeAbsoluteTime(const double glast_time, const bool request_bary_time, const double ra, const double dec);
+      AbsoluteTime computeAbsoluteTime(const double glast_time, const bool request_bary_time, const double ra, const double dec);
+
+      static bool checkHeaderKeyword(const std::string & file_name, const std::string & extension_name);
   };
 
 }
