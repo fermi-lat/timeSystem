@@ -25,7 +25,7 @@ namespace timeSystem {
     getFactoryContainer().push_back(this);
   }
 
-  static IEventTimeHandlerFactory::cont_type & IEventTimeHandlerFactory::getFactoryContainer() {
+  IEventTimeHandlerFactory::cont_type & IEventTimeHandlerFactory::getFactoryContainer() {
     static cont_type s_factory_cont;
     return s_factory_cont;
   }
@@ -95,9 +95,8 @@ namespace timeSystem {
     }
   }
 
-  EventTimeHandler * EventTimeHandler::createInstance(const std::string & file_name, const std::string & extension_name,
-    const std::string & sc_file_name, const std::string & sc_extension_name, const double angular_tolerance) {
-    // TODO: Can/should we remove warning messages like "unused parameter 'file_name'" and such?
+  EventTimeHandler * EventTimeHandler::createInstance(const std::string & /*file_name*/, const std::string & /*extension_name*/,
+    const std::string & /*sc_file_name*/, const std::string & /*sc_extension_name*/, const double /*angular_tolerance*/) {
     return 0;
   }
 
