@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: hirayama  Fri Sep 14 14:42:38 PDT 2007
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Add TestEventTimeHandler method to test the creation mechanisms. Move the tests of decision-making mechanism from TestGlastTimeHandler to TestEventTimeHandler. Change the way to create GlastTimeHandler in TestGlastTimeHandler method to a direct creation through createInstance method.
+
+    *
+------------------------------------------------------------
 User: hirayama  Fri Sep 14 14:37:36 PDT 2007
 timeSystem/src
 
