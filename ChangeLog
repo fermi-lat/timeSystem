@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: hirayama  Fri Sep 14 14:37:36 PDT 2007
+timeSystem/src
+
+Modified Files:
+	EventTimeHandler.cxx 
+Log Message:
+Remove unnecessary 'static' and comment out unused arguments of createInstance method.
+
+    *
+------------------------------------------------------------
 User: hirayama  Thu Sep 13 16:50:36 PDT 2007
 timeSystem/src/test
 
