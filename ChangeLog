@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: hirayama  Mon Sep 17 13:45:44 PDT 2007
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Fix FT2 file extension name and add an FT2 file with the right extension name.
+
+    *
+------------------------------------------------------------
 User: hirayama  Mon Sep 17 13:44:51 PDT 2007
 timeSystem/src
 
