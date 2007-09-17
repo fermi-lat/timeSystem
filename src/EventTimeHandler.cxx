@@ -91,7 +91,7 @@ namespace timeSystem {
       return handler;
     } else {
       throw std::runtime_error("Unsupported file(s) [filename=\"" + file_name + "\", extension=\"" + extension_name +
-        ", sc_file=\"" + sc_file_name + "\", sc_extension=\"" + sc_extension_name + "\"]");
+        "\", sc_file=\"" + sc_file_name + "\", sc_extension=\"" + sc_extension_name + "\"]");
     }
   }
 
