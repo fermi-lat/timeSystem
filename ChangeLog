@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: hirayama  Mon Sep 17 13:45:45 PDT 2007
+timeSystem/data
+
+Added Files:
+	my_pulsar_spacecraft_data_v3r1.fits 
+Log Message:
+Fix FT2 file extension name and add an FT2 file with the right extension name.
+
+    *
+------------------------------------------------------------
 User: hirayama  Mon Sep 17 13:45:44 PDT 2007
 timeSystem/src/test
 
