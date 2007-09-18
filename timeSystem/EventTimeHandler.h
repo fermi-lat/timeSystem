@@ -83,6 +83,8 @@ namespace timeSystem {
 
       bool isEndOfTable() const;
 
+      tip::Table & getTable() const;
+
       tip::Header & getHeader() const;
 
       tip::TableRecord & getCurrentRecord() const;
