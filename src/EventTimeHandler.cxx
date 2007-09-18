@@ -153,6 +153,10 @@ namespace timeSystem {
     return (m_record_itor == m_table->end());
   }
 
+  tip::Table & EventTimeHandler::getTable() const {
+    return *m_table;
+  }
+
   tip::Header & EventTimeHandler::getHeader() const {
     return m_table->getHeader();
   }
