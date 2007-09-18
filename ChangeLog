@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: hirayama  Tue Sep 18 09:21:55 PDT 2007
+timeSystem/src
+
+Modified Files:
+	EventTimeHandler.cxx 
+Log Message:
+Add getTable method to EventTimeHandler class.
+
+    *
+------------------------------------------------------------
 User: hirayama  Mon Sep 17 13:45:45 PDT 2007
 timeSystem/data
 
