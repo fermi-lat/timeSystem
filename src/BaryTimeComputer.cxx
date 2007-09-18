@@ -66,7 +66,7 @@ namespace timeSystem {
 
   }
 
-  void BaryTimeComputer::computeBaryTime(const double ra, const double dec, const std::vector<double> sc_position,
+  void BaryTimeComputer::computeBaryTime(const double ra, const double dec, const std::vector<double> & sc_position,
     AbsoluteTime & abs_time) const {
     // Check whether initialized or not.
     if (m_pl_ephem.empty()) {
@@ -127,7 +127,7 @@ namespace timeSystem {
     abs_time += ElapsedTime("TDB", Duration(IntFracPair(delay), Sec));
   }
 
-  double BaryTimeComputer::computeInnerProduct(const std::vector<double> vect_x, const std::vector<double> vect_y) const {
+  double BaryTimeComputer::computeInnerProduct(const std::vector<double> & vect_x, const std::vector<double> & vect_y) const {
     return vect_x[0]*vect_y[0] + vect_x[1]*vect_y[1] + vect_x[2]*vect_y[2];
   }
 
