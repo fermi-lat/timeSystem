@@ -98,7 +98,8 @@ namespace timeSystem {
       virtual AbsoluteTime readTime(const tip::TableRecord & record, const std::string & column_name, const bool request_bary_time,
         const double ra, const double dec) = 0;
 
-      void computeBaryTime(const double ra, const double dec, const std::vector<double> sc_position, AbsoluteTime & abs_time) const;
+      void computeBaryTime(const double ra, const double dec, const std::vector<double> & sc_position, AbsoluteTime & abs_time)
+        const;
 
     private:
       // Variables for event table handling.
@@ -115,7 +116,7 @@ namespace timeSystem {
       // TODO: Should BaryTimeComputer be passed as a constructor argument?
 
       // TODO: Should those (computeInnerProduct/ThreeVector) be replaced by the ones in BaryTimeComputer?
-      double computeInnerProduct(const std::vector<double> vect_x, const std::vector<double> vect_y) const;
+      double computeInnerProduct(const std::vector<double> & vect_x, const std::vector<double> & vect_y) const;
 
       std::vector<double> computeThreeVector(const double ra, const double dec) const;
 

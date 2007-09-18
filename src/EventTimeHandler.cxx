@@ -165,12 +165,12 @@ namespace timeSystem {
     return *m_record_itor;
   }
 
-  void EventTimeHandler::computeBaryTime(const double ra, const double dec, const std::vector<double> sc_position,
+  void EventTimeHandler::computeBaryTime(const double ra, const double dec, const std::vector<double> & sc_position,
     AbsoluteTime & abs_time) const {
     m_computer.computeBaryTime(ra, dec, sc_position, abs_time);
   }
 
-  double EventTimeHandler::computeInnerProduct(const std::vector<double> vect_x, const std::vector<double> vect_y) const {
+  double EventTimeHandler::computeInnerProduct(const std::vector<double> & vect_x, const std::vector<double> & vect_y) const {
     return vect_x[0]*vect_y[0] + vect_x[1]*vect_y[1] + vect_x[2]*vect_y[2];
   }
 
