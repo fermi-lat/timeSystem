@@ -9,7 +9,7 @@
 #include "tip/Table.h"
 
 #include <string>
-#include <vector>
+#include <list>
 
 namespace tip {
   class Header;
@@ -27,10 +27,20 @@ namespace timeSystem {
   */
   class IEventTimeHandlerFactory {
     public:
-      typedef std::vector<IEventTimeHandlerFactory *> cont_type;
+      typedef std::list<IEventTimeHandlerFactory *> cont_type;
 
       IEventTimeHandlerFactory();
 
+      virtual ~IEventTimeHandlerFactory();
+
+      void registerHandler();
+
+      void deregisterHandler();
+
+      static EventTimeHandler * createHandler(const std::string & file_name, const std::string & extension_name,
+        const std::string & sc_file_name, const std::string & sc_extension_name, const double angular_tolerance = 0.);
+
+    private:
       static cont_type & getFactoryContainer();
 
       virtual EventTimeHandler * createInstance(const std::string & file_name, const std::string & extension_name,
@@ -42,7 +52,7 @@ namespace timeSystem {
   */
   template <typename HandlerType>
   class EventTimeHandlerFactory: public IEventTimeHandlerFactory {
-    public:
+    private:
       virtual EventTimeHandler * createInstance(const std::string & file_name, const std::string & extension_name,
         const std::string & sc_file_name, const std::string & sc_extension_name, const double angular_tolerance = 0.) const {
         return HandlerType::createInstance(file_name, extension_name, sc_file_name, sc_extension_name, angular_tolerance);
@@ -56,9 +66,6 @@ namespace timeSystem {
   class EventTimeHandler {
     public:
       virtual ~EventTimeHandler();
-
-      static EventTimeHandler * createHandler(const std::string & file_name, const std::string & extension_name,
-        const std::string & sc_file_name, const std::string & sc_extension_name, const double angular_tolerance = 0.);
 
       static EventTimeHandler * createInstance(const std::string & file_name, const std::string & extension_name,
         const std::string & sc_file_name, const std::string & sc_extension_name, const double angular_tolerance = 0.);

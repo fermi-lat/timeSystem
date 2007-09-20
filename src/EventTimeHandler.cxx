@@ -22,7 +22,19 @@ extern "C" {
 namespace timeSystem {
 
   IEventTimeHandlerFactory::IEventTimeHandlerFactory() {
+    registerHandler();
+  }
+
+  IEventTimeHandlerFactory::~IEventTimeHandlerFactory() {
+    deregisterHandler();
+  }
+
+  void IEventTimeHandlerFactory::registerHandler() {
     getFactoryContainer().push_back(this);
+  }
+
+  void IEventTimeHandlerFactory::deregisterHandler() {
+    getFactoryContainer().remove(this);
   }
 
   IEventTimeHandlerFactory::cont_type & IEventTimeHandlerFactory::getFactoryContainer() {
@@ -74,14 +86,14 @@ namespace timeSystem {
     delete m_table;
   }
 
-  EventTimeHandler * EventTimeHandler::createHandler(const std::string & file_name, const std::string & extension_name,
+  EventTimeHandler * IEventTimeHandlerFactory::createHandler(const std::string & file_name, const std::string & extension_name,
     const std::string & sc_file_name, const std::string & sc_extension_name, const double angular_tolerance) {
     // Get the factory container.
-    IEventTimeHandlerFactory::cont_type factory_cont(IEventTimeHandlerFactory::getFactoryContainer());
+    cont_type factory_cont(getFactoryContainer());
 
     // Look for an EventTimeHandler that can handle given files.
     EventTimeHandler * handler(0);
-    for (IEventTimeHandlerFactory::cont_type::iterator itor = factory_cont.begin(); itor != factory_cont.end(); ++itor) {
+    for (cont_type::iterator itor = factory_cont.begin(); itor != factory_cont.end(); ++itor) {
       handler = (*itor)->createInstance(file_name, extension_name, sc_file_name, sc_extension_name, angular_tolerance);
       if (handler) break;
     }

@@ -52,7 +52,7 @@ namespace {
 
   void TestBaryTimeComputer();
 
-  void TestEventTimeHandler();
+  void TestEventTimeHandlerFactory();
 
   void TestGlastTimeHandler();
 }
@@ -100,8 +100,8 @@ void TestTimeSystemApp::run() {
   // Test BaryTimeComputer class.
   TestBaryTimeComputer();
 
-  // Test EventTimeHandler class.
-  TestEventTimeHandler();
+  // Test EventTimeHandlerFactory class.
+  TestEventTimeHandlerFactory();
 
   // Test GlastTimeHandler class.
   TestGlastTimeHandler();
@@ -1323,7 +1323,7 @@ namespace {
       EventTimeHandler(file_name, extension_name) {}
   };
 
-  void TestEventTimeHandler() {
+  void TestEventTimeHandlerFactory() {
     s_os.setMethod("TestEventtTimeHandler");
     using namespace st_facilities;
 
@@ -1360,8 +1360,8 @@ namespace {
 
     // Test the decision-making mechanism for cases without a prior setup.
     try {
-      handler.reset(EventTimeHandler::createHandler(event_file, "EVENTS", sc_file, "SC_DATA"));
-      err() << "EventTimeHandler::createHandler method) did not throw an exception when no handler was registered." << std::endl;
+      handler.reset(IEventTimeHandlerFactory::createHandler(event_file, "EVENTS", sc_file, "SC_DATA"));
+      err() << "IEventTimeHandlerFactory::createHandler method) did not throw an exception when no handler was registered." << std::endl;
     } catch (const std::exception &) {
     }
 
@@ -1370,9 +1370,9 @@ namespace {
 
     // Test the decision-making mechanism for cases with only BogusTimeHandler1 registered.
     try {
-      handler.reset(EventTimeHandler::createHandler(event_file, "EVENTS", sc_file, "SC_DATA"));
-      err() << "EventTimeHandler::createHandler method) did not throw an exception when only BogusTimeHandler1 was registered." <<
-        std::endl;
+      handler.reset(IEventTimeHandlerFactory::createHandler(event_file, "EVENTS", sc_file, "SC_DATA"));
+      err() << "IEventTimeHandlerFactory::createHandler method) did not throw an exception when only BogusTimeHandler1 was registered."
+        << std::endl;
     } catch (const std::exception &) {
     }
 
@@ -1380,10 +1380,10 @@ namespace {
     EventTimeHandlerFactory<GlastTimeHandler> factory2;
 
     // Test the decision-making mechanism for cases with BogusTimeHandler1 and GlastTimeHandler registered.
-    handler.reset(EventTimeHandler::createHandler(event_file, "EVENTS", sc_file, "SC_DATA"));
+    handler.reset(IEventTimeHandlerFactory::createHandler(event_file, "EVENTS", sc_file, "SC_DATA"));
     result = handler->readHeader("TSTART");
     if (!result.equivalentTo(expected_glast, time_tolerance)) {
-      err() << "EventTimeHandler::createHandler method did not return a GlastTimeHandler object" <<
+      err() << "IEventTimeHandlerFactory::createHandler method did not return a GlastTimeHandler object" <<
         " when it is the only appropriate handler." << std::endl;
     }
 
@@ -1391,24 +1391,26 @@ namespace {
     EventTimeHandlerFactory<BogusTimeHandler2> factory3;
 
     // Test the decision-making mechanism for cases with BogusTimeHandler1, GlastTimeHandler, and BogusTimeHandler2 registered.
-    handler.reset(EventTimeHandler::createHandler(event_file, "EVENTS", sc_file, "SC_DATA"));
+    handler.reset(IEventTimeHandlerFactory::createHandler(event_file, "EVENTS", sc_file, "SC_DATA"));
     result = handler->readHeader("TSTART");
     if (!result.equivalentTo(expected_glast, time_tolerance)) {
-      err() << "EventTimeHandler::createHandler method did not return a GlastTimeHandler object" <<
+      err() << "IEventTimeHandlerFactory::createHandler method did not return a GlastTimeHandler object" <<
         " when it is an appropriate handler that can respond first." << std::endl;
     }
 
-    // Clear the factory container and re-register three handlers in a different order.
-    IEventTimeHandlerFactory::getFactoryContainer().clear();
-    EventTimeHandlerFactory<BogusTimeHandler2> factory4;
-    EventTimeHandlerFactory<GlastTimeHandler> factory5;
-    EventTimeHandlerFactory<BogusTimeHandler1> factory6;
+    // De-register and re-register three handlers in a different order.
+    factory1.deregisterHandler();
+    factory2.deregisterHandler();
+    factory3.deregisterHandler();
+    factory3.registerHandler();
+    factory2.registerHandler();
+    factory1.registerHandler();
 
     // Test the decision-making mechanism for cases with BogusTimeHandler1, GlastTimeHandler, and BogusTimeHandler2 registered.
-    handler.reset(EventTimeHandler::createHandler(event_file, "EVENTS", sc_file, "SC_DATA"));
+    handler.reset(IEventTimeHandlerFactory::createHandler(event_file, "EVENTS", sc_file, "SC_DATA"));
     result = handler->readHeader("TSTART");
     if (!result.equivalentTo(expected_bogus2, time_tolerance)) {
-      err() << "EventTimeHandler::createHandler method did not return a BogusTimeHandler2 object" <<
+      err() << "IEventTimeHandlerFactory::createHandler method did not return a BogusTimeHandler2 object" <<
         " when it is an appropriate handler that can respond first." << std::endl;
     }
   }
