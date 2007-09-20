@@ -1,5 +1,15 @@
 ------------------------------------------------------------
 User: hirayama  Thu Sep 20 12:11:45 PDT 2007
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Move createHandler method from EventTimeHandler to IEventTimeHandlerFactory. Add registerHandler and deregisterHandler methods to IEventTimeHandlerFactory and call them from its constructor and destructor. Make some methods private. Change test codes for those changes.
+
+    *
+------------------------------------------------------------
+User: hirayama  Thu Sep 20 12:11:45 PDT 2007
 timeSystem/timeSystem
 
 Modified Files:
