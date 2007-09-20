@@ -1,5 +1,15 @@
 ------------------------------------------------------------
 User: hirayama  Thu Sep 20 14:57:37 PDT 2007
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Add read-only flag to creation of EventTimeHandler object. Always require angular tolerance in EventTimeHandler creation.
+
+    *
+------------------------------------------------------------
+User: hirayama  Thu Sep 20 14:57:37 PDT 2007
 timeSystem/timeSystem
 
 Modified Files:
