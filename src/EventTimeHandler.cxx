@@ -43,14 +43,14 @@ namespace timeSystem {
   }
 
   EventTimeHandler * IEventTimeHandlerFactory::createHandler(const std::string & file_name, const std::string & extension_name,
-    const std::string & sc_file_name, const std::string & sc_extension_name, const double angular_tolerance) {
+    const std::string & sc_file_name, const std::string & sc_extension_name, const double angular_tolerance, const bool read_only) {
     // Get the factory container.
     cont_type factory_cont(getFactoryContainer());
 
     // Look for an EventTimeHandler that can handle given files.
     EventTimeHandler * handler(0);
     for (cont_type::iterator itor = factory_cont.begin(); itor != factory_cont.end(); ++itor) {
-      handler = (*itor)->createInstance(file_name, extension_name, sc_file_name, sc_extension_name, angular_tolerance);
+      handler = (*itor)->createInstance(file_name, extension_name, sc_file_name, sc_extension_name, angular_tolerance, read_only);
       if (handler) break;
     }
 
@@ -63,11 +63,18 @@ namespace timeSystem {
     }
   }
 
-  EventTimeHandler::EventTimeHandler(const std::string & file_name, const std::string & extension_name, const double angular_tolerance):
+  EventTimeHandler::EventTimeHandler(const std::string & file_name, const std::string & extension_name, const double angular_tolerance,
+    const bool read_only):
     m_table(0), m_bary_time(false), m_ra_nom(0.), m_dec_nom(0.), m_vect_nom(3), m_max_vect_diff(0.),
     m_computer(BaryTimeComputer::getComputer()) {
     // Get the table.
-    m_table = tip::IFileSvc::instance().editTable(file_name, extension_name);
+    // Note: for convenience, read-only and read-write tables are stored as non-const tip::Table pointers in the container.
+    if (read_only) {
+      const tip::Table * const_table = tip::IFileSvc::instance().readTable(file_name, extension_name);
+      m_table = const_cast<tip::Table *>(const_table);
+    } else {
+      m_table = tip::IFileSvc::instance().editTable(file_name, extension_name);
+    }
 
     // Get table header.
     const tip::Header & header(m_table->getHeader());
@@ -108,7 +115,8 @@ namespace timeSystem {
   }
 
   EventTimeHandler * EventTimeHandler::createInstance(const std::string & /*file_name*/, const std::string & /*extension_name*/,
-    const std::string & /*sc_file_name*/, const std::string & /*sc_extension_name*/, const double /*angular_tolerance*/) {
+    const std::string & /*sc_file_name*/, const std::string & /*sc_extension_name*/, const double /*angular_tolerance*/,
+    const bool /*read_only*/) {
     return 0;
   }
 
