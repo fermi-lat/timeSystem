@@ -42,6 +42,27 @@ namespace timeSystem {
     return s_factory_cont;
   }
 
+  EventTimeHandler * IEventTimeHandlerFactory::createHandler(const std::string & file_name, const std::string & extension_name,
+    const std::string & sc_file_name, const std::string & sc_extension_name, const double angular_tolerance) {
+    // Get the factory container.
+    cont_type factory_cont(getFactoryContainer());
+
+    // Look for an EventTimeHandler that can handle given files.
+    EventTimeHandler * handler(0);
+    for (cont_type::iterator itor = factory_cont.begin(); itor != factory_cont.end(); ++itor) {
+      handler = (*itor)->createInstance(file_name, extension_name, sc_file_name, sc_extension_name, angular_tolerance);
+      if (handler) break;
+    }
+
+    // Return the handler if found, or zero (0) if not.
+    if (handler) {
+      return handler;
+    } else {
+      throw std::runtime_error("Unsupported file(s) [filename=\"" + file_name + "\", extension=\"" + extension_name +
+        "\", sc_file=\"" + sc_file_name + "\", sc_extension=\"" + sc_extension_name + "\"]");
+    }
+  }
+
   EventTimeHandler::EventTimeHandler(const std::string & file_name, const std::string & extension_name, const double angular_tolerance):
     m_table(0), m_bary_time(false), m_ra_nom(0.), m_dec_nom(0.), m_vect_nom(3), m_max_vect_diff(0.),
     m_computer(BaryTimeComputer::getComputer()) {
@@ -84,27 +105,6 @@ namespace timeSystem {
 
   EventTimeHandler::~EventTimeHandler() {
     delete m_table;
-  }
-
-  EventTimeHandler * IEventTimeHandlerFactory::createHandler(const std::string & file_name, const std::string & extension_name,
-    const std::string & sc_file_name, const std::string & sc_extension_name, const double angular_tolerance) {
-    // Get the factory container.
-    cont_type factory_cont(getFactoryContainer());
-
-    // Look for an EventTimeHandler that can handle given files.
-    EventTimeHandler * handler(0);
-    for (cont_type::iterator itor = factory_cont.begin(); itor != factory_cont.end(); ++itor) {
-      handler = (*itor)->createInstance(file_name, extension_name, sc_file_name, sc_extension_name, angular_tolerance);
-      if (handler) break;
-    }
-
-    // Return the handler if found, or zero (0) if not.
-    if (handler) {
-      return handler;
-    } else {
-      throw std::runtime_error("Unsupported file(s) [filename=\"" + file_name + "\", extension=\"" + extension_name +
-        "\", sc_file=\"" + sc_file_name + "\", sc_extension=\"" + sc_extension_name + "\"]");
-    }
   }
 
   EventTimeHandler * EventTimeHandler::createInstance(const std::string & /*file_name*/, const std::string & /*extension_name*/,
