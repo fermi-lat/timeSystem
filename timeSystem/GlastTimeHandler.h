@@ -31,7 +31,8 @@ namespace timeSystem {
       virtual ~GlastTimeHandler();
 
       static EventTimeHandler * createInstance(const std::string & file_name, const std::string & extension_name,
-        const std::string & sc_file_name, const std::string & sc_extension_name, const double angular_tolerance = 0.);
+        const std::string & sc_file_name, const std::string & sc_extension_name, const double angular_tolerance,
+        const bool read_only = true);
 
     protected:
       virtual AbsoluteTime readTime(const tip::Header & header, const std::string & keyword_name, const bool request_bary_time,
@@ -45,7 +46,7 @@ namespace timeSystem {
       char * m_sc_file_char;
 
       GlastTimeHandler(const std::string & file_name, const std::string & extension_name, const std::string & sc_file,
-        const double position_tolerance = 0.);
+        const double angular_tolerance, const bool read_only = true);
 
       // TODO: Consider replacing MetRep's with classes derived from this class.
       TimeRep * m_time_rep;

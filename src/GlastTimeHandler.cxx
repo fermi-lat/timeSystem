@@ -22,7 +22,8 @@ extern "C" {
 namespace timeSystem {
 
   GlastTimeHandler::GlastTimeHandler(const std::string & file_name, const std::string & extension_name, const std::string & sc_file,
-    const double position_tolerance): EventTimeHandler(file_name, extension_name, position_tolerance), m_sc_file(sc_file) {
+    const double angular_tolerance, const bool read_only): EventTimeHandler(file_name, extension_name, angular_tolerance, read_only),
+    m_sc_file(sc_file) {
     // Get time system from TIMESYS keyword.
     const tip::Header & header(getHeader());
     std::string time_system;
@@ -48,13 +49,13 @@ namespace timeSystem {
   }
 
   EventTimeHandler * GlastTimeHandler::createInstance(const std::string & file_name, const std::string & extension_name,
-    const std::string & sc_file_name, const std::string & sc_extension_name, const double angular_tolerance) {
+    const std::string & sc_file_name, const std::string & sc_extension_name, const double angular_tolerance, const bool read_only) {
     // Create an object to hold a return value and set a default return value.
     EventTimeHandler * handler(0);
 
     // Check header keywords to identify
     if (checkHeaderKeyword(file_name, extension_name) && checkHeaderKeyword(sc_file_name, sc_extension_name)) {
-      handler = new GlastTimeHandler(file_name, extension_name, sc_file_name, angular_tolerance);
+      handler = new GlastTimeHandler(file_name, extension_name, sc_file_name, angular_tolerance, read_only);
     }
 
     // Return the handler (or zero if this class cannot handle it).
