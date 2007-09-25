@@ -66,6 +66,7 @@ namespace timeSystem {
       \brief Class which reads out event times from an event file, creates AbsoluteTime objects for event times,
              and performs barycentric correction on event times, typically recorded at a space craft.
   */
+  // TODO: Rename EventTimeHandler to MetHandler?
   class EventTimeHandler {
     public:
       virtual ~EventTimeHandler();
