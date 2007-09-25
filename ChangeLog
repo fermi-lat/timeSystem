@@ -1,4 +1,15 @@
 ------------------------------------------------------------
+User: peachey  Tue Sep 25 13:26:22 PDT 2007
+timeSystem/timeSystem
+
+Modified Files:
+	AbsoluteTime.h 
+Log Message:
+Use forward declaration for TimeSystem instead of including
+TimeSystem.h.
+
+    *
+------------------------------------------------------------
 User: peachey  Tue Sep 25 13:25:54 PDT 2007
 timeSystem/timeSystem
 
