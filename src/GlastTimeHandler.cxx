@@ -34,8 +34,7 @@ namespace timeSystem {
     m_time_rep = new GlastMetRep(time_system, 0.);
 
     // Set space craft file to internal variable.
-    // TODO: Any better way than below?
-    m_sc_file_char = (char *)m_sc_file.c_str();
+    m_sc_file_char = const_cast<char *>(m_sc_file.c_str());
 
     // Initializing clock and orbit are not necessary for GLAST.
     // Note: Leave these here as a reminder of an official way to call them.
