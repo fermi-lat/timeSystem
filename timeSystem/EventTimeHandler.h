@@ -66,7 +66,7 @@ namespace timeSystem {
       \brief Class which reads out event times from an event file, creates AbsoluteTime objects for event times,
              and performs barycentric correction on event times, typically recorded at a space craft.
   */
-  // TODO: Rename EventTimeHandler to MetHandler?
+  // TODO: Rename EventTimeHandler to MetHandler? Yes!
   class EventTimeHandler {
     public:
       virtual ~EventTimeHandler();
@@ -126,7 +126,6 @@ namespace timeSystem {
 
       // Variables for barycentering.
       BaryTimeComputer & m_computer;
-      // TODO: Should BaryTimeComputer be passed as a constructor argument?
 
       // TODO: Should those (computeInnerProduct/ThreeVector) be replaced by the ones in BaryTimeComputer?
       double computeInnerProduct(const std::vector<double> & vect_x, const std::vector<double> & vect_y) const;
