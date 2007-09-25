@@ -6,10 +6,9 @@
 #ifndef timeSystem_AbsoluteTime_h
 #define timeSystem_AbsoluteTime_h
 
-#include "timeSystem/Duration.h"
-#include "timeSystem/TimeSystem.h"
-
 #include <string>
+
+#include "timeSystem/Duration.h"
 
 namespace st_stream {
   class OStream;
@@ -20,6 +19,7 @@ namespace timeSystem {
   class ElapsedTime;
   class TimeInterval;
   class TimeRep;
+  class TimeSystem;
 
   /** \class AbsoluteTime
       \brief Class which represents an absolute moment in time, expressed as a time elapsed from a specific MJD time, in
