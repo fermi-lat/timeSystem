@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: peachey  Tue Sep 25 13:25:36 PDT 2007
+timeSystem/src
+
+Modified Files:
+	GlastTimeHandler.cxx 
+Log Message:
+Use const_cast instead of C cast to convert C++ string to char *.
+
+    *
+------------------------------------------------------------
 User: hirayama  Tue Sep 25 10:52:12 PDT 2007
 timeSystem/timeSystem
 
