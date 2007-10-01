@@ -8,6 +8,8 @@
 
 #include "st_facilities/Env.h"
 
+#include "facilities/commonUtilities.h"
+
 #include "st_stream/st_stream.h"
 #include "st_stream/StreamFormatter.h"
 
@@ -540,7 +542,7 @@ namespace {
     }
 
     using namespace st_facilities;
-    std::string test_leap = Env::appendFileName(Env::getDataDir("timeSystem"), "bogusls.fits");
+    std::string test_leap = facilities::commonUtilities::joinPath(facilities::commonUtilities::getDataPath("timeSystem"), "bogusls.fits");
 
     // Test loading specific file for leap second table, by first setting the default file name.
     TimeSystem::setDefaultLeapSecFileName(test_leap);
@@ -1334,8 +1336,8 @@ namespace {
     ElapsedTime time_tolerance("TT", Duration(0, 1.e-7));
 
     // Prepare test parameters in this method.
-    std::string event_file = Env::appendFileName(Env::getDataDir("timeSystem"), "my_pulsar_events_v3.fits");
-    std::string sc_file = Env::appendFileName(Env::getDataDir("timeSystem"), "my_pulsar_spacecraft_data_v3r1.fits");
+    std::string event_file = facilities::commonUtilities::joinPath(facilities::commonUtilities::getDataPath("timeSystem"), "my_pulsar_events_v3.fits");
+    std::string sc_file = facilities::commonUtilities::joinPath(facilities::commonUtilities::getDataPath("timeSystem"), "my_pulsar_spacecraft_data_v3r1.fits");
     GlastMetRep glast_met("TT", 2.123393677090199E+08); // TSTART in my_pulsar_events_v3.fits.
     AbsoluteTime expected_glast = glast_met;
     AbsoluteTime expected_bogus2 = AbsoluteTime("TDB", Duration(51910, 0.), Duration(2, 0.));
@@ -1431,9 +1433,9 @@ namespace {
     computer.initialize("JPL DE405");
 
     // Prepare test parameters in this method.
-    std::string event_file = Env::appendFileName(Env::getDataDir("timeSystem"), "my_pulsar_events_v3.fits");
-    std::string event_file_bary = Env::appendFileName(Env::getDataDir("timeSystem"), "my_pulsar_events_bary_v3.fits");
-    std::string sc_file = Env::appendFileName(Env::getDataDir("timeSystem"), "my_pulsar_spacecraft_data_v3r1.fits");
+    std::string event_file = facilities::commonUtilities::joinPath(facilities::commonUtilities::getDataPath("timeSystem"), "my_pulsar_events_v3.fits");
+    std::string event_file_bary = facilities::commonUtilities::joinPath(facilities::commonUtilities::getDataPath("timeSystem"), "my_pulsar_events_bary_v3.fits");
+    std::string sc_file = facilities::commonUtilities::joinPath(facilities::commonUtilities::getDataPath("timeSystem"), "my_pulsar_spacecraft_data_v3r1.fits");
     double ra = 85.0482;
     double dec = -69.3319;
     double angular_tolerance = 1.e-8; // In degrees.
