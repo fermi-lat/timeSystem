@@ -3,12 +3,10 @@
     \author Masa Hirayama, James Peachey
 */
 
+#include "facilities/commonUtilities.h"
+
 #include "st_app/StApp.h"
 #include "st_app/StAppFactory.h"
-
-#include "st_facilities/Env.h"
-
-#include "facilities/commonUtilities.h"
 
 #include "st_stream/st_stream.h"
 #include "st_stream/StreamFormatter.h"
@@ -541,8 +539,8 @@ namespace {
       // That's OK!
     }
 
-    using namespace st_facilities;
-    std::string test_leap = facilities::commonUtilities::joinPath(facilities::commonUtilities::getDataPath("timeSystem"), "bogusls.fits");
+    using namespace facilities;
+    std::string test_leap = commonUtilities::joinPath(commonUtilities::getDataPath("timeSystem"), "bogusls.fits");
 
     // Test loading specific file for leap second table, by first setting the default file name.
     TimeSystem::setDefaultLeapSecFileName(test_leap);
@@ -1330,14 +1328,14 @@ namespace {
 
   void TestEventTimeHandlerFactory() {
     s_os.setMethod("TestEventtTimeHandler");
-    using namespace st_facilities;
+    using namespace facilities;
 
     // Set tolerance for AbsoluteTime comparison.
     ElapsedTime time_tolerance("TT", Duration(0, 1.e-7));
 
     // Prepare test parameters in this method.
-    std::string event_file = facilities::commonUtilities::joinPath(facilities::commonUtilities::getDataPath("timeSystem"), "my_pulsar_events_v3.fits");
-    std::string sc_file = facilities::commonUtilities::joinPath(facilities::commonUtilities::getDataPath("timeSystem"), "my_pulsar_spacecraft_data_v3r1.fits");
+    std::string event_file = commonUtilities::joinPath(commonUtilities::getDataPath("timeSystem"), "my_pulsar_events_v3.fits");
+    std::string sc_file = commonUtilities::joinPath(commonUtilities::getDataPath("timeSystem"), "my_pulsar_spacecraft_data_v3r1.fits");
     GlastMetRep glast_met("TT", 2.123393677090199E+08); // TSTART in my_pulsar_events_v3.fits.
     AbsoluteTime expected_glast = glast_met;
     AbsoluteTime expected_bogus2 = AbsoluteTime("TDB", Duration(51910, 0.), Duration(2, 0.));
@@ -1423,7 +1421,7 @@ namespace {
 
   void TestGlastTimeHandler() {
     s_os.setMethod("TestGlastTimeHandler");
-    using namespace st_facilities;
+    using namespace facilities;
 
     // Set tolerance for AbsoluteTime comparison.
     ElapsedTime time_tolerance("TT", Duration(0, 1.e-7));
@@ -1433,9 +1431,9 @@ namespace {
     computer.initialize("JPL DE405");
 
     // Prepare test parameters in this method.
-    std::string event_file = facilities::commonUtilities::joinPath(facilities::commonUtilities::getDataPath("timeSystem"), "my_pulsar_events_v3.fits");
-    std::string event_file_bary = facilities::commonUtilities::joinPath(facilities::commonUtilities::getDataPath("timeSystem"), "my_pulsar_events_bary_v3.fits");
-    std::string sc_file = facilities::commonUtilities::joinPath(facilities::commonUtilities::getDataPath("timeSystem"), "my_pulsar_spacecraft_data_v3r1.fits");
+    std::string event_file = commonUtilities::joinPath(commonUtilities::getDataPath("timeSystem"), "my_pulsar_events_v3.fits");
+    std::string event_file_bary = commonUtilities::joinPath(commonUtilities::getDataPath("timeSystem"), "my_pulsar_events_bary_v3.fits");
+    std::string sc_file = commonUtilities::joinPath(commonUtilities::getDataPath("timeSystem"), "my_pulsar_spacecraft_data_v3r1.fits");
     double ra = 85.0482;
     double dec = -69.3319;
     double angular_tolerance = 1.e-8; // In degrees.
