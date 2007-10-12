@@ -65,8 +65,8 @@ namespace timeSystem {
 
   EventTimeHandler::EventTimeHandler(const std::string & file_name, const std::string & extension_name, const double angular_tolerance,
     const bool read_only):
-    m_table(0), m_bary_time(false), m_ra_nom(0.), m_dec_nom(0.), m_vect_nom(3), m_max_vect_diff(0.),
-    m_computer(BaryTimeComputer::getComputer()) {
+    m_file_name(file_name), m_ext_name(extension_name), m_table(0), m_bary_time(false), m_ra_nom(0.), m_dec_nom(0.), m_vect_nom(3),
+    m_max_vect_diff(0.), m_pl_ephem(), m_computer(BaryTimeComputer::getComputer()) {
     // Get the table.
     // Note: for convenience, read-only and read-write tables are stored as non-const tip::Table pointers in the container.
     if (read_only) {
@@ -108,6 +108,17 @@ namespace timeSystem {
     // Pre-compute threshold in sky position comparison.
     m_max_vect_diff = 2. * std::sin(angular_tolerance / 2. / RADEG);
     m_max_vect_diff *= m_max_vect_diff;
+
+    // Get PLEPHEM header keywords, if times in this table are barycentered.
+    if (m_bary_time) {
+      std::string pl_ephem;
+      try {
+        header["PLEPHEM"].get(pl_ephem);
+      } catch (const std::exception &) {
+        throw std::runtime_error("Could not find PLEPHEM header keyword in a barycentered event file.");
+      }
+      m_pl_ephem = pl_ephem;
+    }
   }
 
   EventTimeHandler::~EventTimeHandler() {
@@ -125,17 +136,12 @@ namespace timeSystem {
   }
   
   AbsoluteTime EventTimeHandler::readHeader(const std::string & keyword_name, const double ra, const double dec) {
-    if (m_bary_time) {
-      // Check RA & Dec in argument list match the table header, if already barycentered.
-      checkSkyPosition(ra, dec);
+    // Check RA & Dec in argument list match the table header, if already barycentered.
+    if (m_bary_time) checkSkyPosition(ra, dec);
 
-      // Read barycentric time and return it.
-      return readTime(m_table->getHeader(), keyword_name, false, ra, dec);
-
-    } else {
-      // Delegate computation of barycenteric time and return the result.
-      return readTime(m_table->getHeader(), keyword_name, true, ra, dec);
-    }
+    // Read barycentric time, delegate computation of barycenteric time if necessary, and return the result.
+    bool request_bary_time = !m_bary_time;
+    return readTime(m_table->getHeader(), keyword_name, request_bary_time, ra, dec);
   }
 
   AbsoluteTime EventTimeHandler::readColumn(const std::string & column_name) {
@@ -143,17 +149,12 @@ namespace timeSystem {
   }
   
   AbsoluteTime EventTimeHandler::readColumn(const std::string & column_name, const double ra, const double dec) {
-    if (m_bary_time) {
-      // Check RA & Dec in argument list match the table header, if already barycentered.
-      checkSkyPosition(ra, dec);
+    // Check RA & Dec in argument list match the table header, if already barycentered.
+    if (m_bary_time) checkSkyPosition(ra, dec);
 
-      // Read barycentric time and return it.
-      return readTime(*m_record_itor, column_name, false, ra, dec);
-
-    } else {
-      // Delegate computation of barycenteric time and return the result.
-      return readTime(*m_record_itor, column_name, true, ra, dec);
-    }
+    // Read barycentric time, delegate computation of barycenteric time if necessary, and return the result.
+    bool request_bary_time = !m_bary_time;
+    return readTime(*m_record_itor, column_name, request_bary_time, ra, dec);
   }
 
   void EventTimeHandler::setFirstRecord() {
@@ -185,6 +186,43 @@ namespace timeSystem {
     return *m_record_itor;
   }
 
+  void EventTimeHandler::checkSkyPosition(const double ra, const double dec) const {
+    std::vector<double> source = computeThreeVector(ra, dec);
+    std::vector<double> diff(3);
+    diff[0] = source[0] - m_vect_nom[0];
+    diff[1] = source[1] - m_vect_nom[1];
+    diff[2] = source[2] - m_vect_nom[2];
+
+    if (m_max_vect_diff < computeInnerProduct(diff, diff)) {
+      std::ostringstream os;
+      os << "Sky position for barycentric corrections (RA=" << ra << ", Dec=" << dec << 
+        ") does not match RA_NOM (" << m_ra_nom << ") and DEC_NOM (" << m_dec_nom << ") in Event file.";
+      throw std::runtime_error(os.str());
+    }
+  }
+
+  void EventTimeHandler::checkSolarEph(const std::string & solar_eph) const {
+    // Perform this check only when this file is already barycentered.
+    if (!m_bary_time) return;
+
+    // Make the names of solar system ephemeris case insensitive.
+    std::string solar_eph_uc(solar_eph);
+    for (std::string::iterator itor = solar_eph_uc.begin(); itor != solar_eph_uc.end(); ++itor) *itor = std::toupper(*itor);
+    std::string pl_ephem_uc(m_pl_ephem);
+    for (std::string::iterator itor = pl_ephem_uc.begin(); itor != pl_ephem_uc.end(); ++itor) *itor = std::toupper(*itor);
+
+    // Check whether the names match each other, with a little artificial tolerance.
+    bool solar_eph_match = ((pl_ephem_uc == solar_eph_uc) 
+                            || (pl_ephem_uc == "JPL-DE200" && solar_eph_uc == "JPL DE200")
+                            || (pl_ephem_uc == "JPL-DE405" && solar_eph_uc == "JPL DE405"));
+
+    // Throw an exception the names do not match.
+    if (!solar_eph_match) {
+      throw std::runtime_error("Solar system ephemeris in extension \"" + m_ext_name + "\" of file \"" + m_file_name +
+        "\" (PLEPHEM=\"" + m_pl_ephem + "\") does not match the requested \"" + solar_eph + "\".");
+    }
+  }
+
   void EventTimeHandler::computeBaryTime(const double ra, const double dec, const std::vector<double> & sc_position,
     AbsoluteTime & abs_time) const {
     m_computer.computeBaryTime(ra, dec, sc_position, abs_time);
@@ -202,20 +240,5 @@ namespace timeSystem {
     vect[2] = std::sin(dec/RADEG);
 
     return vect;
-  }
-
-  void EventTimeHandler::checkSkyPosition(const double ra, const double dec) const {
-    std::vector<double> source = computeThreeVector(ra, dec);
-    std::vector<double> diff(3);
-    diff[0] = source[0] - m_vect_nom[0];
-    diff[1] = source[1] - m_vect_nom[1];
-    diff[2] = source[2] - m_vect_nom[2];
-
-    if (m_max_vect_diff < computeInnerProduct(diff, diff)) {
-      std::ostringstream os;
-      os << "Sky position for barycentric corrections (RA=" << ra << ", Dec=" << dec << 
-        ") does not match RA_NOM (" << m_ra_nom << ") and DEC_NOM (" << m_dec_nom << ") in Event file.";
-      throw std::runtime_error(os.str());
-    }
   }
 }
