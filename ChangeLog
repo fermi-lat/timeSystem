@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: hirayama  Fri Oct 12 15:53:58 PDT 2007
+timeSystem/src
+
+Modified Files:
+	EventTimeHandler.cxx 
+Log Message:
+Add checkSolarEph method. Make checkSkyPosition method public. Do Minor clean-ups (re-ordering, simplifying, etc.).
+
+    *
+------------------------------------------------------------
 User: hirayama  Thu Oct  4 14:52:17 PDT 2007
 timeSystem/src/test
 
