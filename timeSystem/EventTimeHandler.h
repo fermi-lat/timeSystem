@@ -101,6 +101,10 @@ namespace timeSystem {
 
       tip::TableRecord & getCurrentRecord() const;
 
+      void checkSkyPosition(const double ra, const double dec) const;
+
+      void checkSolarEph(const std::string & solar_eph) const;
+
     protected:
       EventTimeHandler(const std::string & file_name, const std::string & extension_name, const double angular_tolerance,
         const bool read_only = true);
@@ -116,6 +120,8 @@ namespace timeSystem {
 
     private:
       // Variables for event table handling.
+      std::string m_file_name;
+      std::string m_ext_name;
       tip::Table * m_table;
       tip::Table::Iterator m_record_itor;
       bool m_bary_time;
@@ -123,6 +129,7 @@ namespace timeSystem {
       double m_dec_nom;
       std::vector<double> m_vect_nom; // Three vector representation of m_ra_nom and m_dec_nom.
       double m_max_vect_diff;
+      std::string m_pl_ephem;
 
       // Variables for barycentering.
       BaryTimeComputer & m_computer;
@@ -131,8 +138,6 @@ namespace timeSystem {
       double computeInnerProduct(const std::vector<double> & vect_x, const std::vector<double> & vect_y) const;
 
       std::vector<double> computeThreeVector(const double ra, const double dec) const;
-
-      void checkSkyPosition(const double ra, const double dec) const;
   };
 }
 
