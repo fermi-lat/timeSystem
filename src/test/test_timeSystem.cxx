@@ -1594,9 +1594,9 @@ namespace {
     angular_tolerance = 0.;
     handler.reset(GlastTimeHandler::createInstance(event_file_bary, "EVENTS", sc_file, "SC_DATA", angular_tolerance));
     try {
-      result = handler->readHeader("TSTART", ra, dec);
+      handler->checkSkyPosition(ra, dec);
     } catch (const std::exception &) {
-      err() << "GlastTimeHandler::readHeader(\"TSTART\", " << ra << ", " << dec << 
+      err() << "GlastTimeHandler::checkSkyPosition(" << ra << ", " << dec << 
         ") threw an exception with angular tolerance of zero (0) degree." << std::endl;
     }
 
@@ -1604,9 +1604,9 @@ namespace {
     angular_tolerance = 180.;
     handler.reset(GlastTimeHandler::createInstance(event_file_bary, "EVENTS", sc_file, "SC_DATA", angular_tolerance));
     try {
-      result = handler->readHeader("TSTART", ra_wrong, dec_wrong);
+      handler->checkSkyPosition(ra_wrong, dec_wrong);
     } catch (const std::exception &) {
-      err() << "GlastTimeHandler::readHeader(\"TSTART\", " << ra_wrong << ", " << dec_wrong << 
+      err() << "GlastTimeHandler::checkSkyPosition(" << ra_wrong << ", " << dec_wrong << 
         ") threw an exception with angular tolerance of 180 degrees." << std::endl;
     }
 
@@ -1614,8 +1614,8 @@ namespace {
     angular_tolerance = 1.e-8;
     handler.reset(GlastTimeHandler::createInstance(event_file_bary, "EVENTS", sc_file, "SC_DATA", angular_tolerance));
     try {
-      result = handler->readHeader("TSTART", ra_opposite, dec_opposite);
-      err() << "GlastTimeHandler::readHeader(\"TSTART\", " << ra_opposite << ", " << dec_opposite << 
+      handler->checkSkyPosition(ra_opposite, dec_opposite);
+      err() << "GlastTimeHandler::checkSkyPosition(\"TSTART\", " << ra_opposite << ", " << dec_opposite << 
         ") did not throw an exception with angular tolerance of zero (0) degrees." << std::endl;
     } catch (const std::exception &) {
     }
@@ -1624,10 +1624,61 @@ namespace {
     angular_tolerance = 180.;
     handler.reset(GlastTimeHandler::createInstance(event_file_bary, "EVENTS", sc_file, "SC_DATA", angular_tolerance));
     try {
-      result = handler->readHeader("TSTART", ra_opposite, dec_opposite);
+      handler->checkSkyPosition(ra_opposite, dec_opposite);
     } catch (const std::exception &) {
-      err() << "GlastTimeHandler::readHeader(\"TSTART\", " << ra_opposite << ", " << dec_opposite << 
+      err() << "GlastTimeHandler::checkSkyPosition(" << ra_opposite << ", " << dec_opposite << 
         ") threw an exception with angular tolerance of 180 degrees." << std::endl;
+    }
+
+    // Test checking solar system ephemeris name, with a non-barycentered event extension.
+    angular_tolerance = 1.e-8;
+    handler.reset(GlastTimeHandler::createInstance(event_file, "EVENTS", sc_file, "SC_DATA", angular_tolerance));
+    try {
+      handler->checkSolarEph("Bogus Name");
+    } catch (const std::exception &) {
+      err() << "GlastTimeHandler::checkSolarEph(\"Bogus Name\") threw an exception for non-barycentered event extension." << std::endl;
+    }
+
+    // Test checking solar system ephemeris name, with a barycentered event extension (exact match).
+    handler.reset(GlastTimeHandler::createInstance(event_file_bary, "EVENTS", sc_file, "SC_DATA", angular_tolerance));
+    try {
+      handler->checkSolarEph("JPL-DE405");
+    } catch (const std::exception &) {
+      err() << "GlastTimeHandler::checkSolarEph(\"JPL-DE405\") threw an exception for a barycentered event extension." << std::endl;
+    }
+
+    // Test checking solar system ephemeris name, with a barycentered event extension (rough match).
+    handler.reset(GlastTimeHandler::createInstance(event_file_bary, "EVENTS", sc_file, "SC_DATA", angular_tolerance));
+    try {
+      handler->checkSolarEph("JPL DE405");
+    } catch (const std::exception &) {
+      err() << "GlastTimeHandler::checkSolarEph(\"JPL DE405\") threw an exception for a barycentered event extension." << std::endl;
+    }
+
+    // Test checking solar system ephemeris name, with a barycentered event extension (no match).
+    handler.reset(GlastTimeHandler::createInstance(event_file_bary, "EVENTS", sc_file, "SC_DATA", angular_tolerance));
+    try {
+      handler->checkSolarEph("JPL DE200");
+      err() << "GlastTimeHandler::checkSolarEph(\"JPL DE200\") did not throw an exception for a barycentered event extension." <<
+        std::endl;
+    } catch (const std::exception &) {
+    }
+
+    // Test checking solar system ephemeris name, with a barycentered GTI extension (rough match).
+    handler.reset(GlastTimeHandler::createInstance(event_file_bary, "GTI", sc_file, "SC_DATA", angular_tolerance));
+    try {
+      handler->checkSolarEph("JPL DE405");
+    } catch (const std::exception &) {
+      err() << "GlastTimeHandler::checkSolarEph(\"JPL DE405\") threw an exception for a barycentered GTI extension." << std::endl;
+    }
+
+    // Test checking solar system ephemeris name, with a barycentered GTI extension (no match).
+    handler.reset(GlastTimeHandler::createInstance(event_file_bary, "GTI", sc_file, "SC_DATA", angular_tolerance));
+    try {
+      handler->checkSolarEph("JPL DE200");
+      err() << "GlastTimeHandler::checkSolarEph(\"JPL DE200\") did not throw an exception for a barycentered GTI extension." <<
+        std::endl;
+    } catch (const std::exception &) {
     }
 
   }
