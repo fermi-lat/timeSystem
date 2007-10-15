@@ -1,5 +1,6 @@
 #include <cctype>
 #include <cstdio>
+#include <cstring>
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
@@ -38,17 +39,12 @@ void GbaryApp::run() {
   std::string outFile_s = pars["outfile"];
   double ra = pars["ra"];
   double dec = pars["dec"];
+  std::string solar_eph = pars["solareph"];
   bool clobber = pars["clobber"];
   bool debug = pars["debug"];
-  char refFrame[32] = "";
 
-  // If output file name is blank or "default" (case insensitive), let output file be input file.
-  std::string outFile_uc = outFile_s;
-  for (std::string::iterator itor = outFile_uc.begin(); itor != outFile_uc.end(); ++itor) *itor = std::toupper(*itor);
-
-  if (outFile_s.empty() || "DEFAULT" == outFile_uc) {
-    outFile_s = inFile_s;
-  } else if (!clobber) {
+  // Check whether output file name already exists or not, if clobber parameter is set to no.
+  if (!clobber) {
     bool file_readable = false;
     try {
       std::ifstream is(outFile_s.c_str());
@@ -75,6 +71,19 @@ void GbaryApp::run() {
   // Copy the input to the temporary output file.
   inTipFile.copyFile(tmpOutFile_s, true);
 
+  // Set reference frame for the given solar system ephemeris.
+  std::string solar_eph_uc = solar_eph;
+  for (std::string::iterator itor = solar_eph_uc.begin(); itor != solar_eph_uc.end(); ++itor) *itor = std::toupper(*itor);
+  char refFrame[32] = "";
+  if (solar_eph_uc == "JPL DE200") {
+    std::strncpy(refFrame, "FK5", 32);
+  } else if (solar_eph_uc == "JPL DE405") {
+    std::strncpy(refFrame, "ICRS", 32);
+  } else {
+    throw std::runtime_error("Solar system ephemeris \"" + solar_eph + "\" not supported");
+  }
+
+  // Apply barycentric correction.
   char * orbitFile = const_cast<char *>(orbitFile_s.c_str());
   char * tmpOutFile = const_cast<char *>(tmpOutFile_s.c_str());
   int error = axBary(tmpOutFile, orbitFile, tmpOutFile, ra, dec, refFrame, debug ? 1 : 0);
