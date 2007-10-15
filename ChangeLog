@@ -1,5 +1,15 @@
 ------------------------------------------------------------
 User: hirayama  Mon Oct 15 13:59:22 PDT 2007
+timeSystem/src/gtbary
+
+Modified Files:
+	gtbary.cxx 
+Log Message:
+Add solareph parameter. Remove DEFAULT option from outfile.
+
+    *
+------------------------------------------------------------
+User: hirayama  Mon Oct 15 13:59:22 PDT 2007
 timeSystem/pfiles
 
 Modified Files:
