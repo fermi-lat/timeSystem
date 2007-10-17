@@ -66,14 +66,14 @@ infile [file]
 
     \subsection general gtbary Parameters
 \verbatim
-evfile [file]
+evfile [file name]
     Name of input event file, FT1 format or equivalent.
 
-scfile [file]
+scfile [file name]
     Name of input spacecraft data file, FT2 format or equivalent.
 
-outfile [file]
-    Name of output file. If blank (or the same as evfile), the
+outfile [file name]
+    Name of output file. If the same as evfile, the
     barycentric correction will be performed in situ in the input
     file (which must therefore be writable).
 
@@ -84,6 +84,9 @@ ra [double]
 dec [double]
     DEC of point source for which to perform the barycentric
     correction.
+
+(solareph = JPL DE405) [enumerated string (JPL DE200|JPL DE405)]
+    Solar system ephemeris for the barycentric correction.
 \endverbatim
 
 */
