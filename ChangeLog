@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: hirayama  Wed Oct 17 15:19:22 PDT 2007
+timeSystem/src
+
+Modified Files:
+	mainpage.h 
+Log Message:
+Add solareph parameter. Minor clean-ups for consistency with the other pulsar tools packages.
+
+    *
+------------------------------------------------------------
 User: hirayama  Mon Oct 15 13:59:22 PDT 2007
 timeSystem/src/gtbary
 
