@@ -17,12 +17,12 @@
     made to axBary to work with GLAST orbit files. This is also
     equivalent to the barycorr tool in HEADAS.
 
-    The executable is fairly self-explanatory. Upon startup, the
-    user will be prompted for the input file whose times will be
-    corrected, the orbit file to use for the correction, the
-    output file (which may be the same as the input file) and
-    the RA and DEC of the source (pulsar) location from which to
-    correct the photons.
+    The executable is fairly self-explanatory. Upon startup, the user
+    will be prompted for the input file whose times will be corrected,
+    the orbit file to use for the correction, the output file (which
+    may be the same as the input file) and the Right Ascension (RA)
+    and Declination (Dec) of the source (pulsar) location from which
+    to correct the photons.
 
     Three additional ancillary files are needed by gtbary/axBary
     in order to perform the correction: JPLEPH.405, leapsec.fits
@@ -78,12 +78,12 @@ outfile [file name]
     file (which must therefore be writable).
 
 ra [double]
-    RA of point source for which to perform the barycentric
-    correction.
+    Right Ascension of point source in degrees for which to perform
+    the barycentric correction.
 
 dec [double]
-    DEC of point source for which to perform the barycentric
-    correction.
+    Declination of point source in degrees for which to perform the
+    barycentric correction.
 
 (solareph = JPL DE405) [enumerated string (JPL DE200|JPL DE405)]
     Solar system ephemeris for the barycentric correction.
