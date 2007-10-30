@@ -1,5 +1,15 @@
 ------------------------------------------------------------
 User: hirayama  Tue Oct 30 14:35:11 PDT 2007
+timeSystem/src
+
+Modified Files:
+	mainpage.h 
+Log Message:
+Spell out RA and Dec for clarity.
+
+    *
+------------------------------------------------------------
+User: hirayama  Tue Oct 30 14:35:11 PDT 2007
 timeSystem/pfiles
 
 Modified Files:
