@@ -5,6 +5,7 @@
 
 \verbatim
 --------------------------------------------------------------------------------
+13-nov-2007    v4r0p1 MH  Improve mainpage.h and prompts in gtbary.par.
 23-oct-2007        v4 JP  Add support for barycentering on the fly, including
                           new solareph parameter and BaryTimeComputer class.
 14-aug-2007    v3r2p2 JP  Correct MJDREF for GLAST.
