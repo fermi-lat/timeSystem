@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: golpa  Mon Dec 10 13:42:09 PST 2007
+timeSystem
+
+Added Files:
+	SConscript timeSystemLib.py 
+Log Message:
+Initial import of SCons files
+    *
+------------------------------------------------------------
 TAG
 Tag name: v4r0p1, operation: add
 Package: timeSystem
