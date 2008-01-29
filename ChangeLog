@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: peachey  Tue Jan 29 12:47:55 PST 2008
+timeSystem
+
+Modified Files:
+	SConscript 
+Log Message:
+Added test binary to progEnv.Tool call.
+    *
+------------------------------------------------------------
 User: golpa  Mon Dec 10 13:42:09 PST 2007
 timeSystem
 
