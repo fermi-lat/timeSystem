@@ -5,6 +5,7 @@
 
 \verbatim
 --------------------------------------------------------------------------------
+29-jan-2008    v4r0p2 JP  Add unit test code to SConscript.
 13-nov-2007    v4r0p1 MH  Improve mainpage.h and prompts in gtbary.par.
 23-oct-2007        v4 JP  Add support for barycentering on the fly, including
                           new solareph parameter and BaryTimeComputer class.
