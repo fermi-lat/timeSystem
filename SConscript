@@ -9,5 +9,6 @@ timeSystemLib = libEnv.StaticLibrary('timeSystem', listFiles(['src/*.cxx', 'src/
 
 progEnv.Tool('timeSystemLib')
 gtbaryBin = progEnv.Program('gtbary', listFiles(['src/gtbary/*.cxx']))
+test_timeSystemBin = progEnv.Program('test_timeSystem', listFiles(['src/test/*.cxx'])) 
 
-progEnv.Tool('registerObjects', package = 'timeSystem', libraries = [timeSystemLib], includes = listFiles(['timeSystem/*.h']), binaries = [gtbaryBin], pfiles = listFiles(['pfiles/*.par']))
+progEnv.Tool('registerObjects', package = 'timeSystem', libraries = [timeSystemLib], includes = listFiles(['timeSystem/*.h']), binaries = [gtbaryBin], testApps = [test_timeSystemBin], pfiles = listFiles(['pfiles/*.par']))
