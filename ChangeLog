@@ -1,5 +1,15 @@
 ------------------------------------------------------------
 TAG
+Tag name: timeSystem-04-00-02, operation: mov
+Package: timeSystem
+User: glast  Tue Feb 26 08:26:44 2008
+Files:
+  timeSystem/SConscript  1.3
+  timeSystem/timeSystemLib.py  1.2
+
+    *
+------------------------------------------------------------
+TAG
 Tag name: v4r0p2, operation: mov
 Package: timeSystem
 User: glast  Tue Feb 26 08:26:30 2008
