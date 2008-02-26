@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: glastrm  Tue Feb 26 08:24:52 PST 2008
+ScienceTools-scons/timeSystem
+
+Modified Files:
+	SConscript timeSystemLib.py 
+Log Message:
+Add lib dependencies when creating a library
+    *
+------------------------------------------------------------
 TAG
 Tag name: timeSystem-04-00-02, operation: add
 Package: timeSystem
