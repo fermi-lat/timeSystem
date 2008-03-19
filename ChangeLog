@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: glastrm  Wed Mar 19 13:38:39 PDT 2008
+ScienceTools-scons/timeSystem
+
+Modified Files:
+	SConscript 
+Log Message:
+Register data files
+    *
+------------------------------------------------------------
 TAG
 Tag name: timeSystem-04-00-02, operation: mov
 Package: timeSystem
