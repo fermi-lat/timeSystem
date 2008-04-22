@@ -212,4 +212,26 @@ namespace timeSystem {
     TimeRep::set("MJDF", int_frac.getFractionalPart());
   }
 
+  NewTimeRep::~NewTimeRep() {
+  }
+
+  NewMjdRep::NewMjdRep(long day, double sec): m_day(day), m_sec(sec) {
+  }
+
+  void NewMjdRep::get(long & day, double & sec) const {
+    day = m_day;
+    sec = m_sec;
+  }
+
+  void NewMjdRep::set(long day, double sec) {
+    m_day = day;
+    m_sec = sec;
+  }
+
+  void NewMjdRep::assign(const std::string & value) {
+    // TODO Replace with cleaner implementation that uses Duration.
+    IntFracPair pair_value(value);
+    set(pair_value.getIntegerPart(), pair_value.getFractionalPart() * SecPerDay());
+  }
+
 }
