@@ -163,6 +163,30 @@ namespace timeSystem {
       const TimeSystem * m_system;
   };
 
+  /** \class NewTimeRep
+      \brief Eventually this will replace TimeRep.
+  */
+  class NewTimeRep {
+    public:
+      virtual ~NewTimeRep();
+
+      virtual void assign(const std::string & value) = 0;
+  };
+
+  class NewMjdRep : public NewTimeRep {
+    public:
+      NewMjdRep(long day, double sec);
+
+      void get(long & day, double & sec) const;
+      void set(long day, double sec);
+
+      virtual void assign(const std::string & value);
+
+    private:
+      long m_day;
+      double m_sec;
+  };
+
 }
 
 #endif

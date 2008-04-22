@@ -48,6 +48,8 @@ namespace {
 
   void TestTimeRep();
 
+  void TestNewTimeRep();
+
   void TestField();
 
   void TestBaryTimeComputer();
@@ -93,6 +95,9 @@ void TestTimeSystemApp::run() {
 
   // Test TimeRep class.
   TestTimeRep();
+
+  // Test NewTimeRep class.
+  TestNewTimeRep();
 
   // Test Field class.
   TestField();
@@ -1202,6 +1207,66 @@ namespace {
       err() << "mjd_tdb.getString() returned string \"" << mjd_tdb_string << "\", not \"" << expected_string <<
         "\", as expected." << std::endl;
     }
+  }
+
+  void TestNewTimeRep() {
+    s_os.setMethod("TestNewTimeRep");
+    static const double epsilon = std::numeric_limits<double>::epsilon() * 10.;
+    long expected_mjd_day = 51910;
+    double expected_mjd_sec = 64.814;
+
+    // Create a test time object using MJD representation.
+    NewMjdRep mjd_object(expected_mjd_day, expected_mjd_sec);
+    NewTimeRep & time_rep_reference(mjd_object);
+
+    long mjd_day = 0;
+    double mjd_sec = 0.;
+    mjd_object.get(mjd_day, mjd_sec);
+    if (expected_mjd_day != mjd_day || epsilon < std::fabs(expected_mjd_sec - mjd_sec)) {
+      err() << "Right after construction, mjd_object contains " << mjd_day << " days, " << mjd_sec <<
+        " seconds, not " << expected_mjd_day << " days, " << expected_mjd_sec << " seconds as expected." << std::endl;
+    }
+
+    // Test set for long, double.
+    expected_mjd_day = 132;
+    expected_mjd_sec = 12509.87654;
+    mjd_object.set(expected_mjd_day, expected_mjd_sec);
+    mjd_day = 0;
+    mjd_sec = 0.;
+    mjd_object.get(mjd_day, mjd_sec);
+    if (expected_mjd_day != mjd_day || epsilon < std::fabs(expected_mjd_sec - mjd_sec)) {
+      err() << "After set(132, 12509.87654), mjd_object contains " << mjd_day << " days, " << mjd_sec <<
+        " seconds, not " << expected_mjd_day << " days, " << expected_mjd_sec << " seconds as expected." << std::endl;
+    }
+    
+    // Test assignment from string.
+    // TODO: use overloaded set instead of assign?
+    time_rep_reference.assign("137.1250123456");
+    expected_mjd_day = 137;
+    expected_mjd_sec = .1250123456 * 86400.;
+    mjd_day = 0;
+    mjd_sec = 0.;
+    mjd_object.get(mjd_day, mjd_sec);
+    if (expected_mjd_day != mjd_day || epsilon < std::fabs(expected_mjd_sec - mjd_sec)) {
+      err() << "After assign(\"137.1250123456\"), mjd_object contains " << mjd_day << " days, " << mjd_sec <<
+        " seconds, not " << expected_mjd_day << " days, .1250123456 * 86400. seconds as expected." << std::endl;
+    }
+    
+    // Put the previous MET time back into the MJD representation.
+#if 0
+    // TODO use appropriate new method to assign or construct NewMjdRep from AbsoluteTime.
+    mjd_object = abs_time;
+
+    // Compare final value.
+    mjd_day = 0;
+    mjd_sec = 0.;
+    mjd_object.get(mjd_day, mjd_sec);
+    if (expected_mjd_day != mjd_day || epsilon < std::fabs(expected_mjd_sec - mjd_sec)) {
+      err() << "After assignment from abs_time, mjd_object contains " << mjd_day << " days, " << mjd_sec <<
+        " seconds, not " << expected_mjd_day << " days, " << expected_mjd_sec << " seconds as expected." << std::endl;
+    }
+#endif
+
   }
 
   void TestField() {
