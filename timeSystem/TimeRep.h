@@ -170,21 +170,20 @@ namespace timeSystem {
     public:
       virtual ~NewTimeRep();
 
-      virtual void assign(const std::string & value) = 0;
+      virtual std::string format(const moment_type & value) const = 0;
+
+      virtual moment_type parse(const std::string & value) const = 0;
   };
 
   class NewMjdRep : public NewTimeRep {
     public:
-      NewMjdRep(long day, double sec);
+      virtual std::string format(const moment_type & value) const;
 
-      void get(long & day, double & sec) const;
-      void set(long day, double sec);
+      virtual moment_type parse(const std::string & value) const;
 
-      virtual void assign(const std::string & value);
+      void convert(const moment_type & moment, long & mjd_int, double & mjd_frac) const;
 
-    private:
-      long m_day;
-      double m_sec;
+      void convert(long mjd_int, double mjd_frac, moment_type & moment) const;
   };
 
 }

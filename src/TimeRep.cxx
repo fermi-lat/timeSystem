@@ -215,23 +215,42 @@ namespace timeSystem {
   NewTimeRep::~NewTimeRep() {
   }
 
-  NewMjdRep::NewMjdRep(long day, double sec): m_day(day), m_sec(sec) {
+  std::string NewMjdRep::format(const moment_type & value) const {
+    std::ostringstream os;
+    long mjd_int = 0;
+    double mjd_frac = 0.;
+    convert(value, mjd_int, mjd_frac);
+    IntFracPair int_frac(mjd_int, mjd_frac);
+    os << std::setprecision(s_digits) << int_frac << " MJD";
+    return os.str();
   }
 
-  void NewMjdRep::get(long & day, double & sec) const {
-    day = m_day;
-    sec = m_sec;
+  moment_type NewMjdRep::parse(const std::string & value) const {
+    IntFracPair int_frac(value);
+    long mjd_int = int_frac.getIntegerPart();
+    double mjd_frac = int_frac.getFractionalPart();
+    moment_type moment;
+    convert(mjd_int, mjd_frac, moment);
+    return moment;
   }
 
-  void NewMjdRep::set(long day, double sec) {
-    m_day = day;
-    m_sec = sec;
+  void NewMjdRep::convert(const moment_type & moment, long & mjd_int, double & mjd_frac) const {
+    if (SecPerDay() < moment.second) {
+      // During an inserted leap-second.
+      mjd_int = moment.first + 1;
+      mjd_frac = 0.;
+    } else {
+      mjd_int = moment.first;
+      mjd_frac = moment.second * DayPerSec();
+    }
   }
 
-  void NewMjdRep::assign(const std::string & value) {
-    // TODO Replace with cleaner implementation that uses Duration.
-    IntFracPair pair_value(value);
-    set(pair_value.getIntegerPart(), pair_value.getFractionalPart() * SecPerDay());
-  }
+  void NewMjdRep::convert(long mjd_int, double mjd_frac, moment_type & moment) const {
+    // Split mjd_frac into integer part and fractional part.
+    IntFracPair mjd_frac_split(mjd_frac);
 
+    // Set the value to the moment_type object.
+    moment.first = mjd_int + mjd_frac_split.getIntegerPart();
+    moment.second = mjd_frac_split.getFractionalPart() * SecPerDay();
+  }
 }
