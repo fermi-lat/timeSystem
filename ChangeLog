@@ -1,5 +1,14 @@
 ------------------------------------------------------------
 User: hirayama  Mon May 12 16:39:18 PDT 2008
+timeSystem/timeSystem
+
+Modified Files:
+	TimeRep.h 
+Log Message:
+Add NewTimeRep and NewMjdRep classes.
+    *
+------------------------------------------------------------
+User: hirayama  Mon May 12 16:39:18 PDT 2008
 timeSystem/src
 
 Modified Files:
