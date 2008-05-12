@@ -1211,58 +1211,67 @@ namespace {
 
   void TestNewTimeRep() {
     s_os.setMethod("TestNewTimeRep");
-    static const double epsilon = std::numeric_limits<double>::epsilon() * 10.;
-    long expected_mjd_day = 51910;
-    double expected_mjd_sec = 64.814;
+    //static const double epsilon = std::numeric_limits<double>::epsilon() * 300.;
+    moment_type expected_moment(51910, 64.814);
+    long expected_mjd_int = expected_moment.first;
+    double expected_mjd_frac = expected_moment.second * DayPerSec();
 
     // Create a test time object using MJD representation.
-    NewMjdRep mjd_object(expected_mjd_day, expected_mjd_sec);
-    NewTimeRep & time_rep_reference(mjd_object);
+    NewMjdRep mjd_rep_object;
+    NewTimeRep & time_rep_reference(mjd_rep_object);
 
-    long mjd_day = 0;
-    double mjd_sec = 0.;
-    mjd_object.get(mjd_day, mjd_sec);
-    if (expected_mjd_day != mjd_day || epsilon < std::fabs(expected_mjd_sec - mjd_sec)) {
-      err() << "Right after construction, mjd_object contains " << mjd_day << " days, " << mjd_sec <<
-        " seconds, not " << expected_mjd_day << " days, " << expected_mjd_sec << " seconds as expected." << std::endl;
+    //long mjd_day = 0;
+    //double mjd_sec = 0.;
+    // Test conversion from integer part and fractional part to moment_type.
+    moment_type moment(0, 0.);
+    mjd_rep_object.convert(expected_mjd_int, expected_mjd_frac, moment);
+    double tolerance = 100.e-9; // 100 nano-seconds.
+    if (expected_moment.first != moment.first || tolerance < std::fabs(expected_moment.second - moment.second)) {
+      err() << "Object mjd_rep_object converted (" << expected_mjd_int << " + " << expected_mjd_frac <<
+        ") MJD into moment_type pair (" << moment.first << ", " << moment.second << "), not (" <<
+        expected_moment.first << ", " << expected_moment.second << ") as expected." << std::endl;
     }
 
-    // Test set for long, double.
-    expected_mjd_day = 132;
-    expected_mjd_sec = 12509.87654;
-    mjd_object.set(expected_mjd_day, expected_mjd_sec);
-    mjd_day = 0;
-    mjd_sec = 0.;
-    mjd_object.get(mjd_day, mjd_sec);
-    if (expected_mjd_day != mjd_day || epsilon < std::fabs(expected_mjd_sec - mjd_sec)) {
-      err() << "After set(132, 12509.87654), mjd_object contains " << mjd_day << " days, " << mjd_sec <<
-        " seconds, not " << expected_mjd_day << " days, " << expected_mjd_sec << " seconds as expected." << std::endl;
+    // Test conversion from moment_type to integer part and fractional part.
+    long mjd_int = 0;
+    double mjd_frac = 0.;
+    mjd_rep_object.convert(expected_moment, mjd_int, mjd_frac);
+    tolerance = 100.e-9 * DayPerSec(); // 100 nano-seconds in units of day.
+    if (expected_mjd_int != mjd_int || tolerance < std::fabs(expected_mjd_frac - mjd_frac)) {
+      err() << "Object mjd_rep_object converted moment_type pair (" << expected_moment.first << ", " << expected_moment.second <<
+        ") into (" << expected_mjd_int << " + " << expected_mjd_frac << ") MJD, not (" << expected_mjd_int << " + " <<
+        expected_mjd_frac << ") MJD as expected." << std::endl;
     }
-    
-    // Test assignment from string.
-    // TODO: use overloaded set instead of assign?
-    time_rep_reference.assign("137.1250123456");
-    expected_mjd_day = 137;
-    expected_mjd_sec = .1250123456 * 86400.;
-    mjd_day = 0;
-    mjd_sec = 0.;
-    mjd_object.get(mjd_day, mjd_sec);
-    if (expected_mjd_day != mjd_day || epsilon < std::fabs(expected_mjd_sec - mjd_sec)) {
-      err() << "After assign(\"137.1250123456\"), mjd_object contains " << mjd_day << " days, " << mjd_sec <<
-        " seconds, not " << expected_mjd_day << " days, .1250123456 * 86400. seconds as expected." << std::endl;
+
+    // Test formatting into string.
+    std::string expected_mjd_string = "51910.000750162037037 MJD";
+    std::string mjd_string = time_rep_reference.format(expected_moment);
+    if (expected_mjd_string != mjd_string) {
+      err() << "Reference to mjd_rep_object formatted moment_type pair (" << expected_moment.first << ", " << expected_moment.second <<
+        ") into \"" << mjd_string << "\", not \"" << expected_mjd_string << "\" as expected." << std::endl;
     }
-    
+
+    // Test parsing a string.
+    mjd_string = "51910.000750162037037";
+    moment = time_rep_reference.parse(mjd_string);
+    tolerance = 100.e-9; // 100 nano-seconds.
+    if (expected_moment.first != moment.first || tolerance < std::fabs(expected_moment.second - moment.second)) {
+      err() << "Reference to mjd_rep_object parsed \"" << mjd_string << "\" into moment_type pair (" << moment.first <<
+        ", " << moment.second << "), not (" << expected_moment.first << ", " << expected_moment.second << ") as expected." <<
+        std::endl;
+    }
+
     // Put the previous MET time back into the MJD representation.
 #if 0
     // TODO use appropriate new method to assign or construct NewMjdRep from AbsoluteTime.
-    mjd_object = abs_time;
+    mjd_rep_object = abs_time;
 
     // Compare final value.
     mjd_day = 0;
     mjd_sec = 0.;
-    mjd_object.get(mjd_day, mjd_sec);
+    mjd_rep_object.get(mjd_day, mjd_sec);
     if (expected_mjd_day != mjd_day || epsilon < std::fabs(expected_mjd_sec - mjd_sec)) {
-      err() << "After assignment from abs_time, mjd_object contains " << mjd_day << " days, " << mjd_sec <<
+      err() << "After assignment from abs_time, mjd_rep_object contains " << mjd_day << " days, " << mjd_sec <<
         " seconds, not " << expected_mjd_day << " days, " << expected_mjd_sec << " seconds as expected." << std::endl;
     }
 #endif
