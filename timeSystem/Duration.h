@@ -19,6 +19,8 @@
 
 namespace timeSystem {
 
+  typedef std::pair<long, double> moment_type;
+
   /** \enum TimeUnit_e Enumerated type representing different time units.
 
        Note: The four units above are "safe to use" precision-wise. Smaller units (millisecond,
@@ -186,6 +188,7 @@ namespace timeSystem {
       // Compute time in a given unit.
       double signed_time = signed_sec * per[unit][Sec];
 
+      // TODO: Replace the following with simple use of IntFracPair class?
       // Compute fractional part as a value in range (-1., 1.).
       double int_part_dbl;
       double frac_part = std::modf(signed_time, &int_part_dbl);
