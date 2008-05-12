@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Mon May 12 16:39:18 PDT 2008
+timeSystem/src
+
+Modified Files:
+	TimeRep.cxx 
+Log Message:
+Add NewTimeRep and NewMjdRep classes.
+    *
+------------------------------------------------------------
 User: peachey  Tue Apr 22 13:37:57 PDT 2008
 timeSystem/timeSystem
 
