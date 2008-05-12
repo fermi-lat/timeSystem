@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Mon May 12 16:40:32 PDT 2008
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Add tests of NewTimeRep and NewMjdRep classes.
+    *
+------------------------------------------------------------
 User: hirayama  Mon May 12 16:40:10 PDT 2008
 timeSystem/timeSystem
 
