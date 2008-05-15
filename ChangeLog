@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Wed May 14 17:14:34 PDT 2008
+timeSystem/timeSystem
+
+Modified Files:
+	AbsoluteTime.h 
+Log Message:
+Replace m_time (Moment object) with m_moment (moment_type object).
+    *
+------------------------------------------------------------
 User: hirayama  Mon May 12 16:40:32 PDT 2008
 timeSystem/src/test
 
