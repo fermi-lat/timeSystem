@@ -1,5 +1,14 @@
 ------------------------------------------------------------
 User: hirayama  Wed May 14 17:14:34 PDT 2008
+timeSystem/src
+
+Modified Files:
+	AbsoluteTime.cxx 
+Log Message:
+Replace m_time (Moment object) with m_moment (moment_type object).
+    *
+------------------------------------------------------------
+User: hirayama  Wed May 14 17:14:34 PDT 2008
 timeSystem/timeSystem
 
 Modified Files:
