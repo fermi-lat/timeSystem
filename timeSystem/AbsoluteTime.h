@@ -65,6 +65,10 @@ namespace timeSystem {
     private:
       void importTimeRep(const TimeRep & rep);
 
+      // TODO: Remove convert methods below, by modifying TimeSystem class to accept a moment_type object.
+      Moment convert(const moment_type & time) const;
+      moment_type convert(const Moment & time) const;
+
       // Prohibited operations:
       // These are not physical because TimeInterval is "anchored" to its endpoints, which are absolute moments in time.
       // In general, neither endpoint of the TimeInterval is the same as "this" AbsoluteTime. Note that similar operators
@@ -72,13 +76,14 @@ namespace timeSystem {
       // AbsoluteTime operator +(const TimeInterval &) const;
       // AbsoluteTime operator -(const TimeInterval &) const;
       const TimeSystem * m_time_system;
-      Moment m_time;
+      moment_type m_moment;
   };
 
   template <typename StreamType>
   inline void AbsoluteTime::write(StreamType & os) const {
     // "123 days 456.789 seconds since 54321.987 MJD (TDB)"
-    os << m_time.second << " since " << m_time.first << " MJD (" << *m_time_system << ")";
+    Moment this_time = convert(m_moment);
+    os << this_time.second << " since " << this_time.first << " MJD (" << *m_time_system << ")";
   }
 
   std::ostream & operator <<(std::ostream & os, const AbsoluteTime & time);
