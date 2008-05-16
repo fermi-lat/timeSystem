@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Fri May 16 16:06:51 PDT 2008
+timeSystem/timeSystem
+
+Modified Files:
+	TimeRep.h 
+Log Message:
+Add conversions of a single number MJD.
+    *
+------------------------------------------------------------
 User: hirayama  Fri May 16 15:39:17 PDT 2008
 timeSystem/src/test
 
