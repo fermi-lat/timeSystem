@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Fri May 16 15:39:17 PDT 2008
+timeSystem/timeSystem
+
+Modified Files:
+	TimeRep.h 
+Log Message:
+Rename NewTimeRep class to TimeFormat. Introduce creation mechanism for TimeFormat classes (prototype).
+    *
+------------------------------------------------------------
 User: hirayama  Wed May 14 17:14:34 PDT 2008
 timeSystem/src
 
