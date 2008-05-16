@@ -1,5 +1,14 @@
 ------------------------------------------------------------
 User: hirayama  Fri May 16 15:39:17 PDT 2008
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Rename NewTimeRep class to TimeFormat. Introduce creation mechanism for TimeFormat classes (prototype).
+    *
+------------------------------------------------------------
+User: hirayama  Fri May 16 15:39:17 PDT 2008
 timeSystem/src
 
 Modified Files:
