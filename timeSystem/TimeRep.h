@@ -199,7 +199,11 @@ namespace timeSystem {
 
       void convert(const moment_type & moment, long & mjd_int, double & mjd_frac) const;
 
+      void convert(const moment_type & moment, double & mjd) const;
+
       void convert(long mjd_int, double mjd_frac, moment_type & moment) const;
+
+      void convert(double mjd, moment_type & moment) const;
 
     private:
       MjdFormat();
