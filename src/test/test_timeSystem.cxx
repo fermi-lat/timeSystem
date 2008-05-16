@@ -1215,13 +1215,12 @@ namespace {
     moment_type expected_moment(51910, 64.814);
     long expected_mjd_int = expected_moment.first;
     double expected_mjd_frac = expected_moment.second * DayPerSec();
+    double expected_mjd = expected_mjd_int + expected_mjd_frac;
 
     // Create a test time object using MJD representation.
     const TimeFormat & time_format_mjd = TimeFormat::getFormat("MJD");
     const MjdFormat & mjd_format = MjdFormat::getMjdFormat();
 
-    //long mjd_day = 0;
-    //double mjd_sec = 0.;
     // Test conversion from integer part and fractional part to moment_type.
     moment_type moment(0, 0.);
     mjd_format.convert(expected_mjd_int, expected_mjd_frac, moment);
@@ -1230,6 +1229,15 @@ namespace {
       err() << "Object mjd_format converted (" << expected_mjd_int << " + " << expected_mjd_frac <<
         ") MJD into moment_type pair (" << moment.first << ", " << moment.second << "), not (" <<
         expected_moment.first << ", " << expected_moment.second << ") as expected." << std::endl;
+    }
+
+    // Test conversion from a single MJD number of double type to moment_type.
+    moment = moment_type(0, 0.);
+    mjd_format.convert(expected_mjd, moment);
+    tolerance = 10.e-6; // 10 micro-seconds.
+    if (expected_moment.first != moment.first || tolerance < std::fabs(expected_moment.second - moment.second)) {
+      err() << "Object mjd_format converted " << expected_mjd << " MJD into moment_type pair (" << moment.first << ", " <<
+        moment.second << "), not (" << expected_moment.first << ", " << expected_moment.second << ") as expected." << std::endl;
     }
 
     // Test conversion from moment_type to integer part and fractional part.
@@ -1241,6 +1249,15 @@ namespace {
       err() << "Object mjd_format converted moment_type pair (" << expected_moment.first << ", " << expected_moment.second <<
         ") into (" << expected_mjd_int << " + " << expected_mjd_frac << ") MJD, not (" << expected_mjd_int << " + " <<
         expected_mjd_frac << ") MJD as expected." << std::endl;
+    }
+
+    // Test conversion from moment_type to a single MJD number of double type.
+    double mjd = 0.;
+    mjd_format.convert(expected_moment, mjd);
+    tolerance = 100.e-9 * DayPerSec(); // 100 nano-seconds in units of day.
+    if (tolerance < std::fabs(expected_mjd - mjd)) {
+      err() << "Object mjd_format converted moment_type pair (" << expected_moment.first << ", " << expected_moment.second <<
+        ") into " << expected_mjd << " MJD, not " << expected_mjd << " MJD as expected." << std::endl;
     }
 
     // Test formatting into string.

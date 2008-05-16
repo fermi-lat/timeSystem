@@ -275,6 +275,13 @@ namespace timeSystem {
     }
   }
 
+  void MjdFormat::convert(const moment_type & moment, double & mjd) const {
+    long int_part = 0;
+    double frac_part = 0.;
+    convert(moment, int_part, frac_part);
+    mjd = int_part + frac_part;
+  }
+
   void MjdFormat::convert(long mjd_int, double mjd_frac, moment_type & moment) const {
     // Split mjd_frac into integer part and fractional part.
     IntFracPair mjd_frac_split(mjd_frac);
@@ -282,5 +289,10 @@ namespace timeSystem {
     // Set the value to the moment_type object.
     moment.first = mjd_int + mjd_frac_split.getIntegerPart();
     moment.second = mjd_frac_split.getFractionalPart() * SecPerDay();
+  }
+
+  void MjdFormat::convert(double mjd, moment_type & moment) const {
+    IntFracPair mjd_int_frac(mjd);
+    convert(mjd_int_frac.getIntegerPart(), mjd_int_frac.getFractionalPart(), moment);
   }
 }
