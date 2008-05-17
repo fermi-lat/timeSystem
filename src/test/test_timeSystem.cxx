@@ -811,8 +811,13 @@ namespace {
     // Create an absolute time corresponding to MET 1000. s.
     AbsoluteTime abs_time("TDB", mjd_origin, duration);
 
-    // Display this time.
-    std::cout << "Testing AbsoluteTime::write by writing this time: " << abs_time << std::endl;
+    // Test printing the time.
+    std::ostringstream os;
+    os << abs_time;
+    std::string expected_string("1000 seconds after 51910.0 MJD (TDB)");
+    if (expected_string != os.str()) {
+      err() << "AbsoluteTime object wrote \"" << os.str() << "\", not \"" << expected_string << "\" as expected." << std::endl;
+    }
 
     // Test adding an elapsed time to this time.
     // Create an absolute time corresponding to 100. s MET TDB to verify adding an elapsed time.
