@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Fri May 16 17:15:54 PDT 2008
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Test shift operator of AbsoluteTime, instead of just printing a time using it.
+    *
+------------------------------------------------------------
 User: hirayama  Fri May 16 17:15:03 PDT 2008
 timeSystem/src
 
