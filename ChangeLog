@@ -1,5 +1,14 @@
 ------------------------------------------------------------
 User: hirayama  Fri May 16 17:15:03 PDT 2008
+timeSystem/src
+
+Modified Files:
+	AbsoluteTime.cxx 
+Log Message:
+Add constructors, setters, getters, a parser, and a printer.
+    *
+------------------------------------------------------------
+User: hirayama  Fri May 16 17:15:03 PDT 2008
 timeSystem/timeSystem
 
 Modified Files:
