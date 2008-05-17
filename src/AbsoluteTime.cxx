@@ -17,6 +17,52 @@ namespace timeSystem {
   AbsoluteTime::AbsoluteTime(const std::string & time_system_name, const Duration & origin, const Duration & time):
     m_time_system(&TimeSystem::getSystem(time_system_name)), m_moment(convert(Moment(origin, time))) {}
 
+  AbsoluteTime::AbsoluteTime(const std::string & time_system_name, long mjd_day, double mjd_sec):
+    m_time_system(&TimeSystem::getSystem(time_system_name)), m_moment(mjd_day, mjd_sec) {}
+
+  AbsoluteTime::AbsoluteTime(const std::string & time_system_name, const Mjd & mjd) { set(time_system_name, mjd); }
+  AbsoluteTime::AbsoluteTime(const std::string & time_system_name, const Mjd1 & mjd) { set(time_system_name, mjd); }
+
+  void AbsoluteTime::get(const std::string & time_system_name, Mjd & mjd) const {
+    const TimeSystem & time_system(TimeSystem::getSystem(time_system_name));
+    moment_type moment = convert(time_system.convertFrom(*m_time_system, convert(m_moment)));
+    const MjdFormat & time_format(MjdFormat::getMjdFormat());
+    time_format.convert(m_moment, mjd.m_int, mjd.m_frac);
+  }
+
+  void AbsoluteTime::get(const std::string & time_system_name, Mjd1 & mjd) const {
+    const TimeSystem & time_system(TimeSystem::getSystem(time_system_name));
+    moment_type moment = convert(time_system.convertFrom(*m_time_system, convert(m_moment)));
+    const MjdFormat & time_format(MjdFormat::getMjdFormat());
+    time_format.convert(moment, mjd.m_value);
+  }
+
+  void AbsoluteTime::set(const std::string & time_system_name, const Mjd & mjd) {
+    m_time_system = &TimeSystem::getSystem(time_system_name);
+    const MjdFormat & time_format(MjdFormat::getMjdFormat());
+    time_format.convert(mjd.m_int, mjd.m_frac, m_moment);
+  }
+
+  void AbsoluteTime::set(const std::string & time_system_name, const Mjd1 & mjd) {
+    m_time_system = &TimeSystem::getSystem(time_system_name);
+    const MjdFormat & time_format(MjdFormat::getMjdFormat());
+    time_format.convert(mjd.m_value, m_moment);
+  }
+
+  void AbsoluteTime::set(const std::string & time_system_name, const std::string & time_format_name, const std::string & time_string) {
+    m_time_system = &TimeSystem::getSystem(time_system_name);
+    const TimeFormat & time_format = TimeFormat::getFormat(time_format_name);
+    m_moment = time_format.parse(time_string);
+  }
+
+  std::string AbsoluteTime::represent(const std::string & time_system_name, const std::string & time_format_name,
+    std::streamsize precision) const {
+    const TimeSystem & time_system(TimeSystem::getSystem(time_system_name));
+    moment_type moment = convert(time_system.convertFrom(*m_time_system, convert(m_moment)));
+    const TimeFormat & time_format = TimeFormat::getFormat(time_format_name);
+    return time_format.format(moment, precision);
+  }
+
   AbsoluteTime::AbsoluteTime(const TimeRep & rep): m_time_system(0), m_moment() { importTimeRep(rep); }
 
   AbsoluteTime AbsoluteTime::operator +(const ElapsedTime & elapsed_time) const { return elapsed_time + *this; }
@@ -83,8 +129,8 @@ namespace timeSystem {
   }
 
   AbsoluteTime AbsoluteTime::computeAbsoluteTime(const std::string & time_system_name, const Duration & delta_t) const {
-    const TimeSystem & time_system(TimeSystem::getSystem(time_system_name));
     // Convert this time to a corresponding time in time_system
+    const TimeSystem & time_system(TimeSystem::getSystem(time_system_name));
     Moment time1 = time_system.convertFrom(*m_time_system, convert(m_moment));
 
     // Add delta_t in time_system.
