@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Mon May 19 16:47:49 PDT 2008
+timeSystem/src
+
+Modified Files:
+	TimeInterval.cxx TimeSystem.cxx 
+Log Message:
+Remove unnecessary inclusion of a header file.
+    *
+------------------------------------------------------------
 User: hirayama  Sun May 18 17:58:04 PDT 2008
 timeSystem/src
 
