@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Sun May 18 17:55:43 PDT 2008
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Add tests of new methods of AbsoluteTime (constructors, getters, setters, printers, and parsers).
+    *
+------------------------------------------------------------
 User: hirayama  Fri May 16 17:15:54 PDT 2008
 timeSystem/src/test
 
