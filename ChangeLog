@@ -1,5 +1,14 @@
 ------------------------------------------------------------
 User: hirayama  Sun May 18 17:58:04 PDT 2008
+timeSystem/src
+
+Modified Files:
+	AbsoluteTime.cxx 
+Log Message:
+Fix bugs found by new tests.
+    *
+------------------------------------------------------------
+User: hirayama  Sun May 18 17:58:04 PDT 2008
 timeSystem/timeSystem
 
 Modified Files:
