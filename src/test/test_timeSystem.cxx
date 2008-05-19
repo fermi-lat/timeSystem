@@ -964,11 +964,10 @@ namespace {
         "), not (" << expected_mjd.m_int << ", " << expected_mjd.m_frac << ") as expected." << std::endl;
     }
 
-    Duration mjd_origin(51910);
-    Duration duration(0, 1000.); // MET 1000. seconds
-
     // Create an absolute time corresponding to MET 1000. s.
-    abs_time = AbsoluteTime("TDB", mjd_origin, duration);
+    mjd_day = 51910;
+    mjd_sec = 1000.;
+    abs_time = AbsoluteTime("TDB", mjd_day, mjd_sec);
 
     // Test printing the time.
     std::ostringstream os;
@@ -982,10 +981,10 @@ namespace {
 
     // Test adding an elapsed time to this time.
     // Create an absolute time corresponding to 100. s MET TDB to verify adding an elapsed time.
-    Duration delta_t(0, 100.);
-    ElapsedTime elapsed_time("TDB", delta_t);
+    double delta_t = 100.;
+    ElapsedTime elapsed_time("TDB", Duration(0, delta_t));
     AbsoluteTime result = abs_time + elapsed_time;
-    AbsoluteTime expected_result("TDB", mjd_origin, duration + delta_t);
+    AbsoluteTime expected_result("TDB", mjd_day, mjd_sec + delta_t);
     ElapsedTime epsilon("TDB", Duration(0, 1.e-9)); // 1 nanosecond.
     if (!result.equivalentTo(expected_result, epsilon))
       err() << "Sum of absolute time and elapsed time using operator + was " << result << ", not " <<
@@ -1001,35 +1000,35 @@ namespace {
     // Test AbsoluteTime::operator -=.
     result = abs_time;
     result -= elapsed_time;
-    expected_result = AbsoluteTime("TDB", mjd_origin, duration - delta_t);
+    expected_result = AbsoluteTime("TDB", mjd_day, mjd_sec - delta_t);
     if (!result.equivalentTo(expected_result, epsilon))
       err() << "Sum of absolute time and elapsed time using operator -= was " << result << ", not " <<
         expected_result << " as expected." << std::endl;
 
     // Test adding in reverse order.
     result = elapsed_time + abs_time;
-    expected_result = AbsoluteTime("TDB", mjd_origin, duration + delta_t);
+    expected_result = AbsoluteTime("TDB", mjd_day, mjd_sec + delta_t);
     if (!result.equivalentTo(expected_result, epsilon))
       err() << "Sum of elapsed time and absolute time in that order was " << result << ", not " <<
         expected_result << " as expected." << std::endl;
 
     // Test subtraction of elapsed time from absolute time.
     result = abs_time - elapsed_time;
-    expected_result = AbsoluteTime("TDB", mjd_origin, duration - delta_t);
+    expected_result = AbsoluteTime("TDB", mjd_day, mjd_sec - delta_t);
     if (!result.equivalentTo(expected_result, epsilon))
       err() << "Elapsed time subtracted from absolute time gave " << result << ", not " <<
         expected_result << " as expected." << std::endl;
 
     // Make a test time which is later than the first time.
-    AbsoluteTime later_time("TDB", mjd_origin, duration + Duration(0, 100.));
+    AbsoluteTime later_time("TDB", mjd_day, mjd_sec + 100.);
 
     // Test comparison operators: >, >=, <, and <=.
     CompareAbsoluteTime(abs_time, later_time);
 
     // Test comparison operators (>, >=, <, and <=) in UTC system.
     long mjd_leap = 51179;
-    AbsoluteTime abs_time_utc("UTC", Duration(mjd_leap - 1, 86390.0), Duration(0, 10.8));
-    AbsoluteTime later_time_utc("UTC", Duration(mjd_leap, 0.2), Duration(0, 0.));
+    AbsoluteTime abs_time_utc("UTC", mjd_leap - 1, 86400.8);
+    AbsoluteTime later_time_utc("UTC", mjd_leap, 0.2);
     CompareAbsoluteTime(abs_time_utc, later_time_utc);
 
     // Test equivalentTo.
@@ -1227,8 +1226,8 @@ namespace {
     s_os.setMethod("TestTimeInterval");
 
     // Create some test inputs.
-    AbsoluteTime time1("TDB", Duration(51910), Duration(0, 1000.));
-    AbsoluteTime time2("TDB", Duration(51910), Duration(0, 2000.));
+    AbsoluteTime time1("TDB", 51910, 1000.);
+    AbsoluteTime time2("TDB", 51910, 2000.);
 
     // Test creating a time interval directly from two absolute times.
     TimeInterval interval_a(time1, time2);
@@ -1556,11 +1555,11 @@ namespace {
     protected:
       virtual AbsoluteTime readTime(const tip::Header & /*header*/, const std::string & /*keyword_name*/,
         const bool /*request_bary_time*/, const double /*ra*/, const double /*dec*/)
-        { return AbsoluteTime("TDB", Duration(51910, 0.), Duration(1, 0.)); }
+        { return AbsoluteTime("TDB", 51911, 0.); }
 
       virtual AbsoluteTime readTime(const tip::TableRecord & /*record*/, const std::string & /*column_name*/,
         const bool /*request_bary_time*/, const double /*ra*/, const double /*dec*/)
-        { return AbsoluteTime("TDB", Duration(51910, 0.), Duration(1, 0.)); }
+        { return AbsoluteTime("TDB", 51911, 0.); }
 
     private:
       BogusTimeHandler1(const std::string & file_name, const std::string & extension_name):
@@ -1579,11 +1578,11 @@ namespace {
     protected:
       virtual AbsoluteTime readTime(const tip::Header & /*header*/, const std::string & /*keyword_name*/,
         const bool /*request_bary_time*/, const double /*ra*/, const double /*dec*/)
-        { return AbsoluteTime("TDB", Duration(51910, 0.), Duration(2, 0.)); }
+        { return AbsoluteTime("TDB", 51912, 0.); }
 
       virtual AbsoluteTime readTime(const tip::TableRecord & /*record*/, const std::string & /*column_name*/,
         const bool /*request_bary_time*/, const double /*ra*/, const double /*dec*/)
-        { return AbsoluteTime("TDB", Duration(51910, 0.), Duration(2, 0.)); }
+        { return AbsoluteTime("TDB", 51912, 0.); }
 
     private:
       BogusTimeHandler2(const std::string & file_name, const std::string & extension_name, const double angular_tolerance,
@@ -1603,7 +1602,7 @@ namespace {
     std::string sc_file = commonUtilities::joinPath(commonUtilities::getDataPath("timeSystem"), "my_pulsar_spacecraft_data_v3r1.fits");
     GlastMetRep glast_met("TT", 2.123393677090199E+08); // TSTART in my_pulsar_events_v3.fits.
     AbsoluteTime expected_glast = glast_met;
-    AbsoluteTime expected_bogus2 = AbsoluteTime("TDB", Duration(51910, 0.), Duration(2, 0.));
+    AbsoluteTime expected_bogus2("TDB", 51912, 0.);
     double angular_tolerance = 0.;
 
     // Test creation of BogusTimeHandler1 (an EventTimeHandler sub-class) through its createInstance method.
