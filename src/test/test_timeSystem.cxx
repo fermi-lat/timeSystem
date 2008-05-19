@@ -805,18 +805,179 @@ namespace {
   void TestAbsoluteTime() {
     s_os.setMethod("TestAbsoluteTime");
 
+    // Prepare test parameters.
+    long mjd_day = 54321;
+    double mjd_sec = 12345.;
+    Mjd expected_mjd(mjd_day, mjd_sec * DayPerSec());
+    Mjd1 expected_mjd1(mjd_day + mjd_sec * DayPerSec());
+
+    // Test the basic constructor and the getter for high-precision MJD.
+    AbsoluteTime abs_time("TT", mjd_day, mjd_sec);
+    Mjd result_mjd(0, 0.);
+    abs_time.get("TT", result_mjd);
+    double double_tol = 100.e-9 * DayPerSec(); // 100 nano-seconds in days.
+    if (expected_mjd.m_int != result_mjd.m_int || std::fabs(expected_mjd.m_frac - result_mjd.m_frac) > double_tol) {
+      err() << "After abs_time = AbsoluteTime(\"TT\", " << mjd_day << ", " << mjd_sec <<
+        "), abs_time.get(\"TT\", result_mjd) gave result_mjd = (" << result_mjd.m_int << ", " << result_mjd.m_frac <<
+        "), not (" << expected_mjd.m_int << ", " << expected_mjd.m_frac << ") as expected." << std::endl;
+    }
+
+    // Test the getter for low-precision MJD.
+    abs_time = AbsoluteTime("TT", mjd_day, mjd_sec);
+    Mjd1 result_mjd1(0.);
+    abs_time.get("TT", result_mjd1);
+    double_tol = 10.e-6 * DayPerSec(); // 10 micro-seconds in days.
+    if (std::fabs(expected_mjd1.m_day - result_mjd1.m_day) > double_tol) {
+      err() << "After abs_time = AbsoluteTime(\"TT\", " << mjd_day << ", " << mjd_sec <<
+        "), abs_time.get(\"TT\", result_mjd1) gave result_mjd1.m_day = " << result_mjd1.m_day << ", not " <<
+        expected_mjd1.m_day << " as expected." << std::endl;
+    }
+
+    // Test the getter for high-precision MJD, with a different time system.
+    abs_time = AbsoluteTime("TT", mjd_day, mjd_sec);
+    result_mjd = Mjd(0, 0.);
+    abs_time.get("TAI", result_mjd);
+    Mjd expected_mjd_tai(mjd_day, (mjd_sec + TaiMinusTtSec()) * DayPerSec());
+    double_tol = 100.e-9 * DayPerSec(); // 100 nano-seconds in days.
+    if (expected_mjd_tai.m_int != result_mjd.m_int || std::fabs(expected_mjd_tai.m_frac - result_mjd.m_frac) > double_tol) {
+      err() << "After abs_time = AbsoluteTime(\"TT\", " << mjd_day << ", " << mjd_sec <<
+        "), abs_time.get(\"TAI\", result_mjd) gave result_mjd = (" << result_mjd.m_int << ", " << result_mjd.m_frac <<
+        "), not (" << expected_mjd_tai.m_int << ", " << expected_mjd_tai.m_frac << ") as expected." << std::endl;
+    }
+
+    // Test the getter for high-precision MJD, during an inserted leap second.
+    long mjd_day_leap = 51178;
+    double mjd_sec_leap = 86400.3;
+    abs_time = AbsoluteTime("UTC", mjd_day_leap, mjd_sec_leap);
+    result_mjd = Mjd(0, 0.);
+    abs_time.get("UTC", result_mjd);
+    Mjd expected_mjd_leap(mjd_day_leap + 1, 0.);
+    double_tol = 100.e-9 * DayPerSec(); // 100 nano-seconds in days.
+    if (expected_mjd_leap.m_int != result_mjd.m_int
+        || std::fabs(expected_mjd_leap.m_frac - result_mjd.m_frac) > double_tol) {
+      err() << "After abs_time = AbsoluteTime(\"UTC\", " << mjd_day_leap << ", " << mjd_sec_leap <<
+        "), abs_time.get(\"UTC\", result_mjd) gave result_mjd = (" << result_mjd.m_int << ", " << result_mjd.m_frac <<
+        "), not (" << expected_mjd_leap.m_int << ", " << expected_mjd_leap.m_frac << ") as expected." << std::endl;
+    }
+
+    // Test the getter for high-precision MJD, during an inserted leap second, with a different time system.
+    abs_time = AbsoluteTime("UTC", mjd_day_leap, mjd_sec_leap);
+    result_mjd = Mjd(0, 0.);
+    abs_time.get("TAI", result_mjd);
+    double tai_minus_utc = 29.;
+    expected_mjd_leap = Mjd(mjd_day_leap + 1, (mjd_sec_leap - SecPerDay() + tai_minus_utc) * DayPerSec());
+    double_tol = 100.e-9 * DayPerSec(); // 100 nano-seconds in days.
+    if (expected_mjd_leap.m_int != result_mjd.m_int
+        || std::fabs(expected_mjd_leap.m_frac - result_mjd.m_frac) > double_tol) {
+      err() << "After abs_time = AbsoluteTime(\"UTC\", " << mjd_day_leap << ", " << mjd_sec_leap <<
+        "), abs_time.get(\"TAI\", result_mjd) gave result_mjd = (" << result_mjd.m_int << ", " << result_mjd.m_frac <<
+        "), not (" << expected_mjd_leap.m_int << ", " << expected_mjd_leap.m_frac << ") as expected." << std::endl;
+    }
+
+    // Test the getter for high-precision MJD, during an inserted leap second, set by a different time system.
+    abs_time = AbsoluteTime("TAI", mjd_day_leap + 1, mjd_sec_leap - SecPerDay() + tai_minus_utc);
+    result_mjd = Mjd(0, 0.);
+    abs_time.get("UTC", result_mjd);
+    expected_mjd_leap = Mjd(mjd_day_leap + 1, 0.);
+    double_tol = 100.e-9 * DayPerSec(); // 100 nano-seconds in days.
+    if (expected_mjd_leap.m_int != result_mjd.m_int
+        || std::fabs(expected_mjd_leap.m_frac - result_mjd.m_frac) > double_tol) {
+      err() << "After abs_time = AbsoluteTime(\"TAI\", " << mjd_day_leap + 1 << ", " <<
+        mjd_sec_leap - SecPerDay() + tai_minus_utc << "), abs_time.get(\"UTC\", result_mjd) gave result_mjd = (" <<
+        result_mjd.m_int << ", " << result_mjd.m_frac << "), not (" << expected_mjd_leap.m_int << ", " <<
+        expected_mjd_leap.m_frac << ") as expected." << std::endl;
+    }
+
+    // Test the printer (represent method).
+    abs_time = AbsoluteTime("TT", mjd_day, mjd_sec);
+    std::string result_string = abs_time.represent("TT", "MJD");
+    std::string expected_string("54321.142881944444444 MJD (TT)");
+    if (expected_string != result_string) {
+      err() << "After abs_time = AbsoluteTime(\"TT\", " << mjd_day << ", " << mjd_sec <<
+        "), abs_time.represent(\"TT\", \"MJD\") returned \"" << result_string << "\", not \"" << expected_string <<
+        "\" as expected." << std::endl;
+    }
+
+    // Test the printer (represent method), with a different time system.
+    abs_time = AbsoluteTime("TT", mjd_day, mjd_sec);
+    result_string = abs_time.represent("TAI", "MJD");
+    expected_string = "54321.142509444444445 MJD (TAI)";
+    if (expected_string != result_string) {
+      err() << "After abs_time = AbsoluteTime(\"TT\", " << mjd_day << ", " << mjd_sec <<
+        "), abs_time.represent(\"TAI\", \"MJD\") returned \"" << result_string << "\", not \"" << expected_string <<
+        "\" as expected." << std::endl;
+    }
+
+    // Test the constructor taking a high-precision MJD.
+    abs_time = AbsoluteTime("TT", Mjd(mjd_day, mjd_sec * DayPerSec()));
+    result_mjd = Mjd(0, 0.);
+    abs_time.get("TT", result_mjd);
+    double_tol = 100.e-9 * DayPerSec(); // 100 nano-seconds in days.
+    if (expected_mjd.m_int != result_mjd.m_int || std::fabs(expected_mjd.m_frac - result_mjd.m_frac) > double_tol) {
+      err() << "After abs_time = AbsoluteTime(\"TT\", Mjd(" << mjd_day << ", " << mjd_sec * DayPerSec() <<
+        "))), abs_time.get(\"TT\", result_mjd) gave result_mjd = (" << result_mjd.m_int << ", " << result_mjd.m_frac <<
+        "), not (" << expected_mjd.m_int << ", " << expected_mjd.m_frac << ") as expected." << std::endl;
+    }
+
+    // Test the constructor taking a low-precision MJD.
+    abs_time = AbsoluteTime("TT", Mjd1(mjd_day + mjd_sec * DayPerSec()));
+    result_mjd1 = Mjd1(0.);
+    abs_time.get("TT", result_mjd);
+    double_tol = 10.e-6 * DayPerSec(); // 10 micro-seconds in days.
+    if (expected_mjd.m_int != result_mjd.m_int || std::fabs(expected_mjd.m_frac - result_mjd.m_frac) > double_tol) {
+      err() << "After abs_time = AbsoluteTime(\"TT\", Mjd1(" << mjd_day + mjd_sec * DayPerSec() <<
+        "))), abs_time.get(\"TT\", result_mjd) gave result_mjd = (" << result_mjd.m_int << ", " << result_mjd.m_frac <<
+        "), not (" << expected_mjd.m_int << ", " << expected_mjd.m_frac << ") as expected." << std::endl;
+    }
+
+    // Test the setter taking a high-precision MJD.
+    abs_time.set("TT", Mjd(mjd_day, mjd_sec * DayPerSec()));
+    result_mjd = Mjd(0, 0.);
+    abs_time.get("TT", result_mjd);
+    double_tol = 100.e-9 * DayPerSec(); // 100 nano-seconds in days.
+    if (expected_mjd.m_int != result_mjd.m_int || std::fabs(expected_mjd.m_frac - result_mjd.m_frac) > double_tol) {
+      err() << "After abs_time.set(\"TT\", Mjd(" << mjd_day << ", " << mjd_sec * DayPerSec() <<
+        "))), abs_time.get(\"TT\", result_mjd) gave result_mjd = (" << result_mjd.m_int << ", " << result_mjd.m_frac <<
+        "), not (" << expected_mjd.m_int << ", " << expected_mjd.m_frac << ") as expected." << std::endl;
+    }
+
+    // Test the setter taking a low-precision MJD.
+    abs_time.set("TT", Mjd1(mjd_day + mjd_sec * DayPerSec()));
+    result_mjd1 = Mjd1(0.);
+    abs_time.get("TT", result_mjd);
+    double_tol = 10.e-6 * DayPerSec(); // 10 micro-seconds in days.
+    if (expected_mjd.m_int != result_mjd.m_int || std::fabs(expected_mjd.m_frac - result_mjd.m_frac) > double_tol) {
+      err() << "After abs_time.set(\"TT\", Mjd1(" << mjd_day + mjd_sec * DayPerSec() <<
+        "))), abs_time.get(\"TT\", result_mjd) gave result_mjd = (" << result_mjd.m_int << ", " << result_mjd.m_frac <<
+        "), not (" << expected_mjd.m_int << ", " << expected_mjd.m_frac << ") as expected." << std::endl;
+    }
+
+    // Test the setter taking an MJD string.
+    std::string mjd_string("54321.142881944444444");
+    abs_time.set("TT", "MJD", mjd_string);
+    result_mjd = Mjd(0, 0.);
+    abs_time.get("TT", result_mjd);
+    double_tol = 100.e-9 * DayPerSec(); // 100 nano-seconds in days.
+    if (expected_mjd.m_int != result_mjd.m_int || std::fabs(expected_mjd.m_frac - result_mjd.m_frac) > double_tol) {
+      err() << "After abs_time.set(\"TT\", \"MJD\", \"" << mjd_string <<
+        "\"), abs_time.get(\"TT\", result_mjd) gave result_mjd = (" << result_mjd.m_int << ", " << result_mjd.m_frac <<
+        "), not (" << expected_mjd.m_int << ", " << expected_mjd.m_frac << ") as expected." << std::endl;
+    }
+
     Duration mjd_origin(51910);
     Duration duration(0, 1000.); // MET 1000. seconds
 
     // Create an absolute time corresponding to MET 1000. s.
-    AbsoluteTime abs_time("TDB", mjd_origin, duration);
+    abs_time = AbsoluteTime("TDB", mjd_origin, duration);
 
     // Test printing the time.
     std::ostringstream os;
     os << abs_time;
-    std::string expected_string("1000 seconds after 51910.0 MJD (TDB)");
-    if (expected_string != os.str()) {
-      err() << "AbsoluteTime object wrote \"" << os.str() << "\", not \"" << expected_string << "\" as expected." << std::endl;
+    result_string = os.str();
+    expected_string = "1000 seconds after 51910.0 MJD (TDB)";
+    if (expected_string != result_string) {
+      err() << "AbsoluteTime object wrote \"" << result_string << "\", not \"" << expected_string <<
+      "\" as expected." << std::endl;
     }
 
     // Test adding an elapsed time to this time.
