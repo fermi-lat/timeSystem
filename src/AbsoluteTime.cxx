@@ -14,9 +14,6 @@
 
 namespace timeSystem {
 
-  AbsoluteTime::AbsoluteTime(const std::string & time_system_name, const Duration & origin, const Duration & time):
-    m_time_system(&TimeSystem::getSystem(time_system_name)), m_moment(convert(*m_time_system, Moment(origin, time))) {}
-
   AbsoluteTime::AbsoluteTime(const std::string & time_system_name, long mjd_day, double mjd_sec):
     m_time_system(&TimeSystem::getSystem(time_system_name)), m_moment(mjd_day, mjd_sec) {}
 
@@ -137,7 +134,8 @@ namespace timeSystem {
     time1.second += delta_t;
 
     // Return this time expressed as a new absolute time in the input time system.
-    return AbsoluteTime(time_system_name, time1.first, time1.second);
+    moment_type moment(convert(time_system, time1));
+    return AbsoluteTime(time_system_name, moment.first, moment.second);
   }
 
   Moment AbsoluteTime::convert(const moment_type & time) const {
