@@ -1,5 +1,14 @@
 ------------------------------------------------------------
 User: hirayama  Mon May 19 16:49:48 PDT 2008
+timeSystem/src
+
+Modified Files:
+	AbsoluteTime.cxx 
+Log Message:
+Remove the constructor taking Duration objects.
+    *
+------------------------------------------------------------
+User: hirayama  Mon May 19 16:49:48 PDT 2008
 timeSystem/timeSystem
 
 Modified Files:
