@@ -35,16 +35,14 @@ namespace timeSystem {
       \brief Class to hold an MJD number in one double-precision variable.
   */
   struct Mjd1 {
-    Mjd1(double value): m_value(value) {}
-    // TODO: Remove m_value to m_mjd or m_day?
-    // NOTE: Name m_mjd could be very confusing when JD is defined and uses m_jd.
-    double m_value;
+    Mjd1(double day): m_day(day) {}
+    double m_day;
   };
 
   // TODO: Implement struct Jd, Jd1, MonthDay, WeekDay, YearDay.
-  // NOTE: Data members of struct MonthDay: m_year, m_mon,  m_mday, m_hour, m_min, and m_sec (cf. struct tm in C).
-  // NOTE: Data members of struct WeekDay:  m_year, m_week, m_wday, m_hour, m_min, and m_sec (cf. struct tm in C).
-  // NOTE: Data members of struct YearDay:  m_year,         m_yday, m_hour, m_min, and m_sec (cf. struct tm in C).
+  // NOTE: Data members of struct MonthDay: m_year, m_mon,  m_day, m_hour, m_min, and m_sec (cf. struct tm in C).
+  // NOTE: Data members of struct WeekDay:  m_year, m_week, m_day, m_hour, m_min, and m_sec (cf. struct tm in C).
+  // NOTE: Data members of struct YearDay:  m_year,         m_day, m_hour, m_min, and m_sec (cf. struct tm in C).
 
   /** \class AbsoluteTime
       \brief Class which represents an absolute moment in time, expressed as a time elapsed from a specific MJD time, in
@@ -109,7 +107,7 @@ namespace timeSystem {
 
       // TODO: Remove convert methods below, by modifying TimeSystem class to accept a moment_type object.
       Moment convert(const moment_type & time) const;
-      moment_type convert(const Moment & time) const;
+      moment_type convert(const TimeSystem & time_system, const Moment & time) const;
 
       // Prohibited operations:
       // These are not physical because TimeInterval is "anchored" to its endpoints, which are absolute moments in time.
