@@ -52,9 +52,6 @@ namespace timeSystem {
   */
   class AbsoluteTime {
     public:
-      // TODO: Remove constructor taking two Duration objects.
-      AbsoluteTime(const std::string & time_system_name, const Duration & origin, const Duration & time);
-
       AbsoluteTime(const std::string & time_system_name, long mjd_day, double mjd_sec);
 
       AbsoluteTime(const std::string & time_system_name, const Mjd & mjd);
