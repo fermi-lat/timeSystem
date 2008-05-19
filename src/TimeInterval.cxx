@@ -6,7 +6,6 @@
 #include "timeSystem/AbsoluteTime.h"
 #include "timeSystem/ElapsedTime.h"
 #include "timeSystem/TimeInterval.h"
-#include "timeSystem/TimeSystem.h"
 
 namespace timeSystem {
 

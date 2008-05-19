@@ -5,7 +5,6 @@
 */
 #include "st_facilities/Env.h"
 
-#include "timeSystem/AbsoluteTime.h"
 #include "timeSystem/Duration.h"
 #include "timeSystem/TimeConstant.h"
 #include "timeSystem/TimeSystem.h"
