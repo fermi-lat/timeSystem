@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Sun May 18 17:58:04 PDT 2008
+timeSystem/timeSystem
+
+Modified Files:
+	AbsoluteTime.h 
+Log Message:
+Fix bugs found by new tests.
+    *
+------------------------------------------------------------
 User: hirayama  Sun May 18 17:55:43 PDT 2008
 timeSystem/src/test
 
