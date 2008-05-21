@@ -12,7 +12,6 @@
 namespace timeSystem {
 
   class AbsoluteTime;
-  class TimeRep;
 
   /** \class BaryTimeComputer
       \brief Class which performs barycentric correction on photon arrival times, typically recorded at a space craft.
@@ -34,7 +33,6 @@ namespace timeSystem {
       std::string m_pl_ephem;
       double m_speed_of_light;
       double m_solar_mass;
-      TimeRep * m_mjd_tt;
 
       BaryTimeComputer();
 
