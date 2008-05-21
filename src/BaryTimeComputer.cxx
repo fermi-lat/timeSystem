@@ -9,7 +9,6 @@
 #include "timeSystem/Duration.h"
 #include "timeSystem/ElapsedTime.h"
 #include "timeSystem/IntFracPair.h"
-#include "timeSystem/TimeRep.h"
 
 #include <cmath>
 #include <sstream>
@@ -22,12 +21,9 @@ extern "C" {
 
 namespace timeSystem {
 
-  BaryTimeComputer::BaryTimeComputer(): m_pl_ephem(), m_speed_of_light(0.), m_solar_mass(0.),
-    m_mjd_tt(new MjdRep("TT", 0, 0.)) {}
+  BaryTimeComputer::BaryTimeComputer(): m_pl_ephem(), m_speed_of_light(0.), m_solar_mass(0.) {}
 
-  BaryTimeComputer::~BaryTimeComputer() {
-    delete m_mjd_tt;
-  }
+  BaryTimeComputer::~BaryTimeComputer() {}
 
   BaryTimeComputer & BaryTimeComputer::getComputer() {
     static BaryTimeComputer s_computer;
@@ -80,14 +76,10 @@ namespace timeSystem {
 
     // Set given time to a variable to pass to dpleph C-function.
     double jdt[2];
-    *m_mjd_tt = abs_time;
-    long mjd_int = 0;
-    double mjd_frac = 0.;
-    m_mjd_tt->get("MJDI", mjd_int);
-    m_mjd_tt->get("MJDF", mjd_frac);
-    // TODO: Implement JdRep and use it instead of MjdRep.
-    jdt[0] = mjd_int + 2400001;
-    jdt[1] = mjd_frac - 0.5;
+    Mjd mjd(0, 0.);
+    abs_time.get("TT", mjd);
+    jdt[0] = mjd.m_int + 2400001;
+    jdt[1] = mjd.m_frac - 0.5;
 
     // Read solar system ephemeris for the given time.
     const int iearth = 3;
@@ -96,7 +88,7 @@ namespace timeSystem {
     eposn = dpleph(jdt, iearth, isun);
     if (NULL == eposn) {
       std::ostringstream os;
-      os << "Could not find solar system ephemeris for " << *m_mjd_tt << ".";
+      os << "Could not find solar system ephemeris for " << abs_time.represent("TT", "MJD") << ".";
       throw std::runtime_error(os.str());
     }
 
