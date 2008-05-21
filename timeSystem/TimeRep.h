@@ -136,6 +136,7 @@ namespace timeSystem {
       double m_met;
   };
 
+#if 0
   /** \class MjdRep
       \brief
   */
@@ -162,6 +163,7 @@ namespace timeSystem {
     private:
       const TimeSystem * m_system;
   };
+#endif
 
   /** \class TimeFormat
       \brief Base class to represent time format, such as MJD and Calender Day of ISO 8601.

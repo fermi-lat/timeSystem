@@ -1316,6 +1316,7 @@ namespace {
         "\", as expected." << std::endl;
     }
 
+#if 0
     // Create a test time object using MJD representation.
     MjdRep mjd_tdb_object("TDB", mjd_ref_int, mjd_ref_frac);
     TimeRep & mjd_tdb(mjd_tdb_object);
@@ -1372,6 +1373,7 @@ namespace {
       err() << "mjd_tdb.getString() returned string \"" << mjd_tdb_string << "\", not \"" << expected_string <<
         "\", as expected." << std::endl;
     }
+#endif
   }
 
   void TestTimeFormat() {
