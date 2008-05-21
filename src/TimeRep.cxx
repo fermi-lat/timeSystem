@@ -151,6 +151,7 @@ namespace timeSystem {
 
   void MetRep::setValue(double met) { m_met = met; }
 
+#if 0
   MjdRep::MjdRep(const std::string & system_name, long mjd_int, double mjd_frac):
     m_system(&TimeSystem::getSystem(system_name)) {
     IntFracPair int_frac(mjd_int, mjd_frac);
@@ -211,6 +212,7 @@ namespace timeSystem {
     TimeRep::set("MJDI", int_frac.getIntegerPart());
     TimeRep::set("MJDF", int_frac.getFractionalPart());
   }
+#endif
 
   TimeFormat::TimeFormat(const std::string & format_name): m_format_name(format_name) {
     std::string format_name_uc(format_name);
