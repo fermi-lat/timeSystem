@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Tue May 20 18:22:49 PDT 2008
+timeSystem/timeSystem
+
+Modified Files:
+	BaryTimeComputer.h 
+Log Message:
+Use new AbsoluteTime methods in place with MjdRep objects.
+    *
+------------------------------------------------------------
 User: hirayama  Tue May 20 18:22:03 PDT 2008
 timeSystem/src/test
 
