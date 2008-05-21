@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Tue May 20 18:22:03 PDT 2008
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Remove MjdRep class (comment it out).
+    *
+------------------------------------------------------------
 User: hirayama  Tue May 20 18:22:02 PDT 2008
 timeSystem/src
 
