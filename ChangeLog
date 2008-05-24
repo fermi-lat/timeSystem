@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Fri May 23 17:41:02 PDT 2008
+timeSystem/timeSystem
+
+Modified Files:
+	EventTimeHandler.h GlastTimeHandler.h 
+Log Message:
+Remove spacecraft info from EventTimeHandler constructors and add new method setSpacecraftFile.
+    *
+------------------------------------------------------------
 User: hirayama  Tue May 20 18:22:49 PDT 2008
 timeSystem/src
 
