@@ -38,15 +38,13 @@ namespace timeSystem {
       void deregisterHandler();
 
       static EventTimeHandler * createHandler(const std::string & file_name, const std::string & extension_name,
-        const std::string & sc_file_name, const std::string & sc_extension_name, const double angular_tolerance,
-        const bool read_only = true);
+        const double angular_tolerance, const bool read_only = true);
 
     private:
       static cont_type & getFactoryContainer();
 
       virtual EventTimeHandler * createInstance(const std::string & file_name, const std::string & extension_name,
-        const std::string & sc_file_name, const std::string & sc_extension_name, const double angular_tolerance,
-        const bool read_only = true) const = 0;
+        const double angular_tolerance, const bool read_only = true) const = 0;
   };
 
   /** \class IEventTimeHandlerFactory
@@ -56,9 +54,8 @@ namespace timeSystem {
   class EventTimeHandlerFactory: public IEventTimeHandlerFactory {
     private:
       virtual EventTimeHandler * createInstance(const std::string & file_name, const std::string & extension_name,
-        const std::string & sc_file_name, const std::string & sc_extension_name, const double angular_tolerance,
-        const bool read_only = true) const {
-        return HandlerType::createInstance(file_name, extension_name, sc_file_name, sc_extension_name, angular_tolerance, read_only);
+        const double angular_tolerance, const bool read_only = true) const {
+        return HandlerType::createInstance(file_name, extension_name, angular_tolerance, read_only);
       }
   };
 
@@ -72,8 +69,9 @@ namespace timeSystem {
       virtual ~EventTimeHandler();
 
       static EventTimeHandler * createInstance(const std::string & file_name, const std::string & extension_name,
-        const std::string & sc_file_name, const std::string & sc_extension_name, const double angular_tolerance,
-        const bool read_only = true);
+        const double angular_tolerance, const bool read_only = true);
+
+      virtual void setSpacecraftFile(const std::string & sc_file_name, const std::string & sc_extension_name) = 0;
 
       // TODO: Consider adding the following methods to replace TimeRep objects for MET's.
       //virtual AbsoluteTime readString(const std::string & time_string, const std::string & time_system = "FILE") = 0;
