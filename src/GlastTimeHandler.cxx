@@ -21,9 +21,8 @@ extern "C" {
 
 namespace timeSystem {
 
-  GlastTimeHandler::GlastTimeHandler(const std::string & file_name, const std::string & extension_name, const std::string & sc_file,
-    const double angular_tolerance, const bool read_only): EventTimeHandler(file_name, extension_name, angular_tolerance, read_only),
-    m_sc_file(sc_file) {
+  GlastTimeHandler::GlastTimeHandler(const std::string & file_name, const std::string & extension_name, const double angular_tolerance,
+    const bool read_only): EventTimeHandler(file_name, extension_name, angular_tolerance, read_only), m_sc_file(), m_sc_file_char(0) {
     // Get time system from TIMESYS keyword.
     const tip::Header & header(getHeader());
     std::string time_system;
@@ -32,8 +31,16 @@ namespace timeSystem {
 
     // Create TimeRep.
     m_time_rep = new GlastMetRep(time_system, 0.);
+  }
+
+  void GlastTimeHandler::setSpacecraftFile(const std::string & sc_file_name, const std::string & sc_extension_name) {
+    // Check header keywords.
+    if (!checkHeaderKeyword(sc_file_name, sc_extension_name)) {
+      throw std::runtime_error("Unsupported spacecraft file \"" + sc_file_name + "[" + sc_extension_name + "]\"");
+    }
 
     // Set space craft file to internal variable.
+    m_sc_file = sc_file_name;
     m_sc_file_char = const_cast<char *>(m_sc_file.c_str());
 
     // Initializing clock and orbit are not necessary for GLAST.
@@ -48,13 +55,13 @@ namespace timeSystem {
   }
 
   EventTimeHandler * GlastTimeHandler::createInstance(const std::string & file_name, const std::string & extension_name,
-    const std::string & sc_file_name, const std::string & sc_extension_name, const double angular_tolerance, const bool read_only) {
+    const double angular_tolerance, const bool read_only) {
     // Create an object to hold a return value and set a default return value.
     EventTimeHandler * handler(0);
 
     // Check header keywords to identify
-    if (checkHeaderKeyword(file_name, extension_name) && checkHeaderKeyword(sc_file_name, sc_extension_name)) {
-      handler = new GlastTimeHandler(file_name, extension_name, sc_file_name, angular_tolerance, read_only);
+    if (checkHeaderKeyword(file_name, extension_name)) {
+      handler = new GlastTimeHandler(file_name, extension_name, angular_tolerance, read_only);
     }
 
     // Return the handler (or zero if this class cannot handle it).
@@ -107,6 +114,9 @@ namespace timeSystem {
     AbsoluteTime abs_time(*m_time_rep);
 
     if (request_bary_time) {
+      // Check spacecraft file.
+      if (m_sc_file.empty()) throw std::runtime_error("Spacecraft file not properly set.");
+
       // Get space craft position at the given time.
       int error = 0;
       double * sc_position_array = glastscorbit(m_sc_file_char, glast_time, &error);

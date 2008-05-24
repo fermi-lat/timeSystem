@@ -1550,9 +1550,10 @@ namespace {
       virtual ~BogusTimeHandler1() {}
 
       static EventTimeHandler * createInstance(const std::string & /*file_name*/, const std::string & /*extension_name*/,
-        const std::string & /*sc_file_name*/, const std::string & /*sc_extension_name*/, const double /*angular_tolerance*/,
-        const bool /*read_only*/ = true)
+        const double /*angular_tolerance*/, const bool /*read_only*/ = true)
         { return 0; }
+
+      virtual void setSpacecraftFile(const std::string & /*sc_file_name*/, const std::string & /*sc_extension_name*/) {}
 
     protected:
       virtual AbsoluteTime readTime(const tip::Header & /*header*/, const std::string & /*keyword_name*/,
@@ -1573,9 +1574,10 @@ namespace {
       virtual ~BogusTimeHandler2() {}
 
       static EventTimeHandler * createInstance(const std::string & file_name, const std::string & extension_name,
-        const std::string & /*sc_file_name*/, const std::string & /*sc_extension_name*/, const double angular_tolerance,
-        const bool read_only = true)
+        const double angular_tolerance, const bool read_only = true)
         { return new BogusTimeHandler2(file_name, extension_name, angular_tolerance, read_only); }
+
+      virtual void setSpacecraftFile(const std::string & /*sc_file_name*/, const std::string & /*sc_extension_name*/) {}
 
     protected:
       virtual AbsoluteTime readTime(const tip::Header & /*header*/, const std::string & /*keyword_name*/,
@@ -1601,7 +1603,6 @@ namespace {
 
     // Prepare test parameters in this method.
     std::string event_file = commonUtilities::joinPath(commonUtilities::getDataPath("timeSystem"), "my_pulsar_events_v3.fits");
-    std::string sc_file = commonUtilities::joinPath(commonUtilities::getDataPath("timeSystem"), "my_pulsar_spacecraft_data_v3r1.fits");
     GlastMetRep glast_met("TT", 2.123393677090199E+08); // TSTART in my_pulsar_events_v3.fits.
     AbsoluteTime expected_glast = glast_met;
     AbsoluteTime expected_bogus2("TDB", 51912, 0.);
@@ -1609,20 +1610,20 @@ namespace {
 
     // Test creation of BogusTimeHandler1 (an EventTimeHandler sub-class) through its createInstance method.
     std::auto_ptr<EventTimeHandler> handler(0);
-    handler.reset(BogusTimeHandler1::createInstance(event_file, "EVENTS", sc_file, "SC_DATA", angular_tolerance));
+    handler.reset(BogusTimeHandler1::createInstance(event_file, "EVENTS", angular_tolerance));
     if (handler.get() != 0) {
       err() << "BogusTimeHandler1::createInstance method did not return a null pointer (0)." << std::endl;
     }
 
     // Test creation of BogusTimeHandler2 (an EventTimeHandler sub-class) through its createInstance method.
-    handler.reset(BogusTimeHandler2::createInstance(event_file, "EVENTS", sc_file, "SC_DATA", angular_tolerance));
+    handler.reset(BogusTimeHandler2::createInstance(event_file, "EVENTS", angular_tolerance));
     AbsoluteTime result = handler->readHeader("TSTART");
     if (!result.equivalentTo(expected_bogus2, time_tolerance)) {
       err() << "BogusTimeHandler2::createInstance method did not return a BogusTimeHandler2 object." << std::endl;
     }
 
     // Test creation of GlastTimeHandler (an EventTimeHandler sub-class) through its createInstance method.
-    handler.reset(GlastTimeHandler::createInstance(event_file, "EVENTS", sc_file, "SC_DATA", angular_tolerance));
+    handler.reset(GlastTimeHandler::createInstance(event_file, "EVENTS", angular_tolerance));
     result = handler->readHeader("TSTART");
     if (!result.equivalentTo(expected_glast, time_tolerance)) {
       err() << "GlastTimeHandler::createInstance method did not return a GlastTimeHandler object." << std::endl;
@@ -1630,7 +1631,7 @@ namespace {
 
     // Test the decision-making mechanism for cases without a prior setup.
     try {
-      handler.reset(IEventTimeHandlerFactory::createHandler(event_file, "EVENTS", sc_file, "SC_DATA", angular_tolerance));
+      handler.reset(IEventTimeHandlerFactory::createHandler(event_file, "EVENTS", angular_tolerance));
       err() << "IEventTimeHandlerFactory::createHandler method did not throw an exception when no handler was registered." << std::endl;
     } catch (const std::exception &) {
     }
@@ -1640,7 +1641,7 @@ namespace {
 
     // Test the decision-making mechanism for cases with only BogusTimeHandler1 registered.
     try {
-      handler.reset(IEventTimeHandlerFactory::createHandler(event_file, "EVENTS", sc_file, "SC_DATA", angular_tolerance));
+      handler.reset(IEventTimeHandlerFactory::createHandler(event_file, "EVENTS", angular_tolerance));
       err() << "IEventTimeHandlerFactory::createHandler method did not throw an exception when only BogusTimeHandler1 was registered."
         << std::endl;
     } catch (const std::exception &) {
@@ -1650,7 +1651,7 @@ namespace {
     EventTimeHandlerFactory<GlastTimeHandler> factory2;
 
     // Test the decision-making mechanism for cases with BogusTimeHandler1 and GlastTimeHandler registered.
-    handler.reset(IEventTimeHandlerFactory::createHandler(event_file, "EVENTS", sc_file, "SC_DATA", angular_tolerance));
+    handler.reset(IEventTimeHandlerFactory::createHandler(event_file, "EVENTS", angular_tolerance));
     result = handler->readHeader("TSTART");
     if (!result.equivalentTo(expected_glast, time_tolerance)) {
       err() << "IEventTimeHandlerFactory::createHandler method did not return a GlastTimeHandler object" <<
@@ -1661,7 +1662,7 @@ namespace {
     EventTimeHandlerFactory<BogusTimeHandler2> factory3;
 
     // Test the decision-making mechanism for cases with BogusTimeHandler1, GlastTimeHandler, and BogusTimeHandler2 registered.
-    handler.reset(IEventTimeHandlerFactory::createHandler(event_file, "EVENTS", sc_file, "SC_DATA", angular_tolerance));
+    handler.reset(IEventTimeHandlerFactory::createHandler(event_file, "EVENTS", angular_tolerance));
     result = handler->readHeader("TSTART");
     if (!result.equivalentTo(expected_glast, time_tolerance)) {
       err() << "IEventTimeHandlerFactory::createHandler method did not return a GlastTimeHandler object" <<
@@ -1677,7 +1678,7 @@ namespace {
     factory1.registerHandler();
 
     // Test the decision-making mechanism for cases with BogusTimeHandler1, GlastTimeHandler, and BogusTimeHandler2 registered.
-    handler.reset(IEventTimeHandlerFactory::createHandler(event_file, "EVENTS", sc_file, "SC_DATA", angular_tolerance));
+    handler.reset(IEventTimeHandlerFactory::createHandler(event_file, "EVENTS", angular_tolerance));
     result = handler->readHeader("TSTART");
     if (!result.equivalentTo(expected_bogus2, time_tolerance)) {
       err() << "IEventTimeHandlerFactory::createHandler method did not return a BogusTimeHandler2 object" <<
@@ -1714,7 +1715,7 @@ namespace {
 
     // Create an GlastTimeHandler object for EVENTS extension of an event file.
     std::auto_ptr<EventTimeHandler> handler(0);
-    handler.reset(GlastTimeHandler::createInstance(event_file, "EVENTS", sc_file, "SC_DATA", 0.));
+    handler.reset(GlastTimeHandler::createInstance(event_file, "EVENTS", 0.));
 
     // Test setting to the first record.
     handler->setFirstRecord();
@@ -1767,6 +1768,17 @@ namespace {
         expected << ") with tolerance of " << time_tolerance << "." << std::endl;
     }
 
+    // Test reading header keyword value, requesting barycentering, before setting a spacecraft file.
+    try {
+      result = handler->readHeader("TSTART", ra, dec);
+      err() << "GlastTimeHandler::readHeader(\"TSTART\", " << ra << ", " << dec << 
+        ") did not throw an exception when it should." << std::endl;
+    } catch (const std::exception &) {
+    }
+
+    // Set a spacecraft file name.
+    handler->setSpacecraftFile(sc_file, "SC_DATA");
+
     // Test reading header keyword value, requesting barycentering.
     result = handler->readHeader("TSTART", ra, dec);
     glast_met = GlastMetRep("TDB", 2.123393824137859E+08); // TSTART in my_pulsar_events_bary_v3.fits.
@@ -1801,7 +1813,8 @@ namespace {
     }
 
     // Create an GlastTimeHandler object for EVENTS extension of a barycentered event file.
-    handler.reset(GlastTimeHandler::createInstance(event_file_bary, "EVENTS", sc_file, "SC_DATA", angular_tolerance));
+    handler.reset(GlastTimeHandler::createInstance(event_file_bary, "EVENTS", angular_tolerance));
+    handler->setSpacecraftFile(sc_file, "SC_DATA");
 
     // Test reading header keyword value, requesting barycentering.
     result = handler->readHeader("TSTART", ra, dec);
@@ -1858,7 +1871,8 @@ namespace {
 
     // Test exact match in sky position (ra, dec), with angular tolerance of zero (0) degree.
     angular_tolerance = 0.;
-    handler.reset(GlastTimeHandler::createInstance(event_file_bary, "EVENTS", sc_file, "SC_DATA", angular_tolerance));
+    handler.reset(GlastTimeHandler::createInstance(event_file_bary, "EVENTS", angular_tolerance));
+    handler->setSpacecraftFile(sc_file, "SC_DATA");
     try {
       handler->checkSkyPosition(ra, dec);
     } catch (const std::exception &) {
@@ -1868,7 +1882,8 @@ namespace {
 
     // Test large angular tolerance of 180 degrees.
     angular_tolerance = 180.;
-    handler.reset(GlastTimeHandler::createInstance(event_file_bary, "EVENTS", sc_file, "SC_DATA", angular_tolerance));
+    handler.reset(GlastTimeHandler::createInstance(event_file_bary, "EVENTS", angular_tolerance));
+    handler->setSpacecraftFile(sc_file, "SC_DATA");
     try {
       handler->checkSkyPosition(ra_wrong, dec_wrong);
     } catch (const std::exception &) {
@@ -1878,7 +1893,8 @@ namespace {
 
     // Test large angular difference, with small angular tolerance.
     angular_tolerance = 1.e-8;
-    handler.reset(GlastTimeHandler::createInstance(event_file_bary, "EVENTS", sc_file, "SC_DATA", angular_tolerance));
+    handler.reset(GlastTimeHandler::createInstance(event_file_bary, "EVENTS", angular_tolerance));
+    handler->setSpacecraftFile(sc_file, "SC_DATA");
     try {
       handler->checkSkyPosition(ra_opposite, dec_opposite);
       err() << "GlastTimeHandler::checkSkyPosition(\"TSTART\", " << ra_opposite << ", " << dec_opposite << 
@@ -1888,7 +1904,8 @@ namespace {
 
     // Test large angular difference, with large angular tolerance of 180 degrees.
     angular_tolerance = 180.;
-    handler.reset(GlastTimeHandler::createInstance(event_file_bary, "EVENTS", sc_file, "SC_DATA", angular_tolerance));
+    handler.reset(GlastTimeHandler::createInstance(event_file_bary, "EVENTS", angular_tolerance));
+    handler->setSpacecraftFile(sc_file, "SC_DATA");
     try {
       handler->checkSkyPosition(ra_opposite, dec_opposite);
     } catch (const std::exception &) {
@@ -1898,7 +1915,8 @@ namespace {
 
     // Test checking solar system ephemeris name, with a non-barycentered event extension.
     angular_tolerance = 1.e-8;
-    handler.reset(GlastTimeHandler::createInstance(event_file, "EVENTS", sc_file, "SC_DATA", angular_tolerance));
+    handler.reset(GlastTimeHandler::createInstance(event_file, "EVENTS", angular_tolerance));
+    handler->setSpacecraftFile(sc_file, "SC_DATA");
     try {
       handler->checkSolarEph("Bogus Name");
     } catch (const std::exception &) {
@@ -1906,7 +1924,8 @@ namespace {
     }
 
     // Test checking solar system ephemeris name, with a barycentered event extension (exact match).
-    handler.reset(GlastTimeHandler::createInstance(event_file_bary, "EVENTS", sc_file, "SC_DATA", angular_tolerance));
+    handler.reset(GlastTimeHandler::createInstance(event_file_bary, "EVENTS", angular_tolerance));
+    handler->setSpacecraftFile(sc_file, "SC_DATA");
     try {
       handler->checkSolarEph("JPL-DE405");
     } catch (const std::exception &) {
@@ -1914,7 +1933,8 @@ namespace {
     }
 
     // Test checking solar system ephemeris name, with a barycentered event extension (rough match).
-    handler.reset(GlastTimeHandler::createInstance(event_file_bary, "EVENTS", sc_file, "SC_DATA", angular_tolerance));
+    handler.reset(GlastTimeHandler::createInstance(event_file_bary, "EVENTS", angular_tolerance));
+    handler->setSpacecraftFile(sc_file, "SC_DATA");
     try {
       handler->checkSolarEph("JPL DE405");
     } catch (const std::exception &) {
@@ -1922,7 +1942,8 @@ namespace {
     }
 
     // Test checking solar system ephemeris name, with a barycentered event extension (no match).
-    handler.reset(GlastTimeHandler::createInstance(event_file_bary, "EVENTS", sc_file, "SC_DATA", angular_tolerance));
+    handler.reset(GlastTimeHandler::createInstance(event_file_bary, "EVENTS", angular_tolerance));
+    handler->setSpacecraftFile(sc_file, "SC_DATA");
     try {
       handler->checkSolarEph("JPL DE200");
       err() << "GlastTimeHandler::checkSolarEph(\"JPL DE200\") did not throw an exception for a barycentered event extension." <<
@@ -1931,7 +1952,8 @@ namespace {
     }
 
     // Test checking solar system ephemeris name, with a barycentered GTI extension (rough match).
-    handler.reset(GlastTimeHandler::createInstance(event_file_bary, "GTI", sc_file, "SC_DATA", angular_tolerance));
+    handler.reset(GlastTimeHandler::createInstance(event_file_bary, "GTI", angular_tolerance));
+    handler->setSpacecraftFile(sc_file, "SC_DATA");
     try {
       handler->checkSolarEph("JPL DE405");
     } catch (const std::exception &) {
@@ -1939,7 +1961,8 @@ namespace {
     }
 
     // Test checking solar system ephemeris name, with a barycentered GTI extension (no match).
-    handler.reset(GlastTimeHandler::createInstance(event_file_bary, "GTI", sc_file, "SC_DATA", angular_tolerance));
+    handler.reset(GlastTimeHandler::createInstance(event_file_bary, "GTI", angular_tolerance));
+    handler->setSpacecraftFile(sc_file, "SC_DATA");
     try {
       handler->checkSolarEph("JPL DE200");
       err() << "GlastTimeHandler::checkSolarEph(\"JPL DE200\") did not throw an exception for a barycentered GTI extension." <<

@@ -43,23 +43,22 @@ namespace timeSystem {
   }
 
   EventTimeHandler * IEventTimeHandlerFactory::createHandler(const std::string & file_name, const std::string & extension_name,
-    const std::string & sc_file_name, const std::string & sc_extension_name, const double angular_tolerance, const bool read_only) {
+    const double angular_tolerance, const bool read_only) {
     // Get the factory container.
     cont_type factory_cont(getFactoryContainer());
 
     // Look for an EventTimeHandler that can handle given files.
     EventTimeHandler * handler(0);
     for (cont_type::iterator itor = factory_cont.begin(); itor != factory_cont.end(); ++itor) {
-      handler = (*itor)->createInstance(file_name, extension_name, sc_file_name, sc_extension_name, angular_tolerance, read_only);
+      handler = (*itor)->createInstance(file_name, extension_name, angular_tolerance, read_only);
       if (handler) break;
     }
 
-    // Return the handler if found, or zero (0) if not.
+    // Return the handler if found, or throw an exception.
     if (handler) {
       return handler;
     } else {
-      throw std::runtime_error("Unsupported file(s) [filename=\"" + file_name + "\", extension=\"" + extension_name +
-        "\", sc_file=\"" + sc_file_name + "\", sc_extension=\"" + sc_extension_name + "\"]");
+      throw std::runtime_error("Unsupported event file \"" + file_name + "[EXTNAME=" + extension_name + "]\"");
     }
   }
 
@@ -126,8 +125,7 @@ namespace timeSystem {
   }
 
   EventTimeHandler * EventTimeHandler::createInstance(const std::string & /*file_name*/, const std::string & /*extension_name*/,
-    const std::string & /*sc_file_name*/, const std::string & /*sc_extension_name*/, const double /*angular_tolerance*/,
-    const bool /*read_only*/) {
+    const double /*angular_tolerance*/, const bool /*read_only*/) {
     return 0;
   }
 
