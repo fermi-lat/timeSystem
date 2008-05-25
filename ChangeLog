@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Sat May 24 17:31:32 PDT 2008
+timeSystem/timeSystem
+
+Modified Files:
+	EventTimeHandler.h GlastTimeHandler.h 
+Log Message:
+Add parseTimeString method to EventTimeHandler classes, and remove a data member of TimeRep type from GlastTimeHandler.
+    *
+------------------------------------------------------------
 User: hirayama  Fri May 23 17:41:03 PDT 2008
 timeSystem/src/test
 
