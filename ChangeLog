@@ -1,5 +1,14 @@
 ------------------------------------------------------------
 User: hirayama  Sat May 24 17:31:32 PDT 2008
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Add parseTimeString method to EventTimeHandler classes, and remove a data member of TimeRep type from GlastTimeHandler.
+    *
+------------------------------------------------------------
+User: hirayama  Sat May 24 17:31:32 PDT 2008
 timeSystem/src
 
 Modified Files:
