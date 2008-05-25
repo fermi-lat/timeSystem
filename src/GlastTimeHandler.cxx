@@ -22,16 +22,15 @@ extern "C" {
 namespace timeSystem {
 
   GlastTimeHandler::GlastTimeHandler(const std::string & file_name, const std::string & extension_name, const double angular_tolerance,
-    const bool read_only): EventTimeHandler(file_name, extension_name, angular_tolerance, read_only), m_sc_file(), m_sc_file_char(0) {
+    const bool read_only): EventTimeHandler(file_name, extension_name, angular_tolerance, read_only), m_time_system(),
+    m_sc_file(), m_sc_file_char(0) {
     // Get time system from TIMESYS keyword.
     const tip::Header & header(getHeader());
-    std::string time_system;
-    header["TIMESYS"].get(time_system);
-    for (std::string::iterator itor = time_system.begin(); itor != time_system.end(); ++itor) *itor = std::toupper(*itor);
-
-    // Create TimeRep.
-    m_time_rep = new GlastMetRep(time_system, 0.);
+    header["TIMESYS"].get(m_time_system);
+    for (std::string::iterator itor = m_time_system.begin(); itor != m_time_system.end(); ++itor) *itor = std::toupper(*itor);
   }
+
+  GlastTimeHandler::~GlastTimeHandler() {}
 
   void GlastTimeHandler::setSpacecraftFile(const std::string & sc_file_name, const std::string & sc_extension_name) {
     // Check header keywords.
@@ -50,8 +49,17 @@ namespace timeSystem {
     //clockinit(mission);
   }
 
-  GlastTimeHandler::~GlastTimeHandler() {
-    delete m_time_rep;
+  AbsoluteTime GlastTimeHandler::parseTimeString(const std::string & time_string, const std::string & time_system) {
+    // Rationalize time system name.
+    std::string time_system_rat(time_system);
+    for (std::string::iterator itor = time_system_rat.begin(); itor != time_system_rat.end(); ++itor)
+      *itor = std::toupper(*itor);
+    if ("FILE" == time_system_rat) time_system_rat = m_time_system;
+
+    // Parse time string into an absolute time, and return it.
+    GlastMetRep glast_met_rep(time_system_rat, 0.);
+    glast_met_rep.assign(time_string);
+    return AbsoluteTime(glast_met_rep);
   }
 
   EventTimeHandler * GlastTimeHandler::createInstance(const std::string & file_name, const std::string & extension_name,
@@ -110,8 +118,8 @@ namespace timeSystem {
   AbsoluteTime GlastTimeHandler::computeAbsoluteTime(const double glast_time, const bool request_bary_time,
     const double ra, const double dec) {
     // Convert GLAST time to AbsoluteTime.
-    m_time_rep->set("TIME", glast_time);
-    AbsoluteTime abs_time(*m_time_rep);
+    GlastMetRep glast_met_rep(m_time_system, glast_time);
+    AbsoluteTime abs_time(glast_met_rep);
 
     if (request_bary_time) {
       // Check spacecraft file.
@@ -122,7 +130,7 @@ namespace timeSystem {
       double * sc_position_array = glastscorbit(m_sc_file_char, glast_time, &error);
       if (error) {
         std::ostringstream os;
-        os << "Error in getting GLAST spacecraft position for " << *m_time_rep << ".";
+        os << "Error in getting GLAST spacecraft position for " << glast_met_rep << ".";
         throw std::runtime_error(os.str());
       }
       std::vector<double> sc_position(sc_position_array, sc_position_array + 3);
