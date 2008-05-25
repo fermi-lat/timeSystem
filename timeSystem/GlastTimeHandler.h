@@ -35,6 +35,8 @@ namespace timeSystem {
 
       virtual void setSpacecraftFile(const std::string & sc_file_name, const std::string & sc_extension_name);
 
+      virtual AbsoluteTime parseTimeString(const std::string & time_string, const std::string & time_system = "FILE");
+
     protected:
       virtual AbsoluteTime readTime(const tip::Header & header, const std::string & keyword_name, const bool request_bary_time,
         const double ra, const double dec);
@@ -43,14 +45,12 @@ namespace timeSystem {
         const double ra, const double dec);
 
     private:
+      std::string m_time_system;
       std::string m_sc_file;
       char * m_sc_file_char;
 
       GlastTimeHandler(const std::string & file_name, const std::string & extension_name, const double angular_tolerance,
         const bool read_only = true);
-
-      // TODO: Consider replacing MetRep's with classes derived from this class.
-      TimeRep * m_time_rep;
 
       AbsoluteTime computeAbsoluteTime(const double glast_time, const bool request_bary_time, const double ra, const double dec);
 

@@ -73,9 +73,8 @@ namespace timeSystem {
 
       virtual void setSpacecraftFile(const std::string & sc_file_name, const std::string & sc_extension_name) = 0;
 
-      // TODO: Consider adding the following methods to replace TimeRep objects for MET's.
-      //virtual AbsoluteTime readString(const std::string & time_string, const std::string & time_system = "FILE") = 0;
-      //virtual TimeRep * createTimeRep(const std::string & time_system = "FILE") const = 0;
+      // TODO: Make the following methods a const method: parseTimeString, readHeader, readColumn, and readTime.
+      virtual AbsoluteTime parseTimeString(const std::string & time_string, const std::string & time_system = "FILE") = 0;
 
       AbsoluteTime readHeader(const std::string & keyword_name);
 

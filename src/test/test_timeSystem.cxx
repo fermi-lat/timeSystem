@@ -1555,6 +1555,9 @@ namespace {
 
       virtual void setSpacecraftFile(const std::string & /*sc_file_name*/, const std::string & /*sc_extension_name*/) {}
 
+      virtual AbsoluteTime parseTimeString(const std::string & /*time_string*/, const std::string & /*time_system*/ = "FILE")
+        { return AbsoluteTime("TDB", 51911, 0.); }
+
     protected:
       virtual AbsoluteTime readTime(const tip::Header & /*header*/, const std::string & /*keyword_name*/,
         const bool /*request_bary_time*/, const double /*ra*/, const double /*dec*/)
@@ -1578,6 +1581,9 @@ namespace {
         { return new BogusTimeHandler2(file_name, extension_name, angular_tolerance, read_only); }
 
       virtual void setSpacecraftFile(const std::string & /*sc_file_name*/, const std::string & /*sc_extension_name*/) {}
+
+      virtual AbsoluteTime parseTimeString(const std::string & /*time_string*/, const std::string & /*time_system*/ = "FILE")
+        { return AbsoluteTime("TDB", 51911, 0.); }
 
     protected:
       virtual AbsoluteTime readTime(const tip::Header & /*header*/, const std::string & /*keyword_name*/,
@@ -1759,10 +1765,30 @@ namespace {
         " followed by GlastTimeHandler::setNextRecord()." << std::endl;
     }
 
-    // Test reading header keyword value.
-    AbsoluteTime result = handler->readHeader("TSTART");
-    GlastMetRep glast_met("TT", 2.123393677090199E+08); // TSTART in my_pulsar_events_v3.fits.
+    // Test parsing a time string.
+    std::string time_string = "12345.6789012345";
+    AbsoluteTime result = handler->parseTimeString(time_string);
+    GlastMetRep glast_met("TT", 12345.6789012345);
     AbsoluteTime expected = glast_met;
+    if (!result.equivalentTo(expected, time_tolerance)) {
+      err() << "GlastTimeHandler::parseTimeString(\"" << time_string << "\") returned AbsoluteTime(" << result <<
+        "), not equivalent to AbsoluteTime(" << expected << ") with tolerance of " << time_tolerance << "." << std::endl;
+    }
+
+    // Test parsing a time string, with a different time system.
+    time_string = "12345.6789012345";
+    result = handler->parseTimeString(time_string, "TDB");
+    glast_met = GlastMetRep("TDB", 12345.6789012345);
+    expected = glast_met;
+    if (!result.equivalentTo(expected, time_tolerance)) {
+      err() << "GlastTimeHandler::parseTimeString(\"" << time_string << "\", \"TDB\") returned AbsoluteTime(" << result <<
+        "), not equivalent to AbsoluteTime(" << expected << ") with tolerance of " << time_tolerance << "." << std::endl;
+    }
+
+    // Test reading header keyword value.
+    result = handler->readHeader("TSTART");
+    glast_met = GlastMetRep("TT", 2.123393677090199E+08); // TSTART in my_pulsar_events_v3.fits.
+    expected = glast_met;
     if (!result.equivalentTo(expected, time_tolerance)) {
       err() << "GlastTimeHandler::readHeader(\"TSTART\") returned AbsoluteTime(" << result << "), not equivalent to AbsoluteTime(" <<
         expected << ") with tolerance of " << time_tolerance << "." << std::endl;
@@ -1815,6 +1841,26 @@ namespace {
     // Create an GlastTimeHandler object for EVENTS extension of a barycentered event file.
     handler.reset(GlastTimeHandler::createInstance(event_file_bary, "EVENTS", angular_tolerance));
     handler->setSpacecraftFile(sc_file, "SC_DATA");
+
+    // Test parsing a time string.
+    time_string = "12345.6789012345";
+    result = handler->parseTimeString(time_string);
+    glast_met = GlastMetRep("TDB", 12345.6789012345);
+    expected = glast_met;
+    if (!result.equivalentTo(expected, time_tolerance)) {
+      err() << "GlastTimeHandler::parseTimeString(\"" << time_string << "\") returned AbsoluteTime(" << result <<
+        "), not equivalent to AbsoluteTime(" << expected << ") with tolerance of " << time_tolerance << "." << std::endl;
+    }
+
+    // Test parsing a time string, with a different time system.
+    time_string = "12345.6789012345";
+    result = handler->parseTimeString(time_string, "TT");
+    glast_met = GlastMetRep("TT", 12345.6789012345);
+    expected = glast_met;
+    if (!result.equivalentTo(expected, time_tolerance)) {
+      err() << "GlastTimeHandler::parseTimeString(\"" << time_string << "\", \"TT\") returned AbsoluteTime(" << result <<
+        "), not equivalent to AbsoluteTime(" << expected << ") with tolerance of " << time_tolerance << "." << std::endl;
+    }
 
     // Test reading header keyword value, requesting barycentering.
     result = handler->readHeader("TSTART", ra, dec);
