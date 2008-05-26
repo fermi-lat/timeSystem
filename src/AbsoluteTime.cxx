@@ -9,7 +9,7 @@
 #include "timeSystem/Duration.h"
 #include "timeSystem/ElapsedTime.h"
 #include "timeSystem/TimeInterval.h"
-#include "timeSystem/TimeRep.h"
+#include "timeSystem/TimeFormat.h"
 #include "timeSystem/TimeSystem.h"
 
 namespace timeSystem {
@@ -60,8 +60,6 @@ namespace timeSystem {
     return time_format.format(moment, precision) + " (" + time_system.getName() + ")";
   }
 
-  AbsoluteTime::AbsoluteTime(const TimeRep & rep): m_time_system(0), m_moment() { importTimeRep(rep); }
-
   AbsoluteTime AbsoluteTime::operator +(const ElapsedTime & elapsed_time) const { return elapsed_time + *this; }
 
   AbsoluteTime AbsoluteTime::operator -(const ElapsedTime & elapsed_time) const { return -elapsed_time + *this; }
@@ -98,20 +96,6 @@ namespace timeSystem {
 
   bool AbsoluteTime::equivalentTo(const AbsoluteTime & other, const ElapsedTime & tolerance) const {
     return (*this > other ? (*this <= other + tolerance) : (other <= *this + tolerance));
-  }
-
-  void AbsoluteTime::exportTimeRep(TimeRep & rep) const {
-    Moment this_time = convert(m_moment);
-    rep.set(m_time_system->getName(), this_time.first, this_time.second);
-  }
-
-  void AbsoluteTime::importTimeRep(const TimeRep & rep) {
-    std::string system_name;
-    Duration origin;
-    Duration elapsed;
-    rep.get(system_name, origin, elapsed);
-    m_time_system = &TimeSystem::getSystem(system_name);
-    m_moment = convert(*m_time_system, Moment(origin, elapsed));
   }
 
   ElapsedTime AbsoluteTime::computeElapsedTime(const std::string & time_system_name, const AbsoluteTime & since) const {

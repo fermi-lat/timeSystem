@@ -19,7 +19,7 @@
 #include "timeSystem/Field.h"
 #include "timeSystem/GlastTimeHandler.h"
 #include "timeSystem/TimeInterval.h"
-#include "timeSystem/TimeRep.h"
+#include "timeSystem/TimeFormat.h"
 #include "timeSystem/TimeSystem.h"
 
 #include <cmath>
@@ -44,8 +44,6 @@ namespace {
   void TestIntFracPair();
 
   void TestTimeInterval();
-
-  void TestTimeRep();
 
   void TestTimeFormat();
 
@@ -91,9 +89,6 @@ void TestTimeSystemApp::run() {
 
   // Test TimeInterval class.
   TestTimeInterval();
-
-  // Test TimeRep class.
-  TestTimeRep();
 
   // Test TimeFormat class.
   TestTimeFormat();
@@ -1244,137 +1239,6 @@ namespace {
     }
   }
 
-  void TestTimeRep() {
-    s_os.setMethod("TestTimeRep");
-    static const double epsilon = std::numeric_limits<double>::epsilon() * 10.;
-    long mjd_ref_int = 51910;
-    double mjd_ref_frac = 64.814 / 86400.;
-    double met = 86400. * 100.;
-    double delta_t = 100.;
-    double expected_met = met;
-
-    // Create a test time object.
-    MetRep glast_tdb_object("TDB", mjd_ref_int, mjd_ref_frac, met);
-    TimeRep & glast_tdb(glast_tdb_object);
-
-    glast_tdb.get("", met);
-    if (epsilon < std::fabs(met - expected_met)) {
-      err() << "Right after construction, glast_tdb.get(\"\", met) returned " << met << ", not " << expected_met <<
-        " as expected." << std::endl;
-    }
-
-    // Test construction directly from IntFracPair.
-    MetRep int_frac_glast_tdb("TDB", IntFracPair(mjd_ref_int, mjd_ref_frac), met);
-
-    int_frac_glast_tdb.get("", met);
-    if (epsilon < std::fabs(met - expected_met)) {
-      err() << "Right after construction, int_frac_glast_tdb.get(\"\", met) returned " << met << ", not " << expected_met <<
-        " as expected." << std::endl;
-    }
-
-    // Create an absolute time from this time expression.
-    AbsoluteTime abs_time(glast_tdb);
-
-    // Compute something which changes this time.
-    abs_time = abs_time + ElapsedTime("TDB", Duration(0, delta_t));
-
-    // Put the changed time back into the representation.
-    glast_tdb = abs_time;
-
-    // Compare final value.
-    expected_met = met + delta_t;
-    glast_tdb.get("", met);
-    if (epsilon < std::fabs(met - expected_met)) {
-      err() << "After computation, glast_tdb.get(\"\", met) returned " << met << ", not " << expected_met <<
-        " as expected." << std::endl;
-    }
-
-    // Test assignment from string.
-    glast_tdb.assign("125.0123456");
-    expected_met = 125.0123456;
-    glast_tdb.get("", met);
-    if (epsilon < std::fabs(met - expected_met)) {
-      err() << "After assign(\"125.0123456\"), glast_tdb.get(\"\", met) returned " << met << ", not " << expected_met <<
-        " as expected." << std::endl;
-    }
-    
-    // Test set(string, double).
-    glast_tdb.set("", 125.0123);
-    expected_met = 125.0123;
-    glast_tdb.get("", met);
-    if (epsilon < std::fabs(met - expected_met)) {
-      err() << "After set(\"\", 125.0123), glast_tdb.get(\"\", met) returned " << met << ", not " << expected_met <<
-        " as expected." << std::endl;
-    }
-    
-    // Test conversions to string.
-    std::string expected_string = "125.0123 MET (TDB) [MJDREF=51910.000750162037037]";
-    std::string glast_tdb_string = glast_tdb.getString();
-    if (expected_string != glast_tdb_string) {
-      err() << "glast_tdb.getString() returned string \"" << glast_tdb_string << "\", not \"" << expected_string <<
-        "\", as expected." << std::endl;
-    }
-
-#if 0
-    // Create a test time object using MJD representation.
-    MjdRep mjd_tdb_object("TDB", mjd_ref_int, mjd_ref_frac);
-    TimeRep & mjd_tdb(mjd_tdb_object);
-
-    IntFracPair expected_mjd(mjd_ref_int, mjd_ref_frac);
-    long mjd_int = 0; double mjd_frac = 0.;
-    mjd_tdb.get("MJDI", mjd_int); mjd_tdb.get("MJDF", mjd_frac);
-    if (expected_mjd.getIntegerPart() != mjd_int ||
-      epsilon < std::fabs(expected_mjd.getFractionalPart() - mjd_frac)) {
-      err() << "Right after construction, mjd_tdb contains " << mjd_int << " + " << mjd_frac << ", not " << expected_mjd <<
-        " as expected." << std::endl;
-    }
-
-    // Put the previous MET time back into the MJD representation.
-    mjd_tdb = abs_time;
-
-    // Compare final value.
-    expected_mjd = IntFracPair(mjd_ref_int + 100, mjd_ref_frac + 100. / 86400.);
-    mjd_int = 0; mjd_frac = 0.;
-    mjd_tdb.get("MJDI", mjd_int); mjd_tdb.get("MJDF", mjd_frac);
-    if (expected_mjd.getIntegerPart() != mjd_int ||
-      epsilon < std::fabs(expected_mjd.getFractionalPart() - mjd_frac)) {
-      err() << "After assignment from abs_time, mjd_tdb contains " << mjd_int << " + " << mjd_frac << ", not " << expected_mjd <<
-        " as expected." << std::endl;
-    }
-
-    // Test assignment from string.
-    mjd_tdb.assign("137.1250123456");
-    expected_mjd = IntFracPair(137, .1250123456);
-    mjd_int = 0; mjd_frac = 0.;
-    mjd_tdb.get("MJDI", mjd_int); mjd_tdb.get("MJDF", mjd_frac);
-    if (expected_mjd.getIntegerPart() != mjd_int ||
-      epsilon < std::fabs(expected_mjd.getFractionalPart() - mjd_frac)) {
-      err() << "After assign(\"137.1250123456\"), mjd_tdb contains " << mjd_int << " + " << mjd_frac << ", not " << expected_mjd <<
-        " as expected." << std::endl;
-    }
-    
-    // Test set for long, double.
-    mjd_tdb.set("MJDI", 137l);
-    mjd_tdb.set("MJDF", .1250123);
-    expected_mjd = IntFracPair(137, .1250123);
-    mjd_int = 0; mjd_frac = 0.;
-    mjd_tdb.get("MJDI", mjd_int); mjd_tdb.get("MJDF", mjd_frac);
-    if (expected_mjd.getIntegerPart() != mjd_int ||
-      epsilon < std::fabs(expected_mjd.getFractionalPart() - mjd_frac)) {
-      err() << "After set(\"MJDI\", 137); set(\"MJDF\", .1250123), mjd_tdb contains " << mjd_int << " + " << mjd_frac <<
-        ", not " << expected_mjd << " as expected." << std::endl;
-    }
-    
-    // Test conversions to string.
-    expected_string = "137.1250123 MJD (TDB)";
-    std::string mjd_tdb_string = mjd_tdb.getString();
-    if (expected_string != mjd_tdb_string) {
-      err() << "mjd_tdb.getString() returned string \"" << mjd_tdb_string << "\", not \"" << expected_string <<
-        "\", as expected." << std::endl;
-    }
-#endif
-  }
-
   void TestTimeFormat() {
     s_os.setMethod("TestTimeFormat");
     //static const double epsilon = std::numeric_limits<double>::epsilon() * 300.;
@@ -1451,22 +1315,6 @@ namespace {
         ", " << moment.second << "), not (" << expected_moment.first << ", " << expected_moment.second << ") as expected." <<
         std::endl;
     }
-
-    // Put the previous MET time back into the MJD representation.
-#if 0
-    // TODO use appropriate new method to assign or construct MjdFormat from AbsoluteTime.
-    mjd_format = abs_time;
-
-    // Compare final value.
-    mjd_day = 0;
-    mjd_sec = 0.;
-    mjd_format.get(mjd_day, mjd_sec);
-    if (expected_mjd_day != mjd_day || epsilon < std::fabs(expected_mjd_sec - mjd_sec)) {
-      err() << "After assignment from abs_time, mjd_format contains " << mjd_day << " days, " << mjd_sec <<
-        " seconds, not " << expected_mjd_day << " days, " << expected_mjd_sec << " seconds as expected." << std::endl;
-    }
-#endif
-
   }
 
   void TestField() {
