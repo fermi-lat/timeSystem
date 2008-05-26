@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Sun May 25 21:16:15 PDT 2008
+timeSystem/timeSystem
+
+Removed Files:
+	Field.h 
+Log Message:
+Remove Field class.
+    *
+------------------------------------------------------------
 User: hirayama  Sun May 25 20:56:43 PDT 2008
 timeSystem/src/test
 
