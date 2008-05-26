@@ -22,6 +22,7 @@ namespace {
 
 namespace timeSystem {
 
+#if 0
   IntFracPair MjdRefDatabase::operator ()(const tip::Header & header) const {
     IntFracPair mjd_ref_pair;
     bool found_mjd_ref = false;
@@ -70,6 +71,7 @@ namespace timeSystem {
 
     return mjd_ref_pair;
   }
+#endif
 
   TimeRep::~TimeRep() {
     for(cont_type::iterator itor = m_field_cont.begin(); itor != m_field_cont.end(); ++itor)
