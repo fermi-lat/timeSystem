@@ -18,7 +18,6 @@ namespace timeSystem {
 
   class ElapsedTime;
   class TimeInterval;
-  class TimeRep;
   class TimeSystem;
 
   /** \class Mjd
@@ -68,8 +67,6 @@ namespace timeSystem {
       std::string represent(const std::string & time_system_name, const std::string & time_format_name,
         std::streamsize precision = std::numeric_limits<double>::digits10) const;
 
-      AbsoluteTime(const TimeRep & rep);
-
       AbsoluteTime operator +(const ElapsedTime & elapsed_time) const;
 
       AbsoluteTime operator -(const ElapsedTime & elapsed_time) const;
@@ -90,8 +87,6 @@ namespace timeSystem {
 
       bool equivalentTo(const AbsoluteTime & other, const ElapsedTime & tolerance) const;
 
-      void exportTimeRep(TimeRep & rep) const;
-
       AbsoluteTime computeAbsoluteTime(const std::string & time_system_name, const Duration & delta_t) const;
 
       ElapsedTime computeElapsedTime(const std::string & time_system_name, const AbsoluteTime & since) const;
@@ -100,8 +95,6 @@ namespace timeSystem {
       void write(StreamType & os) const;
 
     private:
-      void importTimeRep(const TimeRep & rep);
-
       // TODO: Remove convert methods below, by modifying TimeSystem class to accept a moment_type object.
       Moment convert(const moment_type & time) const;
       moment_type convert(const TimeSystem & time_system, const Moment & time) const;
