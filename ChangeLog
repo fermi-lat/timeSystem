@@ -1,5 +1,14 @@
 ------------------------------------------------------------
 User: hirayama  Sun May 25 18:40:34 PDT 2008
+timeSystem/src
+
+Modified Files:
+	TimeRep.cxx 
+Log Message:
+Comment out unused MjdRefDatabase class.
+    *
+------------------------------------------------------------
+User: hirayama  Sun May 25 18:40:34 PDT 2008
 timeSystem/timeSystem
 
 Modified Files:
