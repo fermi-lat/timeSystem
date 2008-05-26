@@ -1,5 +1,14 @@
 ------------------------------------------------------------
 User: hirayama  Sun May 25 18:38:28 PDT 2008
+timeSystem/src
+
+Modified Files:
+	GlastTimeHandler.cxx 
+Log Message:
+Add a data member of Mjd type to hold MJDREF, and stop using MetRep objects. Adjust const-ness of methods to follow changes in the base class.
+    *
+------------------------------------------------------------
+User: hirayama  Sun May 25 18:38:28 PDT 2008
 timeSystem/timeSystem
 
 Modified Files:
