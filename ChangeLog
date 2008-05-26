@@ -1,5 +1,14 @@
 ------------------------------------------------------------
 User: hirayama  Sun May 25 18:36:24 PDT 2008
+timeSystem/src
+
+Modified Files:
+	EventTimeHandler.cxx 
+Log Message:
+Add readMjdRef method. Change several methods to a const method: parseTimeString, readHeader, readColumn.
+    *
+------------------------------------------------------------
+User: hirayama  Sun May 25 18:36:24 PDT 2008
 timeSystem/timeSystem
 
 Modified Files:
