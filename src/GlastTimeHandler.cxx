@@ -6,8 +6,7 @@
 #include "timeSystem/GlastTimeHandler.h"
 
 #include "timeSystem/AbsoluteTime.h"
-#include "timeSystem/GlastMetRep.h"
-#include "timeSystem/TimeRep.h"
+#include "timeSystem/ElapsedTime.h"
 
 #include "tip/IFileSvc.h"
 
@@ -23,11 +22,14 @@ namespace timeSystem {
 
   GlastTimeHandler::GlastTimeHandler(const std::string & file_name, const std::string & extension_name, const double angular_tolerance,
     const bool read_only): EventTimeHandler(file_name, extension_name, angular_tolerance, read_only), m_time_system(),
-    m_sc_file(), m_sc_file_char(0) {
+    m_mjd_ref(0, 0.), m_sc_file(), m_sc_file_char(0) {
     // Get time system from TIMESYS keyword.
     const tip::Header & header(getHeader());
     header["TIMESYS"].get(m_time_system);
     for (std::string::iterator itor = m_time_system.begin(); itor != m_time_system.end(); ++itor) *itor = std::toupper(*itor);
+
+    // Get MJDREF value.
+    m_mjd_ref = readMjdRef(header);
   }
 
   GlastTimeHandler::~GlastTimeHandler() {}
@@ -49,7 +51,7 @@ namespace timeSystem {
     //clockinit(mission);
   }
 
-  AbsoluteTime GlastTimeHandler::parseTimeString(const std::string & time_string, const std::string & time_system) {
+  AbsoluteTime GlastTimeHandler::parseTimeString(const std::string & time_string, const std::string & time_system) const {
     // Rationalize time system name.
     std::string time_system_rat(time_system);
     for (std::string::iterator itor = time_system_rat.begin(); itor != time_system_rat.end(); ++itor)
@@ -57,9 +59,7 @@ namespace timeSystem {
     if ("FILE" == time_system_rat) time_system_rat = m_time_system;
 
     // Parse time string into an absolute time, and return it.
-    GlastMetRep glast_met_rep(time_system_rat, 0.);
-    glast_met_rep.assign(time_string);
-    return AbsoluteTime(glast_met_rep);
+    return AbsoluteTime(time_system_rat, m_mjd_ref) + ElapsedTime(time_system_rat, Duration(IntFracPair(time_string), Sec));
   }
 
   EventTimeHandler * GlastTimeHandler::createInstance(const std::string & file_name, const std::string & extension_name,
@@ -96,7 +96,7 @@ namespace timeSystem {
   }
 
   AbsoluteTime GlastTimeHandler::readTime(const tip::Header & header, const std::string & keyword_name, const bool request_bary_time,
-    const double ra, const double dec) {
+    const double ra, const double dec) const {
     // Read keyword value from header as a signle variable of double type.
     double keyword_value = 0.;
     header[keyword_name].get(keyword_value);
@@ -106,7 +106,7 @@ namespace timeSystem {
   }
 
   AbsoluteTime GlastTimeHandler::readTime(const tip::TableRecord & record, const std::string & column_name, const bool request_bary_time,
-    const double ra, const double dec) {
+    const double ra, const double dec) const {
     // Read column value from a given record as a signle variable of double type.
     double column_value;
     record[column_name].get(column_value);
@@ -116,10 +116,9 @@ namespace timeSystem {
   }
 
   AbsoluteTime GlastTimeHandler::computeAbsoluteTime(const double glast_time, const bool request_bary_time,
-    const double ra, const double dec) {
+    const double ra, const double dec) const {
     // Convert GLAST time to AbsoluteTime.
-    GlastMetRep glast_met_rep(m_time_system, glast_time);
-    AbsoluteTime abs_time(glast_met_rep);
+    AbsoluteTime abs_time = AbsoluteTime(m_time_system, m_mjd_ref) + ElapsedTime(m_time_system, Duration(0, glast_time));
 
     if (request_bary_time) {
       // Check spacecraft file.
@@ -130,7 +129,7 @@ namespace timeSystem {
       double * sc_position_array = glastscorbit(m_sc_file_char, glast_time, &error);
       if (error) {
         std::ostringstream os;
-        os << "Error in getting GLAST spacecraft position for " << glast_met_rep << ".";
+        os << "Error in getting GLAST spacecraft position for " << glast_time << " GLAST MET (" << m_time_system << ").";
         throw std::runtime_error(os.str());
       }
       std::vector<double> sc_position(sc_position_array, sc_position_array + 3);
