@@ -1555,16 +1555,16 @@ namespace {
 
       virtual void setSpacecraftFile(const std::string & /*sc_file_name*/, const std::string & /*sc_extension_name*/) {}
 
-      virtual AbsoluteTime parseTimeString(const std::string & /*time_string*/, const std::string & /*time_system*/ = "FILE")
+      virtual AbsoluteTime parseTimeString(const std::string & /*time_string*/, const std::string & /*time_system*/ = "FILE") const
         { return AbsoluteTime("TDB", 51911, 0.); }
 
     protected:
       virtual AbsoluteTime readTime(const tip::Header & /*header*/, const std::string & /*keyword_name*/,
-        const bool /*request_bary_time*/, const double /*ra*/, const double /*dec*/)
+        const bool /*request_bary_time*/, const double /*ra*/, const double /*dec*/) const
         { return AbsoluteTime("TDB", 51911, 0.); }
 
       virtual AbsoluteTime readTime(const tip::TableRecord & /*record*/, const std::string & /*column_name*/,
-        const bool /*request_bary_time*/, const double /*ra*/, const double /*dec*/)
+        const bool /*request_bary_time*/, const double /*ra*/, const double /*dec*/) const
         { return AbsoluteTime("TDB", 51911, 0.); }
 
     private:
@@ -1582,16 +1582,16 @@ namespace {
 
       virtual void setSpacecraftFile(const std::string & /*sc_file_name*/, const std::string & /*sc_extension_name*/) {}
 
-      virtual AbsoluteTime parseTimeString(const std::string & /*time_string*/, const std::string & /*time_system*/ = "FILE")
+      virtual AbsoluteTime parseTimeString(const std::string & /*time_string*/, const std::string & /*time_system*/ = "FILE") const
         { return AbsoluteTime("TDB", 51911, 0.); }
 
     protected:
       virtual AbsoluteTime readTime(const tip::Header & /*header*/, const std::string & /*keyword_name*/,
-        const bool /*request_bary_time*/, const double /*ra*/, const double /*dec*/)
+        const bool /*request_bary_time*/, const double /*ra*/, const double /*dec*/) const
         { return AbsoluteTime("TDB", 51912, 0.); }
 
       virtual AbsoluteTime readTime(const tip::TableRecord & /*record*/, const std::string & /*column_name*/,
-        const bool /*request_bary_time*/, const double /*ra*/, const double /*dec*/)
+        const bool /*request_bary_time*/, const double /*ra*/, const double /*dec*/) const
         { return AbsoluteTime("TDB", 51912, 0.); }
 
     private:
