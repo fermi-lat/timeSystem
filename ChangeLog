@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Sun May 25 19:11:18 PDT 2008
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Replace GlastMetRep with ElapsedTime.
+    *
+------------------------------------------------------------
 User: hirayama  Sun May 25 18:40:34 PDT 2008
 timeSystem/src
 
