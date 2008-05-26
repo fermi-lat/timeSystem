@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Sun May 25 18:39:51 PDT 2008
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Adjust const-ness of BogusTimeHandlers' methods to follow changes in the base class.
+    *
+------------------------------------------------------------
 User: hirayama  Sun May 25 18:38:28 PDT 2008
 timeSystem/src
 
