@@ -21,10 +21,12 @@ namespace timeSystem {
   class AbsoluteTime;
   class TimeSystem;
 
+#if 0
   class MjdRefDatabase {
     public:
       IntFracPair operator ()(const tip::Header & header) const;
   };
+#endif
 
   /** \class TimeRep
       \brief
