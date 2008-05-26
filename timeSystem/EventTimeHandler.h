@@ -20,7 +20,7 @@ namespace timeSystem {
   class AbsoluteTime;
   class BaryTimeComputer;
   class EventTimeHandler;
-  class TimeRep;
+  class Mjd;
 
   /** \class IEventTimeHandlerFactory
       \brief Abstract base class for EventTimeHandlerFactory.
@@ -64,6 +64,7 @@ namespace timeSystem {
              and performs barycentric correction on event times, typically recorded at a space craft.
   */
   // TODO: Rename EventTimeHandler to MetHandler? Yes!
+  // TODO: Reconsider and find a good name. The current implementation is more like TemporalTable or something.
   class EventTimeHandler {
     public:
       virtual ~EventTimeHandler();
@@ -73,16 +74,15 @@ namespace timeSystem {
 
       virtual void setSpacecraftFile(const std::string & sc_file_name, const std::string & sc_extension_name) = 0;
 
-      // TODO: Make the following methods a const method: parseTimeString, readHeader, readColumn, and readTime.
-      virtual AbsoluteTime parseTimeString(const std::string & time_string, const std::string & time_system = "FILE") = 0;
+      virtual AbsoluteTime parseTimeString(const std::string & time_string, const std::string & time_system = "FILE") const = 0;
 
-      AbsoluteTime readHeader(const std::string & keyword_name);
+      AbsoluteTime readHeader(const std::string & keyword_name) const;
 
-      AbsoluteTime readHeader(const std::string & keyword_name, const double ra, const double dec);
+      AbsoluteTime readHeader(const std::string & keyword_name, const double ra, const double dec) const;
 
-      AbsoluteTime readColumn(const std::string & column_name);
+      AbsoluteTime readColumn(const std::string & column_name) const;
 
-      AbsoluteTime readColumn(const std::string & column_name, const double ra, const double dec);
+      AbsoluteTime readColumn(const std::string & column_name, const double ra, const double dec) const;
 
       void setFirstRecord();
 
@@ -107,10 +107,12 @@ namespace timeSystem {
         const bool read_only = true);
 
       virtual AbsoluteTime readTime(const tip::Header & header, const std::string & keyword_name, const bool request_bary_time,
-        const double ra, const double dec) = 0;
+        const double ra, const double dec) const = 0;
 
       virtual AbsoluteTime readTime(const tip::TableRecord & record, const std::string & column_name, const bool request_bary_time,
-        const double ra, const double dec) = 0;
+        const double ra, const double dec) const = 0;
+
+      Mjd readMjdRef(const tip::Header & header) const;
 
       void computeBaryTime(const double ra, const double dec, const std::vector<double> & sc_position, AbsoluteTime & abs_time)
         const;
