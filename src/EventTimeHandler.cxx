@@ -129,11 +129,11 @@ namespace timeSystem {
     return 0;
   }
 
-  AbsoluteTime EventTimeHandler::readHeader(const std::string & keyword_name) {
+  AbsoluteTime EventTimeHandler::readHeader(const std::string & keyword_name) const {
     return readTime(m_table->getHeader(), keyword_name, false, 0., 0.);
   }
   
-  AbsoluteTime EventTimeHandler::readHeader(const std::string & keyword_name, const double ra, const double dec) {
+  AbsoluteTime EventTimeHandler::readHeader(const std::string & keyword_name, const double ra, const double dec) const {
     // Check RA & Dec in argument list match the table header, if already barycentered.
     if (m_bary_time) checkSkyPosition(ra, dec);
 
@@ -142,11 +142,11 @@ namespace timeSystem {
     return readTime(m_table->getHeader(), keyword_name, request_bary_time, ra, dec);
   }
 
-  AbsoluteTime EventTimeHandler::readColumn(const std::string & column_name) {
+  AbsoluteTime EventTimeHandler::readColumn(const std::string & column_name) const {
     return readTime(*m_record_itor, column_name, false, 0., 0.);
   }
   
-  AbsoluteTime EventTimeHandler::readColumn(const std::string & column_name, const double ra, const double dec) {
+  AbsoluteTime EventTimeHandler::readColumn(const std::string & column_name, const double ra, const double dec) const {
     // Check RA & Dec in argument list match the table header, if already barycentered.
     if (m_bary_time) checkSkyPosition(ra, dec);
 
@@ -219,6 +219,39 @@ namespace timeSystem {
       throw std::runtime_error("Solar system ephemeris in extension \"" + m_ext_name + "\" of file \"" + m_file_name +
         "\" (PLEPHEM=\"" + m_pl_ephem + "\") does not match the requested \"" + solar_eph + "\".");
     }
+  }
+
+  Mjd EventTimeHandler::readMjdRef(const tip::Header & header) const {
+    Mjd mjd_ref(0, 0.);
+    bool found_mjd_ref = false;
+
+    // Look for MJDREFI and MJDREFF keywords first.
+    if (!found_mjd_ref) {
+      try {
+        header["MJDREFI"].get(mjd_ref.m_int);
+        header["MJDREFF"].get(mjd_ref.m_frac);
+        found_mjd_ref = true;
+      } catch (const std::exception &) {}
+    }
+
+    // Look for MJDREF keyword next.
+    if (!found_mjd_ref) {
+      try {
+        double mjd_ref_dbl = 0.;
+        header["MJDREF"].get(mjd_ref_dbl);
+        IntFracPair mjd_ref_int_frac(mjd_ref_dbl);
+        mjd_ref.m_int = mjd_ref_int_frac.getIntegerPart();
+        mjd_ref.m_frac = mjd_ref_int_frac.getFractionalPart();
+        found_mjd_ref = true;
+      } catch (const std::exception &) {}
+    }
+
+    // Throw an exception if none of above succeeds.
+    if (!found_mjd_ref) {
+      throw std::runtime_error("EventTimeHandler::readMjdRef could not find MJDREFI/MJDREFF or MJDREF.");
+    }
+
+    return mjd_ref;
   }
 
   void EventTimeHandler::computeBaryTime(const double ra, const double dec, const std::vector<double> & sc_position,
