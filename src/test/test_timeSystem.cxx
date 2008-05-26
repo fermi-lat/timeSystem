@@ -16,7 +16,6 @@
 #include "timeSystem/Duration.h"
 #include "timeSystem/ElapsedTime.h"
 #include "timeSystem/EventTimeHandler.h"
-#include "timeSystem/Field.h"
 #include "timeSystem/GlastTimeHandler.h"
 #include "timeSystem/TimeInterval.h"
 #include "timeSystem/TimeFormat.h"
@@ -46,8 +45,6 @@ namespace {
   void TestTimeInterval();
 
   void TestTimeFormat();
-
-  void TestField();
 
   void TestBaryTimeComputer();
 
@@ -92,9 +89,6 @@ void TestTimeSystemApp::run() {
 
   // Test TimeFormat class.
   TestTimeFormat();
-
-  // Test Field class.
-  TestField();
 
   // Test BaryTimeComputer class.
   TestBaryTimeComputer();
@@ -1315,29 +1309,6 @@ namespace {
         ", " << moment.second << "), not (" << expected_moment.first << ", " << expected_moment.second << ") as expected." <<
         std::endl;
     }
-  }
-
-  void TestField() {
-    s_os.setMethod("TestField");
-    Field<double> d_field("Year", 2000.1);
-
-    double d_value = 0.;
-    d_field.get(d_value);
-    if (2000.1 != d_value) err() << "Field<double>::get(double &) returned " << d_value << ", not 2000.1, as expected" << std::endl;
-
-    long l_value = 0;
-    d_field.get(l_value);
-    if (2000 != l_value) err() << "Field<double>::get(long &) returned " << l_value << ", not 2000, as expected" << std::endl;
-
-    Field<long> l_field("Year", 2000);
-
-    d_value = 0.;
-    l_field.get(d_value);
-    if (2000. != d_value) err() << "Field<long>::get(double &) returned " << d_value << ", not 2000., as expected" << std::endl;
-
-    l_value = 0;
-    l_field.get(l_value);
-    if (2000 != l_value) err() << "Field<long>::get(long &) returned " << l_value << ", not 2000, as expected" << std::endl;
   }
 
   void TestBaryTimeComputer() {
