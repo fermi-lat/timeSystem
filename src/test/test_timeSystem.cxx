@@ -17,7 +17,6 @@
 #include "timeSystem/ElapsedTime.h"
 #include "timeSystem/EventTimeHandler.h"
 #include "timeSystem/Field.h"
-#include "timeSystem/GlastMetRep.h"
 #include "timeSystem/GlastTimeHandler.h"
 #include "timeSystem/TimeInterval.h"
 #include "timeSystem/TimeRep.h"
@@ -1500,11 +1499,13 @@ namespace {
     BaryTimeComputer & computer = BaryTimeComputer::getComputer();
 
     // Prepare a time to be barycentered and an expected result after barycentered.
-    GlastMetRep glast_met("TT", 2.123393677090199E+08); // TSTART in my_pulsar_events_v3.fits.
-    AbsoluteTime original = glast_met;
+    AbsoluteTime glast_tt_origin("TT", 51910, 64.184);
+    double glast_time = 2.123393677090199E+08; // TSTART in my_pulsar_events_v3.fits.
+    AbsoluteTime original = glast_tt_origin + ElapsedTime("TT", Duration(0, glast_time));
     AbsoluteTime result = original;
-    glast_met = GlastMetRep("TDB", 2.123393824137859E+08); // TSTART in my_pulsar_events_bary_v3.fits.
-    AbsoluteTime expected = glast_met;
+    AbsoluteTime glast_tdb_origin("TDB", 51910, 64.184);
+    glast_time = 2.123393824137859E+08; // TSTART in my_pulsar_events_bary_v3.fits.
+    AbsoluteTime expected = glast_tdb_origin + ElapsedTime("TDB", Duration(0, glast_time));
 
     // Set parameters for barycentering.
     double ra = 85.0482;
@@ -1609,8 +1610,9 @@ namespace {
 
     // Prepare test parameters in this method.
     std::string event_file = commonUtilities::joinPath(commonUtilities::getDataPath("timeSystem"), "my_pulsar_events_v3.fits");
-    GlastMetRep glast_met("TT", 2.123393677090199E+08); // TSTART in my_pulsar_events_v3.fits.
-    AbsoluteTime expected_glast = glast_met;
+    AbsoluteTime glast_tt_origin("TT", 51910, 64.184);
+    double glast_time = 2.123393677090199E+08; // TSTART in my_pulsar_events_v3.fits.
+    AbsoluteTime expected_glast = glast_tt_origin + ElapsedTime("TT", Duration(0, glast_time));
     AbsoluteTime expected_bogus2("TDB", 51912, 0.);
     double angular_tolerance = 0.;
 
@@ -1768,8 +1770,8 @@ namespace {
     // Test parsing a time string.
     std::string time_string = "12345.6789012345";
     AbsoluteTime result = handler->parseTimeString(time_string);
-    GlastMetRep glast_met("TT", 12345.6789012345);
-    AbsoluteTime expected = glast_met;
+    AbsoluteTime glast_tt_origin("TT", 51910, 64.184);
+    AbsoluteTime expected = glast_tt_origin + ElapsedTime("TT", Duration(0, 12345.6789012345));
     if (!result.equivalentTo(expected, time_tolerance)) {
       err() << "GlastTimeHandler::parseTimeString(\"" << time_string << "\") returned AbsoluteTime(" << result <<
         "), not equivalent to AbsoluteTime(" << expected << ") with tolerance of " << time_tolerance << "." << std::endl;
@@ -1778,8 +1780,8 @@ namespace {
     // Test parsing a time string, with a different time system.
     time_string = "12345.6789012345";
     result = handler->parseTimeString(time_string, "TDB");
-    glast_met = GlastMetRep("TDB", 12345.6789012345);
-    expected = glast_met;
+    AbsoluteTime glast_tdb_origin("TDB", 51910, 64.184);
+    expected = glast_tdb_origin + ElapsedTime("TDB", Duration(0, 12345.6789012345));
     if (!result.equivalentTo(expected, time_tolerance)) {
       err() << "GlastTimeHandler::parseTimeString(\"" << time_string << "\", \"TDB\") returned AbsoluteTime(" << result <<
         "), not equivalent to AbsoluteTime(" << expected << ") with tolerance of " << time_tolerance << "." << std::endl;
@@ -1787,8 +1789,8 @@ namespace {
 
     // Test reading header keyword value.
     result = handler->readHeader("TSTART");
-    glast_met = GlastMetRep("TT", 2.123393677090199E+08); // TSTART in my_pulsar_events_v3.fits.
-    expected = glast_met;
+    glast_time = 2.123393677090199E+08; // TSTART in my_pulsar_events_v3.fits.
+    expected = glast_tt_origin + ElapsedTime("TT", Duration(0, glast_time));
     if (!result.equivalentTo(expected, time_tolerance)) {
       err() << "GlastTimeHandler::readHeader(\"TSTART\") returned AbsoluteTime(" << result << "), not equivalent to AbsoluteTime(" <<
         expected << ") with tolerance of " << time_tolerance << "." << std::endl;
@@ -1807,8 +1809,8 @@ namespace {
 
     // Test reading header keyword value, requesting barycentering.
     result = handler->readHeader("TSTART", ra, dec);
-    glast_met = GlastMetRep("TDB", 2.123393824137859E+08); // TSTART in my_pulsar_events_bary_v3.fits.
-    expected = glast_met;
+    glast_time = 2.123393824137859E+08; // TSTART in my_pulsar_events_bary_v3.fits.
+    expected = glast_tdb_origin + ElapsedTime("TDB", Duration(0, glast_time));
     if (!result.equivalentTo(expected, time_tolerance)) {
       err() << "GlastTimeHandler::readHeader(\"TSTART\", " << ra << ", " << dec << ") returned AbsoluteTime(" << result <<
         "), not equivalent to AbsoluteTime(" << expected << ") with tolerance of " << time_tolerance << "." << std::endl;
@@ -1819,8 +1821,8 @@ namespace {
     handler->setNextRecord();  // Points to the second event.
     handler->setNextRecord();  // Points to the third event.
     result = handler->readColumn("TIME");
-    glast_met = GlastMetRep("TT", 2.123393750454886E+08); // TIME of the third row in my_pulsar_events_v3.fits.
-    expected = glast_met;
+    glast_time = 2.123393750454886E+08; // TIME of the third row in my_pulsar_events_v3.fits.
+    expected = glast_tt_origin + ElapsedTime("TT", Duration(0, glast_time));
     if (!result.equivalentTo(expected, time_tolerance)) {
       err() << "GlastTimeHandler::readColumn(\"TIME\", " << ra << ", " << dec << ") returned AbsoluteTime(" << result <<
         "), not equivalent to AbsoluteTime(" << expected << ") with tolerance of " << time_tolerance << "." << std::endl;
@@ -1831,8 +1833,8 @@ namespace {
     handler->setNextRecord();  // Points to the second event.
     handler->setNextRecord();  // Points to the third event.
     result = handler->readColumn("TIME", ra, dec);
-    glast_met = GlastMetRep("TDB", 2.123393897503012E+08); // TIME of the third row in my_pulsar_events_bary_v3.fits.
-    expected = glast_met;
+    glast_time = 2.123393897503012E+08; // TIME of the third row in my_pulsar_events_bary_v3.fits.
+    expected = glast_tdb_origin + ElapsedTime("TDB", Duration(0, glast_time));
     if (!result.equivalentTo(expected, time_tolerance)) {
       err() << "GlastTimeHandler::readColumn(\"TIME\", " << ra << ", " << dec << ") returned AbsoluteTime(" << result <<
         "), not equivalent to AbsoluteTime(" << expected << ") with tolerance of " << time_tolerance << "." << std::endl;
@@ -1845,8 +1847,7 @@ namespace {
     // Test parsing a time string.
     time_string = "12345.6789012345";
     result = handler->parseTimeString(time_string);
-    glast_met = GlastMetRep("TDB", 12345.6789012345);
-    expected = glast_met;
+    expected = glast_tdb_origin + ElapsedTime("TDB", Duration(0, 12345.6789012345));
     if (!result.equivalentTo(expected, time_tolerance)) {
       err() << "GlastTimeHandler::parseTimeString(\"" << time_string << "\") returned AbsoluteTime(" << result <<
         "), not equivalent to AbsoluteTime(" << expected << ") with tolerance of " << time_tolerance << "." << std::endl;
@@ -1855,8 +1856,7 @@ namespace {
     // Test parsing a time string, with a different time system.
     time_string = "12345.6789012345";
     result = handler->parseTimeString(time_string, "TT");
-    glast_met = GlastMetRep("TT", 12345.6789012345);
-    expected = glast_met;
+    expected = glast_tt_origin + ElapsedTime("TT", Duration(0, 12345.6789012345));
     if (!result.equivalentTo(expected, time_tolerance)) {
       err() << "GlastTimeHandler::parseTimeString(\"" << time_string << "\", \"TT\") returned AbsoluteTime(" << result <<
         "), not equivalent to AbsoluteTime(" << expected << ") with tolerance of " << time_tolerance << "." << std::endl;
@@ -1864,8 +1864,8 @@ namespace {
 
     // Test reading header keyword value, requesting barycentering.
     result = handler->readHeader("TSTART", ra, dec);
-    glast_met = GlastMetRep("TDB", 2.123393824137859E+08); // TSTART in my_pulsar_events_bary_v3.fits.
-    expected = glast_met;
+    glast_time = 2.123393824137859E+08; // TSTART in my_pulsar_events_bary_v3.fits.
+    expected = glast_tdb_origin + ElapsedTime("TDB", Duration(0, glast_time));
     if (!result.equivalentTo(expected, time_tolerance)) {
       err() << "GlastTimeHandler::readHeader(\"TSTART\", " << ra << ", " << dec << ") returned AbsoluteTime(" << result <<
         "), not equivalent to AbsoluteTime(" << expected << ") with tolerance of " << time_tolerance << "." << std::endl;
@@ -1892,8 +1892,8 @@ namespace {
     handler->setNextRecord();  // Points to the second event.
     handler->setNextRecord();  // Points to the third event.
     result = handler->readColumn("TIME", ra, dec);
-    glast_met = GlastMetRep("TDB", 2.123393897503012E+08); // TIME of the third row in my_pulsar_events_bary_v3.fits.
-    expected = glast_met;
+    glast_time = 2.123393897503012E+08; // TIME of the third row in my_pulsar_events_bary_v3.fits.
+    expected = glast_tdb_origin + ElapsedTime("TDB", Duration(0, glast_time));
     if (!result.equivalentTo(expected, time_tolerance)) {
       err() << "GlastTimeHandler::readColumn(\"TIME\", " << ra << ", " << dec << ") returned AbsoluteTime(" << result <<
         "), not equivalent to AbsoluteTime(" << expected << ") with tolerance of " << time_tolerance << "." << std::endl;
