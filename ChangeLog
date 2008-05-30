@@ -1,5 +1,14 @@
 ------------------------------------------------------------
 User: hirayama  Fri May 30 10:59:09 PDT 2008
+timeSystem/src
+
+Modified Files:
+	TimeSystem.cxx AbsoluteTime.cxx 
+Log Message:
+Remove methods that use Moment typedef and replace them with ones that use moment_type typedef.
+    *
+------------------------------------------------------------
+User: hirayama  Fri May 30 10:59:09 PDT 2008
 timeSystem/timeSystem
 
 Modified Files:
