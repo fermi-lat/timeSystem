@@ -6,9 +6,9 @@
 #ifndef timeSystem_AbsoluteTime_h
 #define timeSystem_AbsoluteTime_h
 
-#include <string>
-
 #include "timeSystem/Duration.h"
+
+#include <string>
 
 namespace st_stream {
   class OStream;
@@ -95,10 +95,6 @@ namespace timeSystem {
       void write(StreamType & os) const;
 
     private:
-      // TODO: Remove convert methods below, by modifying TimeSystem class to accept a moment_type object.
-      Moment convert(const moment_type & time) const;
-      moment_type convert(const TimeSystem & time_system, const Moment & time) const;
-
       // Prohibited operations:
       // These are not physical because TimeInterval is "anchored" to its endpoints, which are absolute moments in time.
       // In general, neither endpoint of the TimeInterval is the same as "this" AbsoluteTime. Note that similar operators

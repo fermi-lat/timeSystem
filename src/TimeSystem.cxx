@@ -31,96 +31,65 @@ namespace {
     public:
       TaiSystem(): TimeSystem("TAI") {}
 
-      virtual Moment convertFrom(const TimeSystem & time_system, const Moment & time) const;
-
-      virtual Duration computeTimeDifference(const Duration & mjd1, const Duration & mjd2) const;
-
-      virtual Duration computeMjd(const Moment & time) const;
-
+      virtual moment_type convertFrom(const TimeSystem & time_system, const moment_type & moment) const;
   };
 
   class TdbSystem : public TimeSystem {
     public:
       TdbSystem(): TimeSystem("TDB") {}
 
-      virtual Moment convertFrom(const TimeSystem & time_system, const Moment & time) const;
-
-      virtual Duration computeTimeDifference(const Duration & mjd1, const Duration & mjd2) const;
-
-      virtual Duration computeMjd(const Moment & time) const;
-
       Duration computeTdbMinusTt(const Duration & mjd) const;
 
+      virtual moment_type convertFrom(const TimeSystem & time_system, const moment_type & moment) const;
   };
 
   class TtSystem : public TimeSystem {
     public:
       TtSystem(): TimeSystem("TT") {}
 
-      virtual Moment convertFrom(const TimeSystem & time_system, const Moment & time) const;
-
-      virtual Duration computeTimeDifference(const Duration & mjd1, const Duration & mjd2) const;
-
-      virtual Duration computeMjd(const Moment & time) const;
-
+      virtual moment_type convertFrom(const TimeSystem & time_system, const moment_type & moment) const;
   };
 
   class UtcSystem : public TimeSystem {
     public:
       UtcSystem();
 
-      virtual Moment convertFrom(const TimeSystem & time_system, const Moment & time) const;
+      virtual Duration computeTimeDifference(const moment_type & moment1, const moment_type & moment2) const;
 
-      virtual Duration computeTimeDifference(const Duration & mjd1, const Duration & mjd2) const;
+      virtual moment_type computeAdvancedTime(const moment_type & moment, const Duration & elapsed) const;
 
-      virtual Duration computeMjd(const Moment & time) const;
+      virtual moment_type convertFrom(const TimeSystem & time_system, const moment_type & moment) const;
 
       void loadLeapSecTable(const std::string & leap_sec_file_name, bool force_load);
 
-      Moment convertTaiToUtc(const Moment & tai_time) const;
+      moment_type convertTaiToUtc(const moment_type & tai_moment) const;
 
-      Moment convertUtcToTai(const Moment & utc_time) const;
+      moment_type convertUtcToTai(const moment_type & utc_moment) const;
 
     private:
-      struct leapdata_type {
-	leapdata_type(): m_leap_end(Duration(0, 0.)), m_inserted(true), m_time_diff(Duration(0, 0.)), m_leap_end_dest(Duration(0, 0.)) {}
-	leapdata_type(const Duration & leap_end, const bool & inserted, const Duration & time_diff, const Duration & leap_end_dest):
-          m_leap_end(leap_end), m_inserted(inserted), m_time_diff(time_diff), m_leap_end_dest(leap_end_dest) {}
+      typedef std::map<long, long> new_leaptable_type;
+      new_leaptable_type m_leap_table;
+      // Note: The cumulative number of leap seconds since its introduction at the beginning of the date
+      //       whose MJD in UTC is given by the key of the std::map object.
 
-        Duration m_leap_end;       // MJD number for a moment immediately after a leap second is inserted or removed.
-        bool m_inserted;           // flag to store whether a leap second is inserted (true) or removed (false).
-        Duration m_time_diff;      // time difference between TAI and UTC after a leap second is inserted or removed.
-        Duration m_leap_end_dest;  // Same as m_leap_end, but in a time system to be converted to.
-      };
-      typedef std::map<Duration, leapdata_type> leaptable_type;
-      leaptable_type m_tai_minus_utc;
-      leaptable_type m_utc_minus_tai;
-
+      long getCumulativeLeapSec(long mjd) const;
   };
 
-  Moment TaiSystem::convertFrom(const TimeSystem & time_system, const Moment & time) const {
+  moment_type TaiSystem::convertFrom(const TimeSystem & time_system, const moment_type & moment) const {
     if (&time_system != this) {
       if ("TDB" == time_system.getName()) {
         const TimeSystem & tt(getSystem("TT"));
-        return convertFrom(tt, tt.convertFrom(time_system, time));
+        return convertFrom(tt, tt.convertFrom(time_system, moment));
       } else if ("TT" == time_system.getName()) {
-        return Moment(time.first, time.second + Duration(0, TaiMinusTtSec()));
+        return computeAdvancedTime(moment, Duration(0, TaiMinusTtSec()));
       } else if ("UTC" == time_system.getName()) {
         const UtcSystem & utc_system = dynamic_cast<const UtcSystem &>(getSystem("UTC"));
-        return utc_system.convertUtcToTai(time);
+        return utc_system.convertUtcToTai(moment);
       } else {
         throw std::logic_error("Conversion from " + time_system.getName() + " to " + getName() + " is not implemented");
       }
     }
-    return time;
-  }
-
-  Duration TaiSystem::computeTimeDifference(const Duration & mjd1, const Duration & mjd2) const {
-    return mjd1 - mjd2;
-  }
-
-  Duration TaiSystem::computeMjd(const Moment & time) const {
-    return time.first + time.second;
+    return moment;
   }
 
   Duration TdbSystem::computeTdbMinusTt(const Duration & mjd_tt) const {
@@ -133,34 +102,26 @@ namespace {
 
   }
 
-  Moment TdbSystem::convertFrom(const TimeSystem & time_system, const Moment & time) const {
+  moment_type TdbSystem::convertFrom(const TimeSystem & time_system, const moment_type & moment) const {
     if (&time_system != this) {
       if ("TAI" == time_system.getName() || "UTC" == time_system.getName()) {
         const TimeSystem & tt(getSystem("TT"));
-        return convertFrom(tt, tt.convertFrom(time_system, time));
+        return convertFrom(tt, tt.convertFrom(time_system, moment));
       } else if ("TT" == time_system.getName()) {
-        Duration src = time.first + time.second;
-        Duration dest = src + computeTdbMinusTt(src);
-        return Moment(dest, Duration(0, 0.));
+        Duration src(moment.first, moment.second);
+        Duration delta = computeTdbMinusTt(src);
+        return computeAdvancedTime(moment, delta);
       } else {
         throw std::logic_error("Conversion from " + time_system.getName() + " to " + getName() + " is not implemented");
       }
     }
-    return time;
+    return moment;
   }
 
-  Duration TdbSystem::computeTimeDifference(const Duration & mjd1, const Duration & mjd2) const {
-    return mjd1 - mjd2;
-  }
-
-  Duration TdbSystem::computeMjd(const Moment & time) const {
-    return time.first + time.second;
-  }
-
-  Moment TtSystem::convertFrom(const TimeSystem & time_system, const Moment & time) const {
+  moment_type TtSystem::convertFrom(const TimeSystem & time_system, const moment_type & moment) const {
     if (&time_system != this) {
       if ("TAI" == time_system.getName()) {
-        return Moment(time.first, time.second + Duration(0, TtMinusTaiSec()));
+        return computeAdvancedTime(moment, Duration(0, TtMinusTaiSec()));
       } else if ("TDB" == time_system.getName()) {
         // Prepare for time conversion from TDB to TT.
         static const TdbSystem & tdb_system = dynamic_cast<const TdbSystem &>(getSystem("TDB"));
@@ -168,7 +129,7 @@ namespace {
         const Duration epsilon(0, 100.e-9); // 100 ns, to match Arnold Rots's function ctatv().
 
         // Compute MJD number for input time
-        Duration src = time.first + time.second;
+        Duration src(moment.first, moment.second);
 
         // 1st approximation of MJD time in TT system.
         Duration dest = src;
@@ -186,178 +147,141 @@ namespace {
           diff = tdb_system.computeTdbMinusTt(dest);
 
           // check whether binary demodulation successfully converged or not
-          if (src.equivalentTo(dest + diff, epsilon)) return Moment(dest, Duration(0, 0.));
+          if (src.equivalentTo(dest + diff, epsilon)) {
+            long mjd_day = dest.getValue(Day).getIntegerPart();
+            double mjd_sec = (dest - Duration(mjd_day, 0.)).getValue(Sec).getDouble();
+            return moment_type(mjd_day, mjd_sec);
+          }
         }
 
         // Conversion from TDB to TT not converged (error)
         throw std::runtime_error("Conversion from " + time_system.getName() + " to " + getName() + " did not converge");
       } else if ("UTC" == time_system.getName()) {
         const TimeSystem & tai(getSystem("TAI"));
-        return convertFrom(tai, tai.convertFrom(time_system, time));
+        return convertFrom(tai, tai.convertFrom(time_system, moment));
       } else {
         throw std::logic_error("Conversion from " + time_system.getName() + " to " + getName() + " is not implemented");
       }
     }
-    return time;
-  }
-
-  Duration TtSystem::computeTimeDifference(const Duration & mjd1, const Duration & mjd2) const {
-    return mjd1 - mjd2;
-  }
-
-  Duration TtSystem::computeMjd(const Moment & time) const {
-    return time.first + time.second;
+    return moment;
   }
 
   UtcSystem::UtcSystem(): TimeSystem("UTC") {}
 
-  Moment UtcSystem::convertFrom(const TimeSystem & time_system, const Moment & time) const {
+  moment_type UtcSystem::convertFrom(const TimeSystem & time_system, const moment_type & moment) const {
     if (&time_system != this) {
       if ("TAI" == time_system.getName()) {
-        return convertTaiToUtc(time);
+        return convertTaiToUtc(moment);
       } else if ("TDB" == time_system.getName() || "TT" == time_system.getName()) {
         const TimeSystem & tai(getSystem("TAI"));
-        return convertFrom(tai, tai.convertFrom(time_system, time));
+        return convertFrom(tai, tai.convertFrom(time_system, moment));
       } else {
         throw std::logic_error("Conversion from " + time_system.getName() + " to " + getName() + " is not implemented");
       }
     }
-    return time;
+    return moment;
   }
 
-  Duration UtcSystem::computeTimeDifference(const Duration & mjd1, const Duration & mjd2) const {
-    Moment tai1 = convertUtcToTai(Moment(mjd1, Duration(0, 0.)));
-    Moment tai2 = convertUtcToTai(Moment(mjd2, Duration(0, 0.)));
-    return (tai1.first - tai2.first) + (tai1.second - tai2.second);
+  Duration UtcSystem::computeTimeDifference(const moment_type & moment1, const moment_type & moment2) const {
+    // Compute the cumulative numbers of leap seconds at the beginning of MJD given by moment1.first and moment2.first.
+    long leap1 = getCumulativeLeapSec(moment1.first);
+    long leap2 = getCumulativeLeapSec(moment2.first);
+
+    // Compute and return the time difference.
+    return Duration(moment1.first - moment2.first, moment1.second - moment2.second + leap1 - leap2);
   }
 
-  Duration UtcSystem::computeMjd(const Moment & time) const {
-    const TimeSystem & tai_system(TimeSystem::getSystem("TAI"));
+  moment_type UtcSystem::computeAdvancedTime(const moment_type & moment, const Duration & elapsed) const {
+    // Compute candidate MJD for the advanced moment of time.
+    moment_type tentative_moment = TimeSystem::computeAdvancedTime(moment, elapsed);
+    long mjd_day = tentative_moment.first;
 
-    // "Add" elapsed time to origin. To do it correctly, it should be
-    // done in a time system without a leap second, such as TAI.
-    Moment tai_time = tai_system.convertFrom(*this, time);
+    // Adjust the day part of MJD for potential leap second insersions or removals.
+    long mjd_day_adjust = 0;
+    for (; elapsed > computeTimeDifference(moment_type(mjd_day + mjd_day_adjust, 0.), moment); ++mjd_day_adjust) {}
+    if (mjd_day_adjust > 0) {
+      --mjd_day_adjust;
+    } else {
+      for (; elapsed < computeTimeDifference(moment_type(mjd_day + mjd_day_adjust, 0.), moment); --mjd_day_adjust) {}
+    }
+    mjd_day += mjd_day_adjust;
 
-    // Produce a combined single tai Duration.
-    Duration mjd_tai = tai_time.first + tai_time.second;
+    // Compute the number of seconds since the beginning of the MJD.
+    Duration residual = elapsed - computeTimeDifference(moment_type(mjd_day, 0.), moment);
+    double mjd_sec = residual.getValue(Sec).getDouble();
 
-    // Start from the end of the leap second table and go backwards, stopping at the first leap time
-    // which is <= the given time.
-    leaptable_type::const_reverse_iterator itor = m_utc_minus_tai.rbegin();
-    for (; (itor != m_utc_minus_tai.rend()) && (mjd_tai < itor->first); ++itor) {}
-    if (itor == m_utc_minus_tai.rend()) {
-      // Fell of the rend (that is the beginning) so this time is too early.
+    // Return the advanced moment of time.
+    return moment_type(mjd_day, mjd_sec);
+  }
+
+  long UtcSystem::getCumulativeLeapSec(long mjd) const {
+    // Find the first entry of the leap second table which is <= the given MJD.
+    new_leaptable_type::const_reverse_iterator itor = m_leap_table.rbegin();
+    for (; (itor != m_leap_table.rend()) && (mjd < itor->first); ++itor) {}
+
+    // Check if it fell of the rend (that is the beginning) so this time is too early for UTC.
+    if (itor == m_leap_table.rend()) {
       std::ostringstream os;
-      os << "UtcSystem::computeMjd cannot compute MJD of the Moment(" << time.first << ", " << time.second << ") (UTC)";
+      os << "The leap-second table is looked up for " << mjd << ".0 MJD (UTC), which is before its first entry " <<
+        m_leap_table.begin()->first << ".0 MJD (UTC).";
       throw std::runtime_error(os.str());
     }
 
-    Duration result;
-    if ((!(itor->second.m_inserted)) || (itor->second.m_leap_end <= mjd_tai)) {
-      // General case: a numerical difference between MJD (UTC) and MJD (TAI) is constant over time.
-      result = mjd_tai + itor->second.m_time_diff;
-    } else {
-      // Leap second(s) being inserted: MJD (UTC) stays constant while MJD (TAI) grows.
-      // In this case, the end of the leap-second insertion is chosen as a resultant MJD number,
-      // to avoid any loss of precision in computating a time origin near a leap-second insertion, where
-      // a tiny difference in MJD number can make a big difference in time being pointed by one second.
-      result = itor->second.m_leap_end_dest;
-    }
-
-    return result;
+    // Return the contents of the entry.
+    return itor->second;
   }
 
   void UtcSystem::loadLeapSecTable(const std::string & leap_sec_file_name, bool force_load) {
     // Prevent loading unless it hasn't been done or caller demands it.
-    if (!(force_load || m_tai_minus_utc.empty() || m_utc_minus_tai.empty())) return;
+    if (!(force_load || m_leap_table.empty())) return;
 
     // Erase previously loaded leap seconds definitions.
-    m_tai_minus_utc.clear();
-    m_utc_minus_tai.clear();
+    m_leap_table.clear();
 
     // Read MJD and number of leap seconds from table.
     std::auto_ptr<const tip::Table> leap_sec_table(tip::IFileSvc::instance().readTable(leap_sec_file_name, "1"));
-    double time_diff = 10.;
+    long cumulative_leap_sec = 0;
     for (tip::Table::ConstIterator itor = leap_sec_table->begin(); itor != leap_sec_table->end(); ++itor) {
       // Read the MJD and LEAPSECS from the table.
       double mjd_dbl = (*itor)["MJD"].get();
-      double leap_sec = (*itor)["LEAPSECS"].get();
+      double leap_sec_dbl = (*itor)["LEAPSECS"].get();
 
       // Make sure the MJD for the leap second is a whole number of days.
       long mjd = long(mjd_dbl + .5);
       if (mjd != mjd_dbl) throw std::logic_error("UtcSystem: leapsec.fits unexpectedly contained a non-integral MJD value");
 
-      // Pre-compute leap second data for conversion tables.
-      time_diff += leap_sec;
-      bool inserted = (leap_sec > 0);
-      Duration mjd_end_utc(mjd, 0.);
-      Duration mjd_end_tai(mjd, time_diff);
-      Duration mjd_start_utc = (inserted ? mjd_end_utc : Duration(mjd, leap_sec));
-      Duration mjd_start_tai = (inserted ? Duration(mjd, time_diff - leap_sec) : mjd_end_tai);
+      // Make sure the leap second is a whole number of seconds.
+      long leap_sec = long(leap_sec_dbl + (leap_sec_dbl > 0 ? .5 : -.5));
+      if (leap_sec != leap_sec_dbl) throw std::logic_error("UtcSystem: leapsec.fits unexpectedly contained a non-integral LEAPSECS value");
+      cumulative_leap_sec += leap_sec;
 
       // Add an entry to conversion tables.
-      m_tai_minus_utc[mjd_start_utc] = leapdata_type(mjd_end_utc, inserted, Duration(0, time_diff), mjd_end_tai);
-      m_utc_minus_tai[mjd_start_tai] = leapdata_type(mjd_end_tai, inserted, Duration(0, -time_diff), mjd_end_utc);
+      m_leap_table[mjd] = cumulative_leap_sec;
     }
   }
 
-  Moment UtcSystem::convertTaiToUtc(const Moment & tai_time) const {
-    // Produce a combined single MJD number in TAI system.
-    Duration mjd_tai = tai_time.first + tai_time.second;
+  moment_type UtcSystem::convertTaiToUtc(const moment_type & tai_moment) const {
+    // Rationalize the given time moment, so that the second portion is below 86400.0.
+    // TODO: Use TaiSystem::computeAdvancedTime method.
+    moment_type tai_moment_rat = TimeSystem::computeAdvancedTime(moment_type(tai_moment.first, 0.), Duration(0, tai_moment.second));
 
-    // Start from the end of the leap second table and go backwards, stopping at the first leap time
-    // which is <= the given time.
-    leaptable_type::const_reverse_iterator itor = m_utc_minus_tai.rbegin();
-    for (; (itor != m_utc_minus_tai.rend()) && (mjd_tai < itor->first); ++itor) {}
-    if (itor == m_utc_minus_tai.rend()) {
-      // Fell of the rend (that is the beginning) so this time is too early.
-      std::ostringstream os;
-      os << "UtcSystem::convertTaiToUtc cannot convert to UTC the Moment(" << tai_time.first << ", " << tai_time.second <<
-        " in TAI.";
-      throw std::runtime_error(os.str());
-    }
+    // Compute UTC - TAI in seconds.
+    long utc_minus_tai = -10 - getCumulativeLeapSec(tai_moment_rat.first);
 
-    Moment result;
-    if ((!(itor->second.m_inserted)) || (itor->second.m_leap_end <= mjd_tai)) {
-      // General case: a numerical difference between MJD (UTC) and MJD (TAI) is constant over time.
-      result = Moment(mjd_tai + itor->second.m_time_diff, Duration(0, 0.));
-    } else {
-      // Leap second(s) being inserted: MJD (UTC) stays constant while MJD (TAI) grows.
-      // In this case, the end of the leap-second insertion is chosen as a time origin of returning Moment,
-      // to avoid any loss of precision in computating a time origin near a leap-second insertion, where
-      // a tiny difference in MJD number can make a big difference in time being pointed by one second.
-      result = Moment(itor->second.m_leap_end_dest, mjd_tai - itor->second.m_leap_end);
-    }
-
-    return result;
+    // Add the UTC - TAI to the given time moment.
+    return computeAdvancedTime(tai_moment_rat, Duration(0, utc_minus_tai));
   }
 
-  Moment UtcSystem::convertUtcToTai(const Moment & utc_time) const {
-    // Start from the end of the leap second table and go backwards, stopping at the first leap time
-    // which is <= the given time.
-    leaptable_type::const_reverse_iterator itor = m_tai_minus_utc.rbegin();
-    for (; (itor != m_tai_minus_utc.rend()) && (utc_time.first < itor->first); ++itor) {}
-    if (itor == m_tai_minus_utc.rend()) {
-      // Fell of the rend (that is the beginning) so this time is too early.
-      std::ostringstream os;
-      os << "UtcSystem::convertUtcToTai cannot convert to TAI the Moment(" << utc_time.first << ", " << utc_time.second <<
-        ") in UTC.";
-      throw std::runtime_error(os.str());
-    }
+  moment_type UtcSystem::convertUtcToTai(const moment_type & utc_moment) const {
+    // Compute TAI - UTC in seconds.
+    // Note: The given time moment must be interpreted as is, so that the leap-second table is properly looked up.
+    long tai_minus_utc = 10 + getCumulativeLeapSec(utc_moment.first);
 
-    Moment result;
-    if (itor->second.m_inserted || (itor->second.m_leap_end <= utc_time.first)) {
-      // General case: a numerical difference between MJD (UTC) and MJD (TAI) is constant over time.
-      result = Moment(utc_time.first + itor->second.m_time_diff, utc_time.second);
-    } else {
-      // Leap second(s) being removed: any MJD (UTC) corresponds to a single MJD (TAI).
-      // In this case, utc_time.first MJD (UTC) points to an unphysical time during leap second(s) being removed
-      // where any MJD (UTC) is interpreted as the end time of the leap-second removal.
-      result = Moment(itor->second.m_leap_end_dest, utc_time.second);
-    }
-
-    return result;
+    // Add the TAI - UTC to the given time moment.
+    // TODO: Use TaiSystem::computeAdvancedTime method.
+    return TimeSystem::computeAdvancedTime(utc_moment, Duration(0, tai_minus_utc));
   }
+
 }
 
 namespace timeSystem {
@@ -422,6 +346,23 @@ namespace timeSystem {
 
   std::string TimeSystem::getName() const {
     return m_system_name;
+  }
+
+  Duration TimeSystem::computeTimeDifference(const moment_type & moment1, const moment_type & moment2) const {
+    return Duration(moment1.first - moment2.first, moment1.second - moment2.second);
+  }
+
+  moment_type TimeSystem::computeAdvancedTime(const moment_type & moment, const Duration & elapsed) const {
+    // Compute the total elapsed time since 0.0 MJD.
+    Duration elapsed_total = Duration(moment.first, moment.second) + elapsed;
+
+    // Split the total elapsed time into days and seconds.
+    long elapsed_day = elapsed_total.getValue(Day).getIntegerPart();
+    Duration elapsed_residual = elapsed_total - Duration(elapsed_day, 0.);
+    double elapsed_sec = elapsed_residual.getValue(Sec).getDouble();
+
+    // Return the advanced moment of time.
+    return moment_type(elapsed_day, elapsed_sec);
   }
 
   std::ostream & operator <<(std::ostream & os, const TimeSystem & sys) {
