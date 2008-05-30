@@ -31,11 +31,11 @@ namespace timeSystem {
 
       virtual ~TimeSystem();
 
-      virtual Moment convertFrom(const TimeSystem & time_system, const Moment & time) const = 0;
+      virtual moment_type convertFrom(const TimeSystem & time_system, const moment_type & moment) const = 0;
 
-      virtual Duration computeTimeDifference(const Duration & mjd1, const Duration & mjd2) const = 0;
+      virtual Duration computeTimeDifference(const moment_type & moment1, const moment_type & moment2) const;
 
-      virtual Duration computeMjd(const Moment & time) const = 0;
+      virtual moment_type computeAdvancedTime(const moment_type & moment, const Duration & elapsed) const;
 
       std::string getName() const;
 
