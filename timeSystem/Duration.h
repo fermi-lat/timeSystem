@@ -267,8 +267,6 @@ namespace timeSystem {
     return os;
   }
 
-  typedef std::pair<Duration, Duration> Moment;
-
 }
 
 #endif
