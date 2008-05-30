@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Fri May 30 16:12:54 PDT 2008
+timeSystem/timeSystem
+
+Modified Files:
+	TimeSystem.h 
+Log Message:
+Separate a leap-second table from UtcSystem. Separate computeTdbMinusTt method from TdbSystem. Remove covertTaiToUtc and convertUtcToTai methods of UtcSystem. Remove TimeSystem::getNonConstContainer.
+    *
+------------------------------------------------------------
 User: hirayama  Fri May 30 10:59:28 PDT 2008
 timeSystem/timeSystem
 
