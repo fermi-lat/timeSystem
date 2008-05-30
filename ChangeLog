@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Fri May 30 10:59:28 PDT 2008
+timeSystem/timeSystem
+
+Modified Files:
+	Duration.h 
+Log Message:
+Remove Moment typedef.
+    *
+------------------------------------------------------------
 User: hirayama  Fri May 30 10:59:09 PDT 2008
 timeSystem/src/test
 
