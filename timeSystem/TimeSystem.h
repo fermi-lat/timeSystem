@@ -43,7 +43,7 @@ namespace timeSystem {
       void write(StreamType & os) const;
 
     protected:
-      typedef std::map<std::string, TimeSystem *> container_type;
+      typedef std::map<std::string, const TimeSystem *> container_type;
 
       static container_type & getContainer();
 
@@ -52,9 +52,6 @@ namespace timeSystem {
       TimeSystem(const std::string & system_name);
 
       std::string m_system_name;
-
-    private:
-      static TimeSystem & getNonConstSystem(const std::string & system_name);
   };
 
   template <typename StreamType>
