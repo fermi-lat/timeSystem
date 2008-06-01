@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Sun Jun  1 16:49:20 PDT 2008
+timeSystem/timeSystem
+
+Modified Files:
+	IntFracPair.h TimeFormat.h 
+Log Message:
+Add a TODO marker.
+    *
+------------------------------------------------------------
 User: hirayama  Sun Jun  1 16:48:48 PDT 2008
 timeSystem/src/test
 
