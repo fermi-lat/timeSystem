@@ -20,6 +20,7 @@ namespace timeSystem {
     public:
       IntFracPair(): m_int_part(0), m_frac_part(0.) {}
 
+      // TODO: What if frac_part is out of [0., 1.) range?
       IntFracPair(long int_part, double frac_part): m_int_part(int_part), m_frac_part(frac_part) {}
 
       IntFracPair(double value) {
