@@ -34,6 +34,7 @@ namespace timeSystem {
 
       TimeFormat(const std::string & format_name);
 
+      // TODO: Remove m_format_name (not used at all).
       std::string m_format_name;
   };
 
