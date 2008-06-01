@@ -60,7 +60,7 @@ namespace timeSystem {
     if ("FILE" == time_system_rat) time_system_rat = m_time_system;
 
     // Parse time string into an absolute time, and return it.
-    return AbsoluteTime(time_system_rat, m_mjd_ref) + ElapsedTime(time_system_rat, Duration(IntFracPair(time_string), Sec));
+    return AbsoluteTime(time_system_rat, m_mjd_ref) + ElapsedTime(time_system_rat, Duration(time_string, "Sec"));
   }
 
   EventTimeHandler * GlastTimeHandler::createInstance(const std::string & file_name, const std::string & extension_name,
