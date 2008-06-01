@@ -17,6 +17,7 @@
 #include "timeSystem/ElapsedTime.h"
 #include "timeSystem/EventTimeHandler.h"
 #include "timeSystem/GlastTimeHandler.h"
+#include "timeSystem/IntFracPair.h"
 #include "timeSystem/TimeInterval.h"
 #include "timeSystem/TimeFormat.h"
 #include "timeSystem/TimeSystem.h"
@@ -110,17 +111,80 @@ namespace {
     return s_os.err() << prefix;
   }
 
-  // TODO: Replace TestParameter with new method like TestOneUnitConversion.
-  struct TestParameter {
-    TestParameter(long day, double sec, TimeUnit_e unit, long int_part, double frac_part, double tolerance):
-      m_day(day), m_sec(sec), m_unit(unit), m_int_part(int_part), m_frac_part(frac_part), m_tolerance(tolerance) {};
-    long m_day;
-    double m_sec;
-    TimeUnit_e m_unit;
-    long m_int_part;
-    double m_frac_part;
-    double m_tolerance;
-  };
+  void TestDurationGetter(long day, double sec, const std::string & unit_name, long int_part, double frac_part, double tolerance) {
+#if 0
+    // Test the getter that takes a time unit name only.
+    IntFracPair result_int_frac = Duration(day, sec).getValue(unit_name);
+    IntFracPair expected_int_frac(int_part, frac_part);
+    if (!(int_part == result_int_frac.getIntegerPart() &&
+      std::fabs(frac_part - result_int_frac.getFractionalPart()) < tolerance)) {
+      err() << "Duration(" << day << ", " << sec << ").getValue(" << unit_name << ") returned " <<
+        result_int_frac << ", not " << expected_int_frac << " as expected." << std::endl;
+    }
+#endif
+    // Test the getter that takes a long variable, a double variable, and a time unit name.
+    long result_int = 0;
+    double result_frac = 0.;
+    Duration(day, sec).get(unit_name, result_int, result_frac);
+    if (!(int_part == result_int && std::fabs(frac_part - result_frac) < tolerance)) {
+      err() << "Duration(" << day << ", " << sec << ").get(int_part, frac_part, " << unit_name <<
+        ") returned (int_part, frac_part) = (" << result_int << ", " << result_frac << "), not (" << int_part << ", " <<
+        frac_part << ") as expected." << std::endl;
+    }
+
+    // Test the getter that takes a double variable and a time unit name.
+    double result_double = 0.;
+    Duration(day, sec).get(unit_name, result_double);
+    double expected_double = int_part + frac_part;
+    if (std::fabs(expected_double - result_double) > tolerance) {
+      err() << "Duration(" << day << ", " << sec << ").get(result_double, " << unit_name << ") returned result_double = " <<
+        result_double << ", not " << expected_double << " as expected." << std::endl;
+    }
+
+    // Test the getter that takes a time unit name only.
+    result_double = Duration(day, sec).get(unit_name);
+    expected_double = int_part + frac_part;
+    if (std::fabs(expected_double - result_double) > tolerance) {
+      err() << "Duration(" << day << ", " << sec << ").get(" << unit_name << ") returned " <<
+        result_double << ", not " << expected_double << " as expected." << std::endl;
+    }
+  }
+
+  void TestDurationConstructor(const std::string & unit_name, long int_part, double frac_part, const std::string & time_string,
+    const Duration & expected_result, const Duration & tolerance_high, const Duration & tolerance_low) {
+#if 0
+    // Test the constructor that takes an IntFracPair object.
+    Duration result(IntFracPair(int_part, frac_part), unit_name);
+    if (!result.equivalentTo(expected_result, tolerance_high)) {
+      err() << "Duration(IntFracPair(" << int_part << ", " << frac_part << "), \"" << unit_name <<
+        "\") created Duration of " << result << ", not equivalent to Duration of " << expected_result <<
+        " with tolerance of " << tolerance_high << "." << std::endl;
+    }
+#endif
+    // Test the constructor that takes a pair of long and double variables.
+    Duration result(int_part, frac_part, unit_name);
+    if (!result.equivalentTo(expected_result, tolerance_high)) {
+      err() << "Duration(" << int_part << ", " << frac_part << ", \"" << unit_name <<
+        "\") created Duration of " << result << ", not equivalent to Duration of " << expected_result <<
+        " with tolerance of " << tolerance_high << "." << std::endl;
+    }
+
+    // Test the constructor that takes a double variable.
+    result = Duration(int_part + frac_part, unit_name);
+    if (!result.equivalentTo(expected_result, tolerance_low)) {
+      err() << "Duration(" << int_part + frac_part << ", \"" << unit_name <<
+        "\") created Duration of " << result << ", not equivalent to Duration of " << expected_result <<
+        " with tolerance of " << tolerance_low << "." << std::endl;
+    }
+
+    // Test the constructor that takes a std::string object.
+    result = Duration(time_string, unit_name);
+    if (!result.equivalentTo(expected_result, tolerance_high)) {
+      err() << "Duration(\"" << time_string << "\", \"" << unit_name <<
+        "\") created Duration of " << result << ", not equivalent to Duration of " << expected_result <<
+        " with tolerance of " << tolerance_high << "." << std::endl;
+    }
+  }
 
   void TestOneComparison(const std::string & comparator, const Duration & dur1, const Duration & dur2,
     bool expected_result) {
@@ -164,81 +228,45 @@ namespace {
 
   void TestDuration() {
     s_os.setMethod("TestDuration");
-
-    std::list<TestParameter> parameter_list;
     double epsilon = std::numeric_limits<double>::epsilon();
 
-    // For tests of Duration::getValue() method for Duration of +6 days.
-    parameter_list.push_back(TestParameter(6, 0., Day,  6,         0., epsilon));
-    parameter_list.push_back(TestParameter(6, 0., Hour, 6 * 24,    0., epsilon));
-    parameter_list.push_back(TestParameter(6, 0., Min,  6 * 1440,  0., epsilon));
-    parameter_list.push_back(TestParameter(6, 0., Sec,  6 * 86400, 0., epsilon));
+    // For tests of Duration getters for duration of +6 days.
+    TestDurationGetter(6, 0., "Day",  6,         0., epsilon);
+    TestDurationGetter(6, 0., "Hour", 6 * 24,    0., epsilon);
+    TestDurationGetter(6, 0., "Min",  6 * 1440,  0., epsilon);
+    TestDurationGetter(6, 0., "Sec",  6 * 86400, 0., epsilon);
 
-    // For tests of Duration::getValue() method for Duration of +6 seconds.
-    parameter_list.push_back(TestParameter(0, 6., Day,  0, 6. / 86400., epsilon));
-    parameter_list.push_back(TestParameter(0, 6., Hour, 0, 6. / 3600.,  epsilon));
-    parameter_list.push_back(TestParameter(0, 6., Min,  0, 6. / 60.,    epsilon));
-    parameter_list.push_back(TestParameter(0, 6., Sec,  6, 0.,          epsilon));
+    // For tests of Duration::getters for duration of +6 seconds.
+    TestDurationGetter(0, 6., "Day",  0, 6. / 86400., epsilon);
+    TestDurationGetter(0, 6., "Hour", 0, 6. / 3600.,  epsilon);
+    TestDurationGetter(0, 6., "Min",  0, 6. / 60.,    epsilon);
+    TestDurationGetter(0, 6., "Sec",  6, 0.,          epsilon);
 
-    // For tests of Duration::getValue() method for Duration of -6 days.
-    parameter_list.push_back(TestParameter(-6, 0., Day,  -6,         0., epsilon));
-    parameter_list.push_back(TestParameter(-6, 0., Hour, -6 * 24,    0., epsilon));
-    parameter_list.push_back(TestParameter(-6, 0., Min,  -6 * 1440,  0., epsilon));
-    parameter_list.push_back(TestParameter(-6, 0., Sec,  -6 * 86400, 0., epsilon));
+    // For tests of Duration getters for duration of -6 days.
+    TestDurationGetter(-6, 0., "Day",  -6,         0., epsilon);
+    TestDurationGetter(-6, 0., "Hour", -6 * 24,    0., epsilon);
+    TestDurationGetter(-6, 0., "Min",  -6 * 1440,  0., epsilon);
+    TestDurationGetter(-6, 0., "Sec",  -6 * 86400, 0., epsilon);
 
-    // For tests of Duration::getValue() method for Duration of -6 seconds.
-    parameter_list.push_back(TestParameter(0, -6., Day,   0, -6. / 86400., epsilon));
-    parameter_list.push_back(TestParameter(0, -6., Hour,  0, -6. / 3600.,  epsilon));
-    parameter_list.push_back(TestParameter(0, -6., Min,   0, -6. / 60.,    epsilon));
-    parameter_list.push_back(TestParameter(0, -6., Sec,  -6,  0.,          epsilon));
+    // For tests of Duration::getters for duration of -6 seconds.
+    TestDurationGetter(0, -6., "Day",   0, -6. / 86400., epsilon);
+    TestDurationGetter(0, -6., "Hour",  0, -6. / 3600.,  epsilon);
+    TestDurationGetter(0, -6., "Min",   0, -6. / 60.,    epsilon);
+    TestDurationGetter(0, -6., "Sec",  -6,  0.,          epsilon);
 
-    // Run the tests prepared above.
-    std::string unit_name[] = { "Day", "Hour", "Min", "Sec"};
-    for (std::list<TestParameter>::iterator itor = parameter_list.begin(); itor != parameter_list.end(); itor++) {
-      IntFracPair time_value = Duration(itor->m_day, itor->m_sec).getValue(itor->m_unit);
-      if (!(itor->m_int_part == time_value.getIntegerPart() &&
-            std::fabs(itor->m_frac_part - time_value.getFractionalPart()) < itor->m_tolerance)) {
-        err() << "Duration(" << itor->m_day << ", " << itor->m_sec << ").getValue(" << unit_name[itor->m_unit] << ") returned " <<
-          time_value << ", not " << IntFracPair(itor->m_int_part, itor->m_frac_part) << " as expected." <<
-          std::endl;
-      }
-    }
-
-    // Tests of constructor taking IntFracPair.
+    // Tests of constructors.
     long int_part = 3456789;
     double frac_part = .56789567895678956789;
-    TimeUnit_e time_unit = Day;
-    Duration expected_result(int_part, frac_part*86400.);
-    Duration dur_tol(0, 1.e-9);
-    if (!Duration(IntFracPair(int_part, frac_part), time_unit).equivalentTo(expected_result, dur_tol)) {
-      err() << "Duration(IntFracPair(" << int_part << ", " << frac_part << "), " << unit_name[time_unit] <<
-        ").equivalentTo returned false for " << expected_result << " with tolerance of " << dur_tol <<
-        ", not true as expected." << Duration(IntFracPair(int_part, frac_part), time_unit) << std::endl;
-    }
-    time_unit = Hour;
-    expected_result = Duration(int_part/24, (int_part%24 + frac_part) * 3600.);
-    dur_tol = Duration(0, 1.e-9);
-    if (!Duration(IntFracPair(int_part, frac_part), time_unit).equivalentTo(expected_result, dur_tol)) {
-      err() << "Duration(IntFracPair(" << int_part << ", " << frac_part << "), " << unit_name[time_unit] <<
-        ").equivalentTo returned false for " << expected_result << " with tolerance of " << dur_tol <<
-        ", not true as expected." << Duration(IntFracPair(int_part, frac_part), time_unit) << std::endl;
-    }
-    time_unit = Min;
-    expected_result = Duration(int_part/1440, (int_part%1440 + frac_part) * 60.);
-    dur_tol = Duration(0, 1.e-9);
-    if (!Duration(IntFracPair(int_part, frac_part), time_unit).equivalentTo(expected_result, dur_tol)) {
-      err() << "Duration(IntFracPair(" << int_part << ", " << frac_part << "), " << unit_name[time_unit] <<
-        ").equivalentTo returned false for " << expected_result << " with tolerance of " << dur_tol <<
-        ", not true as expected." << Duration(IntFracPair(int_part, frac_part), time_unit) << std::endl;
-    }
-    time_unit = Sec;
-    expected_result = Duration(int_part/86400, int_part%86400 + frac_part);
-    dur_tol = Duration(0, 1.e-9);
-    if (!Duration(IntFracPair(int_part, frac_part), time_unit).equivalentTo(expected_result, dur_tol)) {
-      err() << "Duration(IntFracPair(" << int_part << ", " << frac_part << "), " << unit_name[time_unit] <<
-        ").equivalentTo returned false for " << expected_result << " with tolerance of " << dur_tol <<
-        ", not true as expected." << Duration(IntFracPair(int_part, frac_part), time_unit) << std::endl;
-    }
+    std::string time_string("3456789.56789567895678956789");
+    Duration tol_high(0, 1.e-9); // 1 nano-second.
+    Duration tol_low(0, 1.e-3); // 1 milli-second.
+    TestDurationConstructor("Day", int_part, frac_part, time_string, Duration(int_part, frac_part*86400.), tol_high, tol_low);
+    TestDurationConstructor("Hour", int_part, frac_part, time_string, Duration(int_part/24, (int_part%24 + frac_part)*3600.),
+      tol_high, tol_low);
+    TestDurationConstructor("Min", int_part, frac_part, time_string, Duration(int_part/1440, (int_part%1440 + frac_part)*60.),
+      tol_high, tol_low);
+    TestDurationConstructor("Sec", int_part, frac_part, time_string, Duration(int_part/86400, int_part%86400 + frac_part),
+      tol_high, tol_low);
 
     // Tests of equality and inequality operators.
     Duration six_sec(0, 6.);
@@ -280,14 +308,14 @@ namespace {
     // A case which should *not* overflow, but is close to overflowing.
     try {
       Duration sec_max(0, std::numeric_limits<long>::max() + .4);
-      sec_max.getValue(Sec);
+      sec_max.get("Sec");
     } catch (const std::exception & x) {
       err() << "A test which should not overflow unexpectedly caught: " << x.what() << std::endl;
     }
     // A case which should *not* underflow, but is close to underflowing.
     try {
       Duration sec_min(0, std::numeric_limits<long>::min() - .4);
-      sec_min.getValue(Sec);
+      sec_min.get("Sec");
     } catch (const std::exception & x) {
       err() << "A test which should not underflow unexpectedly caught: " << x.what() << std::endl;
     }
@@ -295,7 +323,7 @@ namespace {
     double overflow_sec = std::numeric_limits<long>::max() + 1.1;
     try {
       Duration sec_max(0, overflow_sec);
-      sec_max.getValue(Sec);
+      sec_max.get("Sec");
       err() << "Duration::sec method unexpectedly did not overflow for " << overflow_sec << " seconds." << std::endl;
     } catch (const std::exception &) {
     }
@@ -303,7 +331,7 @@ namespace {
     double underflow_sec = std::numeric_limits<long>::min() - 1.1;
     try {
       Duration sec_min(0, underflow_sec);
-      sec_min.getValue(Sec);
+      sec_min.get("Sec");
       err() << "Duration::sec method unexpectedly did not underflow for " << underflow_sec << " seconds." << std::endl;
     } catch (const std::exception &) {
     }
