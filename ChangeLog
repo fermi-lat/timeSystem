@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Sun Jun  1 15:23:20 PDT 2008
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Add tests for new Duration interface. Modify existing tests to use new Duration interface.
+    *
+------------------------------------------------------------
 User: hirayama  Sun Jun  1 15:22:29 PDT 2008
 timeSystem/src
 
