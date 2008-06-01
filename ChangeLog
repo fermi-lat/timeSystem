@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Sun Jun  1 15:22:29 PDT 2008
+timeSystem/src
+
+Modified Files:
+	BaryTimeComputer.cxx GlastTimeHandler.cxx TimeSystem.cxx 
+Log Message:
+Modify to use new Duration interface.
+    *
+------------------------------------------------------------
 User: hirayama  Sun Jun  1 15:21:18 PDT 2008
 timeSystem/src
 
