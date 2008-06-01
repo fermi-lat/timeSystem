@@ -17,8 +17,6 @@ namespace st_stream {
 
 namespace timeSystem {
 
-  class IntFracPair;
-
   typedef std::pair<long, double> moment_type;
 
   /** \class Duration
@@ -34,17 +32,17 @@ namespace timeSystem {
       */
       Duration(long day = 0, double sec = 0.): m_time(add(time_type(day, 0.), splitSec(sec))) {}
 
-      Duration(long time_int, double time_frac, const std::string & unit_name);
+      Duration(long time_value_int, double time_value_frac, const std::string & time_unit_name);
 
-      Duration(double time_value, const std::string & unit_name);
+      Duration(double time_value, const std::string & time_unit_name);
 
-      Duration(const std::string & time_value, const std::string & unit_name);
+      Duration(const std::string & time_value, const std::string & time_unit_name);
 
-      void get(const std::string & unit_name, long & time_int, double & time_frac) const;
+      void get(const std::string & time_unit_name, long & time_value_int, double & time_value_frac) const;
 
-      void get(const std::string & unit_name, double & time_value) const;
+      void get(const std::string & time_unit_name, double & time_value) const;
 
-      double get(const std::string & unit_name) const;
+      double get(const std::string & time_unit_name) const;
 
       Duration operator +(const Duration & dur) const;
 
@@ -80,8 +78,6 @@ namespace timeSystem {
 
       Duration(const time_type & new_time): m_time(new_time) {}
 
-      Duration(IntFracPair time_value, const std::string & unit_name);
-
       /** \brief Convert any number of seconds into days & seconds in range [0, 86400).
           \param sec Input number of seconds.
       */
@@ -100,10 +96,7 @@ namespace timeSystem {
       */
       time_type negate(time_type t1) const;
 
-      void setValue(IntFracPair time_value, const std::string & unit_name);
-
-      /// \brief Return the current value of this time in given unit.
-      IntFracPair getValue(const std::string & unit_name) const;
+      void set(long time_value_int, double time_value_frac, const std::string & time_unit_name);
 
       time_type m_time;
   };
