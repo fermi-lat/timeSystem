@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Sat May 31 17:56:59 PDT 2008
+timeSystem/src
+
+Modified Files:
+	TimeFormat.cxx 
+Log Message:
+Include IntFracPair.h. Add 'const' to a static object.
+    *
+------------------------------------------------------------
 User: hirayama  Sat May 31 17:55:17 PDT 2008
 timeSystem/src
 
