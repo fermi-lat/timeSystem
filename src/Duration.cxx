@@ -34,7 +34,7 @@ namespace {
   */
   class TimeUnit {
     public:
-      static const TimeUnit & getUnit(const std::string & unit_name);
+      static const TimeUnit & getUnit(const std::string & time_unit_name);
 
       long getUnitPerDay() const { return m_unit_per_day; }
 
@@ -106,7 +106,7 @@ namespace {
     container["SECONDS"] = this;
   }
 
-  const TimeUnit & TimeUnit::getUnit(const std::string & unit_name) {
+  const TimeUnit & TimeUnit::getUnit(const std::string & time_unit_name) {
     // Create TimeUnit objects.
     static const TimeUnitDay s_day;
     static const TimeUnitHour s_hour;
@@ -114,13 +114,13 @@ namespace {
     static const TimeUnitSec s_sec;
 
     // Make the unit name case-insensitive.
-    std::string unit_name_uc(unit_name);
-    for (std::string::iterator itor = unit_name_uc.begin(); itor != unit_name_uc.end(); ++itor) *itor = std::toupper(*itor);
+    std::string time_unit_name_uc(time_unit_name);
+    for (std::string::iterator itor = time_unit_name_uc.begin(); itor != time_unit_name_uc.end(); ++itor) *itor = std::toupper(*itor);
 
     // Find a requested TimeUnit object and return it.
     TimeUnit::container_type & container(getContainer());
-    container_type::iterator cont_itor = container.find(unit_name_uc);
-    if (container.end() == cont_itor) throw std::runtime_error("TimeUnit::getUnit could not find time unit " + unit_name);
+    container_type::iterator cont_itor = container.find(time_unit_name_uc);
+    if (container.end() == cont_itor) throw std::runtime_error("TimeUnit::getUnit could not find time unit " + time_unit_name);
     return *cont_itor->second;
   }
 
@@ -132,36 +132,76 @@ namespace {
 
 namespace timeSystem {
 
-  Duration::Duration(IntFracPair time_value, const std::string & unit_name) {
-    setValue(time_value, unit_name);
+  Duration::Duration(long time_value_int, double time_value_frac, const std::string & time_unit_name) {
+    set(time_value_int, time_value_frac, time_unit_name);
   }
 
-  Duration::Duration(long time_int, double time_frac, const std::string & unit_name) {
-    setValue(IntFracPair(time_int, time_frac), unit_name);
+  Duration::Duration(double time_value, const std::string & time_unit_name) {
+    IntFracPair int_frac(time_value);
+    set(int_frac.getIntegerPart(), int_frac.getFractionalPart(), time_unit_name);
   }
 
-  Duration::Duration(double time_value, const std::string & unit_name) {
-    setValue(IntFracPair(time_value), unit_name);
+  Duration::Duration(const std::string & time_value, const std::string & time_unit_name) {
+    IntFracPair int_frac(time_value);
+    set(int_frac.getIntegerPart(), int_frac.getFractionalPart(), time_unit_name);
   }
 
-  Duration::Duration(const std::string & time_value, const std::string & unit_name) {
-    setValue(IntFracPair(time_value), unit_name);
+  void Duration::get(const std::string & time_unit_name, long & time_value_int, double & time_value_frac) const {
+    const TimeUnit & unit(TimeUnit::getUnit(time_unit_name));
+
+    if (&TimeUnit::getUnit("Day") == &unit) {
+      double day_frac = m_time.second * DayPerSec();
+      time_value_int = m_time.first;
+      time_value_frac = day_frac;
+      if (m_time.first < 0 && m_time.second > 0.) {
+        ++time_value_int;
+        --time_value_frac;
+      }
+
+    } else {
+      // Let the sec part have the same sign as the day part.
+      long signed_day = m_time.first;
+      double signed_sec = m_time.second;
+      if (m_time.first < 0) {
+        signed_day += 1;
+        signed_sec -= SecPerDay();
+      }
+
+      // Compute time in a given unit.
+      double signed_time = signed_sec * unit.getUnitPerSec();
+
+      // TODO: Replace the following with simple use of IntFracPair class?
+      // Compute fractional part as a value in range (-1., 1.).
+      double int_part_dbl;
+      time_value_frac = std::modf(signed_time, &int_part_dbl);
+
+      // Compute integer part of return value using modf() result.
+      int_part_dbl += signed_day * unit.getUnitPerDay();
+      int_part_dbl += (int_part_dbl > 0. ? 0.5 : -0.5);
+      if (int_part_dbl >= std::numeric_limits<long>::max() + 1.) {
+        std::ostringstream os;
+        os.precision(std::numeric_limits<double>::digits10);
+        os << "Duration::getValue: overflow while converting " << int_part_dbl << " " << unit.getUnitString() << " to a long";
+        throw std::runtime_error(os.str());
+      } else if (int_part_dbl <= std::numeric_limits<long>::min() - 1.) {
+        std::ostringstream os;
+        os.precision(std::numeric_limits<double>::digits10);
+        os << "Duration::getValue: underflow while converting " << int_part_dbl << " " << unit.getUnitString() << " to a long";
+        throw std::runtime_error(os.str());
+      }
+      time_value_int = long(int_part_dbl);
+    }
   }
 
-  void Duration::get(const std::string & unit_name, long & time_int, double & time_frac) const {
-    IntFracPair int_frac = getValue(unit_name);
-    time_int = int_frac.getIntegerPart();
-    time_frac = int_frac.getFractionalPart();
+  void Duration::get(const std::string & time_unit_name, double & time_value) const {
+    time_value = get(time_unit_name);
   }
 
-  void Duration::get(const std::string & unit_name, double & time_value) const {
-    IntFracPair int_frac = getValue(unit_name);
-    time_value = int_frac.getDouble();
-  }
-
-  double Duration::get(const std::string & unit_name) const {
-    IntFracPair int_frac = getValue(unit_name);
-    return int_frac.getDouble();
+  double Duration::get(const std::string & time_unit_name) const {
+    long time_value_int = 0;
+    double time_value_frac = 0.;
+    get(time_unit_name, time_value_int, time_value_frac);
+    return time_value_int + time_value_frac;
   }
 
   Duration Duration::operator +(const Duration & dur) const {
@@ -187,14 +227,14 @@ namespace timeSystem {
   }
 
   double Duration::operator /(const Duration & dur) const {
-    std::string unit_name("Day");
+    std::string time_unit_name("Day");
 
     // If both times are less than a day, use seconds to preserve precision. This is not safe if either Duration
-    // is longer than one day, because getValue does integer math when the units are seconds, and days converted
+    // is longer than one day, because get method does integer math when the units are seconds, and days converted
     // to seconds can overflow in this case.
-    if (0 == m_time.first && 0 == dur.m_time.first) unit_name = "Sec";
+    if (0 == m_time.first && 0 == dur.m_time.first) time_unit_name = "Sec";
 
-    return getValue(unit_name).getDouble() / dur.getValue(unit_name).getDouble();
+    return get(time_unit_name) / dur.get(time_unit_name);
   }
 
   bool Duration::operator !=(const Duration & dur) const {
@@ -229,6 +269,7 @@ namespace timeSystem {
       \param sec Input number of seconds.
   */
   Duration::time_type Duration::splitSec(double sec) const {
+    // TODO: Replace the following with simple use of IntFracPair class?
     double offset;
     if (0. > sec) {
       offset = -.5;
@@ -283,55 +324,11 @@ namespace timeSystem {
     return Duration::time_type(-t1.first - 1, SecPerDay() - t1.second);
   }
 
-  void Duration::setValue(IntFracPair time_value, const std::string & unit_name) {
-    const TimeUnit & unit(TimeUnit::getUnit(unit_name));
-    long day = time_value.getIntegerPart() / unit.getUnitPerDay();
-    double sec = (time_value.getIntegerPart() % unit.getUnitPerDay() + time_value.getFractionalPart()) * unit.getSecPerUnit();
+  void Duration::set(long time_value_int, double time_value_frac, const std::string & time_unit_name) {
+    const TimeUnit & unit(TimeUnit::getUnit(time_unit_name));
+    long day = time_value_int / unit.getUnitPerDay();
+    double sec = (time_value_int % unit.getUnitPerDay() + time_value_frac) * unit.getSecPerUnit();
     m_time = add(Duration::time_type(day, 0.), splitSec(sec));
-  }
-
-  IntFracPair Duration::getValue(const std::string & unit_name) const {
-    const TimeUnit & unit(TimeUnit::getUnit(unit_name));
-    if (&TimeUnit::getUnit("Day") == &unit) {
-      double day_frac = m_time.second * DayPerSec();
-      return ((m_time.first >= 0 || m_time.second == 0) ? IntFracPair(m_time.first, day_frac) :
-        IntFracPair(m_time.first + 1, day_frac - 1.));
-    } else {
-      // Let the sec part have the same sign as the day part.
-      long signed_day = m_time.first;
-      double signed_sec = m_time.second;
-      if (m_time.first < 0) {
-        signed_day += 1;
-        signed_sec -= SecPerDay();
-      }
-
-      // Compute time in a given unit.
-      double signed_time = signed_sec * unit.getUnitPerSec();
-
-      // TODO: Replace the following with simple use of IntFracPair class?
-      // Compute fractional part as a value in range (-1., 1.).
-      double int_part_dbl;
-      double frac_part = std::modf(signed_time, &int_part_dbl);
-
-      // Compute integer part of return value using modf() result.
-      int_part_dbl += signed_day * unit.getUnitPerDay();
-      int_part_dbl += (int_part_dbl > 0. ? 0.5 : -0.5);
-      if (int_part_dbl >= std::numeric_limits<long>::max() + 1.) {
-        std::ostringstream os;
-        os.precision(std::numeric_limits<double>::digits10);
-        os << "Duration::getValue: overflow while converting " << int_part_dbl << " " << unit.getUnitString() << " to a long";
-        throw std::runtime_error(os.str());
-      } else if (int_part_dbl <= std::numeric_limits<long>::min() - 1.) {
-        std::ostringstream os;
-        os.precision(std::numeric_limits<double>::digits10);
-        os << "Duration::getValue: underflow while converting " << int_part_dbl << " " << unit.getUnitString() << " to a long";
-        throw std::runtime_error(os.str());
-      }
-      long int_part = long(int_part_dbl);
-
-      // Return int_part and frac_part.
-      return IntFracPair(int_part, frac_part);
-    }
   }
 
   std::ostream & operator <<(std::ostream & os, const Duration & dur) {
