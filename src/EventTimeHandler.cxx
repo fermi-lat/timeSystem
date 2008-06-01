@@ -7,6 +7,7 @@
 
 #include "timeSystem/AbsoluteTime.h"
 #include "timeSystem/BaryTimeComputer.h"
+#include "timeSystem/IntFracPair.h"
 
 #include "tip/IFileSvc.h"
 
