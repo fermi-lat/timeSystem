@@ -5,6 +5,8 @@
 */
 #include "timeSystem/TimeFormat.h"
 
+#include "timeSystem/IntFracPair.h"
+
 #include <cctype>
 #include <iomanip>
 #include <sstream>
@@ -22,6 +24,7 @@ namespace timeSystem {
   }
 
   const TimeFormat & TimeFormat::getFormat(const std::string & format_name) {
+    // TODO: Is there any way to avoid calling the following everytime this method is called?
     MjdFormat::getMjdFormat();
 
     std::string format_name_uc(format_name);
@@ -41,7 +44,7 @@ namespace timeSystem {
   MjdFormat::MjdFormat(): TimeFormat("MJD") {}
 
   const MjdFormat & MjdFormat::getMjdFormat() {
-    static MjdFormat s_format;
+    static const MjdFormat s_format;
     return s_format;
   }
 
