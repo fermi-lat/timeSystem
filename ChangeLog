@@ -1,5 +1,14 @@
 ------------------------------------------------------------
 User: hirayama  Sun Jun  1 15:21:18 PDT 2008
+timeSystem/src
+
+Added Files:
+	Duration.cxx 
+Log Message:
+Split into .h and .cxx files. Change the way to specify time unit from an enumerator to a string, and add TimeUnit class (hidden) to help it. Modify constructors and getters to take built-in types, not IntFracPair.
+    *
+------------------------------------------------------------
+User: hirayama  Sun Jun  1 15:21:18 PDT 2008
 timeSystem/timeSystem
 
 Modified Files:
