@@ -107,9 +107,10 @@ namespace {
     static const long jd_minus_mjd_int = 2400000;
     static const double jd_minus_mjd_frac = .5;
 
-    IntFracPair mjd_time = mjd_tt.getValue(Day);
-
-    return Duration(0, ctatv(mjd_time.getIntegerPart() + jd_minus_mjd_int, mjd_time.getFractionalPart() + jd_minus_mjd_frac));
+    long mjd_int = 0;
+    double mjd_frac = 0.;
+    mjd_tt.get("Day", mjd_int, mjd_frac);
+    return Duration(0, ctatv(mjd_int + jd_minus_mjd_int, mjd_frac + jd_minus_mjd_frac));
   }
 
   moment_type TdbSystem::convertFrom(const TimeSystem & time_system, const moment_type & moment) const {
@@ -160,9 +161,11 @@ namespace {
 
           // check whether binary demodulation successfully converged or not
           if (src.equivalentTo(dest + diff, epsilon)) {
-            long mjd_day = dest.getValue(Day).getIntegerPart();
-            double mjd_sec = (dest - Duration(mjd_day, 0.)).getValue(Sec).getDouble();
-            return moment_type(mjd_day, mjd_sec);
+            long mjd_int = 0;
+            double mjd_frac = 0.;
+            dest.get("Day", mjd_int, mjd_frac);
+            double mjd_sec = (dest - Duration(mjd_int, 0.)).get("Sec");
+            return moment_type(mjd_int, mjd_sec);
           }
         }
 
@@ -231,7 +234,7 @@ namespace {
 
     // Compute the number of seconds since the beginning of the MJD.
     Duration residual = elapsed - computeTimeDifference(moment_type(mjd_day, 0.), moment);
-    double mjd_sec = residual.getValue(Sec).getDouble();
+    double mjd_sec = residual.get("Sec");
 
     // Return the advanced moment of time.
     return moment_type(mjd_day, mjd_sec);
@@ -368,12 +371,14 @@ namespace timeSystem {
     Duration elapsed_total = Duration(moment.first, moment.second) + elapsed;
 
     // Split the total elapsed time into days and seconds.
-    long elapsed_day = elapsed_total.getValue(Day).getIntegerPart();
-    Duration elapsed_residual = elapsed_total - Duration(elapsed_day, 0.);
-    double elapsed_sec = elapsed_residual.getValue(Sec).getDouble();
+    long elapsed_int = 0;
+    double elapsed_frac = 0.;
+    elapsed_total.get("Day", elapsed_int, elapsed_frac);
+    Duration elapsed_residual = elapsed_total - Duration(elapsed_int, 0.);
+    double elapsed_sec = elapsed_residual.get("Sec");
 
     // Return the advanced moment of time.
-    return moment_type(elapsed_day, elapsed_sec);
+    return moment_type(elapsed_int, elapsed_sec);
   }
 
   std::ostream & operator <<(std::ostream & os, const TimeSystem & sys) {

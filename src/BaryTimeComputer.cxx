@@ -116,7 +116,7 @@ namespace timeSystem {
       + 2*m_solar_mass*log(1.+cth);
 
     // Compute a barycenteric time for the give arrival time.
-    abs_time += ElapsedTime("TDB", Duration(IntFracPair(delay), Sec));
+    abs_time += ElapsedTime("TDB", Duration(delay, "Sec"));
   }
 
   double BaryTimeComputer::computeInnerProduct(const std::vector<double> & vect_x, const std::vector<double> & vect_y) const {
