@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Sat May 31 17:55:17 PDT 2008
+timeSystem/src
+
+Modified Files:
+	EventTimeHandler.cxx GlastTimeHandler.cxx TimeSystem.cxx 
+Log Message:
+Include IntFracPair.h.
+    *
+------------------------------------------------------------
 User: hirayama  Fri May 30 16:12:54 PDT 2008
 timeSystem/src
 
