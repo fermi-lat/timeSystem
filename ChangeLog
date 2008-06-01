@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Sun Jun  1 16:47:57 PDT 2008
+timeSystem/timeSystem
+
+Modified Files:
+	Duration.h 
+Log Message:
+Remove getValue method, and replace it with get method that does not use IntFracPair. Rename setValue method to set, and stop using IntFracPair in it. Rename a few variables for clarify.
+    *
+------------------------------------------------------------
 User: hirayama  Sun Jun  1 15:23:20 PDT 2008
 timeSystem/src/test
 
