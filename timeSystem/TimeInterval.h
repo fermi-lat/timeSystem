@@ -23,9 +23,18 @@ namespace timeSystem {
   */
   class TimeInterval {
     public:
-      TimeInterval(const AbsoluteTime & time1, const AbsoluteTime & time2);
+      TimeInterval(const AbsoluteTime & abs_time1, const AbsoluteTime & abs_time2);
 
       ElapsedTime computeElapsedTime(const std::string & time_system_name) const;
+
+      void computeDuration(const std::string & time_system_name, const std::string & time_unit_name, long & time_value_int,
+        double & time_value_frac) const;
+
+      void computeDuration(const std::string & time_system_name, const std::string & time_unit_name, double & time_value) const;
+
+      double computeDuration(const std::string & time_system_name, const std::string & time_unit_name) const;
+
+      Duration computeDuration(const std::string & time_system_name) const;
 
     private:
       // Prohibited operations:
@@ -39,8 +48,8 @@ namespace timeSystem {
       // time in the TimeInterval.
       // TimeInterval operator +(const ElapsedTime &) const;
       // TimeInterval operator -(const ElapsedTime &) const;
-      AbsoluteTime m_time1;
-      AbsoluteTime m_time2;
+      AbsoluteTime m_abs_time1;
+      AbsoluteTime m_abs_time2;
   };
 
 }
