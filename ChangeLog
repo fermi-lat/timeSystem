@@ -1,5 +1,14 @@
 ------------------------------------------------------------
 User: hirayama  Mon Jun  2 18:22:38 PDT 2008
+timeSystem/src
+
+Modified Files:
+	ElapsedTime.cxx 
+Log Message:
+Add getDuration methods (overloaded). Remove get/setTime methods. Rename some variables for clarity.
+    *
+------------------------------------------------------------
+User: hirayama  Mon Jun  2 18:22:38 PDT 2008
 timeSystem/timeSystem
 
 Modified Files:
