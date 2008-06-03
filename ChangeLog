@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Mon Jun  2 18:22:38 PDT 2008
+timeSystem/timeSystem
+
+Modified Files:
+	ElapsedTime.h 
+Log Message:
+Add getDuration methods (overloaded). Remove get/setTime methods. Rename some variables for clarity.
+    *
+------------------------------------------------------------
 User: hirayama  Sun Jun  1 16:49:20 PDT 2008
 timeSystem/timeSystem
 
