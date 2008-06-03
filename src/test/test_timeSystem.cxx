@@ -112,16 +112,6 @@ namespace {
   }
 
   void TestDurationGetter(long day, double sec, const std::string & time_unit_name, long int_part, double frac_part, double tolerance) {
-#if 0
-    // Test the getter that takes a time unit name only.
-    IntFracPair result_int_frac = Duration(day, sec).getValue(time_unit_name);
-    IntFracPair expected_int_frac(int_part, frac_part);
-    if (!(int_part == result_int_frac.getIntegerPart() &&
-      std::fabs(frac_part - result_int_frac.getFractionalPart()) < tolerance)) {
-      err() << "Duration(" << day << ", " << sec << ").getValue(" << time_unit_name << ") returned " <<
-        result_int_frac << ", not " << expected_int_frac << " as expected." << std::endl;
-    }
-#endif
     // Test the getter that takes a long variable, a double variable, and a time unit name.
     long result_int = 0;
     double result_frac = 0.;
@@ -152,15 +142,6 @@ namespace {
 
   void TestDurationConstructor(const std::string & time_unit_name, long int_part, double frac_part, const std::string & time_string,
     const Duration & expected_result, const Duration & tolerance_high, const Duration & tolerance_low) {
-#if 0
-    // Test the constructor that takes an IntFracPair object.
-    Duration result(IntFracPair(int_part, frac_part), time_unit_name);
-    if (!result.equivalentTo(expected_result, tolerance_high)) {
-      err() << "Duration(IntFracPair(" << int_part << ", " << frac_part << "), \"" << time_unit_name <<
-        "\") created Duration of " << result << ", not equivalent to Duration of " << expected_result <<
-        " with tolerance of " << tolerance_high << "." << std::endl;
-    }
-#endif
     // Test the constructor that takes a pair of long and double variables.
     Duration result(int_part, frac_part, time_unit_name);
     if (!result.equivalentTo(expected_result, tolerance_high)) {
@@ -1132,14 +1113,14 @@ namespace {
     // Test subtraction of absolute time from absolute time.
     Duration expected_diff(0, 100.);
     Duration tolerance(0, 1.e-9); // 1 ns.
-    Duration difference = (later_time - abs_time).computeElapsedTime("TDB").getTime();
+    Duration difference = (later_time - abs_time).computeElapsedTime("TDB").getDuration();
     if (!expected_diff.equivalentTo(difference, tolerance))
       err() << "Absolute time [" << abs_time << "] subtracted from absolute time [" << later_time << "] gave " << difference <<
         ", not " << expected_diff << " as expected." << std::endl;
 
     // Test subtraction of absolute time from absolute time in UTC system
     expected_diff = Duration(0, .4);
-    difference = (later_time_utc - abs_time_utc).computeElapsedTime("UTC").getTime();
+    difference = (later_time_utc - abs_time_utc).computeElapsedTime("UTC").getDuration();
     if (!expected_diff.equivalentTo(difference, tolerance))
       err() << "Absolute time [" << abs_time_utc << "] subtracted from absolute time [" << later_time_utc << "] gave " << difference <<
         ", not " << expected_diff << " as expected." << std::endl;
@@ -1148,22 +1129,76 @@ namespace {
   void TestElapsedTime() {
     s_os.setMethod("TestElapsedTime");
 
-    Duration expected_dur(0, 1000.);
+    // Test of the getter that returns a Duration object.
+    Duration original_dur(1, SecPerDay() * 0.125);
+    Duration expected_dur = original_dur;
     Duration tolerance(0, 1.e-9); // 1 ns.
     ElapsedTime elapsed("TDB", expected_dur);
-    Duration returned_dur = elapsed.getTime();
+    Duration returned_dur = elapsed.getDuration();
     if (!returned_dur.equivalentTo(expected_dur, tolerance)) {
-      err() << "After ElapsedTime elapsed(\"TDB\", " << expected_dur << "), its getTime() returned " << returned_dur <<
+      err() << "After ElapsedTime elapsed(\"TDB\", " << original_dur << "), its getDuration() returned " << returned_dur <<
         ", not equivalent to " << expected_dur << " with tolerance of " << tolerance << "." << std::endl;
     }
 
+    // Test of the getter that returns a TimeSystem object.
+    std::string returned_system = elapsed.getSystem().getName();
+    if (returned_system != "TDB") {
+      err() << "After ElapsedTime elapsed(\"TDB\", " << original_dur << "), its getSystem() returned " << returned_system <<
+        ", not TDB." << std::endl;
+    }
+
+    // Test of negate operator.
     ElapsedTime negative_elapsed = -elapsed;
-    expected_dur = Duration(0, -1000.);
-    returned_dur = negative_elapsed.getTime();
+    expected_dur = Duration(-1, -SecPerDay() * 0.125);
+    returned_dur = negative_elapsed.getDuration();
     if (!returned_dur.equivalentTo(expected_dur, tolerance)) {
       err() << "After ElapsedTime negative_elapsed = -elapsed, where elapsed = " << elapsed <<
-        ", its getTime() returned " << returned_dur << ", not equivalent to " << expected_dur <<
+        ", its getDuration() returned " << returned_dur << ", not equivalent to " << expected_dur <<
         " with tolerance of " << tolerance << "." << std::endl;
+    }
+
+    // Test of the getter that returns a double variable.
+    double expected_dbl = SecPerDay() * 1.125;
+    double returned_dbl = elapsed.getDuration("Sec");
+    double tolerance_dbl = 1.e-9; // 1 ns.
+    if (std::fabs(expected_dbl - returned_dbl) > tolerance_dbl) {
+      err() << "After ElapsedTime elapsed(\"TDB\", " << original_dur << "), its getDuration(\"Sec\") returned " << returned_dbl <<
+        ", not equivalent to " << expected_dbl << " with tolerance of " << tolerance_dbl << "." << std::endl;
+    }
+
+    // Test of the getter that returns a double variable in the argument list.
+    returned_dbl = 0.;
+    elapsed.getDuration("Sec", returned_dbl);
+    if (std::fabs(expected_dbl - returned_dbl) > tolerance_dbl) {
+      err() << "After ElapsedTime elapsed(\"TDB\", " << original_dur << "), its getDuration(\"Sec\", returned_dbl) returned " <<
+        "returned_dbl = " << returned_dbl << ", not equivalent to " << expected_dbl << " with tolerance of " << tolerance_dbl <<
+        "." << std::endl;
+    }
+
+    // Test of the high-precision getter that returns an integer part and a fractional part separately.
+    long returned_int = 0;
+    double returned_frac = 0.;
+    elapsed.getDuration("Day", returned_int, returned_frac);
+    long expected_int = 1;
+    double expected_frac = .125;
+    tolerance_dbl /= SecPerDay(); // Still 1 ns.
+    if (expected_int != returned_int || std::fabs(expected_frac - returned_frac) > tolerance_dbl) {
+      err() << "After ElapsedTime elapsed(\"TDB\", " << original_dur << "), its getDuration(\"Sec\", int_part, frac_part) returned " <<
+        "(int_part, frac_part) = (" <<  returned_int << ", " << returned_frac << "), not equivalent to (" << expected_int <<
+        ", " << expected_frac << ") with tolerance of " << tolerance_dbl << "." << std::endl;
+    }
+
+    // Test of the high-precision getter that returns an integer part and a fractional part separately, with a negative elapsed time.
+    returned_int = 0;
+    returned_frac = 0.;
+    negative_elapsed.getDuration("Day", returned_int, returned_frac);
+    expected_int = -1;
+    expected_frac = -.125;
+    if (expected_int != returned_int || std::fabs(expected_frac - returned_frac) > tolerance_dbl) {
+      err() << "After ElapsedTime negative_elapsed = -elapsed, where elapsed = " << elapsed <<
+        ", its getDuration(\"Sec\", int_part, frac_part) returned " <<
+        "(int_part, frac_part) = (" <<  returned_int << ", " << returned_frac << "), not equivalent to (" << expected_int <<
+        ", " << expected_frac << ") with tolerance of " << tolerance_dbl << "." << std::endl;
     }
   }
 
@@ -1306,7 +1341,7 @@ namespace {
 
     // Create some test inputs.
     AbsoluteTime time1("TDB", 51910, 1000.);
-    AbsoluteTime time2("TDB", 51910, 2000.);
+    AbsoluteTime time2("TDB", 51910, 2000.123456789);
 
     // Test creating a time interval directly from two absolute times.
     TimeInterval interval_a(time1, time2);
@@ -1315,12 +1350,64 @@ namespace {
     TimeInterval interval_b = time2 - time1;
 
     // Compare the durations as computed in the TDB system.
-    Duration dur_a = interval_a.computeElapsedTime("TDB").getTime();
-    Duration dur_b = interval_b.computeElapsedTime("TDB").getTime();
+    Duration dur_a = interval_a.computeElapsedTime("TDB").getDuration();
+    Duration dur_b = interval_b.computeElapsedTime("TDB").getDuration();
 
     // Make sure they agree.
     if (dur_a != dur_b) {
       err() << "After creating interval_a and interval_b, they are not the same." << std::endl;
+    }
+
+    // Test of the getter that returns a Duration object.
+    Duration expected_dur = Duration(0, 1000.123456789);
+    Duration result_dur = interval_a.computeDuration("TDB");
+    Duration tolerance_dur(0, 1.e-9); // 1 ns.
+    if (!expected_dur.equivalentTo(result_dur, tolerance_dur)) {
+      err() << "TimeInterval(" << time1 << ", " << time2 << ").computeDuration(\"TDB\") returned " << result_dur << ", not " <<
+        expected_dur << " with tolerance of " << tolerance_dur << "." << std::endl;
+    }
+
+    // Test of the getter that returns a double variable.
+    double expected_dbl = 1000.123456789;
+    double result_dbl = interval_a.computeDuration("TDB", "Sec");
+    double tolerance_dbl = 1.e-9; // 1 ns.
+    if (std::fabs(expected_dbl - result_dbl) > tolerance_dbl) {
+      err() << "TimeInterval(" << time1 << ", " << time2 << ").computeDuration(\"TDB\", \"Sec\") returned " << result_dbl << ", not " <<
+        expected_dbl << " with tolerance of " << tolerance_dbl << "." << std::endl;
+    }
+
+    // Test of the getter that returns a double variable in the argument list.
+    expected_dbl = 1000.123456789;
+    result_dbl = 0.;
+    interval_a.computeDuration("TDB", "Sec", result_dbl);
+    if (std::fabs(expected_dbl - result_dbl) > tolerance_dbl) {
+      err() << "TimeInterval(" << time1 << ", " << time2 << ").computeDuration(\"TDB\", \"Sec\", result_dbl) returned " << result_dbl <<
+        ", not " << expected_dbl << " with tolerance of " << tolerance_dbl << "." << std::endl;
+    }
+
+    // Test of the high-precision getter that returns an integer part and a fractional part separately.
+    long expected_int = 1000;
+    double expected_frac = .123456789;
+    long result_int = 0;
+    double result_frac = 0.;
+    interval_a.computeDuration("TDB", "Sec", result_int, result_frac);
+    if (expected_int != result_int || std::fabs(expected_frac - result_frac) > tolerance_dbl) {
+      err() << "TimeInterval(" << time1 << ", " << time2 << ").computeDuration(\"TDB\", \"Sec\", int_part, frac_part) returned " <<
+        "(int_part, frac_part) = " << result_int << ", " << result_frac << "), not (" << expected_int << ", " << expected_frac <<
+        ") with tolerance of " << tolerance_dbl << "." << std::endl;
+    }
+
+    // Test of the high-precision getter that returns an integer part and a fractional part separately, with a negative elapsed time.
+    expected_int = -1000;
+    expected_frac = -.123456789;
+    result_int = 0;
+    result_frac = 0.;
+    TimeInterval interval_c(time2, time1);
+    interval_c.computeDuration("TDB", "Sec", result_int, result_frac);
+    if (expected_int != result_int || std::fabs(expected_frac - result_frac) > tolerance_dbl) {
+      err() << "TimeInterval(" << time2 << ", " << time1 << ").computeDuration(\"TDB\", \"Sec\", int_part, frac_part) returned " <<
+        "(int_part, frac_part) = " << result_int << ", " << result_frac << "), not (" << expected_int << ", " << expected_frac <<
+        ") with tolerance of " << tolerance_dbl << "." << std::endl;
     }
   }
 
