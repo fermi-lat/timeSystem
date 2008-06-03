@@ -27,21 +27,27 @@ namespace timeSystem {
   */
   class ElapsedTime {
     public:
-      ElapsedTime(const std::string & time_system_name, const Duration & time);
+      ElapsedTime(const std::string & time_system_name, const Duration & time_duration);
 
       AbsoluteTime operator +(const AbsoluteTime & absolute_time) const;
 
       ElapsedTime operator -() const;
 
-      Duration getTime() const;
+      const timeSystem::TimeSystem & getSystem() const;
 
-      void setTime(const Duration & time);
+      void getDuration(const std::string & time_unit_name, long & time_value_int, double & time_value_frac) const;
+
+      void getDuration(const std::string & time_unit_name, double & time_value) const;
+
+      double getDuration(const std::string & time_unit_name) const;
+
+      Duration getDuration() const;
 
       template <typename StreamType>
       void write(StreamType & os) const;
 
     protected:
-      ElapsedTime(const TimeSystem * time_system, const Duration & time);
+      ElapsedTime(const TimeSystem * time_system, const Duration & time_duration);
 
     private:
       // These are not implemented because it is ambiguous whether the ElapsedTime object should be added to the first or last
@@ -49,17 +55,17 @@ namespace timeSystem {
       // TimeInterval operator +(const TimeInterval &) const;
       // TimeInterval operator -(const TimeInterval &) const;
       const TimeSystem * m_time_system;
-      Duration m_time;
+      Duration m_duration;
   };
 
   template <typename StreamType>
   inline void ElapsedTime::write(StreamType & os) const {
-    os << m_time << " (" << *m_time_system << ")";
+    os << m_duration << " (" << *m_time_system << ")";
   }
 
-  std::ostream & operator <<(std::ostream & os, const ElapsedTime & time);
+  std::ostream & operator <<(std::ostream & os, const ElapsedTime & elapsed_time);
 
-  st_stream::OStream & operator <<(st_stream::OStream & os, const ElapsedTime & time);
+  st_stream::OStream & operator <<(st_stream::OStream & os, const ElapsedTime & elapsed_time);
 }
 
 #endif
