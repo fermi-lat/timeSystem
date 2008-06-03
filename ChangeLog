@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Mon Jun  2 18:23:43 PDT 2008
+timeSystem/timeSystem
+
+Modified Files:
+	TimeInterval.h 
+Log Message:
+Add computeDuration methods (overloaded). Rename some variables for clarity.
+    *
+------------------------------------------------------------
 User: hirayama  Mon Jun  2 18:22:38 PDT 2008
 timeSystem/src
 
