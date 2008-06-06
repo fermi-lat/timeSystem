@@ -1,5 +1,14 @@
 ------------------------------------------------------------
 User: hirayama  Thu Jun  5 18:03:20 PDT 2008
+timeSystem/src
+
+Modified Files:
+	AbsoluteTime.cxx Duration.cxx TimeSystem.cxx TimeFormat.cxx 
+Log Message:
+Split moment_type into two typedef's: moment_type (long and Duration) and datetime_type (long and double). Move those typedef's from Duration.h to TimeSystem.h. Make Duration::write and AbsoluteTime::write more human-friendly. Add Duration::describe method. Replace AbsoluteTime::computeAdvancedTime method with AbsoluteTime::computeDateTime method. Add UtcSystem::checkMoment method to strengthen validity of a given moment. Change some variable names for clarity.
+    *
+------------------------------------------------------------
+User: hirayama  Thu Jun  5 18:03:20 PDT 2008
 timeSystem/timeSystem
 
 Modified Files:
