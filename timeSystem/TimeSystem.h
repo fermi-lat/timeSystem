@@ -15,6 +15,9 @@
 
 namespace timeSystem {
 
+  typedef std::pair<long, Duration> moment_type;
+  typedef std::pair<long, double> datetime_type;
+
   /** \class TimeSystem
       \brief Class to convert absolute times and time intervals between different time systems, i.e. TDB (barycentric
              dynamical time), TT (terrestrial time), UTC (coordinated universal time), etc.
@@ -35,7 +38,9 @@ namespace timeSystem {
 
       virtual Duration computeTimeDifference(const moment_type & moment1, const moment_type & moment2) const;
 
-      virtual moment_type computeAdvancedTime(const moment_type & moment, const Duration & elapsed) const;
+      virtual datetime_type computeDateTime(const moment_type & moment) const;
+
+      virtual void checkMoment(const moment_type & moment) const;
 
       std::string getName() const;
 

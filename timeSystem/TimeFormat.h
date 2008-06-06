@@ -6,7 +6,7 @@
 #ifndef timeSystem_TimeFormat_h
 #define timeSystem_TimeFormat_h
 
-#include "timeSystem/Duration.h"
+#include "timeSystem/TimeSystem.h"
 
 #include <limits>
 #include <map>
@@ -23,9 +23,9 @@ namespace timeSystem {
 
       static const TimeFormat & getFormat(const std::string & format_name);
 
-      virtual std::string format(const moment_type & value, std::streamsize precision = std::numeric_limits<double>::digits10) const = 0;
+      virtual std::string format(const datetime_type & value, std::streamsize precision = std::numeric_limits<double>::digits10) const = 0;
 
-      virtual moment_type parse(const std::string & value) const = 0;
+      virtual datetime_type parse(const std::string & value) const = 0;
 
     protected:
       typedef std::map<std::string, TimeFormat *> container_type;
@@ -45,17 +45,17 @@ namespace timeSystem {
     public:
       static const MjdFormat & getMjdFormat();
 
-      virtual std::string format(const moment_type & value, std::streamsize precision = std::numeric_limits<double>::digits10) const;
+      virtual std::string format(const datetime_type & value, std::streamsize precision = std::numeric_limits<double>::digits10) const;
 
-      virtual moment_type parse(const std::string & value) const;
+      virtual datetime_type parse(const std::string & value) const;
 
-      void convert(const moment_type & moment, long & mjd_int, double & mjd_frac) const;
+      void convert(const datetime_type & moment, long & mjd_int, double & mjd_frac) const;
 
-      void convert(const moment_type & moment, double & mjd) const;
+      void convert(const datetime_type & moment, double & mjd) const;
 
-      void convert(long mjd_int, double mjd_frac, moment_type & moment) const;
+      void convert(long mjd_int, double mjd_frac, datetime_type & moment) const;
 
-      void convert(double mjd, moment_type & moment) const;
+      void convert(double mjd, datetime_type & moment) const;
 
     private:
       MjdFormat();

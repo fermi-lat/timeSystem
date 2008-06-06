@@ -48,7 +48,7 @@ namespace timeSystem {
     return s_format;
   }
 
-  std::string MjdFormat::format(const moment_type & value, std::streamsize precision) const {
+  std::string MjdFormat::format(const datetime_type & value, std::streamsize precision) const {
     std::ostringstream os;
     long mjd_int = 0;
     double mjd_frac = 0.;
@@ -58,16 +58,16 @@ namespace timeSystem {
     return os.str();
   }
 
-  moment_type MjdFormat::parse(const std::string & value) const {
+  datetime_type MjdFormat::parse(const std::string & value) const {
     IntFracPair int_frac(value);
     long mjd_int = int_frac.getIntegerPart();
     double mjd_frac = int_frac.getFractionalPart();
-    moment_type moment;
+    datetime_type moment;
     convert(mjd_int, mjd_frac, moment);
     return moment;
   }
 
-  void MjdFormat::convert(const moment_type & moment, long & mjd_int, double & mjd_frac) const {
+  void MjdFormat::convert(const datetime_type & moment, long & mjd_int, double & mjd_frac) const {
     if (SecPerDay() < moment.second) {
       // During an inserted leap-second.
       mjd_int = moment.first + 1;
@@ -78,23 +78,23 @@ namespace timeSystem {
     }
   }
 
-  void MjdFormat::convert(const moment_type & moment, double & mjd) const {
+  void MjdFormat::convert(const datetime_type & moment, double & mjd) const {
     long int_part = 0;
     double frac_part = 0.;
     convert(moment, int_part, frac_part);
     mjd = int_part + frac_part;
   }
 
-  void MjdFormat::convert(long mjd_int, double mjd_frac, moment_type & moment) const {
+  void MjdFormat::convert(long mjd_int, double mjd_frac, datetime_type & moment) const {
     // Split mjd_frac into integer part and fractional part.
     IntFracPair mjd_frac_split(mjd_frac);
 
-    // Set the value to the moment_type object.
+    // Set the value to the datetime_type object.
     moment.first = mjd_int + mjd_frac_split.getIntegerPart();
     moment.second = mjd_frac_split.getFractionalPart() * SecPerDay();
   }
 
-  void MjdFormat::convert(double mjd, moment_type & moment) const {
+  void MjdFormat::convert(double mjd, datetime_type & moment) const {
     IntFracPair mjd_int_frac(mjd);
     convert(mjd_int_frac.getIntegerPart(), mjd_int_frac.getFractionalPart(), moment);
   }

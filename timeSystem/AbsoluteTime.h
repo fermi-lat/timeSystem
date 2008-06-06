@@ -6,7 +6,7 @@
 #ifndef timeSystem_AbsoluteTime_h
 #define timeSystem_AbsoluteTime_h
 
-#include "timeSystem/Duration.h"
+#include "timeSystem/TimeSystem.h"
 
 #include <string>
 
@@ -51,6 +51,8 @@ namespace timeSystem {
   */
   class AbsoluteTime {
     public:
+      AbsoluteTime(const std::string & time_system_name, long origin_mjd, const Duration & elapsed_time);
+
       AbsoluteTime(const std::string & time_system_name, long mjd_day, double mjd_sec);
 
       AbsoluteTime(const std::string & time_system_name, const Mjd & mjd);
@@ -107,8 +109,16 @@ namespace timeSystem {
 
   template <typename StreamType>
   inline void AbsoluteTime::write(StreamType & os) const {
-    // Write the time in the format of "123.456789 seconds after 54321.0 MJD (TDB)".
-    os << m_moment.second << " seconds after " << m_moment.first << ".0 MJD (" << *m_time_system << ")";
+    if (m_moment.second > Duration(0, 0.)) {
+      // Write the time in the format of "123.456789 seconds after 54321.0 MJD (TDB)".
+      os << m_moment.second << " after " << m_moment.first << ".0 MJD (" << *m_time_system << ")";
+    } else if (m_moment.second < Duration(0, 0.)) {
+      // Write the time in the format of "123.456789 seconds before 54321.0 MJD (TDB)".
+      os << -m_moment.second << " before " << m_moment.first << ".0 MJD (" << *m_time_system << ")";
+    } else {
+      // Write the time in the format of "54321.0 MJD (TDB)".
+      os << m_moment.first << ".0 MJD (" << *m_time_system << ")";
+    }
   }
 
   std::ostream & operator <<(std::ostream & os, const AbsoluteTime & time);
