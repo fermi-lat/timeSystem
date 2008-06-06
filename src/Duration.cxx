@@ -1,4 +1,4 @@
-/** \file Duration.cxx
+/** \File Duration.cxx
     \brief Implementation of Duration class.
     \authors Masaharu Hirayama, GSSC
              James Peachey, HEASARC/GSSC
@@ -150,19 +150,19 @@ namespace timeSystem {
     const TimeUnit & unit(TimeUnit::getUnit(time_unit_name));
 
     if (&TimeUnit::getUnit("Day") == &unit) {
-      double day_frac = m_time.second * DayPerSec();
-      time_value_int = m_time.first;
+      double day_frac = m_duration.second * DayPerSec();
+      time_value_int = m_duration.first;
       time_value_frac = day_frac;
-      if (m_time.first < 0 && m_time.second > 0.) {
+      if (m_duration.first < 0 && m_duration.second > 0.) {
         ++time_value_int;
         --time_value_frac;
       }
 
     } else {
       // Let the sec part have the same sign as the day part.
-      long signed_day = m_time.first;
-      double signed_sec = m_time.second;
-      if (m_time.first < 0) {
+      long signed_day = m_duration.first;
+      double signed_sec = m_duration.second;
+      if (m_duration.first < 0) {
         signed_day += 1;
         signed_sec -= SecPerDay();
       }
@@ -204,71 +204,81 @@ namespace timeSystem {
     return time_value_int + time_value_frac;
   }
 
-  Duration Duration::operator +(const Duration & dur) const {
-    return Duration(add(m_time, dur.m_time));
+  Duration Duration::operator +(const Duration & other) const {
+    return Duration(add(m_duration, other.m_duration));
   }
 
-  Duration & Duration::operator +=(const Duration & dur) {
-    m_time = add(m_time, dur.m_time);
+  Duration & Duration::operator +=(const Duration & other) {
+    m_duration = add(m_duration, other.m_duration);
     return *this;
   }
 
-  Duration & Duration::operator -=(const Duration & dur) {
-    m_time = add(m_time, negate(dur.m_time));
+  Duration & Duration::operator -=(const Duration & other) {
+    m_duration = add(m_duration, negate(other.m_duration));
     return *this;
   }
 
-  Duration Duration::operator -(const Duration & dur) const {
-    return Duration(add(m_time, negate(dur.m_time)));
+  Duration Duration::operator -(const Duration & other) const {
+    return Duration(add(m_duration, negate(other.m_duration)));
   }
 
   Duration Duration::operator -() const {
-    return Duration(negate(m_time));
+    return Duration(negate(m_duration));
   }
 
-  double Duration::operator /(const Duration & dur) const {
+  double Duration::operator /(const Duration & other) const {
     std::string time_unit_name("Day");
 
     // If both times are less than a day, use seconds to preserve precision. This is not safe if either Duration
     // is longer than one day, because get method does integer math when the units are seconds, and days converted
     // to seconds can overflow in this case.
-    if (0 == m_time.first && 0 == dur.m_time.first) time_unit_name = "Sec";
+    if (0 == m_duration.first && 0 == other.m_duration.first) time_unit_name = "Sec";
 
-    return get(time_unit_name) / dur.get(time_unit_name);
+    return get(time_unit_name) / other.get(time_unit_name);
   }
 
-  bool Duration::operator !=(const Duration & dur) const {
-    return m_time.first != dur.m_time.first || m_time.second != dur.m_time.second;
+  bool Duration::operator !=(const Duration & other) const {
+    return m_duration.first != other.m_duration.first || m_duration.second != other.m_duration.second;
   }
 
-  bool Duration::operator ==(const Duration & dur) const {
-    return m_time.first == dur.m_time.first && m_time.second == dur.m_time.second;
+  bool Duration::operator ==(const Duration & other) const {
+    return m_duration.first == other.m_duration.first && m_duration.second == other.m_duration.second;
   }
 
-  bool Duration::operator <(const Duration & dur) const {
-    return m_time.first < dur.m_time.first || (m_time.first == dur.m_time.first && m_time.second < dur.m_time.second);
+  bool Duration::operator <(const Duration & other) const {
+    return m_duration.first < other.m_duration.first ||
+      (m_duration.first == other.m_duration.first && m_duration.second < other.m_duration.second);
   }
 
-  bool Duration::operator <=(const Duration & dur) const {
-    return m_time.first < dur.m_time.first || (m_time.first == dur.m_time.first && m_time.second <= dur.m_time.second);
+  bool Duration::operator <=(const Duration & other) const {
+    return m_duration.first < other.m_duration.first ||
+      (m_duration.first == other.m_duration.first && m_duration.second <= other.m_duration.second);
   }
 
-  bool Duration::operator >(const Duration & dur) const {
-    return m_time.first > dur.m_time.first || (m_time.first == dur.m_time.first && m_time.second > dur.m_time.second);
+  bool Duration::operator >(const Duration & other) const {
+    return m_duration.first > other.m_duration.first ||
+      (m_duration.first == other.m_duration.first && m_duration.second > other.m_duration.second);
   }
 
-  bool Duration::operator >=(const Duration & dur) const {
-    return m_time.first > dur.m_time.first || (m_time.first == dur.m_time.first && m_time.second >= dur.m_time.second);
+  bool Duration::operator >=(const Duration & other) const {
+    return m_duration.first > other.m_duration.first ||
+      (m_duration.first == other.m_duration.first && m_duration.second >= other.m_duration.second);
   }
 
   bool Duration::equivalentTo(const Duration & other, const Duration & tolerance) const {
     return (*this > other ? (*this <= other + tolerance) : (other <= *this + tolerance));
   }
 
+  std::string Duration::describe() const {
+    std::ostringstream os;
+    os << "Duration(" << m_duration.first << ", " << m_duration.second << ")";
+    return os.str();
+  }
+
   /** \brief Convert any number of seconds into days & seconds in range [0, 86400).
       \param sec Input number of seconds.
   */
-  Duration::time_type Duration::splitSec(double sec) const {
+  Duration::duration_type Duration::splitSec(double sec) const {
     // TODO: Replace the following with simple use of IntFracPair class?
     double offset;
     if (0. > sec) {
@@ -276,7 +286,7 @@ namespace timeSystem {
     } else if (SecPerDay() <= sec) {
       offset = +.5;
     } else {
-      return Duration::time_type(0, sec);
+      return Duration::duration_type(0, sec);
     }
     double double_day = std::floor(sec * DayPerSec()) + offset;
     long day;
@@ -291,7 +301,7 @@ namespace timeSystem {
       os << "Time " << double_day << " is too large to be expressed as a long integer";
       throw std::runtime_error(os.str());
     }
-    return Duration::time_type(day, sec - day * SecPerDay());
+    return Duration::duration_type(day, sec - day * SecPerDay());
   }
 
   /** \brief Add two times which are represented by long day and double second fields. Seconds
@@ -299,7 +309,7 @@ namespace timeSystem {
       \param t1 The first time being added.
       \param t2 The second time being added.
   */
-  Duration::time_type Duration::add(Duration::time_type t1, Duration::time_type t2) const {
+  Duration::duration_type Duration::add(Duration::duration_type t1, Duration::duration_type t2) const {
     // Day portions are added no matter what.
     long day = t1.first + t2.first;
 
@@ -313,31 +323,31 @@ namespace timeSystem {
       // 2. Prevent small negative values, which sometimes occur when performing floating point subtraction.
       sec = std::max(0., (t1.second - SecPerDay()) + t2.second);
     }
-    return Duration::time_type(day, sec);
+    return Duration::duration_type(day, sec);
   }
 
   /** \brief Multiply by -1 a time represented by long day and double second fields. Seconds
       part of the result is guaranteed to be in the range [0., SecPerDay())
       \param t1 The first time being negated.
   */
-  Duration::time_type Duration::negate(Duration::time_type t1) const {
-    return Duration::time_type(-t1.first - 1, SecPerDay() - t1.second);
+  Duration::duration_type Duration::negate(Duration::duration_type t1) const {
+    return Duration::duration_type(-t1.first - 1, SecPerDay() - t1.second);
   }
 
   void Duration::set(long time_value_int, double time_value_frac, const std::string & time_unit_name) {
     const TimeUnit & unit(TimeUnit::getUnit(time_unit_name));
     long day = time_value_int / unit.getUnitPerDay();
     double sec = (time_value_int % unit.getUnitPerDay() + time_value_frac) * unit.getSecPerUnit();
-    m_time = add(Duration::time_type(day, 0.), splitSec(sec));
+    m_duration = add(Duration::duration_type(day, 0.), splitSec(sec));
   }
 
-  std::ostream & operator <<(std::ostream & os, const Duration & dur) {
-    dur.write(os);
+  std::ostream & operator <<(std::ostream & os, const Duration & time_duration) {
+    time_duration.write(os);
     return os;
   }
 
-  st_stream::OStream & operator <<(st_stream::OStream & os, const Duration & dur) {
-    dur.write(os);
+  st_stream::OStream & operator <<(st_stream::OStream & os, const Duration & time_duration) {
+    time_duration.write(os);
     return os;
   }
 
