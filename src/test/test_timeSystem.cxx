@@ -26,8 +26,8 @@
 #include <cmath>
 #include <exception>
 #include <limits>
-
 #include <list>
+#include <stdexcept>
 
 namespace {
 
