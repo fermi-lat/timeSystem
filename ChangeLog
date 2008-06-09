@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Mon Jun  9 14:28:58 PDT 2008
+timeSystem/timeSystem
+
+Modified Files:
+	IntFracPair.h 
+Log Message:
+Split IntFracPair.h into two files: .h and .cxx
+    *
+------------------------------------------------------------
 User: hirayama  Sun Jun  8 17:35:18 PDT 2008
 timeSystem/src
 
