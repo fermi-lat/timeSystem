@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Sun Jun  8 17:35:18 PDT 2008
+timeSystem/timeSystem
+
+Added Files:
+	MjdFormat.h 
+Log Message:
+Add MjdFormat.h and .cxx.
+    *
+------------------------------------------------------------
 User: hirayama  Sun Jun  8 17:31:59 PDT 2008
 timeSystem/timeSystem
 
