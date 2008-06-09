@@ -1,5 +1,14 @@
 ------------------------------------------------------------
 User: hirayama  Sun Jun  8 17:08:55 PDT 2008
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Improve TimeFormat and MjdFormat classes for easy addition of new formats.
+    *
+------------------------------------------------------------
+User: hirayama  Sun Jun  8 17:08:55 PDT 2008
 timeSystem/src
 
 Modified Files:
