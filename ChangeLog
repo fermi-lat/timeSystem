@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Sun Jun  8 17:31:59 PDT 2008
+timeSystem/src
+
+Modified Files:
+	BaryTimeComputer.cxx EventTimeHandler.cxx 
+Log Message:
+Include MjdFormat.h.
+    *
+------------------------------------------------------------
 User: hirayama  Sun Jun  8 17:08:55 PDT 2008
 timeSystem/timeSystem
 
