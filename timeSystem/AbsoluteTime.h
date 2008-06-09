@@ -6,6 +6,7 @@
 #ifndef timeSystem_AbsoluteTime_h
 #define timeSystem_AbsoluteTime_h
 
+#include "timeSystem/TimeFormat.h"
 #include "timeSystem/TimeSystem.h"
 
 #include <string>
@@ -18,30 +19,6 @@ namespace timeSystem {
 
   class ElapsedTime;
   class TimeInterval;
-  class TimeSystem;
-
-  /** \class Mjd
-      \brief Class to hold an MJD number in two parts, the integer part and the fractional part, in order to
-             hold it in a precision required by GLAST.
-  */
-  struct Mjd {
-    Mjd(long int_part, double frac_part): m_int(int_part), m_frac(frac_part) {}
-    long m_int;
-    double m_frac;
-  };
-
-  /** \class Mjd1
-      \brief Class to hold an MJD number in one double-precision variable.
-  */
-  struct Mjd1 {
-    Mjd1(double day): m_day(day) {}
-    double m_day;
-  };
-
-  // TODO: Implement struct Jd, Jd1, MonthDay, WeekDay, YearDay.
-  // NOTE: Data members of struct MonthDay: m_year, m_mon,  m_day, m_hour, m_min, and m_sec (cf. struct tm in C).
-  // NOTE: Data members of struct WeekDay:  m_year, m_week, m_day, m_hour, m_min, and m_sec (cf. struct tm in C).
-  // NOTE: Data members of struct YearDay:  m_year,         m_day, m_hour, m_min, and m_sec (cf. struct tm in C).
 
   /** \class AbsoluteTime
       \brief Class which represents an absolute moment in time, expressed as a time elapsed from a specific MJD time, in
@@ -55,14 +32,14 @@ namespace timeSystem {
 
       AbsoluteTime(const std::string & time_system_name, long mjd_day, double mjd_sec);
 
-      AbsoluteTime(const std::string & time_system_name, const Mjd & mjd);
-      AbsoluteTime(const std::string & time_system_name, const Mjd1 & mjd);
+      template <typename TimeRepType>
+      AbsoluteTime(const std::string & time_system_name, const TimeRepType & time_rep) { set(time_system_name, time_rep); }
 
-      void get(const std::string & time_system_name, Mjd & mjd) const;
-      void get(const std::string & time_system_name, Mjd1 & mjd) const;
+      template <typename TimeRepType>
+      void get(const std::string & time_system_name, TimeRepType & time_rep) const;
 
-      void set(const std::string & time_system_name, const Mjd & mjd);
-      void set(const std::string & time_system_name, const Mjd1 & mjd);
+      template <typename TimeRepType>
+      void set(const std::string & time_system_name, const TimeRepType & time_rep);
 
       void set(const std::string & time_system_name, const std::string & time_format_name, const std::string & time_string);
 
@@ -106,6 +83,22 @@ namespace timeSystem {
       const TimeSystem * m_time_system;
       moment_type m_moment;
   };
+
+  template <typename TimeRepType>
+  inline void AbsoluteTime::get(const std::string & time_system_name, TimeRepType & time_rep) const {
+    const TimeSystem & time_system(TimeSystem::getSystem(time_system_name));
+    moment_type moment = time_system.convertFrom(*m_time_system, m_moment);
+    datetime_type datetime = time_system.computeDateTime(moment);
+    TimeFormat::convert(datetime, time_rep);
+  }
+
+  template <typename TimeRepType>
+  inline void AbsoluteTime::set(const std::string & time_system_name, const TimeRepType & time_rep) {
+    m_time_system = &TimeSystem::getSystem(time_system_name);
+    datetime_type datetime(0, 0.);
+    TimeFormat::convert(time_rep, datetime);
+    m_moment = moment_type(datetime.first, Duration(0, datetime.second));
+  }
 
   template <typename StreamType>
   inline void AbsoluteTime::write(StreamType & os) const {

@@ -22,41 +22,6 @@ namespace timeSystem {
     m_time_system(&TimeSystem::getSystem(time_system_name)), m_moment(mjd_day, Duration(0, mjd_sec)) {
   }
 
-  AbsoluteTime::AbsoluteTime(const std::string & time_system_name, const Mjd & mjd) { set(time_system_name, mjd); }
-  AbsoluteTime::AbsoluteTime(const std::string & time_system_name, const Mjd1 & mjd) { set(time_system_name, mjd); }
-
-  void AbsoluteTime::get(const std::string & time_system_name, Mjd & mjd) const {
-    const TimeSystem & time_system(TimeSystem::getSystem(time_system_name));
-    moment_type moment = time_system.convertFrom(*m_time_system, m_moment);
-    datetime_type datetime = time_system.computeDateTime(moment);
-    const MjdFormat & time_format(MjdFormat::getMjdFormat());
-    time_format.convert(datetime, mjd.m_int, mjd.m_frac);
-  }
-
-  void AbsoluteTime::get(const std::string & time_system_name, Mjd1 & mjd) const {
-    const TimeSystem & time_system(TimeSystem::getSystem(time_system_name));
-    moment_type moment = time_system.convertFrom(*m_time_system, m_moment);
-    datetime_type datetime = time_system.computeDateTime(moment);
-    const MjdFormat & time_format(MjdFormat::getMjdFormat());
-    time_format.convert(datetime, mjd.m_day);
-  }
-
-  void AbsoluteTime::set(const std::string & time_system_name, const Mjd & mjd) {
-    m_time_system = &TimeSystem::getSystem(time_system_name);
-    const MjdFormat & time_format(MjdFormat::getMjdFormat());
-    datetime_type datetime(0, 0.);
-    time_format.convert(mjd.m_int, mjd.m_frac, datetime);
-    m_moment = moment_type(datetime.first, Duration(0, datetime.second));
-  }
-
-  void AbsoluteTime::set(const std::string & time_system_name, const Mjd1 & mjd) {
-    m_time_system = &TimeSystem::getSystem(time_system_name);
-    const MjdFormat & time_format(MjdFormat::getMjdFormat());
-    datetime_type datetime(0, 0.);
-    time_format.convert(mjd.m_day, datetime);
-    m_moment = moment_type(datetime.first, Duration(0, datetime.second));
-  }
-
   void AbsoluteTime::set(const std::string & time_system_name, const std::string & time_format_name, const std::string & time_string) {
     m_time_system = &TimeSystem::getSystem(time_system_name);
     const TimeFormat & time_format = TimeFormat::getFormat(time_format_name);
