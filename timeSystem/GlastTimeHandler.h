@@ -8,6 +8,7 @@
 
 #include "timeSystem/AbsoluteTime.h"
 #include "timeSystem/EventTimeHandler.h"
+#include "timeSystem/MjdFormat.h"
 
 #include <string>
 

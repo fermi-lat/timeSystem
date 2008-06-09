@@ -9,6 +9,7 @@
 #include "timeSystem/Duration.h"
 #include "timeSystem/ElapsedTime.h"
 #include "timeSystem/IntFracPair.h"
+#include "timeSystem/MjdFormat.h"
 
 #include <cmath>
 #include <sstream>
