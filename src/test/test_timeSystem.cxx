@@ -18,6 +18,7 @@
 #include "timeSystem/EventTimeHandler.h"
 #include "timeSystem/GlastTimeHandler.h"
 #include "timeSystem/IntFracPair.h"
+#include "timeSystem/MjdFormat.h"
 #include "timeSystem/TimeInterval.h"
 #include "timeSystem/TimeFormat.h"
 #include "timeSystem/TimeSystem.h"
@@ -1527,79 +1528,77 @@ namespace {
 
   void TestTimeFormat() {
     s_os.setMethod("TestTimeFormat");
-    //static const double epsilon = std::numeric_limits<double>::epsilon() * 300.;
-    datetime_type expected_moment(51910, 64.814);
-    long expected_mjd_int = expected_moment.first;
-    double expected_mjd_frac = expected_moment.second * DayPerSec();
-    double expected_mjd = expected_mjd_int + expected_mjd_frac;
 
-    // Create a test time object using MJD representation.
-    const TimeFormat & time_format_mjd = TimeFormat::getFormat("MJD");
-    const MjdFormat & mjd_format = MjdFormat::getMjdFormat();
+    //static const double epsilon = std::numeric_limits<double>::epsilon() * 300.;
+    datetime_type expected_datetime(51910, 64.814);
+    Mjd expected_mjd(expected_datetime.first, expected_datetime.second * DayPerSec());
+    Mjd1 expected_mjd1(expected_mjd.m_int + expected_mjd.m_frac);
 
     // Test conversion from integer part and fractional part to datetime_type.
-    datetime_type moment(0, 0.);
-    mjd_format.convert(expected_mjd_int, expected_mjd_frac, moment);
+    datetime_type datetime(0, 0.);
+    TimeFormat::convert(expected_mjd, datetime);
     double tolerance = 100.e-9; // 100 nano-seconds.
-    if (expected_moment.first != moment.first || tolerance < std::fabs(expected_moment.second - moment.second)) {
-      err() << "Object mjd_format converted (" << expected_mjd_int << " + " << expected_mjd_frac <<
-        ") MJD into datetime_type pair (" << moment.first << ", " << moment.second << "), not (" <<
-        expected_moment.first << ", " << expected_moment.second << ") as expected." << std::endl;
+    if (expected_datetime.first != datetime.first || tolerance < std::fabs(expected_datetime.second - datetime.second)) {
+      err() << "Object mjd_format converted (" << expected_mjd.m_int << " + " << expected_mjd.m_frac <<
+        ") MJD into datetime_type pair (" << datetime.first << ", " << datetime.second << "), not (" <<
+        expected_datetime.first << ", " << expected_datetime.second << ") as expected." << std::endl;
     }
 
     // Test conversion from a single MJD number of double type to datetime_type.
-    moment = datetime_type(0, 0.);
-    mjd_format.convert(expected_mjd, moment);
+    datetime = datetime_type(0, 0.);
+    mjd_format.convert(expected_mjd, datetime);
     tolerance = 10.e-6; // 10 micro-seconds.
-    if (expected_moment.first != moment.first || tolerance < std::fabs(expected_moment.second - moment.second)) {
-      err() << "Object mjd_format converted " << expected_mjd << " MJD into datetime_type pair (" << moment.first << ", " <<
-        moment.second << "), not (" << expected_moment.first << ", " << expected_moment.second << ") as expected." << std::endl;
+    if (expected_datetime.first != datetime.first || tolerance < std::fabs(expected_datetime.second - datetime.second)) {
+      err() << "Object mjd_format converted " << expected_mjd1.m_day << " MJD into datetime_type pair (" << datetime.first << ", " <<
+        datetime.second << "), not (" << expected_datetime.first << ", " << expected_datetime.second << ") as expected." << std::endl;
     }
 
     // Test conversion from datetime_type to integer part and fractional part.
-    long mjd_int = 0;
-    double mjd_frac = 0.;
-    mjd_format.convert(expected_moment, mjd_int, mjd_frac);
+    Mjd mjd(0, 0.);
+    mjd_format.convert(expected_datetime, mjd);
     tolerance = 100.e-9 * DayPerSec(); // 100 nano-seconds in units of day.
-    if (expected_mjd_int != mjd_int || tolerance < std::fabs(expected_mjd_frac - mjd_frac)) {
-      err() << "Object mjd_format converted datetime_type pair (" << expected_moment.first << ", " << expected_moment.second <<
-        ") into (" << expected_mjd_int << " + " << expected_mjd_frac << ") MJD, not (" << expected_mjd_int << " + " <<
-        expected_mjd_frac << ") MJD as expected." << std::endl;
+    if (expected_mjd.m_int != mjd.m_int || tolerance < std::fabs(expected_mjd.m_frac - mjd.m_frac)) {
+      err() << "Object mjd_format converted datetime_type pair (" << expected_datetime.first << ", " << expected_datetime.second <<
+        ") into (" << mjd.m_int << " + " << mjd.m_frac << ") MJD, not (" << expected_mjd.m_int << " + " <<
+        expected_mjd.m_frac << ") MJD as expected." << std::endl;
     }
 
     // Test conversion from datetime_type to a single MJD number of double type.
-    double mjd = 0.;
-    mjd_format.convert(expected_moment, mjd);
+    Mjd1 mjd1 = 0.;
+    mjd_format.convert(expected_datetime, mjd1);
     tolerance = 100.e-9 * DayPerSec(); // 100 nano-seconds in units of day.
-    if (tolerance < std::fabs(expected_mjd - mjd)) {
-      err() << "Object mjd_format converted datetime_type pair (" << expected_moment.first << ", " << expected_moment.second <<
-        ") into " << expected_mjd << " MJD, not " << expected_mjd << " MJD as expected." << std::endl;
+    if (tolerance < std::fabs(expected_mjd1.m_day - mjd1.m_day)) {
+      err() << "Object mjd_format converted datetime_type pair (" << expected_datetime.first << ", " << expected_datetime.second <<
+        ") into " << mjd1.m_day << " MJD, not " << expected_mjd1.m_day << " MJD as expected." << std::endl;
     }
+
+    // Create a TimeFormat object using MJD representation.
+    const TimeFormat & mjd_format = TimeFormat::getFormat("MJD");
 
     // Test formatting into string.
     std::string expected_mjd_string = "51910.000750162037037 MJD";
-    std::string mjd_string = time_format_mjd.format(expected_moment);
+    std::string mjd_string = mjd_format.format(expected_datetime);
     if (expected_mjd_string != mjd_string) {
-      err() << "Reference to mjd_format formatted datetime_type pair (" << expected_moment.first << ", " << expected_moment.second <<
-        ") into \"" << mjd_string << "\", not \"" << expected_mjd_string << "\" as expected." << std::endl;
+      err() << "Object returned by TimeFormat::getFormat(\"MJD\") formatted datetime_type pair (" << expected_datetime.first << ", " <<
+        expected_datetime.second << ") into \"" << mjd_string << "\", not \"" << expected_mjd_string << "\" as expected." << std::endl;
     }
 
     // Test formatting into string, with decimal precision specified.
     expected_mjd_string = "51910.0007502 MJD";
-    mjd_string = time_format_mjd.format(expected_moment, 7);
+    mjd_string = mjd_format.format(expected_datetime, 7);
     if (expected_mjd_string != mjd_string) {
-      err() << "Reference to mjd_format formatted datetime_type pair (" << expected_moment.first << ", " << expected_moment.second <<
-        ") into \"" << mjd_string << "\", not \"" << expected_mjd_string << "\" as expected." << std::endl;
+      err() << "Object returned by TimeFormat::getFormat(\"MJD\") formatted datetime_type pair (" << expected_datetime.first << ", " <<
+        expected_datetime.second << ") into \"" << mjd_string << "\", not \"" << expected_mjd_string << "\" as expected." << std::endl;
     }
 
     // Test parsing a string.
     mjd_string = "51910.000750162037037";
-    moment = time_format_mjd.parse(mjd_string);
+    datetime = mjd_format.parse(mjd_string);
     tolerance = 100.e-9; // 100 nano-seconds.
-    if (expected_moment.first != moment.first || tolerance < std::fabs(expected_moment.second - moment.second)) {
-      err() << "Reference to mjd_format parsed \"" << mjd_string << "\" into datetime_type pair (" << moment.first <<
-        ", " << moment.second << "), not (" << expected_moment.first << ", " << expected_moment.second << ") as expected." <<
-        std::endl;
+    if (expected_datetime.first != datetime.first || tolerance < std::fabs(expected_datetime.second - datetime.second)) {
+      err() << "Object returned by TimeFormat::getFormat(\"MJD\") parsed \"" << mjd_string << "\" into datetime_type pair (" <<
+        datetime.first << ", " << datetime.second << "), not (" << expected_datetime.first << ", " << expected_datetime.second <<
+        ") as expected." << std::endl;
     }
   }
 
