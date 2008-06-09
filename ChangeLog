@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Sun Jun  8 17:08:55 PDT 2008
+timeSystem/src
+
+Modified Files:
+	AbsoluteTime.cxx TimeFormat.cxx 
+Log Message:
+Improve TimeFormat and MjdFormat classes for easy addition of new formats.
+    *
+------------------------------------------------------------
 User: hirayama  Thu Jun  5 18:03:20 PDT 2008
 timeSystem/src/test
 
