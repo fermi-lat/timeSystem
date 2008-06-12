@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Wed Jun 11 22:40:11 PDT 2008
+timeSystem/timeSystem
+
+Modified Files:
+	TimeConstant.h 
+Log Message:
+Add a TODO marker.
+    *
+------------------------------------------------------------
 User: hirayama  Wed Jun 11 22:38:32 PDT 2008
 timeSystem/src
 
