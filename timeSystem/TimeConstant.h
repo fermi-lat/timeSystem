@@ -9,6 +9,9 @@
 namespace timeSystem {
 
   // Unit conversion constants.
+  // TODO: Remove functions that return double. Reasons are:
+  //       1) There is a concern on potential loss of precision in computation.
+  //       2) They are not often used in pulsar tools packages.
   double MinPerSec();
   double SecPerMin();
   long SecPerMinLong();
