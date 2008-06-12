@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Wed Jun 11 22:36:53 PDT 2008
+timeSystem/src
+
+Modified Files:
+	Duration.cxx 
+Log Message:
+Unify handling of integer overflows and underflows in a new method (round), and use it more consistently. Remove the constructor that takes a string. Remove default argument values from a constructor and add a constructor with no argument instead.
+    *
+------------------------------------------------------------
 User: hirayama  Wed Jun 11 22:36:52 PDT 2008
 timeSystem/timeSystem
 
