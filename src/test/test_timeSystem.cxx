@@ -141,8 +141,8 @@ namespace {
     }
   }
 
-  void TestDurationConstructor(const std::string & time_unit_name, long int_part, double frac_part, const std::string & time_string,
-    const Duration & expected_result, const Duration & tolerance_high, const Duration & tolerance_low) {
+  void TestDurationConstructor(const std::string & time_unit_name, long int_part, double frac_part, const Duration & expected_result,
+    const Duration & tolerance_high, const Duration & tolerance_low) {
     // Test the constructor that takes a pair of long and double variables.
     Duration result(int_part, frac_part, time_unit_name);
     if (!result.equivalentTo(expected_result, tolerance_high)) {
@@ -157,14 +157,6 @@ namespace {
       err() << "Duration(" << int_part + frac_part << ", \"" << time_unit_name <<
         "\") created Duration of " << result << ", not equivalent to Duration of " << expected_result <<
         " with tolerance of " << tolerance_low << "." << std::endl;
-    }
-
-    // Test the constructor that takes a std::string object.
-    result = Duration(time_string, time_unit_name);
-    if (!result.equivalentTo(expected_result, tolerance_high)) {
-      err() << "Duration(\"" << time_string << "\", \"" << time_unit_name <<
-        "\") created Duration of " << result << ", not equivalent to Duration of " << expected_result <<
-        " with tolerance of " << tolerance_high << "." << std::endl;
     }
   }
 
@@ -239,16 +231,12 @@ namespace {
     // Tests of constructors.
     long int_part = 3456789;
     double frac_part = .56789567895678956789;
-    std::string time_string("3456789.56789567895678956789");
     Duration tol_high(0, 1.e-9); // 1 nano-second.
     Duration tol_low(0, 1.e-3); // 1 milli-second.
-    TestDurationConstructor("Day", int_part, frac_part, time_string, Duration(int_part, frac_part*86400.), tol_high, tol_low);
-    TestDurationConstructor("Hour", int_part, frac_part, time_string, Duration(int_part/24, (int_part%24 + frac_part)*3600.),
-      tol_high, tol_low);
-    TestDurationConstructor("Min", int_part, frac_part, time_string, Duration(int_part/1440, (int_part%1440 + frac_part)*60.),
-      tol_high, tol_low);
-    TestDurationConstructor("Sec", int_part, frac_part, time_string, Duration(int_part/86400, int_part%86400 + frac_part),
-      tol_high, tol_low);
+    TestDurationConstructor("Day", int_part, frac_part, Duration(int_part, frac_part*86400.), tol_high, tol_low);
+    TestDurationConstructor("Hour", int_part, frac_part, Duration(int_part/24, (int_part%24 + frac_part)*3600.), tol_high, tol_low);
+    TestDurationConstructor("Min", int_part, frac_part, Duration(int_part/1440, (int_part%1440 + frac_part)*60.), tol_high, tol_low);
+    TestDurationConstructor("Sec", int_part, frac_part, Duration(int_part/86400, int_part%86400 + frac_part), tol_high, tol_low);
 
     // Tests of equality and inequality operators.
     Duration six_sec(0, 6.);
@@ -286,36 +274,232 @@ namespace {
       err() << "After Duration seven_sec(0, 7.1), seven_sec.equivalentTo returned false for " << about_seven <<
         " with tolerance of " << loose_tol << ", not true as expected." << std::endl;
 
-    // Tests for detection of overflow/underflow:
-    // A case which should *not* overflow, but is close to overflowing.
+    // Test of the constructor that takes the integer and the fractional parts for detection of bad fractional parts.
     try {
-      Duration sec_max(0, std::numeric_limits<long>::max() + .4);
-      sec_max.get("Sec");
+      Duration dur(+1, -0.1, "Day");
+      err() << "Duration constructor did not throw an exception for Duration(+1, -0.1, \"Day\")" << std::endl;
     } catch (const std::exception & x) {
-      err() << "A test which should not overflow unexpectedly caught: " << x.what() << std::endl;
     }
-    // A case which should *not* underflow, but is close to underflowing.
     try {
-      Duration sec_min(0, std::numeric_limits<long>::min() - .4);
-      sec_min.get("Sec");
+      Duration dur(+1, +1.0, "Day");
+      err() << "Duration constructor did not throw an exception for Duration(+1, +1.0, \"Day\")" << std::endl;
     } catch (const std::exception & x) {
-      err() << "A test which should not underflow unexpectedly caught: " << x.what() << std::endl;
     }
-    // A case which should overflow.
-    double overflow_sec = std::numeric_limits<long>::max() + 1.1;
     try {
-      Duration sec_max(0, overflow_sec);
-      sec_max.get("Sec");
-      err() << "Duration::sec method unexpectedly did not overflow for " << overflow_sec << " seconds." << std::endl;
-    } catch (const std::exception &) {
+      Duration dur(-1, +0.1, "Day");
+      err() << "Duration constructor did not throw an exception for Duration(-1, +0.1, \"Day\")" << std::endl;
+    } catch (const std::exception & x) {
     }
-    // A case which should underflow.
-    double underflow_sec = std::numeric_limits<long>::min() - 1.1;
     try {
-      Duration sec_min(0, underflow_sec);
-      sec_min.get("Sec");
-      err() << "Duration::sec method unexpectedly did not underflow for " << underflow_sec << " seconds." << std::endl;
-    } catch (const std::exception &) {
+      Duration dur(-1, -1.0, "Day");
+      err() << "Duration constructor did not throw an exception for Duration(-1, -1.0, \"Day\")" << std::endl;
+    } catch (const std::exception & x) {
+    }
+    try {
+      Duration dur(0, +1.0, "Day");
+      err() << "Duration constructor did not throw an exception for Duration(0, +1.0, \"Day\")" << std::endl;
+    } catch (const std::exception & x) {
+    }
+    try {
+      Duration dur(0, -1.0, "Day");
+      err() << "Duration constructor did not throw an exception for Duration(0, -1.0, \"Day\")" << std::endl;
+    } catch (const std::exception & x) {
+    }
+
+    // Test for detections of overflow/underflow: the basic constructor that takes days and seconds.
+    double large_day = std::numeric_limits<long>::max() + .4;
+    double small_day = std::numeric_limits<long>::min() + 1 - .4;
+    // Note: Duration keeps its day part as one less than the integer part of it for computational advantages.
+    double overflow_day = std::numeric_limits<long>::max() + 1.1;
+    double underflow_day = std::numeric_limits<long>::min() + 1 - 1.1;
+    // Note: Duration keeps its day part as one less than the integer part of it for computational advantages.
+
+    // --- Case which should *not* overflow, but is close to overflowing.
+    double sec = large_day * SecPerDay();
+    try {
+      Duration dur(0, sec);
+    } catch (const std::exception & x) {
+      err() << "Duration constructor threw an exception for " << sec << " seconds unexpectedly: " << x.what() << std::endl;
+    }
+    // --- Case which should *not* underflow, but is close to underflowing.
+    sec = small_day * SecPerDay();
+    try {
+      Duration dur(0, sec);
+    } catch (const std::exception & x) {
+      err() << "Duration constructor threw an exception for " << sec << " seconds unexpectedly: " << x.what() << std::endl;
+    }
+    // --- Case which should overflow.
+    sec = overflow_day * SecPerDay();
+    try {
+      Duration dur(0, sec);
+      err() << "Duration constructor did not throw an exception for " << sec << " seconds." << std::endl;
+    } catch (const std::exception & x) {
+    }
+    // --- Case which should underflow.
+    sec = underflow_day * SecPerDay();
+    try {
+      Duration dur(0, sec);
+      err() << "Duration constructor did not throw an exception for " << sec << " seconds." << std::endl;
+    } catch (const std::exception & x) {
+    }
+
+    // Test for detections of overflow/underflow: the constructors that take a single number and a time unit.
+    std::map<std::string, long> unit_per_day;
+    unit_per_day["Day"] = 1;
+    unit_per_day["Hour"] = HourPerDayLong();
+    unit_per_day["Min"] = MinPerDayLong();
+    unit_per_day["Sec"] = SecPerDayLong();
+    for (std::map<std::string, long>::const_iterator itor = unit_per_day.begin(); itor != unit_per_day.end(); ++itor) {
+      const std::string & time_unit_name(itor->first);
+      long conversion_factor = itor->second;
+
+      // --- Case which should *not* overflow, but is close to overflowing.
+      double target_time = large_day * conversion_factor;
+      try {
+        Duration dur(target_time, time_unit_name);
+      } catch (const std::exception & x) {
+        err() << "Duration constructor threw an exception for Duration(" << target_time << ", \"" << time_unit_name <<
+          "\") unexpectedly: " << x.what() << std::endl;
+      }
+
+      // --- Case which should *not* underflow, but is close to underflowing.
+      target_time = small_day * conversion_factor;
+      try {
+        Duration dur(target_time, time_unit_name);
+      } catch (const std::exception & x) {
+        err() << "Duration constructor threw an exception for Duration(" << target_time << ", \"" << time_unit_name <<
+          "\") unexpectedly: " << x.what() << std::endl;
+      }
+
+      // --- Case which should overflow.
+      target_time = overflow_day * conversion_factor;
+      try {
+        Duration dur(target_time, time_unit_name);
+        err() << "Duration constructor did not throw an exception for Duration(" << target_time << ", \"" << time_unit_name <<
+          "\")." << std::endl;
+      } catch (const std::exception & x) {
+      }
+
+      // --- Case which should underflow.
+      target_time = underflow_day * conversion_factor;
+      try {
+        Duration dur(target_time, time_unit_name);
+        err() << "Duration constructor did not throw an exception for Duration(" << target_time << ", \"" << time_unit_name <<
+          "\")." << std::endl;
+      } catch (const std::exception & x) {
+      }
+    }
+
+    // Test for detections of overflow/underflow: the getters that computes a pair of integer and fractional parts.
+    double large_number = std::numeric_limits<long>::max() + .4;
+    double small_number = std::numeric_limits<long>::min() - .4;
+    double overflow_number = std::numeric_limits<long>::max() + 1.1;
+    double underflow_number = std::numeric_limits<long>::min() - 1.1;
+
+    // Note: Impossible to test "Day" because it is impossible to set a value that cannot be read out in units of day.
+    std::map<std::string, long> sec_per_unit;
+    sec_per_unit["hours"] = SecPerHourLong();
+    sec_per_unit["minutes"] = SecPerMinLong();
+    sec_per_unit["seconds"] = 1;
+    for (std::map<std::string, long>::const_iterator itor = sec_per_unit.begin(); itor != sec_per_unit.end(); ++itor) {
+      const std::string & time_unit_string(itor->first);
+      long conversion_factor = itor->second;
+      long int_part = 0;
+      double frac_part = 0.;
+
+      // --- Case which should *not* overflow, but is close to overflowing.
+      Duration dur(0, large_number * conversion_factor);
+      try {
+        dur.get(time_unit_string, int_part, frac_part);
+      } catch (const std::exception & x) {
+        err() << "Duration getter that computes an integer-fraction pair threw an exception for a time duration of " <<
+          large_number << " " << time_unit_string << " unexpectedly: " << x.what() << std::endl;
+      }
+
+      // --- Case which should *not* underflow, but is close to underflowing.
+      dur = Duration(0, small_number * conversion_factor);
+      try {
+        dur.get(time_unit_string, int_part, frac_part);
+      } catch (const std::exception & x) {
+        err() << "Duration getter that computes an integer-fraction pair threw an exception for a time duration of " <<
+          small_number << " " << time_unit_string << " unexpectedly: " << x.what() << std::endl;
+      }
+
+      // --- Case which should overflow.
+      dur = Duration(0, overflow_number * conversion_factor);
+      try {
+        dur.get(time_unit_string, int_part, frac_part);
+        err() << "Duration getter that computes an integer-fraction pair did not throw an exception for a time duration of " <<
+          overflow_number << " " << time_unit_string << "." << std::endl;
+      } catch (const std::exception & x) {
+      }
+
+      // --- Case which should underflow.
+      dur = Duration(0, underflow_number * conversion_factor);
+      try {
+        dur.get(time_unit_string, int_part, frac_part);
+        err() << "Duration getter that computes an integer-fraction pair did not throw an exception for a time duration of " <<
+          underflow_number << " " << time_unit_string << "." << std::endl;
+      } catch (const std::exception & x) {
+      }
+    }
+
+    // Test for NO detections of overflow/underflow: the getters that computes a single number.
+    Duration large_dur(0, large_day * SecPerDay());
+    Duration small_dur(0, small_day * SecPerDay());
+
+    std::list<std::string> time_unit_list;
+    time_unit_list.push_back("Day");
+    time_unit_list.push_back("Hour");
+    time_unit_list.push_back("Min");
+    time_unit_list.push_back("Sec");
+    for (std::list<std::string>::const_iterator itor = time_unit_list.begin(); itor != time_unit_list.end(); ++itor) {
+      const std::string & time_unit(*itor);
+      double time_value;
+
+      try {
+        large_dur.get(time_unit, time_value);
+      } catch (const std::exception & x) {
+        err() << "Duration getter that computes a single number threw an exception in getting a time duration of " <<
+          large_day << " days for time unit \"" << time_unit << "\" unexpectedly: " << x.what() << std::endl;
+      }
+
+      try {
+        time_value = large_dur.get(time_unit);
+      } catch (const std::exception & x) {
+        err() << "Duration getter that returns a single number threw an exception in getting a time duration of " <<
+          large_day << " days for time unit \"" << time_unit << "\" unexpectedly: " << x.what() << std::endl;
+      }
+
+      try {
+        small_dur.get(time_unit, time_value);
+      } catch (const std::exception & x) {
+        err() << "Duration getter that computes a single number threw an exception in getting a time duration of " <<
+          small_day << " days for time unit \"" << time_unit << "\" unexpectedly: " << x.what() << std::endl;
+      }
+
+      try {
+        time_value = small_dur.get(time_unit);
+      } catch (const std::exception & x) {
+        err() << "Duration getter that returns a single number threw an exception in getting a time duration of " <<
+          small_day << " days for time unit \"" << time_unit << "\" unexpectedly: " << x.what() << std::endl;
+      }
+    }
+
+    // Test for detections of overflow/underflow: addition and subtraction.
+    // Note: Negation (unary minus operator) cannot be tested because it is impossible to set a value that would cause
+    //       overflow/underflow by negation, in a computer system where min_long == -max_long - 1.  The condition happens
+    //       to match the current implementation of Duration class that keeps its day part as one less than the integer
+    //       part of it for computational advantages.
+    try {
+      large_dur + Duration(1, 0.);
+      err() << "Adding Duration(1, 0.) to a time duration of " << large_day << " days did not throw an exception." << std::endl;
+    } catch (const std::exception & x) {
+    }
+    try {
+      small_dur - Duration(1, 0.);
+      err() << "Subtracting Duration(1, 0.) from a time duration of " << small_day << " days did not throw an exception." << std::endl;
+    } catch (const std::exception & x) {
     }
 
     // Test comparison operators: !=, ==, <, <=, >, and >=.
