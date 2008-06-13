@@ -1584,6 +1584,64 @@ namespace {
     int_frac = IntFracPair(sval);
     CompareIntFracPair("After int_frac = IntFracPair(" + context + ")", int_frac, int_part, frac_part);
 
+    // Test errors resulting from bad fractional parts.
+    try {
+      IntFracPair(+1, -0.1);
+      err() << "IntFracPair constructor did not throw an exception for IntFracPair(+1, -0.1)" << std::endl;
+    } catch (const std::exception & x) {
+    }
+    try {
+      IntFracPair(+1, +1.0);
+      err() << "IntFracPair constructor did not throw an exception for IntFracPair(+1, +1.0)" << std::endl;
+    } catch (const std::exception & x) {
+    }
+    try {
+      IntFracPair(-1, +0.1);
+      err() << "IntFracPair constructor did not throw an exception for IntFracPair(-1, +0.1)" << std::endl;
+    } catch (const std::exception & x) {
+    }
+    try {
+      IntFracPair(-1, -1.0);
+      err() << "IntFracPair constructor did not throw an exception for IntFracPair(-1, -1.0)" << std::endl;
+    } catch (const std::exception & x) {
+    }
+    try {
+      IntFracPair(0, +1.0);
+      err() << "IntFracPair constructor did not throw an exception for IntFracPair(0, +1.0)" << std::endl;
+    } catch (const std::exception & x) {
+    }
+    try {
+      IntFracPair(0, -1.0);
+      err() << "IntFracPair constructor did not throw an exception for IntFracPair(0, -1.0)" << std::endl;
+    } catch (const std::exception & x) {
+    }
+
+    // Test errors resulting from single number conversions when they overflow or underflow.
+    double large_number = std::numeric_limits<long>::max() + .4;
+    double small_number = std::numeric_limits<long>::min() - .4;
+    double overflow_number = std::numeric_limits<long>::max() + 1.1;
+    double underflow_number = std::numeric_limits<long>::min() - 1.1;
+    try {
+      int_frac = IntFracPair(large_number);
+    } catch (const std::exception & x) {
+      err() << "IntFracPair constructor threw an exception for IntFracPair(" << large_number << "): " << x.what() << std::endl;
+    }
+    try {
+      int_frac = IntFracPair(small_number);
+    } catch (const std::exception & x) {
+      err() << "IntFracPair constructor threw an exception for IntFracPair(" << small_number << "): " << x.what() << std::endl;
+    }
+    try {
+      int_frac = IntFracPair(overflow_number);
+      err() << "IntFracPair constructor did not throw an exception for IntFracPair(" << overflow_number << ")" << std::endl;
+    } catch (const std::exception & x) {
+    }
+    try {
+      int_frac = IntFracPair(underflow_number);
+      err() << "IntFracPair constructor did not throw an exception for IntFracPair(" << underflow_number << ")" << std::endl;
+    } catch (const std::exception & x) {
+    }
+
     // Test errors resulting from bad string conversions.
     try {
       sval = "! 1.e6";
@@ -1625,6 +1683,7 @@ namespace {
       // That's good.
     }
 
+    // Test getDouble method.
     int_frac = IntFracPair(125, .0123456789012345);
     int_part = int_frac.getIntegerPart();
     frac_part = int_frac.getFractionalPart();
