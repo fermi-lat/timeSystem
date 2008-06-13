@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Thu Jun 12 22:46:36 PDT 2008
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Add tests of IntFracPair for bad parameter detections.
+    *
+------------------------------------------------------------
 User: hirayama  Thu Jun 12 22:26:27 PDT 2008
 timeSystem/src
 
