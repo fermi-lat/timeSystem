@@ -13,25 +13,30 @@
 
 namespace timeSystem {
 
+  IntFracPair::IntFracPair(long int_part, double frac_part) {
+    // Check the fractional part.
+    if ((int_part == 0 && (frac_part <= -1. || frac_part >= +1.)) ||
+        (int_part >  0 && (frac_part <   0. || frac_part >= +1.)) ||
+        (int_part <  0 && (frac_part <= -1. || frac_part >   0.))) {
+      std::ostringstream os;
+      os.precision(std::numeric_limits<double>::digits10);
+      os << "Fractional part out of bounds: " << frac_part << ".";
+      throw std::runtime_error(os.str());
+    }
+
+    // Set the given values to this object.
+    m_int_part = int_part;
+    m_frac_part = frac_part;
+  }
+
   IntFracPair::IntFracPair(double value) {
     // split value into integer part and fractional part.
-    double int_part_dbl;
+    double int_part_dbl = 0.;
     m_frac_part = std::modf(value, &int_part_dbl);
 
     // round integer part of the value.
     int_part_dbl += (int_part_dbl > 0. ? 0.5 : -0.5);
-    if (int_part_dbl >= std::numeric_limits<long>::max() + 1.) {
-      std::ostringstream os;
-      os.precision(std::numeric_limits<double>::digits10);
-      os << "IntFracPair::IntFracPair: overflow while converting " << int_part_dbl << " to a long";
-      throw std::runtime_error(os.str());
-    } else if (int_part_dbl <= std::numeric_limits<long>::min() - 1.) {
-      std::ostringstream os;
-      os.precision(std::numeric_limits<double>::digits10);
-      os << "IntFracPair::IntFracPair: underflow while converting " << int_part_dbl << " to a long";
-      throw std::runtime_error(os.str());
-    }
-    m_int_part = long(int_part_dbl);
+    m_int_part = convert(int_part_dbl);
 
     // clean the tail of fractional part.
     int num_digit_all = std::numeric_limits<double>::digits10;
@@ -56,18 +61,7 @@ namespace timeSystem {
     }
 
     // Compute integer part.
-    if (value_dbl >= std::numeric_limits<long>::max() + 1.) {
-      std::ostringstream os;
-      os.precision(std::numeric_limits<double>::digits10);
-      os << "IntFracPair::IntFracPair: overflow while converting " << value_dbl << " to a long";
-      throw std::runtime_error(os.str());
-    } else if (value_dbl <= std::numeric_limits<long>::min() - 1.) {
-      std::ostringstream os;
-      os.precision(std::numeric_limits<double>::digits10);
-      os << "IntFracPair::IntFracPair: underflow while converting " << value_dbl << " to a long";
-      throw std::runtime_error(os.str());
-    }
-    m_int_part = long(value_dbl);
+    m_int_part = convert(value_dbl);
 
     // Compute number of digits of integer part.
     int num_digit = (m_int_part == 0 ? 0 : int(std::floor(std::log10(std::fabs(double(m_int_part)))) + 0.5) + 1);
@@ -89,6 +83,24 @@ namespace timeSystem {
       std::istringstream iss(value);
       iss >> m_frac_part;
     }
+  }
+
+  long IntFracPair::convert(double value) const {
+    // Check whether the given value can be converted into a long value.
+    if (value >= std::numeric_limits<long>::max() + 1.) {
+      std::ostringstream os;
+      os.precision(std::numeric_limits<double>::digits10);
+      os << "Integer part too large: overflow while converting " << value << " to a long";
+      throw std::runtime_error(os.str());
+    } else if (value <= std::numeric_limits<long>::min() - 1.) {
+      std::ostringstream os;
+      os.precision(std::numeric_limits<double>::digits10);
+      os << "Integer part too small: underflow while converting " << value << " to a long";
+      throw std::runtime_error(os.str());
+    }
+
+    // Return a converted value.
+    return long(value);
   }
 
 }
