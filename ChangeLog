@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Thu Jun 12 22:26:27 PDT 2008
+timeSystem/timeSystem
+
+Modified Files:
+	IntFracPair.h 
+Log Message:
+Add convert method to eliminate duplicated code. Modify a constructor to check a given fractional part is in the right range.
+    *
+------------------------------------------------------------
 User: hirayama  Wed Jun 11 22:40:11 PDT 2008
 timeSystem/timeSystem
 
