@@ -1769,6 +1769,8 @@ namespace {
     }
   }
 
+  struct NoSuchTimeRep {};
+
   void TestTimeFormat() {
     s_os.setMethod("TestTimeFormat");
 
@@ -1842,6 +1844,24 @@ namespace {
       err() << "Object returned by TimeFormat::getFormat(\"MJD\") parsed \"" << mjd_string << "\" into datetime_type pair (" <<
         datetime.first << ", " << datetime.second << "), not (" << expected_datetime.first << ", " << expected_datetime.second <<
         ") as expected." << std::endl;
+    }
+
+    // Test detecting unsupported time representations.
+    NoSuchTimeRep no_such_time_rep;
+    try {
+      TimeFormat::convert(expected_datetime, no_such_time_rep);
+      err() << "TimeFormat::convert(expected_datetime, no_such_time_rep) did not throw an exception." << std::endl;
+    } catch (const std::exception &) {
+    }
+    try {
+      TimeFormat::convert(no_such_time_rep, expected_datetime);
+      err() << "TimeFormat::convert(no_such_time_rep, expected_datetime) did not throw an exception." << std::endl;
+    } catch (const std::exception &) {
+    }
+    try {
+      TimeFormat::getFormat("no_such_time_format");
+      err() << "TimeFormat::getFormat(\"no_such_time_format\") did not throw an exception." << std::endl;
+    } catch (const std::exception &) {
     }
   }
 
