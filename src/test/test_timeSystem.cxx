@@ -346,9 +346,9 @@ namespace {
     // Test for detections of overflow/underflow: the constructors that take a single number and a time unit.
     std::map<std::string, long> unit_per_day;
     unit_per_day["Day"] = 1;
-    unit_per_day["Hour"] = HourPerDayLong();
-    unit_per_day["Min"] = MinPerDayLong();
-    unit_per_day["Sec"] = SecPerDayLong();
+    unit_per_day["Hour"] = HourPerDay();
+    unit_per_day["Min"] = MinPerDay();
+    unit_per_day["Sec"] = SecPerDay();
     for (std::map<std::string, long>::const_iterator itor = unit_per_day.begin(); itor != unit_per_day.end(); ++itor) {
       const std::string & time_unit_name(itor->first);
       long conversion_factor = itor->second;
@@ -398,8 +398,8 @@ namespace {
 
     // Note: Impossible to test "Day" because it is impossible to set a value that cannot be read out in units of day.
     std::map<std::string, long> sec_per_unit;
-    sec_per_unit["hours"] = SecPerHourLong();
-    sec_per_unit["minutes"] = SecPerMinLong();
+    sec_per_unit["hours"] = SecPerHour();
+    sec_per_unit["minutes"] = SecPerMin();
     sec_per_unit["seconds"] = 1;
     for (std::map<std::string, long>::const_iterator itor = sec_per_unit.begin(); itor != sec_per_unit.end(); ++itor) {
       const std::string & time_unit_string(itor->first);
@@ -1016,7 +1016,7 @@ namespace {
     // Test of conversion condition of TAI-to-UTC conversion.
     // Below must produce identical result for test input of 100. seconds after 51910.0 MJD (TAI).
     long tai_day = 0;
-    double tai_sec = 100. + 51910*SecPerDay();
+    double tai_sec = 100. + 51910. * SecPerDay();
     try {
       TestOneConversion("TAI", moment_type(tai_day, Duration(0, tai_sec)),
                         "UTC", moment_type(oldest_mjd, Duration(51910 - oldest_mjd, 100. - diff_oldest)));
@@ -1027,7 +1027,7 @@ namespace {
     // Test of conversion condition of TAI-to-UTC conversion.
     // Below must throw an exception because resulting UTC cannot be expressed properly.
     tai_day = 51910;
-    tai_sec = 100. - 51910*SecPerDay();
+    tai_sec = 100. - 51910. * SecPerDay();
     try {
       TestOneConversion("TAI", moment_type(tai_day, Duration(0, tai_sec)),
                         "UTC", moment_type(0, Duration(0, 100. - diff2)));
@@ -1039,7 +1039,7 @@ namespace {
     // Test of conversion condition of UTC-to-TAI conversion.
     // Below must throw an exception because originating UTC cannot be interpreted properly.
     long utc_day = 0;
-    double utc_sec = 100. + 51910*SecPerDay() - diff2;
+    double utc_sec = 100. + 51910. * SecPerDay() - diff2;
     try {
       TestOneConversion("UTC", moment_type(utc_day, Duration(0, utc_sec)),
                         "TAI", moment_type(51910, Duration(0, 100.)));
@@ -1051,7 +1051,7 @@ namespace {
     // Test of conversion condition of UTC-to-TAI conversion.
     // Below must throw an exception because originating UTC time cannot be interpreted properly.
     utc_day = 51910;
-    utc_sec = 100. - 51910*SecPerDay() - diff2;
+    utc_sec = 100. - 51910. * SecPerDay() - diff2;
     try {
       TestOneConversion("UTC", moment_type(utc_day, Duration(0, utc_sec)),
                         "TAI", moment_type(utc_day, Duration(-utc_day, 100.)));
@@ -1138,14 +1138,14 @@ namespace {
     // Prepare test parameters.
     long mjd_day = 54321;
     double mjd_sec = 12345.;
-    Mjd expected_mjd(mjd_day, mjd_sec * DayPerSec());
-    Mjd1 expected_mjd1(mjd_day + mjd_sec * DayPerSec());
+    Mjd expected_mjd(mjd_day, mjd_sec / SecPerDay());
+    Mjd1 expected_mjd1(mjd_day + mjd_sec / SecPerDay());
 
     // Test the basic constructor and the getter for high-precision MJD.
     AbsoluteTime abs_time("TT", mjd_day, mjd_sec);
     Mjd result_mjd(0, 0.);
     abs_time.get("TT", result_mjd);
-    double double_tol = 100.e-9 * DayPerSec(); // 100 nano-seconds in days.
+    double double_tol = 100.e-9 / SecPerDay(); // 100 nano-seconds in days.
     if (expected_mjd.m_int != result_mjd.m_int || std::fabs(expected_mjd.m_frac - result_mjd.m_frac) > double_tol) {
       err() << "After abs_time = AbsoluteTime(\"TT\", " << mjd_day << ", " << mjd_sec <<
         "), abs_time.get(\"TT\", result_mjd) gave result_mjd = (" << result_mjd.m_int << ", " << result_mjd.m_frac <<
@@ -1156,7 +1156,7 @@ namespace {
     abs_time = AbsoluteTime("TT", mjd_day, mjd_sec);
     Mjd1 result_mjd1(0.);
     abs_time.get("TT", result_mjd1);
-    double_tol = 10.e-6 * DayPerSec(); // 10 micro-seconds in days.
+    double_tol = 10.e-6 / SecPerDay(); // 10 micro-seconds in days.
     if (std::fabs(expected_mjd1.m_day - result_mjd1.m_day) > double_tol) {
       err() << "After abs_time = AbsoluteTime(\"TT\", " << mjd_day << ", " << mjd_sec <<
         "), abs_time.get(\"TT\", result_mjd1) gave result_mjd1.m_day = " << result_mjd1.m_day << ", not " <<
@@ -1167,8 +1167,8 @@ namespace {
     abs_time = AbsoluteTime("TT", mjd_day, mjd_sec);
     result_mjd = Mjd(0, 0.);
     abs_time.get("TAI", result_mjd);
-    Mjd expected_mjd_tai(mjd_day, (mjd_sec + TaiMinusTtSec()) * DayPerSec());
-    double_tol = 100.e-9 * DayPerSec(); // 100 nano-seconds in days.
+    Mjd expected_mjd_tai(mjd_day, (mjd_sec + TaiMinusTtSec()) / SecPerDay());
+    double_tol = 100.e-9 / SecPerDay(); // 100 nano-seconds in days.
     if (expected_mjd_tai.m_int != result_mjd.m_int || std::fabs(expected_mjd_tai.m_frac - result_mjd.m_frac) > double_tol) {
       err() << "After abs_time = AbsoluteTime(\"TT\", " << mjd_day << ", " << mjd_sec <<
         "), abs_time.get(\"TAI\", result_mjd) gave result_mjd = (" << result_mjd.m_int << ", " << result_mjd.m_frac <<
@@ -1182,7 +1182,7 @@ namespace {
     result_mjd = Mjd(0, 0.);
     abs_time.get("UTC", result_mjd);
     Mjd expected_mjd_leap(mjd_day_leap + 1, 0.);
-    double_tol = 100.e-9 * DayPerSec(); // 100 nano-seconds in days.
+    double_tol = 100.e-9 / SecPerDay(); // 100 nano-seconds in days.
     if (expected_mjd_leap.m_int != result_mjd.m_int
         || std::fabs(expected_mjd_leap.m_frac - result_mjd.m_frac) > double_tol) {
       err() << "After abs_time = AbsoluteTime(\"UTC\", " << mjd_day_leap << ", " << mjd_sec_leap <<
@@ -1195,8 +1195,8 @@ namespace {
     result_mjd = Mjd(0, 0.);
     abs_time.get("TAI", result_mjd);
     double tai_minus_utc = 29.;
-    expected_mjd_leap = Mjd(mjd_day_leap + 1, (mjd_sec_leap - SecPerDay() + tai_minus_utc) * DayPerSec());
-    double_tol = 100.e-9 * DayPerSec(); // 100 nano-seconds in days.
+    expected_mjd_leap = Mjd(mjd_day_leap + 1, (mjd_sec_leap - SecPerDay() + tai_minus_utc) / SecPerDay());
+    double_tol = 100.e-9 / SecPerDay(); // 100 nano-seconds in days.
     if (expected_mjd_leap.m_int != result_mjd.m_int
         || std::fabs(expected_mjd_leap.m_frac - result_mjd.m_frac) > double_tol) {
       err() << "After abs_time = AbsoluteTime(\"UTC\", " << mjd_day_leap << ", " << mjd_sec_leap <<
@@ -1209,7 +1209,7 @@ namespace {
     result_mjd = Mjd(0, 0.);
     abs_time.get("UTC", result_mjd);
     expected_mjd_leap = Mjd(mjd_day_leap + 1, 0.);
-    double_tol = 100.e-9 * DayPerSec(); // 100 nano-seconds in days.
+    double_tol = 100.e-9 / SecPerDay(); // 100 nano-seconds in days.
     if (expected_mjd_leap.m_int != result_mjd.m_int
         || std::fabs(expected_mjd_leap.m_frac - result_mjd.m_frac) > double_tol) {
       err() << "After abs_time = AbsoluteTime(\"TAI\", " << mjd_day_leap + 1 << ", " <<
@@ -1239,45 +1239,45 @@ namespace {
     }
 
     // Test the constructor taking a high-precision MJD.
-    abs_time = AbsoluteTime("TT", Mjd(mjd_day, mjd_sec * DayPerSec()));
+    abs_time = AbsoluteTime("TT", Mjd(mjd_day, mjd_sec / SecPerDay()));
     result_mjd = Mjd(0, 0.);
     abs_time.get("TT", result_mjd);
-    double_tol = 100.e-9 * DayPerSec(); // 100 nano-seconds in days.
+    double_tol = 100.e-9 / SecPerDay(); // 100 nano-seconds in days.
     if (expected_mjd.m_int != result_mjd.m_int || std::fabs(expected_mjd.m_frac - result_mjd.m_frac) > double_tol) {
-      err() << "After abs_time = AbsoluteTime(\"TT\", Mjd(" << mjd_day << ", " << mjd_sec * DayPerSec() <<
+      err() << "After abs_time = AbsoluteTime(\"TT\", Mjd(" << mjd_day << ", " << mjd_sec / SecPerDay() <<
         "))), abs_time.get(\"TT\", result_mjd) gave result_mjd = (" << result_mjd.m_int << ", " << result_mjd.m_frac <<
         "), not (" << expected_mjd.m_int << ", " << expected_mjd.m_frac << ") as expected." << std::endl;
     }
 
     // Test the constructor taking a low-precision MJD.
-    abs_time = AbsoluteTime("TT", Mjd1(mjd_day + mjd_sec * DayPerSec()));
+    abs_time = AbsoluteTime("TT", Mjd1(mjd_day + mjd_sec / SecPerDay()));
     result_mjd1 = Mjd1(0.);
     abs_time.get("TT", result_mjd);
-    double_tol = 10.e-6 * DayPerSec(); // 10 micro-seconds in days.
+    double_tol = 10.e-6 / SecPerDay(); // 10 micro-seconds in days.
     if (expected_mjd.m_int != result_mjd.m_int || std::fabs(expected_mjd.m_frac - result_mjd.m_frac) > double_tol) {
-      err() << "After abs_time = AbsoluteTime(\"TT\", Mjd1(" << mjd_day + mjd_sec * DayPerSec() <<
+      err() << "After abs_time = AbsoluteTime(\"TT\", Mjd1(" << mjd_day + mjd_sec / SecPerDay() <<
         "))), abs_time.get(\"TT\", result_mjd) gave result_mjd = (" << result_mjd.m_int << ", " << result_mjd.m_frac <<
         "), not (" << expected_mjd.m_int << ", " << expected_mjd.m_frac << ") as expected." << std::endl;
     }
 
     // Test the setter taking a high-precision MJD.
-    abs_time.set("TT", Mjd(mjd_day, mjd_sec * DayPerSec()));
+    abs_time.set("TT", Mjd(mjd_day, mjd_sec / SecPerDay()));
     result_mjd = Mjd(0, 0.);
     abs_time.get("TT", result_mjd);
-    double_tol = 100.e-9 * DayPerSec(); // 100 nano-seconds in days.
+    double_tol = 100.e-9 / SecPerDay(); // 100 nano-seconds in days.
     if (expected_mjd.m_int != result_mjd.m_int || std::fabs(expected_mjd.m_frac - result_mjd.m_frac) > double_tol) {
-      err() << "After abs_time.set(\"TT\", Mjd(" << mjd_day << ", " << mjd_sec * DayPerSec() <<
+      err() << "After abs_time.set(\"TT\", Mjd(" << mjd_day << ", " << mjd_sec / SecPerDay() <<
         "))), abs_time.get(\"TT\", result_mjd) gave result_mjd = (" << result_mjd.m_int << ", " << result_mjd.m_frac <<
         "), not (" << expected_mjd.m_int << ", " << expected_mjd.m_frac << ") as expected." << std::endl;
     }
 
     // Test the setter taking a low-precision MJD.
-    abs_time.set("TT", Mjd1(mjd_day + mjd_sec * DayPerSec()));
+    abs_time.set("TT", Mjd1(mjd_day + mjd_sec / SecPerDay()));
     result_mjd1 = Mjd1(0.);
     abs_time.get("TT", result_mjd);
-    double_tol = 10.e-6 * DayPerSec(); // 10 micro-seconds in days.
+    double_tol = 10.e-6 / SecPerDay(); // 10 micro-seconds in days.
     if (expected_mjd.m_int != result_mjd.m_int || std::fabs(expected_mjd.m_frac - result_mjd.m_frac) > double_tol) {
-      err() << "After abs_time.set(\"TT\", Mjd1(" << mjd_day + mjd_sec * DayPerSec() <<
+      err() << "After abs_time.set(\"TT\", Mjd1(" << mjd_day + mjd_sec / SecPerDay() <<
         "))), abs_time.get(\"TT\", result_mjd) gave result_mjd = (" << result_mjd.m_int << ", " << result_mjd.m_frac <<
         "), not (" << expected_mjd.m_int << ", " << expected_mjd.m_frac << ") as expected." << std::endl;
     }
@@ -1287,7 +1287,7 @@ namespace {
     abs_time.set("TT", "MJD", mjd_string);
     result_mjd = Mjd(0, 0.);
     abs_time.get("TT", result_mjd);
-    double_tol = 100.e-9 * DayPerSec(); // 100 nano-seconds in days.
+    double_tol = 100.e-9 / SecPerDay(); // 100 nano-seconds in days.
     if (expected_mjd.m_int != result_mjd.m_int || std::fabs(expected_mjd.m_frac - result_mjd.m_frac) > double_tol) {
       err() << "After abs_time.set(\"TT\", \"MJD\", \"" << mjd_string <<
         "\"), abs_time.get(\"TT\", result_mjd) gave result_mjd = (" << result_mjd.m_int << ", " << result_mjd.m_frac <<
@@ -1776,7 +1776,7 @@ namespace {
 
     //static const double epsilon = std::numeric_limits<double>::epsilon() * 300.;
     datetime_type expected_datetime(51910, 64.814);
-    Mjd expected_mjd(expected_datetime.first, expected_datetime.second * DayPerSec());
+    Mjd expected_mjd(expected_datetime.first, expected_datetime.second / SecPerDay());
     Mjd1 expected_mjd1(expected_mjd.m_int + expected_mjd.m_frac);
 
     // Test conversion from integer part and fractional part to datetime_type.
@@ -1801,7 +1801,7 @@ namespace {
     // Test conversion from datetime_type to integer part and fractional part.
     Mjd mjd(0, 0.);
     mjd_format.convert(expected_datetime, mjd);
-    tolerance = 100.e-9 * DayPerSec(); // 100 nano-seconds in units of day.
+    tolerance = 100.e-9 / SecPerDay(); // 100 nano-seconds in units of day.
     if (expected_mjd.m_int != mjd.m_int || tolerance < std::fabs(expected_mjd.m_frac - mjd.m_frac)) {
       err() << "Object mjd_format converted datetime_type pair (" << expected_datetime.first << ", " << expected_datetime.second <<
         ") into (" << mjd.m_int << " + " << mjd.m_frac << ") MJD, not (" << expected_mjd.m_int << " + " <<
@@ -1811,7 +1811,7 @@ namespace {
     // Test conversion from datetime_type to a single MJD number of double type.
     Mjd1 mjd1 = 0.;
     mjd_format.convert(expected_datetime, mjd1);
-    tolerance = 100.e-9 * DayPerSec(); // 100 nano-seconds in units of day.
+    tolerance = 100.e-9 / SecPerDay(); // 100 nano-seconds in units of day.
     if (tolerance < std::fabs(expected_mjd1.m_day - mjd1.m_day)) {
       err() << "Object mjd_format converted datetime_type pair (" << expected_datetime.first << ", " << expected_datetime.second <<
         ") into " << mjd1.m_day << " MJD, not " << expected_mjd1.m_day << " MJD as expected." << std::endl;

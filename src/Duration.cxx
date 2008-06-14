@@ -76,26 +76,26 @@ namespace {
       TimeUnitSec();
   };
 
-  TimeUnitDay::TimeUnitDay(): TimeUnit(1, SecPerDayLong(), "days") {
+  TimeUnitDay::TimeUnitDay(): TimeUnit(1, SecPerDay(), "days") {
     container_type & container(getContainer());
     container["DAY"] = this;
     container["DAYS"] = this;
   }
 
-  TimeUnitHour::TimeUnitHour(): TimeUnit(HourPerDayLong(), SecPerHourLong(), "hours") {
+  TimeUnitHour::TimeUnitHour(): TimeUnit(HourPerDay(), SecPerHour(), "hours") {
     container_type & container(getContainer());
     container["HOUR"] = this;
     container["HOURS"] = this;
   }
 
-  TimeUnitMin::TimeUnitMin(): TimeUnit(MinPerDayLong(), SecPerMinLong(), "minutes") {
+  TimeUnitMin::TimeUnitMin(): TimeUnit(MinPerDay(), SecPerMin(), "minutes") {
     container_type & container(getContainer());
     container["MIN"] = this;
     container["MINUTE"] = this;
     container["MINUTES"] = this;
   }
 
-  TimeUnitSec::TimeUnitSec(): TimeUnit(SecPerDayLong(), 1, "seconds") {
+  TimeUnitSec::TimeUnitSec(): TimeUnit(SecPerDay(), 1, "seconds") {
     container_type & container(getContainer());
     container["SEC"] = this;
     container["SECOND"] = this;
@@ -157,7 +157,7 @@ namespace timeSystem {
     const TimeUnit & unit(TimeUnit::getUnit(time_unit_name));
 
     if ("days" == unit.getUnitString()) {
-      double day_frac = m_duration.second * DayPerSec();
+      double day_frac = m_duration.second / SecPerDay();
       if (m_duration.first < 0 && m_duration.second > 0.) {
         time_value_int = round(m_duration.first + 1., "days");
         time_value_frac = day_frac - 1.;
@@ -195,7 +195,7 @@ namespace timeSystem {
   double Duration::get(const std::string & time_unit_name) const {
     const TimeUnit & unit(TimeUnit::getUnit(time_unit_name));
     if ("days" == unit.getUnitString()) {
-      return m_duration.first + m_duration.second * DayPerSec();
+      return m_duration.first + m_duration.second / SecPerDay();
     } else {
       return std::floor(double(m_duration.first) * unit.getUnitPerDay()) + m_duration.second / unit.getSecPerUnit();
     }
@@ -273,9 +273,9 @@ namespace timeSystem {
   }
 
   Duration::duration_type Duration::splitSec(double sec) const {
-    double double_day = std::floor(sec * DayPerSec());
+    double double_day = std::floor(sec / SecPerDay());
     long day = round(double_day, "days");
-    return Duration::duration_type(day, sec - day * SecPerDay());
+    return Duration::duration_type(day, sec - double_day * SecPerDay());
   }
 
   Duration::duration_type Duration::add(Duration::duration_type t1, Duration::duration_type t2) const {
@@ -310,8 +310,6 @@ namespace timeSystem {
     double sec = (time_value_int % unit.getUnitPerDay() + time_value_frac) * unit.getSecPerUnit();
 
     // Set the result to the data member.
-    // TODO: Remove duplicated code below (the other one is the basic constructor taking days and seconds.
-//    m_duration = add(Duration::duration_type(day, 0.), splitSec(sec));
     convert(day, sec, m_duration);
   }
 
