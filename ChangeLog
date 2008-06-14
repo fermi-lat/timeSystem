@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Fri Jun 13 22:03:12 PDT 2008
+timeSystem/src
+
+Modified Files:
+	TimeSystem.cxx 
+Log Message:
+Move time system conversion constants from TimeConstant.h to TimeSystem.h.
+    *
+------------------------------------------------------------
 User: hirayama  Fri Jun 13 21:29:40 PDT 2008
 timeSystem/timeSystem
 
