@@ -20,7 +20,7 @@ namespace timeSystem {
       mjd.m_frac = 0.;
     } else {
       mjd.m_int = datetime.first;
-      mjd.m_frac = datetime.second * DayPerSec();
+      mjd.m_frac = datetime.second / SecPerDay();
     }
   }
 
