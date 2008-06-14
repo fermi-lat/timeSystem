@@ -9,20 +9,12 @@
 namespace timeSystem {
 
   // Unit conversion constants.
-  // TODO: Remove functions that return double. Reasons are:
-  //       1) There is a concern on potential loss of precision in computation.
-  //       2) They are not often used in pulsar tools packages.
   long SecPerMin();
   long MinPerHour();
   long HourPerDay();
   long SecPerHour();
   long MinPerDay();
   long SecPerDay();
-
-  // Time system conversion constants.
-  double TaiMinusTtSec();
-
-  double TtMinusTaiSec();
 
   // Definitions.
 
@@ -33,12 +25,6 @@ namespace timeSystem {
   inline long SecPerHour() { static long r = SecPerMin() * MinPerHour(); return r; }
   inline long MinPerDay() { static long r = MinPerHour() * HourPerDay(); return r; }
   inline long SecPerDay() { static long r = SecPerMin() * MinPerHour() * HourPerDay(); return r; }
-
-  // Time system conversion constants.
-  inline double TaiMinusTtSec() { static double r = -TtMinusTaiSec(); return r; }
-
-  inline double TtMinusTaiSec() { static double r(32.184); return r; }
-
 }
 
 #endif

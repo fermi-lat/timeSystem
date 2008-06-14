@@ -85,6 +85,11 @@ namespace {
       LeapSecTable() {}
   };
 
+  Duration computeTtMinusTai() {
+    static const Duration s_tt_minus_tai(0, 32.184);
+    return s_tt_minus_tai;
+  }
+
   moment_type TaiSystem::convertFrom(const TimeSystem & time_system, const moment_type & moment) const {
     if (&time_system != this) {
       if ("TDB" == time_system.getName()) {
@@ -92,7 +97,7 @@ namespace {
         return convertFrom(tt, tt.convertFrom(time_system, moment));
 
       } else if ("TT" == time_system.getName()) {
-        return moment_type(moment.first, moment.second + Duration(0, TaiMinusTtSec()));
+        return moment_type(moment.first, moment.second - computeTtMinusTai());
 
       } else if ("UTC" == time_system.getName()) {
         // Check whether the given moment is valid in the current UTC system.
@@ -144,7 +149,7 @@ namespace {
   moment_type TtSystem::convertFrom(const TimeSystem & time_system, const moment_type & moment) const {
     if (&time_system != this) {
       if ("TAI" == time_system.getName()) {
-        return moment_type(moment.first, moment.second + Duration(0, TtMinusTaiSec()));
+        return moment_type(moment.first, moment.second + computeTtMinusTai());
 
       } else if ("TDB" == time_system.getName()) {
         // Prepare for time conversion from TDB to TT.

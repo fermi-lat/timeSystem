@@ -1167,7 +1167,8 @@ namespace {
     abs_time = AbsoluteTime("TT", mjd_day, mjd_sec);
     result_mjd = Mjd(0, 0.);
     abs_time.get("TAI", result_mjd);
-    Mjd expected_mjd_tai(mjd_day, (mjd_sec + TaiMinusTtSec()) / SecPerDay());
+    const double tai_minus_tt = -32.184;
+    Mjd expected_mjd_tai(mjd_day, (mjd_sec + tai_minus_tt) / SecPerDay());
     double_tol = 100.e-9 / SecPerDay(); // 100 nano-seconds in days.
     if (expected_mjd_tai.m_int != result_mjd.m_int || std::fabs(expected_mjd_tai.m_frac - result_mjd.m_frac) > double_tol) {
       err() << "After abs_time = AbsoluteTime(\"TT\", " << mjd_day << ", " << mjd_sec <<
