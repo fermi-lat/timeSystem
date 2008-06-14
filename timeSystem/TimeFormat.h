@@ -10,6 +10,7 @@
 
 #include <limits>
 #include <map>
+#include <stdexcept>
 #include <string>
 
 namespace timeSystem {
@@ -40,6 +41,16 @@ namespace timeSystem {
 
       TimeFormat(const std::string & format_name);
   };
+
+  template <typename TimeRepType>
+  void TimeFormat::convert(const datetime_type & /* datetime */, TimeRepType & /* time_rep */) {
+    throw std::runtime_error("Unsupported time representation requested for time format conversion");
+  }
+
+  template <typename TimeRepType>
+  void TimeFormat::convert(const TimeRepType & /* time_rep */, datetime_type & /* datetime */) {
+    throw std::runtime_error("Unsupported time representation requested for time format conversion");
+  }
 
 }
 
