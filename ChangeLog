@@ -1,5 +1,14 @@
 ------------------------------------------------------------
 User: hirayama  Fri Jun 13 18:07:57 PDT 2008
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Add default implementation of TimeFormat::convert method.
+    *
+------------------------------------------------------------
+User: hirayama  Fri Jun 13 18:07:57 PDT 2008
 timeSystem/timeSystem
 
 Modified Files:
