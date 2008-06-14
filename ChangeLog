@@ -1,5 +1,14 @@
 ------------------------------------------------------------
 User: hirayama  Fri Jun 13 21:29:40 PDT 2008
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Reorganize time unit conversions.
+    *
+------------------------------------------------------------
+User: hirayama  Fri Jun 13 21:29:40 PDT 2008
 timeSystem/src
 
 Modified Files:
