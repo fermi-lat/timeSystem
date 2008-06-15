@@ -103,4 +103,14 @@ namespace timeSystem {
     return long(value);
   }
 
+  std::ostream & operator <<(std::ostream & os, const IntFracPair & int_frac) {
+    int_frac.write(os);
+    return os;
+  }
+
+  st_stream::OStream & operator <<(st_stream::OStream & os, const IntFracPair & int_frac) {
+    int_frac.write(os);
+    return os;
+  }
+
 }

@@ -71,15 +71,9 @@ namespace timeSystem {
     }
   }
 
-  inline std::ostream & operator <<(std::ostream & os, const IntFracPair & int_frac) {
-    int_frac.write(os);
-    return os;
-  }
+  std::ostream & operator <<(std::ostream & os, const IntFracPair & int_frac);
 
-  inline st_stream::OStream & operator <<(st_stream::OStream & os, const IntFracPair & int_frac) {
-    int_frac.write(os);
-    return os;
-  }
+  st_stream::OStream & operator <<(st_stream::OStream & os, const IntFracPair & int_frac);
 
 }
 
