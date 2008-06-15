@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Sat Jun 14 18:41:10 PDT 2008
+timeSystem/timeSystem
+
+Modified Files:
+	AbsoluteTime.h 
+Log Message:
+Improve use of Duration objects for clarity.
+    *
+------------------------------------------------------------
 User: hirayama  Sat Jun 14 18:38:57 PDT 2008
 timeSystem/src
 
