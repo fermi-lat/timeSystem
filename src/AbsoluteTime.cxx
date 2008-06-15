@@ -19,14 +19,14 @@ namespace timeSystem {
   }
 
   AbsoluteTime::AbsoluteTime(const std::string & time_system_name, long mjd_day, double mjd_sec):
-    m_time_system(&TimeSystem::getSystem(time_system_name)), m_moment(mjd_day, Duration(0, mjd_sec)) {
+    m_time_system(&TimeSystem::getSystem(time_system_name)), m_moment(mjd_day, Duration(mjd_sec, "Sec")) {
   }
 
   void AbsoluteTime::set(const std::string & time_system_name, const std::string & time_format_name, const std::string & time_string) {
     m_time_system = &TimeSystem::getSystem(time_system_name);
     const TimeFormat & time_format = TimeFormat::getFormat(time_format_name);
     datetime_type datetime = time_format.parse(time_string);
-    m_moment = moment_type(datetime.first, Duration(0, datetime.second));
+    m_moment = moment_type(datetime.first, Duration(datetime.second, "Sec"));
   }
 
   std::string AbsoluteTime::represent(const std::string & time_system_name, const std::string & time_format_name,
@@ -50,22 +50,22 @@ namespace timeSystem {
 
   bool AbsoluteTime::operator >(const AbsoluteTime & other) const {
     moment_type other_moment = m_time_system->convertFrom(*other.m_time_system, other.m_moment);
-    return m_time_system->computeTimeDifference(m_moment, other_moment) > Duration(0, 0.);
+    return m_time_system->computeTimeDifference(m_moment, other_moment) > Duration::zero();
   }
 
   bool AbsoluteTime::operator >=(const AbsoluteTime & other) const {
     moment_type other_moment = m_time_system->convertFrom(*other.m_time_system, other.m_moment);
-    return m_time_system->computeTimeDifference(m_moment, other_moment) >= Duration(0, 0.);
+    return m_time_system->computeTimeDifference(m_moment, other_moment) >= Duration::zero();
   }
 
   bool AbsoluteTime::operator <(const AbsoluteTime & other) const {
     moment_type other_moment = m_time_system->convertFrom(*other.m_time_system, other.m_moment);
-    return m_time_system->computeTimeDifference(m_moment, other_moment) < Duration(0, 0.);
+    return m_time_system->computeTimeDifference(m_moment, other_moment) < Duration::zero();
   }
 
   bool AbsoluteTime::operator <=(const AbsoluteTime & other) const {
     moment_type other_moment = m_time_system->convertFrom(*other.m_time_system, other.m_moment);
-    return m_time_system->computeTimeDifference(m_moment, other_moment) <= Duration(0, 0.);
+    return m_time_system->computeTimeDifference(m_moment, other_moment) <= Duration::zero();
   }
 
   bool AbsoluteTime::equivalentTo(const AbsoluteTime & other, const ElapsedTime & tolerance) const {

@@ -122,7 +122,7 @@ namespace timeSystem {
   AbsoluteTime GlastTimeHandler::computeAbsoluteTime(const double glast_time, const bool request_bary_time,
     const double ra, const double dec) const {
     // Convert GLAST time to AbsoluteTime.
-    AbsoluteTime abs_time = AbsoluteTime(m_time_system, m_mjd_ref) + ElapsedTime(m_time_system, Duration(0, glast_time));
+    AbsoluteTime abs_time = AbsoluteTime(m_time_system, m_mjd_ref) + ElapsedTime(m_time_system, Duration(glast_time, "Sec"));
 
     if (request_bary_time) {
       // Check spacecraft file.
