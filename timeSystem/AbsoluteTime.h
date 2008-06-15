@@ -97,15 +97,15 @@ namespace timeSystem {
     m_time_system = &TimeSystem::getSystem(time_system_name);
     datetime_type datetime(0, 0.);
     TimeFormat::convert(time_rep, datetime);
-    m_moment = moment_type(datetime.first, Duration(0, datetime.second));
+    m_moment = moment_type(datetime.first, Duration(datetime.second, "Sec"));
   }
 
   template <typename StreamType>
   inline void AbsoluteTime::write(StreamType & os) const {
-    if (m_moment.second > Duration(0, 0.)) {
+    if (m_moment.second > Duration::zero()) {
       // Write the time in the format of "123.456789 seconds after 54321.0 MJD (TDB)".
       os << m_moment.second << " after " << m_moment.first << ".0 MJD (" << *m_time_system << ")";
-    } else if (m_moment.second < Duration(0, 0.)) {
+    } else if (m_moment.second < Duration::zero()) {
       // Write the time in the format of "123.456789 seconds before 54321.0 MJD (TDB)".
       os << -m_moment.second << " before " << m_moment.first << ".0 MJD (" << *m_time_system << ")";
     } else {
