@@ -1,5 +1,14 @@
 ------------------------------------------------------------
 User: hirayama  Sat Jun 14 19:41:40 PDT 2008
+timeSystem/src
+
+Modified Files:
+	IntFracPair.cxx 
+Log Message:
+Move implementations of the shift operators from .h to .cxx.
+    *
+------------------------------------------------------------
+User: hirayama  Sat Jun 14 19:41:40 PDT 2008
 timeSystem/timeSystem
 
 Modified Files:
