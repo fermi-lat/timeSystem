@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Sat Jun 14 18:38:56 PDT 2008
+timeSystem/timeSystem
+
+Modified Files:
+	Duration.h 
+Log Message:
+Add zero method to return a Duration object that represents a zero duration. Improve implementation for clarity.
+    *
+------------------------------------------------------------
 User: hirayama  Fri Jun 13 22:03:13 PDT 2008
 timeSystem/timeSystem
 
