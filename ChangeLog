@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Sat Jun 14 18:38:57 PDT 2008
+timeSystem/src
+
+Modified Files:
+	Duration.cxx 
+Log Message:
+Add zero method to return a Duration object that represents a zero duration. Improve implementation for clarity.
+    *
+------------------------------------------------------------
 User: hirayama  Sat Jun 14 18:38:56 PDT 2008
 timeSystem/timeSystem
 
