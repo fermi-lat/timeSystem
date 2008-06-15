@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Sat Jun 14 18:56:32 PDT 2008
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Use Duration::zero method in TestDuration function.
+    *
+------------------------------------------------------------
 User: hirayama  Sat Jun 14 18:41:10 PDT 2008
 timeSystem/src
 
