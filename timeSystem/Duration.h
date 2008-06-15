@@ -36,6 +36,8 @@ namespace timeSystem {
 
       Duration(double time_value, const std::string & time_unit_name);
 
+      static const Duration & zero();
+
       void get(const std::string & time_unit_name, long & time_value_int, double & time_value_frac) const;
 
       void get(const std::string & time_unit_name, double & time_value) const;

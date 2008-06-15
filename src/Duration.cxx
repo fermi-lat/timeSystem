@@ -153,39 +153,32 @@ namespace timeSystem {
     set(0, time_value, time_unit_name);
   }
 
+  const Duration & Duration::zero() {
+    static const Duration s_zero_duration(duration_type(0, 0.));
+    return s_zero_duration;
+  }
+
   void Duration::get(const std::string & time_unit_name, long & time_value_int, double & time_value_frac) const {
     const TimeUnit & unit(TimeUnit::getUnit(time_unit_name));
 
-    if ("days" == unit.getUnitString()) {
-      double day_frac = m_duration.second / SecPerDay();
-      if (m_duration.first < 0 && m_duration.second > 0.) {
-        time_value_int = round(m_duration.first + 1., "days");
-        time_value_frac = day_frac - 1.;
-      } else {
-        time_value_int = m_duration.first;
-        time_value_frac = day_frac;
-      }
-
-    } else {
-      // Let the sec part have the same sign as the day part.
-      double signed_day = m_duration.first;
-      double signed_sec = m_duration.second;
-      if (m_duration.first < 0) {
-        signed_day += 1.;
-        signed_sec -= SecPerDay();
-      }
-
-      // Compute time in a given unit.
-      double signed_time = signed_sec / unit.getSecPerUnit();
-
-      // Compute fractional part as a value in range (-1., 1.).
-      double int_part_dbl;
-      time_value_frac = std::modf(signed_time, &int_part_dbl);
-
-      // Compute integer part of return value using modf() result.
-      int_part_dbl += signed_day * unit.getUnitPerDay();
-      time_value_int = round(int_part_dbl, unit.getUnitString());
+    // Let the sec part have the same sign as the day part.
+    double signed_day = m_duration.first;
+    double signed_sec = m_duration.second;
+    if (m_duration.first < 0) {
+      signed_day += 1.;
+      signed_sec -= SecPerDay();
     }
+
+    // Compute time in a given unit.
+    double signed_time = signed_sec / unit.getSecPerUnit();
+
+    // Compute fractional part as a value in range (-1., 1.).
+    double int_part_dbl;
+    time_value_frac = std::modf(signed_time, &int_part_dbl);
+
+    // Compute integer part of return value using modf() result.
+    int_part_dbl += signed_day * unit.getUnitPerDay();
+    time_value_int = round(int_part_dbl, unit.getUnitString());
   }
 
   void Duration::get(const std::string & time_unit_name, double & time_value) const {
@@ -194,11 +187,7 @@ namespace timeSystem {
 
   double Duration::get(const std::string & time_unit_name) const {
     const TimeUnit & unit(TimeUnit::getUnit(time_unit_name));
-    if ("days" == unit.getUnitString()) {
-      return m_duration.first + m_duration.second / SecPerDay();
-    } else {
-      return std::floor(double(m_duration.first) * unit.getUnitPerDay()) + m_duration.second / unit.getSecPerUnit();
-    }
+    return std::floor(double(m_duration.first) * unit.getUnitPerDay()) + m_duration.second / unit.getSecPerUnit();
   }
 
   Duration Duration::operator +(const Duration & other) const {
@@ -275,7 +264,7 @@ namespace timeSystem {
   Duration::duration_type Duration::splitSec(double sec) const {
     double double_day = std::floor(sec / SecPerDay());
     long day = round(double_day, "days");
-    return Duration::duration_type(day, sec - double_day * SecPerDay());
+    return duration_type(day, sec - double_day * SecPerDay());
   }
 
   Duration::duration_type Duration::add(Duration::duration_type t1, Duration::duration_type t2) const {
@@ -295,12 +284,12 @@ namespace timeSystem {
 
     // Round day part and return a new object.
     long day = round(double_day, "days");
-    return Duration::duration_type(day, sec);
+    return duration_type(day, sec);
   }
 
   Duration::duration_type Duration::negate(Duration::duration_type t1) const {
     long day = round(-double(t1.first) - 1., "days");
-    return Duration::duration_type(day, SecPerDay() - t1.second);
+    return duration_type(day, SecPerDay() - t1.second);
   }
 
   void Duration::set(long time_value_int, double time_value_frac, const std::string & time_unit_name) {
@@ -338,7 +327,7 @@ namespace timeSystem {
   }
 
   void Duration::convert(long day, double sec, duration_type & time_duration) const {
-    time_duration = add(Duration::duration_type(day, 0.), splitSec(sec));
+    time_duration = add(duration_type(day, 0.), splitSec(sec));
   }
 
   std::ostream & operator <<(std::ostream & os, const Duration & time_duration) {
