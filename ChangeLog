@@ -1,5 +1,14 @@
 ------------------------------------------------------------
 User: hirayama  Sat Jun 14 18:41:10 PDT 2008
+timeSystem/src
+
+Modified Files:
+	AbsoluteTime.cxx GlastTimeHandler.cxx TimeSystem.cxx 
+Log Message:
+Improve use of Duration objects for clarity.
+    *
+------------------------------------------------------------
+User: hirayama  Sat Jun 14 18:41:10 PDT 2008
 timeSystem/timeSystem
 
 Modified Files:
