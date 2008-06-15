@@ -559,7 +559,7 @@ namespace {
 
     // Test limits of addition and subtraction.
     Duration one(1, 0.);
-    Duration zero(0, 0.);
+    const Duration & zero(Duration::zero());
     Duration min(std::numeric_limits<long>::min(), 0.);
     Duration max(std::numeric_limits<long>::max(), 0.);
     Duration max_minus_one(std::numeric_limits<long>::max() - 1, 0.);
