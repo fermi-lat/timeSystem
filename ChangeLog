@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Mon Jun 16 16:43:24 PDT 2008
+timeSystem/src
+
+Modified Files:
+	GlastTimeHandler.cxx 
+Log Message:
+Change a time system data member from a std::string object to timeSystem::TimeSystem.
+    *
+------------------------------------------------------------
 User: hirayama  Sat Jun 14 19:41:40 PDT 2008
 timeSystem/src
 
