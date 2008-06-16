@@ -45,7 +45,7 @@ namespace timeSystem {
         const double ra, const double dec) const;
 
     private:
-      std::string m_time_system;
+      const TimeSystem * m_time_system;
       Mjd m_mjd_ref;
       std::string m_sc_file;
       char * m_sc_file_char;
