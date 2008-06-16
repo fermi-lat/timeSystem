@@ -22,12 +22,15 @@ extern "C" {
 namespace timeSystem {
 
   GlastTimeHandler::GlastTimeHandler(const std::string & file_name, const std::string & extension_name, const double angular_tolerance,
-    const bool read_only): EventTimeHandler(file_name, extension_name, angular_tolerance, read_only), m_time_system(),
+    const bool read_only): EventTimeHandler(file_name, extension_name, angular_tolerance, read_only), m_time_system(0),
     m_mjd_ref(0, 0.), m_sc_file(), m_sc_file_char(0) {
-    // Get time system from TIMESYS keyword.
+    // Get time system name from TIMESYS keyword.
     const tip::Header & header(getHeader());
-    header["TIMESYS"].get(m_time_system);
-    for (std::string::iterator itor = m_time_system.begin(); itor != m_time_system.end(); ++itor) *itor = std::toupper(*itor);
+    std::string time_system_name;
+    header["TIMESYS"].get(time_system_name);
+
+    // Get a TimeSystem object.
+    m_time_system = &TimeSystem::getSystem(time_system_name);
 
     // Get MJDREF value.
     m_mjd_ref = readMjdRef(header);
@@ -55,9 +58,8 @@ namespace timeSystem {
   AbsoluteTime GlastTimeHandler::parseTimeString(const std::string & time_string, const std::string & time_system) const {
     // Rationalize time system name.
     std::string time_system_rat(time_system);
-    for (std::string::iterator itor = time_system_rat.begin(); itor != time_system_rat.end(); ++itor)
-      *itor = std::toupper(*itor);
-    if ("FILE" == time_system_rat) time_system_rat = m_time_system;
+    for (std::string::iterator itor = time_system_rat.begin(); itor != time_system_rat.end(); ++itor) *itor = std::toupper(*itor);
+    if ("FILE" == time_system_rat) time_system_rat = m_time_system->getName();
 
     // Parse time string into an absolute time, and return it.
     IntFracPair time_value(time_string);
@@ -122,7 +124,8 @@ namespace timeSystem {
   AbsoluteTime GlastTimeHandler::computeAbsoluteTime(const double glast_time, const bool request_bary_time,
     const double ra, const double dec) const {
     // Convert GLAST time to AbsoluteTime.
-    AbsoluteTime abs_time = AbsoluteTime(m_time_system, m_mjd_ref) + ElapsedTime(m_time_system, Duration(glast_time, "Sec"));
+    const std::string time_system_name(m_time_system->getName());
+    AbsoluteTime abs_time = AbsoluteTime(time_system_name, m_mjd_ref) + ElapsedTime(time_system_name, Duration(glast_time, "Sec"));
 
     if (request_bary_time) {
       // Check spacecraft file.
@@ -133,7 +136,7 @@ namespace timeSystem {
       double * sc_position_array = glastscorbit(m_sc_file_char, glast_time, &error);
       if (error) {
         std::ostringstream os;
-        os << "Error in getting GLAST spacecraft position for " << glast_time << " GLAST MET (" << m_time_system << ").";
+        os << "Error in getting GLAST spacecraft position for " << glast_time << " GLAST MET (" << *m_time_system << ").";
         throw std::runtime_error(os.str());
       }
       std::vector<double> sc_position(sc_position_array, sc_position_array + 3);
