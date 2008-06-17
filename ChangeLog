@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Tue Jun 17 13:54:50 PDT 2008
+timeSystem/src
+
+Modified Files:
+	TimeSystem.cxx 
+Log Message:
+Use std::map::upper_bound to find an entry in the leap-second table.
+    *
+------------------------------------------------------------
 User: hirayama  Mon Jun 16 16:43:24 PDT 2008
 timeSystem/timeSystem
 
