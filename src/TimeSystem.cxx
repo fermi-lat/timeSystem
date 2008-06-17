@@ -344,16 +344,15 @@ namespace {
 
   long LeapSecTable::getCumulativeLeapSec(long mjd) const {
     // Find the first entry of the leap second table which is <= the given MJD.
-    table_type::const_reverse_iterator itor = m_table.rbegin();
-    for (; (itor != m_table.rend()) && (mjd < itor->first); ++itor) {}
-
-    // Check if it fell of the rend (that is the beginning) so this time is too early for UTC.
-    if (itor == m_table.rend()) {
+    table_type::const_iterator itor = m_table.upper_bound(mjd);
+    if (itor == m_table.begin()) {
+      // The given MJD time is too early for UTC.
       std::ostringstream os;
       os << "The leap-second table is looked up for " << mjd << ".0 MJD (UTC), which is before its first entry " <<
         m_table.begin()->first << ".0 MJD (UTC).";
       throw std::runtime_error(os.str());
     }
+    --itor;
 
     // Return the contents of the entry.
     return itor->second;
