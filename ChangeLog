@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: glastrm  Thu Jun 19 17:01:41 PDT 2008
+ScienceTools-scons/timeSystem
+
+Modified Files:
+	SConscript 
+Log Message:
+Added Author and Version fields
+    *
+------------------------------------------------------------
 User: hirayama  Tue Jun 17 13:54:50 PDT 2008
 timeSystem/src
 
