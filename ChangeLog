@@ -1,5 +1,14 @@
 ------------------------------------------------------------
 TAG
+Tag name: v4r0p2, operation: mov
+Package: timeSystem
+User: glastrm  Thu Jun 19 17:02:00 2008
+Files:
+  timeSystem/SConscript  1.5
+
+    *
+------------------------------------------------------------
+TAG
 Tag name: timeSystem-04-00-02, operation: mov
 Package: timeSystem
 User: glastrm  Thu Jun 19 17:01:50 2008
