@@ -1,5 +1,7 @@
+#$Id$
 def generate(env, **kw):
-    env.Tool('addLibrary', library = ['timeSystem'], package = 'timeSystem')
+    if not kw.get('depsOnly',0):
+        env.Tool('addLibrary', library = ['timeSystem'])
     env.Tool('st_facilitiesLib')
     env.Tool('st_streamLib')
     env.Tool('tipLib')
