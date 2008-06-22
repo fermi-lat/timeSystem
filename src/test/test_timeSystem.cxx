@@ -13,6 +13,7 @@
 
 #include "timeSystem/AbsoluteTime.h"
 #include "timeSystem/BaryTimeComputer.h"
+#include "timeSystem/CalendarFormat.h"
 #include "timeSystem/Duration.h"
 #include "timeSystem/ElapsedTime.h"
 #include "timeSystem/EventTimeHandler.h"
@@ -25,6 +26,7 @@
 
 #include <cmath>
 #include <exception>
+#include <iomanip>
 #include <limits>
 #include <list>
 #include <stdexcept>
@@ -1775,74 +1777,74 @@ namespace {
   void TestTimeFormat() {
     s_os.setMethod("TestTimeFormat");
 
-    //static const double epsilon = std::numeric_limits<double>::epsilon() * 300.;
+    // Prepare test parameters for Mjd and Mjd1 classes.
     datetime_type expected_datetime(51910, 64.814);
     Mjd expected_mjd(expected_datetime.first, expected_datetime.second / SecPerDay());
     Mjd1 expected_mjd1(expected_mjd.m_int + expected_mjd.m_frac);
 
-    // Test conversion from integer part and fractional part to datetime_type.
+    // Test conversion from an Mjd object (that holds integer part and fractional part of MJD) to a datetime_type object.
     datetime_type datetime(0, 0.);
     TimeFormat::convert(expected_mjd, datetime);
     double tolerance = 100.e-9; // 100 nano-seconds.
     if (expected_datetime.first != datetime.first || tolerance < std::fabs(expected_datetime.second - datetime.second)) {
-      err() << "Object mjd_format converted (" << expected_mjd.m_int << " + " << expected_mjd.m_frac <<
+      err() << "TimeFormat::convert method converted (" << expected_mjd.m_int << " + " << expected_mjd.m_frac <<
         ") MJD into datetime_type pair (" << datetime.first << ", " << datetime.second << "), not (" <<
         expected_datetime.first << ", " << expected_datetime.second << ") as expected." << std::endl;
     }
 
-    // Test conversion from a single MJD number of double type to datetime_type.
+    // Test conversion from an Mjd1 object (that holds a single MJD number of double type) to a datetime_type object.
     datetime = datetime_type(0, 0.);
-    mjd_format.convert(expected_mjd, datetime);
+    TimeFormat::convert(expected_mjd, datetime);
     tolerance = 10.e-6; // 10 micro-seconds.
     if (expected_datetime.first != datetime.first || tolerance < std::fabs(expected_datetime.second - datetime.second)) {
-      err() << "Object mjd_format converted " << expected_mjd1.m_day << " MJD into datetime_type pair (" << datetime.first << ", " <<
+      err() << "TimeFormat::convert method converted " << expected_mjd1.m_day << " MJD into datetime_type pair (" << datetime.first << ", " <<
         datetime.second << "), not (" << expected_datetime.first << ", " << expected_datetime.second << ") as expected." << std::endl;
     }
 
-    // Test conversion from datetime_type to integer part and fractional part.
-    Mjd mjd(0, 0.);
-    mjd_format.convert(expected_datetime, mjd);
+    // Test conversion from a datetime_type object to an Mjd object (that holds integer part and fractional part of MJD).
+    Mjd result_mjd(0, 0.);
+    TimeFormat::convert(expected_datetime, result_mjd);
     tolerance = 100.e-9 / SecPerDay(); // 100 nano-seconds in units of day.
-    if (expected_mjd.m_int != mjd.m_int || tolerance < std::fabs(expected_mjd.m_frac - mjd.m_frac)) {
-      err() << "Object mjd_format converted datetime_type pair (" << expected_datetime.first << ", " << expected_datetime.second <<
-        ") into (" << mjd.m_int << " + " << mjd.m_frac << ") MJD, not (" << expected_mjd.m_int << " + " <<
+    if (expected_mjd.m_int != result_mjd.m_int || tolerance < std::fabs(expected_mjd.m_frac - result_mjd.m_frac)) {
+      err() << "TimeFormat::convert method converted datetime_type pair (" << expected_datetime.first << ", " << expected_datetime.second <<
+        ") into (" << result_mjd.m_int << " + " << result_mjd.m_frac << ") MJD, not (" << expected_mjd.m_int << " + " <<
         expected_mjd.m_frac << ") MJD as expected." << std::endl;
     }
 
-    // Test conversion from datetime_type to a single MJD number of double type.
-    Mjd1 mjd1 = 0.;
-    mjd_format.convert(expected_datetime, mjd1);
+    // Test conversion from a datetime_type object to an Mjd1 object (that holds a single MJD number of double type).
+    Mjd1 result_mjd1 = 0.;
+    TimeFormat::convert(expected_datetime, result_mjd1);
     tolerance = 100.e-9 / SecPerDay(); // 100 nano-seconds in units of day.
-    if (tolerance < std::fabs(expected_mjd1.m_day - mjd1.m_day)) {
-      err() << "Object mjd_format converted datetime_type pair (" << expected_datetime.first << ", " << expected_datetime.second <<
-        ") into " << mjd1.m_day << " MJD, not " << expected_mjd1.m_day << " MJD as expected." << std::endl;
+    if (tolerance < std::fabs(expected_mjd1.m_day - result_mjd1.m_day)) {
+      err() << "TimeFormat::convert method converted datetime_type pair (" << expected_datetime.first << ", " << expected_datetime.second <<
+        ") into " << result_mjd1.m_day << " MJD, not " << expected_mjd1.m_day << " MJD as expected." << std::endl;
     }
 
     // Create a TimeFormat object using MJD representation.
     const TimeFormat & mjd_format = TimeFormat::getFormat("MJD");
 
     // Test formatting into string.
-    std::string expected_mjd_string = "51910.000750162037037 MJD";
-    std::string mjd_string = mjd_format.format(expected_datetime);
-    if (expected_mjd_string != mjd_string) {
+    std::string test_mjd_string = "51910.000750162037037";
+    std::string expected_mjd_string = test_mjd_string + " MJD";
+    std::string result_mjd_string = mjd_format.format(expected_datetime);
+    if (expected_mjd_string != result_mjd_string) {
       err() << "Object returned by TimeFormat::getFormat(\"MJD\") formatted datetime_type pair (" << expected_datetime.first << ", " <<
-        expected_datetime.second << ") into \"" << mjd_string << "\", not \"" << expected_mjd_string << "\" as expected." << std::endl;
+        expected_datetime.second << ") into \"" << result_mjd_string << "\", not \"" << expected_mjd_string << "\" as expected." << std::endl;
     }
 
     // Test formatting into string, with decimal precision specified.
     expected_mjd_string = "51910.0007502 MJD";
-    mjd_string = mjd_format.format(expected_datetime, 7);
-    if (expected_mjd_string != mjd_string) {
+    result_mjd_string = mjd_format.format(expected_datetime, 7);
+    if (expected_mjd_string != result_mjd_string) {
       err() << "Object returned by TimeFormat::getFormat(\"MJD\") formatted datetime_type pair (" << expected_datetime.first << ", " <<
-        expected_datetime.second << ") into \"" << mjd_string << "\", not \"" << expected_mjd_string << "\" as expected." << std::endl;
+        expected_datetime.second << ") into \"" << result_mjd_string << "\", not \"" << expected_mjd_string << "\" as expected." << std::endl;
     }
 
     // Test parsing a string.
-    mjd_string = "51910.000750162037037";
-    datetime = mjd_format.parse(mjd_string);
+    datetime = mjd_format.parse(test_mjd_string);
     tolerance = 100.e-9; // 100 nano-seconds.
     if (expected_datetime.first != datetime.first || tolerance < std::fabs(expected_datetime.second - datetime.second)) {
-      err() << "Object returned by TimeFormat::getFormat(\"MJD\") parsed \"" << mjd_string << "\" into datetime_type pair (" <<
+      err() << "Object returned by TimeFormat::getFormat(\"MJD\") parsed \"" << test_mjd_string << "\" into datetime_type pair (" <<
         datetime.first << ", " << datetime.second << "), not (" << expected_datetime.first << ", " << expected_datetime.second <<
         ") as expected." << std::endl;
     }
@@ -1864,6 +1866,124 @@ namespace {
       err() << "TimeFormat::getFormat(\"no_such_time_format\") did not throw an exception." << std::endl;
     } catch (const std::exception &) {
     }
+
+    // Prepare test parameters for Calendar, IsoWeek, and Ordinal classes.
+//       Reference Time (ISO 8601) : 2008-06-17T12:34:56.789 (TDB)
+//            Reference Time (MJD) : 54634.524268391203704 MJD (TDB)
+    expected_datetime = datetime_type(54634, 45296.789);
+    Calendar expected_calendar(2008, 6, 17, 12, 34, 56.789);
+    IsoWeek expected_iso_week(2008, 25, 2, 12, 34, 56.789);
+    Ordinal expected_ordinal(2008, 169, 12, 34, 56.789);
+    tolerance = 100.e-9; // 100 nano-seconds.
+
+    // Test conversion from a Calendar object to a datetime_type object.
+    datetime = datetime_type(0, 0.);
+    TimeFormat::convert(expected_calendar, datetime);
+    if (expected_datetime.first != datetime.first || tolerance < std::fabs(expected_datetime.second - datetime.second)) {
+      std::ostringstream os;
+      os << std::setfill('0') << std::setw(4) << expected_calendar.m_year << "-" << std::setw(2) << expected_calendar.m_mon << "-" <<
+        std::setw(2) << expected_calendar.m_day << "T" << std::setw(2) << expected_calendar.m_hour << ":" <<
+        std::setw(2) << expected_calendar.m_min << ":";
+      if (expected_calendar.m_sec < 10.) os << '0';
+      os << expected_calendar.m_sec;
+      err() << "TimeFormat::convert method converted " << os.str() << " into datetime_type pair (" << datetime.first << ", " <<
+        datetime.second << "), not (" << expected_datetime.first << ", " << expected_datetime.second << ") as expected." << std::endl;
+    }
+
+    // Test conversion from an IsoWeek object to a datetime_type object.
+    datetime = datetime_type(0, 0.);
+    TimeFormat::convert(expected_iso_week, datetime);
+    if (expected_datetime.first != datetime.first || tolerance < std::fabs(expected_datetime.second - datetime.second)) {
+      std::ostringstream os;
+      os << std::setfill('0') << std::setw(4) << expected_iso_week.m_year << "-W" << std::setw(2) << expected_iso_week.m_week << "-" <<
+        std::setw(1) << expected_iso_week.m_day << "T" << std::setw(2) << expected_iso_week.m_hour << ":" <<
+        std::setw(2) << expected_iso_week.m_min << ":";
+      if (expected_iso_week.m_sec < 10.) os << '0';
+      os << expected_iso_week.m_sec;
+      err() << "TimeFormat::convert method converted " << os.str() << " into datetime_type pair (" << datetime.first << ", " <<
+        datetime.second << "), not (" << expected_datetime.first << ", " << expected_datetime.second << ") as expected." << std::endl;
+    }
+
+    // Test conversion from an Ordinal object to a datetime_type object.
+    datetime = datetime_type(0, 0.);
+    TimeFormat::convert(expected_ordinal, datetime);
+    if (expected_datetime.first != datetime.first || tolerance < std::fabs(expected_datetime.second - datetime.second)) {
+      std::ostringstream os;
+      os << std::setfill('0') << std::setw(4) << expected_ordinal.m_year << "-" << std::setw(3) << expected_ordinal.m_day << "T" <<
+        std::setw(2) << expected_ordinal.m_hour << ":" << std::setw(2) << expected_ordinal.m_min << ":";
+      if (expected_ordinal.m_sec < 10.) os << '0';
+      os << expected_ordinal.m_sec;
+      err() << "TimeFormat::convert method converted " << os.str() << " into datetime_type pair (" << datetime.first << ", " <<
+        datetime.second << "), not (" << expected_datetime.first << ", " << expected_datetime.second << ") as expected." << std::endl;
+    }
+
+    // Test conversion from a datetime_type object to a Calendar object.
+    Calendar result_calendar(0, 0, 0, 0, 0, 0.);
+    TimeFormat::convert(expected_datetime, result_calendar);
+    if (expected_calendar.m_year != result_calendar.m_year || expected_calendar.m_mon != result_calendar.m_mon ||
+        expected_calendar.m_day != result_calendar.m_day || expected_calendar.m_hour != result_calendar.m_hour ||
+        expected_calendar.m_min != result_calendar.m_min || tolerance < std::fabs(expected_calendar.m_sec - result_calendar.m_sec)) {
+      std::ostringstream result_os;
+      result_os << std::setfill('0') << std::setw(4) << result_calendar.m_year << "-" << std::setw(2) << result_calendar.m_mon << "-" <<
+        std::setw(2) << result_calendar.m_day << "T" << std::setw(2) << result_calendar.m_hour << ":" <<
+        std::setw(2) << result_calendar.m_min << ":";
+      if (result_calendar.m_sec < 10.) result_os << '0';
+      result_os << result_calendar.m_sec;
+      std::ostringstream expected_os;
+      expected_os << std::setfill('0') << std::setw(4) << expected_calendar.m_year << "-" << std::setw(2) << expected_calendar.m_mon << "-" <<
+        std::setw(2) << expected_calendar.m_day << "T" << std::setw(2) << expected_calendar.m_hour << ":" <<
+        std::setw(2) << expected_calendar.m_min << ":";
+      if (expected_calendar.m_sec < 10.) expected_os << '0';
+      expected_os << expected_calendar.m_sec;
+      err() << "TimeFormat::convert method converted datetime_type pair (" << expected_datetime.first << ", " << expected_datetime.second <<
+        ") into " << result_os.str() << ", not " << expected_os.str() << " as expected." << std::endl;
+    }
+
+    // Test conversion from a datetime_type object to an IsoWeek object.
+    IsoWeek result_iso_week(0, 0, 0, 0, 0, 0.);
+    TimeFormat::convert(expected_datetime, result_iso_week);
+    if (expected_iso_week.m_year != result_iso_week.m_year || expected_iso_week.m_week != result_iso_week.m_week ||
+        expected_iso_week.m_day != result_iso_week.m_day || expected_iso_week.m_hour != result_iso_week.m_hour ||
+        expected_iso_week.m_min != result_iso_week.m_min || tolerance < std::fabs(expected_iso_week.m_sec - result_iso_week.m_sec)) {
+      std::ostringstream result_os;
+      result_os << std::setfill('0') << std::setw(4) << result_iso_week.m_year << "-W" << std::setw(2) << result_iso_week.m_week << "-" <<
+        std::setw(1) << result_iso_week.m_day << "T" << std::setw(2) << result_iso_week.m_hour << ":" <<
+        std::setw(2) << result_iso_week.m_min << ":";
+      if (result_iso_week.m_sec < 10.) result_os << '0';
+      result_os << result_iso_week.m_sec;
+      std::ostringstream expected_os;
+      expected_os << std::setfill('0') << std::setw(4) << expected_iso_week.m_year << "-W" << std::setw(2) << expected_iso_week.m_week <<
+        "-" << std::setw(1) << expected_iso_week.m_day << "T" << std::setw(2) << expected_iso_week.m_hour << ":" <<
+        std::setw(2) << expected_iso_week.m_min << ":";
+      if (expected_iso_week.m_sec < 10.) expected_os << '0';
+      expected_os << expected_iso_week.m_sec;
+      err() << "TimeFormat::convert method converted datetime_type pair (" << expected_datetime.first << ", " << expected_datetime.second <<
+        ") into " << result_os.str() << ", not " << expected_os.str() << " as expected." << std::endl;
+    }
+
+    // Test conversion from a datetime_type object to an Ordinal object.
+    Ordinal result_ordinal(0, 0, 0, 0, 0.);
+    TimeFormat::convert(expected_datetime, result_ordinal);
+    if (expected_ordinal.m_year != result_ordinal.m_year || expected_ordinal.m_day != result_ordinal.m_day ||
+        expected_ordinal.m_hour != result_ordinal.m_hour || expected_ordinal.m_min != result_ordinal.m_min ||
+        tolerance < std::fabs(expected_ordinal.m_sec - result_ordinal.m_sec)) {
+      std::ostringstream result_os;
+      result_os << std::setfill('0') << std::setw(4) << result_ordinal.m_year << "-" << std::setw(3) << result_ordinal.m_day << "T" <<
+        std::setw(2) << result_ordinal.m_hour << ":" << std::setw(2) << result_ordinal.m_min << ":";
+      if (result_ordinal.m_sec < 10.) result_os << '0';
+      result_os << result_ordinal.m_sec;
+      std::ostringstream expected_os;
+      expected_os << std::setfill('0') << std::setw(4) << expected_ordinal.m_year << "-" << std::setw(3) << expected_ordinal.m_day << "T" <<
+        std::setw(2) << expected_ordinal.m_hour << ":" << std::setw(2) << expected_ordinal.m_min << ":";
+      if (expected_ordinal.m_sec < 10.) expected_os << '0';
+      expected_os << expected_ordinal.m_sec;
+      err() << "TimeFormat::convert method converted datetime_type pair (" << expected_datetime.first << ", " << expected_datetime.second <<
+        ") into " << result_os.str() << ", not " << expected_os.str() << " as expected." << std::endl;
+    }
+
+    // TODO: Add more tests of Calendar, IsoWeek, and Ordinal classes in tricky situations (leap years, Jan 1 in the previous ISO year, etc.).
+    // TODO: Add tests of formatters and parsers for Calendar, IsoWeek, Ordinal representations.
+    // TODO: Add tests on detections of wrong date expressions (13 for month, 31 for a date in April, etc.).
   }
 
   void TestBaryTimeComputer() {
