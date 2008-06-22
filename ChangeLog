@@ -1,5 +1,14 @@
 ------------------------------------------------------------
 User: hirayama  Sun Jun 22 15:12:16 PDT 2008
+timeSystem/src
+
+Added Files:
+	CalendarFormat.cxx 
+Log Message:
+Add calendar type of time representations.
+    *
+------------------------------------------------------------
+User: hirayama  Sun Jun 22 15:12:16 PDT 2008
 timeSystem/timeSystem
 
 Added Files:
