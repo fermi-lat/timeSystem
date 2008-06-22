@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Sun Jun 22 15:12:16 PDT 2008
+timeSystem/timeSystem
+
+Added Files:
+	CalendarFormat.h 
+Log Message:
+Add calendar type of time representations.
+    *
+------------------------------------------------------------
 TAG
 Tag name: v4r0p2, operation: mov
 Package: timeSystem
