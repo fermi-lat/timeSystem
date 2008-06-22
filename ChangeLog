@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Sun Jun 22 15:15:03 PDT 2008
+timeSystem/timeSystem
+
+Modified Files:
+	MjdFormat.h 
+Log Message:
+Hide MjdFormat class. Change variable names and correct wordings for clarity.
+    *
+------------------------------------------------------------
 User: hirayama  Sun Jun 22 15:12:16 PDT 2008
 timeSystem/src/test
 
