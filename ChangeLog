@@ -1,5 +1,14 @@
 ------------------------------------------------------------
 User: hirayama  Sun Jun 22 15:15:03 PDT 2008
+timeSystem/src
+
+Modified Files:
+	MjdFormat.cxx TimeSystem.cxx 
+Log Message:
+Hide MjdFormat class. Change variable names and correct wordings for clarity.
+    *
+------------------------------------------------------------
+User: hirayama  Sun Jun 22 15:15:03 PDT 2008
 timeSystem/timeSystem
 
 Modified Files:
