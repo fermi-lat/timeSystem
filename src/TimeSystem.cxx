@@ -286,14 +286,14 @@ namespace {
 
     // Check validity as a UTC moment.
     if (moment.first < earliest_mjd) {
-      // The origin is out of bound.
+      // The origin is out of bounds.
       std::ostringstream os;
       os << "The given moment has the origin, " << moment.first << ".0 MJD (UTC), which is earlier than the earliest" <<
         " covered by the leap second table in " << leap_sec_table.getFileName() << ", " << earliest_mjd << ".0 MJD (UTC).";
       throw std::runtime_error(os.str());
 
     } else if (Duration::zero() > computeTimeDifference(moment, moment_type(earliest_mjd, Duration::zero()))) {
-      // The represented moment of time is out of bound.
+      // The represented moment of time is out of bounds.
       std::ostringstream os;
       os << "The given moment, " << moment.second << " since " << moment.first << " MJD (UTC), is earlier than the earliest" <<
         " covered by the leap second table in " << leap_sec_table.getFileName() << ", " << earliest_mjd << ".0 MJD (UTC).";
