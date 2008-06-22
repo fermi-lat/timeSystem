@@ -6,12 +6,8 @@
 #ifndef timeSystem_MjdFormat_h
 #define timeSystem_MjdFormat_h
 
-#include "timeSystem/IntFracPair.h"
 #include "timeSystem/TimeFormat.h"
 #include "timeSystem/TimeSystem.h"
-
-#include <limits>
-#include <string>
 
 namespace timeSystem {
 
@@ -33,24 +29,20 @@ namespace timeSystem {
     double m_day;
   };
 
-  // TODO: Implement struct Jd, Jd1, MonthDay, WeekDay, YearDay.
-  // NOTE: Data members of struct MonthDay: m_year, m_mon,  m_day, m_hour, m_min, and m_sec (cf. struct tm in C).
-  // NOTE: Data members of struct WeekDay:  m_year, m_week, m_day, m_hour, m_min, and m_sec (cf. struct tm in C).
-  // NOTE: Data members of struct YearDay:  m_year,         m_day, m_hour, m_min, and m_sec (cf. struct tm in C).
+  // TODO: Implement struct Jd, Jd1.
 
-  /** \class MjdFormat
-      \brief Class to represent MJD format of time representation.
-  */
-  class MjdFormat : public TimeFormat {
-    public:
-      MjdFormat(): TimeFormat("MJD") {}
+  template <>
+  void TimeFormat::convert(const datetime_type & datetime, Mjd & mjd_rep);
 
-      virtual std::string format(const datetime_type & value, std::streamsize precision = std::numeric_limits<double>::digits10) const;
+  template <>
+  void TimeFormat::convert(const datetime_type & datetime, Mjd1 & mjd1_rep);
 
-      virtual datetime_type parse(const std::string & value) const;
-  };
+  template <>
+  void TimeFormat::convert(const Mjd & mjd_rep, datetime_type & datetime);
 
-  static const MjdFormat mjd_format;
+  template <>
+  void TimeFormat::convert(const Mjd1 & mjd1_rep, datetime_type & datetime);
+
 }
 
 #endif
