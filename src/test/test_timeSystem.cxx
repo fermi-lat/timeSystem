@@ -1868,8 +1868,6 @@ namespace {
     }
 
     // Prepare test parameters for Calendar, IsoWeek, and Ordinal classes.
-//       Reference Time (ISO 8601) : 2008-06-17T12:34:56.789 (TDB)
-//            Reference Time (MJD) : 54634.524268391203704 MJD (TDB)
     expected_datetime = datetime_type(54634, 45296.789);
     Calendar expected_calendar(2008, 6, 17, 12, 34, 56.789);
     IsoWeek expected_iso_week(2008, 25, 2, 12, 34, 56.789);
@@ -1983,7 +1981,70 @@ namespace {
 
     // TODO: Add more tests of Calendar, IsoWeek, and Ordinal classes in tricky situations (leap years, Jan 1 in the previous ISO year, etc.).
     // TODO: Add tests of formatters and parsers for Calendar, IsoWeek, Ordinal representations.
-    // TODO: Add tests on detections of wrong date expressions (13 for month, 31 for a date in April, etc.).
+
+    // Test detections of non-existing month.
+    try {
+      TimeFormat::convert(Calendar(2008,  0, 1, 0, 0, 0.), datetime);
+      err() << "TimeFormat::convert method did not throw an exception for a bad calendar month: 0." << std::endl;
+    } catch (const std::exception &) {
+    }
+    try {
+      TimeFormat::convert(Calendar(2008, 13, 1, 0, 0, 0.), datetime);
+      err() << "TimeFormat::convert method did not throw an exception for a bad calendar month: 13." << std::endl;
+    } catch (const std::exception &) {
+    }
+
+    // Test detections of non-existing day of month.
+    try {
+      TimeFormat::convert(Calendar(2008, 1, 0, 0, 0, 0.), datetime);
+      err() << "TimeFormat::convert method did not throw an exception for a non-existing calendar date: 2008-01-00." << std::endl;
+    } catch (const std::exception &) {
+    }
+    try {
+      TimeFormat::convert(Calendar(2008, 1, 32, 0, 0, 0.), datetime);
+      err() << "TimeFormat::convert method did not throw an exception for a non-existing calendar date: 2008-01-32." << std::endl;
+    } catch (const std::exception &) {
+    }
+    try {
+      TimeFormat::convert(Calendar(2008, 1, 31, 0, 0, 0.), datetime);
+    } catch (const std::exception &) {
+      err() << "TimeFormat::convert method threw an exception for an existing calendar date: 2008-01-31." << std::endl;
+    }
+    try {
+      TimeFormat::convert(Calendar(2008, 4, 31, 0, 0, 0.), datetime);
+      err() << "TimeFormat::convert method did not throw an exception for a non-existing calendar date: 2008-04-31." << std::endl;
+    } catch (const std::exception &) {
+    }
+
+    // Test detections of non-existing day near the end of February.
+    try {
+      TimeFormat::convert(Calendar(2008, 2, 30, 0, 0, 0.), datetime);
+      err() << "TimeFormat::convert method did not throw an exception for a non-existing calendar date: 2008-02-30." << std::endl;
+    } catch (const std::exception &) {
+    }
+    try {
+      TimeFormat::convert(Calendar(2008, 2, 29, 0, 0, 0.), datetime);
+    } catch (const std::exception &) {
+      err() << "TimeFormat::convert method threw an exception for an existing calendar date: 2008-02-29." << std::endl;
+    }
+    try {
+      TimeFormat::convert(Calendar(2009, 2, 29, 0, 0, 0.), datetime);
+      err() << "TimeFormat::convert method did not throw an exception for a non-existing calendar date: 2009-02-29." << std::endl;
+    } catch (const std::exception &) {
+    }
+    try {
+      TimeFormat::convert(Calendar(2100, 2, 29, 0, 0, 0.), datetime);
+      err() << "TimeFormat::convert method did not throw an exception for a non-existing calendar date: 2100-02-29." << std::endl;
+    } catch (const std::exception &) {
+    }
+    try {
+      TimeFormat::convert(Calendar(2000, 2, 29, 0, 0, 0.), datetime);
+    } catch (const std::exception &) {
+      err() << "TimeFormat::convert method threw an exception for an existing calendar date: 2000-02-29." << std::endl;
+    }
+
+    // Note: No need for testing ordinal dates and ISO week dates out of bounds, because those can be correctly interpreted
+    //       as an elapsed days even beyond their regular limits.
   }
 
   void TestBaryTimeComputer() {
