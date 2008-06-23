@@ -1772,6 +1772,77 @@ namespace {
     }
   }
 
+  void TestOneCalendarDate(long mjd, long calendar_year, long month, long month_day, long iso_year, long week_number, long weekday_number,
+    long ordinal_date) {
+    datetime_type datetime(0, 0.);
+
+    // Test conversion from a calendar date to an MJD.
+    TimeFormat::convert(Calendar(calendar_year, month, month_day, 0, 0, 0.), datetime);
+    if (mjd != datetime.first) {
+      std::ostringstream os;
+      os << std::setfill('0') << std::setw(4) << calendar_year << "-" << std::setw(2) << month << "-" << std::setw(2) << month_day;
+      err() << "TimeFormat::convert method converted " << os.str() << " into " << datetime.first << " MJD, not " << mjd <<
+        " MJD as expected." << std::endl;
+    }
+
+    // Test conversion from an ISO week date to an MJD.
+    TimeFormat::convert(IsoWeek(iso_year, week_number, weekday_number, 0, 0, 0.), datetime);
+    if (mjd != datetime.first) {
+      std::ostringstream os;
+      os << std::setfill('0') << std::setw(4) << iso_year << "-W" << std::setw(2) << week_number << "-" << std::setw(1) << weekday_number;
+      err() << "TimeFormat::convert method converted " << os.str() << " into " << datetime.first << " MJD, not " << mjd <<
+        " MJD as expected." << std::endl;
+    }
+
+    // Test conversion from an ordinal date to an MJD.
+    TimeFormat::convert(Ordinal(calendar_year, ordinal_date, 0, 0, 0.), datetime);
+    if (mjd != datetime.first) {
+      std::ostringstream os;
+      os << std::setfill('0') << std::setw(4) << iso_year << "-" << std::setw(3) << ordinal_date;
+      err() << "TimeFormat::convert method converted " << os.str() << " into " << datetime.first << " MJD, not " << mjd <<
+        " MJD as expected." << std::endl;
+    }
+
+    // Test conversion from an MJD to a calendar date.
+    Calendar result_calendar(0, 0, 0, 0, 0, 0.);
+    TimeFormat::convert(datetime_type(mjd, 0.), result_calendar);
+    if (calendar_year != result_calendar.m_year || month != result_calendar.m_mon || month_day != result_calendar.m_day) {
+      std::ostringstream expected_os;
+      expected_os << std::setfill('0') << std::setw(4) << calendar_year << "-" << std::setw(2) << month << "-" << std::setw(2) << month_day;
+      std::ostringstream result_os;
+      result_os << std::setfill('0') << std::setw(4) << result_calendar.m_year << "-" << std::setw(2) << result_calendar.m_mon << "-" <<
+        std::setw(2) << result_calendar.m_day;
+      err() << "TimeFormat::convert method converted " << mjd << " MJD into " << result_os.str() << ", not " << expected_os.str() <<
+        " as expected." << std::endl;
+    }
+
+    // Test conversion from an MJD to an ISO week date.
+    IsoWeek result_iso_week(0, 0, 0, 0, 0, 0.);
+    TimeFormat::convert(datetime_type(mjd, 0.), result_iso_week);
+    if (iso_year != result_iso_week.m_year || week_number != result_iso_week.m_week || weekday_number != result_iso_week.m_day) {
+      std::ostringstream expected_os;
+      expected_os << std::setfill('0') << std::setw(4) << iso_year << "-W" << std::setw(2) << week_number << "-" <<
+        std::setw(1) << weekday_number;
+      std::ostringstream result_os;
+      result_os << std::setfill('0') << std::setw(4) << result_iso_week.m_year << "-W" << std::setw(2) << result_iso_week.m_week << "-" <<
+        std::setw(1) << result_iso_week.m_day;
+      err() << "TimeFormat::convert method converted " << mjd << " MJD into " << result_os.str() << ", not " << expected_os.str() <<
+        " as expected." << std::endl;
+    }
+
+    // Test conversion from an MJD to an ordinal date.
+    Ordinal result_ordinal(0, 0, 0, 0, 0.);
+    TimeFormat::convert(datetime_type(mjd, 0.), result_ordinal);
+    if (calendar_year != result_ordinal.m_year || ordinal_date != result_ordinal.m_day) {
+      std::ostringstream expected_os;
+      expected_os << std::setfill('0') << std::setw(4) << calendar_year << "-" << std::setw(3) << ordinal_date;
+      std::ostringstream result_os;
+      result_os << std::setfill('0') << std::setw(4) << result_ordinal.m_year << "-" << std::setw(3) << result_ordinal.m_day;
+      err() << "TimeFormat::convert method converted " << mjd << " MJD into " << result_os.str() << ", not " << expected_os.str() <<
+        " as expected." << std::endl;
+    }
+  }
+
   struct NoSuchTimeRep {};
 
   void TestTimeFormat() {
@@ -1979,7 +2050,62 @@ namespace {
         ") into " << result_os.str() << ", not " << expected_os.str() << " as expected." << std::endl;
     }
 
-    // TODO: Add more tests of Calendar, IsoWeek, and Ordinal classes in tricky situations (leap years, Jan 1 in the previous ISO year, etc.).
+    // Test date conversions in year 1995, where the calendar year is not divisible by 4, 100, nor 400.
+    TestOneCalendarDate(49776, 1995,  2, 28, 1995,  9, 2,  59);
+    TestOneCalendarDate(49777, 1995,  3,  1, 1995,  9, 3,  60);
+    TestOneCalendarDate(50082, 1995, 12, 31, 1995, 52, 7, 365);
+    TestOneCalendarDate(50083, 1996,  1,  1, 1996,  1, 1,   1);
+
+    // Test date conversions in year 1996, where the calendar year is divisible by 4, but not by 100.
+    TestOneCalendarDate(50141, 1996,  2, 28, 1996,  9, 3,  59);
+    TestOneCalendarDate(50142, 1996,  2, 29, 1996,  9, 4,  60);
+    TestOneCalendarDate(50143, 1996,  3,  1, 1996,  9, 5,  61);
+    TestOneCalendarDate(50448, 1996, 12, 31, 1997,  1, 2, 366);
+    TestOneCalendarDate(50449, 1997,  1,  1, 1997,  1, 3,   1);
+
+    // Test date conversions in year 2100, where the calendar year is divisible by 100, but not by 400.
+    TestOneCalendarDate(88127, 2100,  2, 28, 2100,  8, 7,  59);
+    TestOneCalendarDate(88128, 2100,  3,  1, 2100,  9, 1,  60);
+    TestOneCalendarDate(88433, 2100, 12, 31, 2100, 52, 5, 365);
+    TestOneCalendarDate(88434, 2101,  1,  1, 2100, 52, 6,   1);
+
+    // Test date conversions in year 2000, where the calendar year is divisible by 400.
+    TestOneCalendarDate(51602, 2000,  2, 28, 2000,  9, 1,  59);
+    TestOneCalendarDate(51603, 2000,  2, 29, 2000,  9, 2,  60);
+    TestOneCalendarDate(51604, 2000,  3,  1, 2000,  9, 3,  61);
+    TestOneCalendarDate(51909, 2000, 12, 31, 2000, 52, 7, 366);
+    TestOneCalendarDate(51910, 2001,  1,  1, 2001,  1, 1,   1);
+
+    // Test date conversions near the beginning of 2005, when an ISO year starts after a calendar year.
+    TestOneCalendarDate(53370, 2004, 12, 31, 2004, 53, 5, 366);
+    TestOneCalendarDate(53371, 2005,  1,  1, 2004, 53, 6,   1);
+    TestOneCalendarDate(53372, 2005,  1,  2, 2004, 53, 7,   2);
+    TestOneCalendarDate(53373, 2005,  1,  3, 2005,  1, 1,   3);
+
+    // Test date conversions near the beginning of 2007, when an ISO year starts with a calendar year.
+    TestOneCalendarDate(54100, 2006, 12, 31, 2006, 52, 7, 365);
+    TestOneCalendarDate(54101, 2007,  1,  1, 2007,  1, 1,   1);
+    TestOneCalendarDate(54102, 2007,  1,  2, 2007,  1, 2,   2);
+
+    // Test date conversions near the beginning of 2008, when an ISO year starts before a calendar year.
+    TestOneCalendarDate(54464, 2007, 12, 30, 2007, 52, 7, 364);
+    TestOneCalendarDate(54465, 2007, 12, 31, 2008,  1, 1, 365);
+    TestOneCalendarDate(54466, 2008,  1,  1, 2008,  1, 2,   1);
+
+    // Test date conversions near the beginning of 2009, when the ISO year is three days into the previous Gregorian year.
+    TestOneCalendarDate(54828, 2008, 12, 28, 2008, 52, 7, 363);
+    TestOneCalendarDate(54829, 2008, 12, 29, 2009,  1, 1, 364);
+    TestOneCalendarDate(54830, 2008, 12, 30, 2009,  1, 2, 365);
+    TestOneCalendarDate(54831, 2008, 12, 31, 2009,  1, 3, 366);
+    TestOneCalendarDate(54832, 2009,  1,  1, 2009,  1, 4,   1);
+
+    // Test date conversions near the beginning of 2010, when the ISO year is three days into the next Gregorian year.
+    TestOneCalendarDate(55196, 2009, 12, 31, 2009, 53, 4, 365);
+    TestOneCalendarDate(55197, 2010,  1,  1, 2009, 53, 5,   1);
+    TestOneCalendarDate(55198, 2010,  1,  2, 2009, 53, 6,   2);
+    TestOneCalendarDate(55199, 2010,  1,  3, 2009, 53, 7,   3);
+    TestOneCalendarDate(55200, 2010,  1,  4, 2010,  1, 1,   4);
+
     // TODO: Add tests of formatters and parsers for Calendar, IsoWeek, Ordinal representations.
 
     // Test detections of non-existing month.
