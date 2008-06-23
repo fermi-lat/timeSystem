@@ -84,17 +84,17 @@ namespace {
 
     // Compute which century of the 400-year cycle, and the number of days since the beginning of the century.
     long elapsed_100year = residual_day / DayPer100Year();
-    residual_day = residual_day % DayPer100Year();
     if (elapsed_100year > 3) elapsed_100year = 3;
+    residual_day -= elapsed_100year * DayPer100Year();
 
     // Compute which 4-year cycle of the century, and the number of days since the beginning of the 4-year cycle.
     long elapsed_4year = residual_day / DayPer4Year();
-    residual_day = residual_day % DayPer4Year();
+    residual_day -= elapsed_4year * DayPer4Year();
 
     // Compute which year of the 4-year cycle, and the number of days since the bebinning of the year.
     long elapsed_year = residual_day / DayPerYear();
-    residual_day = residual_day % DayPerYear();
-    if (elapsed_year > 24) elapsed_year = 24;
+    if (elapsed_year > 3) elapsed_year = 3;
+    residual_day -= elapsed_year * DayPerYear();
 
     // Compute and set/return the results.  Note that an ordinal date starts with 1 (one).
     ordinal_date = residual_day + 1;
@@ -285,12 +285,23 @@ namespace timeSystem {
     long mjd_day1 = calendar.findNearestMonday(mjd_jan1);
 
     // Compute the first day of the ISO year in which the given date is.
-    iso_week_rep.m_year = ordinal_rep.m_year;
     if (datetime.first < mjd_day1) {
       // The first day of the ISO year for the given date is in the previous year.
-      --iso_week_rep.m_year;
-      mjd_jan1 = calendar.computeMjd(iso_week_rep.m_year, 1);
-      mjd_day1 = calendar.findNearestMonday(mjd_jan1);
+      long mjd_jan1_prev = calendar.computeMjd(ordinal_rep.m_year - 1, 1);
+      mjd_day1 = calendar.findNearestMonday(mjd_jan1_prev);
+      iso_week_rep.m_year = ordinal_rep.m_year - 1;
+    } else {
+      // The first day of the ISO year for the given date is in this year.
+      long mjd_jan1_next = calendar.computeMjd(ordinal_rep.m_year + 1, 1);
+      long mjd_day1_next = calendar.findNearestMonday(mjd_jan1_next);
+      if (datetime.first < mjd_day1_next) {
+        // The ISO year for the given date is the same as the calendar year for it.
+        iso_week_rep.m_year = ordinal_rep.m_year;
+      } else {
+        // The ISO year for the given date is the next calendar year.
+        mjd_day1 = mjd_day1_next;
+        iso_week_rep.m_year = ordinal_rep.m_year + 1;
+      }
     }
 
     // Compute ISO week number and weekday number.
