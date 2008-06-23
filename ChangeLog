@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Sun Jun 22 22:45:31 PDT 2008
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Add more tests for calendar dates, ISO week dates, and ordinal dates.
+    *
+------------------------------------------------------------
 User: hirayama  Sun Jun 22 18:47:52 PDT 2008
 timeSystem/src/test
 
