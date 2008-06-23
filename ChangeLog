@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Sun Jun 22 22:46:00 PDT 2008
+timeSystem/src
+
+Modified Files:
+	CalendarFormat.cxx 
+Log Message:
+Fix bugs revealed by new tests.
+    *
+------------------------------------------------------------
 User: hirayama  Sun Jun 22 22:45:31 PDT 2008
 timeSystem/src/test
 
