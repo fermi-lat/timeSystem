@@ -74,6 +74,7 @@ namespace {
     IntFracPair int_frac(mjd_rep.m_int, mjd_rep.m_frac);
 
     std::ostringstream os;
+    os.setf(std::ios::fixed);
     os << std::setprecision(precision) << int_frac << " MJD";
     return os.str();
   }
