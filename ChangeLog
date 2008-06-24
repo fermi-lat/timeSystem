@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Mon Jun 23 21:03:38 PDT 2008
+timeSystem/src
+
+Modified Files:
+	CalendarFormat.cxx 
+Log Message:
+Implement calendar-like date and time parsers/formatters: CalendarFormat, IsoWeekFormat, OrdinalFormat classes.
+    *
+------------------------------------------------------------
 User: hirayama  Sun Jun 22 22:46:00 PDT 2008
 timeSystem/src
 
