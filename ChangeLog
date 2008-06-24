@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Mon Jun 23 21:04:04 PDT 2008
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Add tests of CalendarFormat, IsoWeekFormat, OrdinalFormat classes.
+    *
+------------------------------------------------------------
 User: hirayama  Mon Jun 23 21:03:38 PDT 2008
 timeSystem/src
 
