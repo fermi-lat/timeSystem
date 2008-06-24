@@ -7,7 +7,6 @@
 
 #include <cmath>
 #include <iomanip>
-#include <list>
 #include <sstream>
 #include <vector>
 
@@ -364,15 +363,36 @@ namespace timeSystem {
 
 namespace {
 
-#if 0
   using namespace timeSystem;
+
+  /** \class Iso8601Format
+      \brief Helper class to help CalendarFormat, IsoWeekFormat, and OrdinalFormat classes parse a date-and-time string.
+             Note that this class does NOT cover all possible combinations of date and time representations defined by
+             the ISO 8601 standard. It interprets only the extended format, and requires all values (i.e., it does not
+             allow omission of any value in the given string.
+  */
+  class Iso8601Format : public TimeFormat {
+    public:
+      typedef std::vector<long> array_type;
+      enum DateType { CalendarDate, IsoWeekDate, OrdinalDate, UnsupportedDate };
+
+      virtual std::string format(const datetime_type & value, std::streamsize precision = std::numeric_limits<double>::digits10)
+        const = 0;
+
+      virtual datetime_type parse(const std::string & value) const = 0;
+
+    protected:
+      Iso8601Format(const std::string & format_name): TimeFormat(format_name) {}
+
+      DateType split(const std::string & value, array_type & integer_value, double & double_value) const;
+  };
 
   /** \class CalendarFormat
       \brief Class to represent a calendar format of time representation.
   */
-  class CalendarFormat : public TimeFormat {
+  class CalendarFormat : public Iso8601Format {
     public:
-      CalendarFormat(): TimeFormat("Calendar") {}
+      CalendarFormat(): Iso8601Format("Calendar") {}
 
       virtual std::string format(const datetime_type & value, std::streamsize precision = std::numeric_limits<double>::digits10) const;
 
@@ -382,9 +402,9 @@ namespace {
   /** \class IsoWeekFormat
       \brief Class to represent ISO week date and time format of time representation.
   */
-  class IsoWeekFormat : public TimeFormat {
+  class IsoWeekFormat : public Iso8601Format {
     public:
-      IsoWeekFormat(): TimeFormat("IsoWeek") {}
+      IsoWeekFormat(): Iso8601Format("IsoWeek") {}
 
       virtual std::string format(const datetime_type & value, std::streamsize precision = std::numeric_limits<double>::digits10) const;
 
@@ -394,9 +414,9 @@ namespace {
   /** \class OrdinalFormat
       \brief Class to represent an ordinal date and time of time representation.
   */
-  class OrdinalFormat : public TimeFormat {
+  class OrdinalFormat : public Iso8601Format {
     public:
-      OrdinalFormat(): TimeFormat("Ordinal") {}
+      OrdinalFormat(): Iso8601Format("Ordinal") {}
 
       virtual std::string format(const datetime_type & value, std::streamsize precision = std::numeric_limits<double>::digits10) const;
 
@@ -409,17 +429,7 @@ namespace {
 
   static const OrdinalFormat s_ordinal_format;
 
-  std::string CalendarFormat::format(const datetime_type & value, std::streamsize precision) const {
-    Calendar calendar_rep(0, 0, 0, 0, 0, 0.);
-    convert(value, calendar_rep);
-
-    std::ostringstream os;
-    os << calendar_rep.m_year << "-" << calendar_rep.m_mon << "-" << calendar_rep.m_day << "T" <<
-      calendar_rep.m_hour << ":" << calendar_rep.m_min << ":" << std::setprecision(precision) << calendar_rep.m_sec;
-    return os.str();
-  }
-
-  datetime_type CalendarFormat::parse(const std::string & value) const {
+  Iso8601Format::DateType Iso8601Format::split(const std::string & value, array_type & integer_value, double & double_value) const {
     // Separate date part and time part.
     std::string::size_type pos_sep = value.find('T');
     std::string date_part;
@@ -432,71 +442,156 @@ namespace {
     }
 
     // Split the date part into year, month, and day fields.
-    std::list<std::string> field_list;
+    std::vector<std::string> field_list;
+    field_list.reserve(6);
     pos_sep = 0;
     for (std::string::size_type pos = 0; pos_sep != std::string::npos; pos = pos_sep + 1) {
       pos_sep = date_part.find('-', pos);
-      field_list.push_back(date_part.substr(pos, pos_sep));
+      std::string::size_type length = (pos_sep == std::string::npos ? pos_sep : pos_sep - pos);
+      field_list.push_back(date_part.substr(pos, length));
     }
-    if (field_list.size() != 3) throw std::runtime_error("Unsupported date format: " + date_part);
+
+    // Determine date type: CalendarDate, IsoWeekDate, or OrdinalDate.
+    DateType date_type(UnsupportedDate);
+    std::vector<std::string>::size_type date_part_size = field_list.size();
+    if (date_part_size > 0 && field_list[0].size() == 4) {
+      if (date_part_size == 3 && field_list[1].size() == 2 && field_list[2].size() == 2) date_type = CalendarDate;
+      else if (date_part_size == 3 && field_list[1].size() == 3 && field_list[2].size() == 1 && field_list[1].at(0) == 'W') {
+        date_type = IsoWeekDate;
+        // Remove 'W' in the field value.
+        field_list[1].erase(0, 1);
+      } else if (date_part_size == 2 && field_list[1].size() == 3) date_type = OrdinalDate;
+      else date_type = UnsupportedDate;
+    } else {
+      date_type = UnsupportedDate;
+    }
+    if (date_type == UnsupportedDate) throw std::runtime_error("Unsupported date format: " + date_part);
 
     // Split the time part into hour, minute, and second fields.
     pos_sep = 0;
     for (std::string::size_type pos = 0; pos_sep != std::string::npos; pos = pos_sep + 1) {
       pos_sep = time_part.find(':', pos);
-      field_list.push_back(date_part.substr(pos, pos_sep));
+      std::string::size_type length = (pos_sep == std::string::npos ? pos_sep : pos_sep - pos);
+      field_list.push_back(time_part.substr(pos, length));
     }
-    if (field_list.size() != 3) throw std::runtime_error("Unsupported time format: " + time_part);
+    if (field_list.size() != date_part_size + 3) throw std::runtime_error("Unsupported time format: " + time_part);
 
     // Separate a field for seconds.
     std::string sec_field = field_list.back();
     field_list.pop_back();
 
+    // Clear the contents of the given container for integer values.
+    integer_value.clear();
+
     // Convert year, month, day, hour, and minute fields into long variables.
-    std::vector<long> ymdhm;
-    for (std::list<std::string>::const_iterator itor = field_list.begin(); itor != field_list.end(); ++itor) {
+    for (std::vector<std::string>::const_iterator itor = field_list.begin(); itor != field_list.end(); ++itor) {
       std::istringstream iss(*itor);
-      long value_long = 0;
-      iss >> value_long;
+      long long_variable = 0;
+      iss >> long_variable;
       if (iss.fail() || !iss.eof()) throw std::runtime_error("Cannot interpret \"" + *itor + "\" in parsing \"" + value + "\"");
-      ymdhm.push_back(value_long);
+      integer_value.push_back(long_variable);
     }
 
     // Convert second field into long variables.
-    double value_double = 0.;
     {
       std::istringstream iss(sec_field);
-      iss >> value_double;
+      double double_variable = 0.;
+      iss >> double_variable;
       if (iss.fail() || !iss.eof()) throw std::runtime_error("Cannot interpret \"" + sec_field + "\" in parsing \"" + value + "\"");
+      double_value = double_variable;
     }
 
+    // Return the date type.
+    return date_type;
+  }
+
+  std::string CalendarFormat::format(const datetime_type & value, std::streamsize precision) const {
+    Calendar calendar_rep(0, 0, 0, 0, 0, 0.);
+    convert(value, calendar_rep);
+
+    std::ostringstream os;
+    os << std::setfill('0') << std::setw(4) << calendar_rep.m_year << "-" << std::setw(2) << calendar_rep.m_mon << "-" <<
+      std::setw(2) << calendar_rep.m_day << "T" << std::setw(2) << calendar_rep.m_hour << ":" <<
+      std::setw(2) << calendar_rep.m_min << ":";
+    os.setf(std::ios::fixed);
+    if (calendar_rep.m_sec < 10.) os << '0';
+    os << std::setprecision(precision) << calendar_rep.m_sec;
+    return os.str();
+  }
+
+  datetime_type CalendarFormat::parse(const std::string & value) const {
+    // Split the given string to integer and double values.
+    array_type int_array;
+    double dbl_value;
+    DateType date_type = split(value, int_array, dbl_value);
+
+    // Check date_type and throw an exception if it is not CalendarDate.
+    if (date_type != CalendarDate) throw std::runtime_error("Unable to recognize as a calendar date format: " + value);
+
     // Convert the date and time into datetime_type, and return it.
-    Calendar calendar_rep(ymdhm[0], ymdhm[1], ymdhm[2], ymdhm[3], ymdhm[4], value_double);
+    Calendar calendar_rep(int_array[0], int_array[1], int_array[2], int_array[3], int_array[4], dbl_value);
     datetime_type datetime(0, 0.);
     convert(calendar_rep, datetime);
     return datetime;
   }
 
   std::string IsoWeekFormat::format(const datetime_type & value, std::streamsize precision) const {
-    // TODO: Implement this method.
-    return "";
+    IsoWeek iso_week_rep(0, 0, 0, 0, 0, 0.);
+    convert(value, iso_week_rep);
+
+    std::ostringstream os;
+    os << std::setfill('0') << std::setw(4) << iso_week_rep.m_year << "-W" << std::setw(2) << iso_week_rep.m_week << "-" <<
+      std::setw(1) << iso_week_rep.m_day << "T" << std::setw(2) << iso_week_rep.m_hour << ":" <<
+      std::setw(2) << iso_week_rep.m_min << ":";
+    os.setf(std::ios::fixed);
+    if (iso_week_rep.m_sec < 10.) os << '0';
+    os << std::setprecision(precision) << iso_week_rep.m_sec;
+    return os.str();
   }
 
   datetime_type IsoWeekFormat::parse(const std::string & value) const {
-    // TODO: Implement this method.
-    return datetime_type(0, 0.);
+    // Split the given string to integer and double values.
+    array_type int_array;
+    double dbl_value;
+    DateType date_type = split(value, int_array, dbl_value);
+
+    // Check date_type and throw an exception if it is not IsoWeekDate.
+    if (date_type != IsoWeekDate) throw std::runtime_error("Unable to recognize as an ISO week date format: " + value);
+
+    // Convert the date and time into datetime_type, and return it.
+    IsoWeek iso_week_rep(int_array[0], int_array[1], int_array[2], int_array[3], int_array[4], dbl_value);
+    datetime_type datetime(0, 0.);
+    convert(iso_week_rep, datetime);
+    return datetime;
   }
 
   std::string OrdinalFormat::format(const datetime_type & value, std::streamsize precision) const {
-    // TODO: Implement this method.
-    return "";
+    Ordinal ordinal_rep(0, 0, 0, 0, 0.);
+    convert(value, ordinal_rep);
+
+    std::ostringstream os;
+    os << std::setfill('0') << std::setw(4) << ordinal_rep.m_year << "-" << std::setw(3) << ordinal_rep.m_day << "T" <<
+      std::setw(2) << ordinal_rep.m_hour << ":" << std::setw(2) << ordinal_rep.m_min << ":";
+    os.setf(std::ios::fixed);
+    if (ordinal_rep.m_sec < 10.) os << '0';
+    os << std::setprecision(precision) << ordinal_rep.m_sec;
+    return os.str();
   }
 
   datetime_type OrdinalFormat::parse(const std::string & value) const {
-    // TODO: Implement this method.
-    return datetime_type(0, 0.);
-  }
+    // Split the given string to integer and double values.
+    array_type int_array;
+    double dbl_value;
+    DateType date_type = split(value, int_array, dbl_value);
 
-#endif
+    // Check date_type and throw an exception if it is not OrdinalDate.
+    if (date_type != OrdinalDate) throw std::runtime_error("Unable to recognize as an ordinal date format: " + value);
+
+    // Convert the date and time into datetime_type, and return it.
+    Ordinal ordinal_rep(int_array[0], int_array[1], int_array[2], int_array[3], dbl_value);
+    datetime_type datetime(0, 0.);
+    convert(ordinal_rep, datetime);
+    return datetime;
+  }
 
 }
