@@ -2050,6 +2050,137 @@ namespace {
         ") into " << result_os.str() << ", not " << expected_os.str() << " as expected." << std::endl;
     }
 
+    // Create a TimeFormat object using calendar date representation.
+    const TimeFormat & calendar_format = TimeFormat::getFormat("Calendar");
+
+    // Test formatting into string.
+    // Note: Need to specify the number of digits to avoid failing this test due to unimportant rouding errors.
+    std::string expected_calendar_string = "2008-06-17T12:34:56.789";
+    std::string result_calendar_string = calendar_format.format(expected_datetime, 3);
+    if (expected_calendar_string != result_calendar_string) {
+      err() << "Object returned by TimeFormat::getFormat(\"Calendar\") formatted datetime_type pair (" << expected_datetime.first <<
+        ", " << expected_datetime.second << ") into \"" << result_calendar_string << "\", not \"" << expected_calendar_string <<
+        "\" as expected." << std::endl;
+    }
+
+    // Test formatting into string, which should include leading zeros.
+    expected_calendar_string = "2008-06-17T00:00:00.0";
+    result_calendar_string = calendar_format.format(datetime_type(expected_datetime.first, 0.), 1);
+    if (expected_calendar_string != result_calendar_string) {
+      err() << "Object returned by TimeFormat::getFormat(\"Calendar\") formatted datetime_type pair (" << expected_datetime.first <<
+        ", 0.) into \"" << result_calendar_string << "\", not \"" << expected_calendar_string << "\" as expected." << std::endl;
+    }
+
+    // Test parsing a string.
+    expected_calendar_string = "2008-06-17T12:34:56.789";
+    datetime = calendar_format.parse(expected_calendar_string);
+    tolerance = 100.e-9; // 100 nano-seconds.
+    if (expected_datetime.first != datetime.first || tolerance < std::fabs(expected_datetime.second - datetime.second)) {
+      err() << "Object returned by TimeFormat::getFormat(\"Calendar\") parsed \"" << expected_calendar_string <<
+        "\" into datetime_type pair (" << datetime.first << ", " << datetime.second << "), not (" << expected_datetime.first <<
+        ", " << expected_datetime.second << ") as expected." << std::endl;
+    }
+
+    // Create a TimeFormat object using ISO week date representation.
+    const TimeFormat & iso_week_format = TimeFormat::getFormat("IsoWeek");
+
+    // Test formatting into string.
+    // Note: Need to specify the number of digits to avoid failing this test due to unimportant rouding errors.
+    std::string expected_iso_week_string = "2008-W25-2T12:34:56.789";
+    std::string result_iso_week_string = iso_week_format.format(expected_datetime, 3);
+    if (expected_iso_week_string != result_iso_week_string) {
+      err() << "Object returned by TimeFormat::getFormat(\"Iso_Week\") formatted datetime_type pair (" << expected_datetime.first <<
+        ", " << expected_datetime.second << ") into \"" << result_iso_week_string << "\", not \"" << expected_iso_week_string <<
+        "\" as expected." << std::endl;
+    }
+
+    // Test formatting into string, which should include leading zeros.
+    expected_iso_week_string = "2008-W25-2T00:00:00.0";
+    result_iso_week_string = iso_week_format.format(datetime_type(expected_datetime.first, 0.), 1);
+    if (expected_iso_week_string != result_iso_week_string) {
+      err() << "Object returned by TimeFormat::getFormat(\"Iso_Week\") formatted datetime_type pair (" << expected_datetime.first <<
+        ", 0.) into \"" << result_iso_week_string << "\", not \"" << expected_iso_week_string << "\" as expected." << std::endl;
+    }
+
+    // Test parsing a string.
+    expected_iso_week_string = "2008-W25-2T12:34:56.789";
+    datetime = iso_week_format.parse(expected_iso_week_string);
+    tolerance = 100.e-9; // 100 nano-seconds.
+    if (expected_datetime.first != datetime.first || tolerance < std::fabs(expected_datetime.second - datetime.second)) {
+      err() << "Object returned by TimeFormat::getFormat(\"Iso_Week\") parsed \"" << expected_iso_week_string <<
+        "\" into datetime_type pair (" << datetime.first << ", " << datetime.second << "), not (" << expected_datetime.first <<
+        ", " << expected_datetime.second << ") as expected." << std::endl;
+    }
+
+    // Create a TimeFormat object using ordinal date representation.
+    const TimeFormat & ordinal_format = TimeFormat::getFormat("Ordinal");
+
+    // Test formatting into string.
+    // Note: Need to specify the number of digits to avoid failing this test due to unimportant rouding errors.
+    std::string expected_ordinal_string = "2008-169T12:34:56.789";
+    std::string result_ordinal_string = ordinal_format.format(expected_datetime, 3);
+    if (expected_ordinal_string != result_ordinal_string) {
+      err() << "Object returned by TimeFormat::getFormat(\"Ordinal\") formatted datetime_type pair (" << expected_datetime.first <<
+        ", " << expected_datetime.second << ") into \"" << result_ordinal_string << "\", not \"" << expected_ordinal_string <<
+        "\" as expected." << std::endl;
+    }
+
+    // Test formatting into string, which should include leading zeros.
+    expected_ordinal_string = "2008-169T00:00:00.0";
+    result_ordinal_string = ordinal_format.format(datetime_type(expected_datetime.first, 0.), 1);
+    if (expected_ordinal_string != result_ordinal_string) {
+      err() << "Object returned by TimeFormat::getFormat(\"Ordinal\") formatted datetime_type pair (" << expected_datetime.first <<
+        ", 0.) into \"" << result_ordinal_string << "\", not \"" << expected_ordinal_string << "\" as expected." << std::endl;
+    }
+
+    // Test parsing a string.
+    expected_ordinal_string = "2008-169T12:34:56.789";
+    datetime = ordinal_format.parse(expected_ordinal_string);
+    tolerance = 100.e-9; // 100 nano-seconds.
+    if (expected_datetime.first != datetime.first || tolerance < std::fabs(expected_datetime.second - datetime.second)) {
+      err() << "Object returned by TimeFormat::getFormat(\"Ordinal\") parsed \"" << expected_ordinal_string <<
+        "\" into datetime_type pair (" << datetime.first << ", " << datetime.second << "), not (" << expected_datetime.first <<
+        ", " << expected_datetime.second << ") as expected." << std::endl;
+    }
+
+    // Test detections of wrong calendar-like strings to parse.
+    try {
+      calendar_format.parse(expected_iso_week_string);
+      err() << "Object returned by TimeFormat::getFormat(\"Calendar\") did not throw an exception in parsing \"" <<
+        expected_iso_week_string << "\"" << std::endl;
+    } catch (const std::exception &) {
+    } 
+    try {
+      calendar_format.parse(expected_ordinal_string);
+      err() << "Object returned by TimeFormat::getFormat(\"Calendar\") did not throw an exception in parsing \"" <<
+        expected_ordinal_string << "\"" << std::endl;
+    } catch (const std::exception &) {
+    } 
+    try {
+      iso_week_format.parse(expected_calendar_string);
+      err() << "Object returned by TimeFormat::getFormat(\"IsoWeek\") did not throw an exception in parsing \"" <<
+        expected_calendar_string << "\"" << std::endl;
+    } catch (const std::exception &) {
+    }
+    try {
+      iso_week_format.parse(expected_ordinal_string);
+      err() << "Object returned by TimeFormat::getFormat(\"IsoWeek\") did not throw an exception in parsing \"" <<
+        expected_ordinal_string << "\"" << std::endl;
+    } catch (const std::exception &) {
+    } 
+    try {
+      ordinal_format.parse(expected_calendar_string);
+      err() << "Object returned by TimeFormat::getFormat(\"Ordinal\") did not throw an exception in parsing \"" <<
+        expected_calendar_string << "\"" << std::endl;
+    } catch (const std::exception &) {
+    } 
+    try {
+      ordinal_format.parse(expected_iso_week_string);
+      err() << "Object returned by TimeFormat::getFormat(\"Ordinal\") did not throw an exception in parsing \"" <<
+        expected_iso_week_string << "\"" << std::endl;
+    } catch (const std::exception &) {
+    } 
+
     // Test date conversions in year 1995, where the calendar year is not divisible by 4, 100, nor 400.
     TestOneCalendarDate(49776, 1995,  2, 28, 1995,  9, 2,  59);
     TestOneCalendarDate(49777, 1995,  3,  1, 1995,  9, 3,  60);
@@ -2105,8 +2236,6 @@ namespace {
     TestOneCalendarDate(55198, 2010,  1,  2, 2009, 53, 6,   2);
     TestOneCalendarDate(55199, 2010,  1,  3, 2009, 53, 7,   3);
     TestOneCalendarDate(55200, 2010,  1,  4, 2010,  1, 1,   4);
-
-    // TODO: Add tests of formatters and parsers for Calendar, IsoWeek, Ordinal representations.
 
     // Test detections of non-existing month.
     try {
