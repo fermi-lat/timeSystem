@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Mon Jun 23 21:05:23 PDT 2008
+timeSystem/src
+
+Modified Files:
+	MjdFormat.cxx 
+Log Message:
+Set std::ios::fixed before printing an MJD number.
+    *
+------------------------------------------------------------
 User: hirayama  Mon Jun 23 21:04:04 PDT 2008
 timeSystem/src/test
 
