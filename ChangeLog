@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Tue Jun 24 18:24:44 PDT 2008
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Add tests of MjdFormat for leap-second detections.
+    *
+------------------------------------------------------------
 User: hirayama  Tue Jun 24 18:24:22 PDT 2008
 timeSystem/src
 
