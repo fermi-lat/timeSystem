@@ -9,18 +9,20 @@
 
 #include <iomanip>
 #include <sstream>
+#include <stdexcept>
 
 namespace timeSystem {
 
   template <>
   void TimeFormat::convert(const datetime_type & datetime, Mjd & mjd_rep) {
-    if (SecPerDay() < datetime.second) {
-      // During an inserted leap-second.
-      mjd_rep.m_int = datetime.first + 1;
-      mjd_rep.m_frac = 0.;
-    } else {
+    if (datetime.second < SecPerDay()) {
       mjd_rep.m_int = datetime.first;
       mjd_rep.m_frac = datetime.second / SecPerDay();
+    } else {
+      // During an inserted leap-second.
+      std::ostringstream os;
+      os << "Unable to compute an MJD number for the given time: " << datetime.second << " seconds of " << datetime.first << " MJD.";
+      throw std::runtime_error(os.str());
     }
   }
 
