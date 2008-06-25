@@ -1183,14 +1183,11 @@ namespace {
     double mjd_sec_leap = 86400.3;
     abs_time = AbsoluteTime("UTC", mjd_day_leap, mjd_sec_leap);
     result_mjd = Mjd(0, 0.);
-    abs_time.get("UTC", result_mjd);
-    Mjd expected_mjd_leap(mjd_day_leap + 1, 0.);
-    double_tol = 100.e-9 / SecPerDay(); // 100 nano-seconds in days.
-    if (expected_mjd_leap.m_int != result_mjd.m_int
-        || std::fabs(expected_mjd_leap.m_frac - result_mjd.m_frac) > double_tol) {
+    try {
+      abs_time.get("UTC", result_mjd);
       err() << "After abs_time = AbsoluteTime(\"UTC\", " << mjd_day_leap << ", " << mjd_sec_leap <<
-        "), abs_time.get(\"UTC\", result_mjd) gave result_mjd = (" << result_mjd.m_int << ", " << result_mjd.m_frac <<
-        "), not (" << expected_mjd_leap.m_int << ", " << expected_mjd_leap.m_frac << ") as expected." << std::endl;
+        "), abs_time.get(\"UTC\", result_mjd) did not throw an exception." << std::endl;
+    } catch (const std::exception &) {
     }
 
     // Test the getter for high-precision MJD, during an inserted leap second, with a different time system.
@@ -1198,7 +1195,7 @@ namespace {
     result_mjd = Mjd(0, 0.);
     abs_time.get("TAI", result_mjd);
     double tai_minus_utc = 29.;
-    expected_mjd_leap = Mjd(mjd_day_leap + 1, (mjd_sec_leap - SecPerDay() + tai_minus_utc) / SecPerDay());
+    Mjd expected_mjd_leap(mjd_day_leap + 1, (mjd_sec_leap - SecPerDay() + tai_minus_utc) / SecPerDay());
     double_tol = 100.e-9 / SecPerDay(); // 100 nano-seconds in days.
     if (expected_mjd_leap.m_int != result_mjd.m_int
         || std::fabs(expected_mjd_leap.m_frac - result_mjd.m_frac) > double_tol) {
@@ -1210,15 +1207,11 @@ namespace {
     // Test the getter for high-precision MJD, during an inserted leap second, set by a different time system.
     abs_time = AbsoluteTime("TAI", mjd_day_leap + 1, mjd_sec_leap - SecPerDay() + tai_minus_utc);
     result_mjd = Mjd(0, 0.);
-    abs_time.get("UTC", result_mjd);
-    expected_mjd_leap = Mjd(mjd_day_leap + 1, 0.);
-    double_tol = 100.e-9 / SecPerDay(); // 100 nano-seconds in days.
-    if (expected_mjd_leap.m_int != result_mjd.m_int
-        || std::fabs(expected_mjd_leap.m_frac - result_mjd.m_frac) > double_tol) {
+    try {
+      abs_time.get("UTC", result_mjd);
       err() << "After abs_time = AbsoluteTime(\"TAI\", " << mjd_day_leap + 1 << ", " <<
-        mjd_sec_leap - SecPerDay() + tai_minus_utc << "), abs_time.get(\"UTC\", result_mjd) gave result_mjd = (" <<
-        result_mjd.m_int << ", " << result_mjd.m_frac << "), not (" << expected_mjd_leap.m_int << ", " <<
-        expected_mjd_leap.m_frac << ") as expected." << std::endl;
+        mjd_sec_leap - SecPerDay() + tai_minus_utc << "), abs_time.get(\"UTC\", result_mjd) did not throw an exception." << std::endl;
+    } catch (const std::exception &) {
     }
 
     // Test the printer (represent method).
@@ -1239,6 +1232,24 @@ namespace {
       err() << "After abs_time = AbsoluteTime(\"TT\", " << mjd_day << ", " << mjd_sec <<
         "), abs_time.represent(\"TAI\", \"MJD\") returned \"" << result_string << "\", not \"" << expected_string <<
         "\" as expected." << std::endl;
+    }
+
+    // Test detection of exception by the printer (represent method), during an inserted leap second, with UTC system.
+    abs_time = AbsoluteTime("UTC", mjd_day_leap, mjd_sec_leap);
+    try {
+      abs_time.represent("UTC", "MJD");
+      err() << "After abs_time = AbsoluteTime(\"UTC\", " << mjd_day_leap << ", " << mjd_sec_leap <<
+        "), abs_time.represent(\"UTC\", \"MJD\") did not throw an exception." << std::endl;
+    } catch (const std::exception &) {
+    }
+
+    // Test NO detection of exception by the printer (represent method), during an inserted leap second, with a different time system.
+    abs_time = AbsoluteTime("UTC", mjd_day_leap, mjd_sec_leap);
+    try {
+      abs_time.represent("TT", "MJD");
+    } catch (const std::exception &) {
+      err() << "After abs_time = AbsoluteTime(\"TT\", " << mjd_day_leap << ", " << mjd_sec_leap <<
+        "), abs_time.represent(\"TT\", \"MJD\") threw an exception." << std::endl;
     }
 
     // Test the constructor taking a high-precision MJD.
