@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Tue Jun 24 18:24:22 PDT 2008
+timeSystem/src
+
+Modified Files:
+	MjdFormat.cxx 
+Log Message:
+Change to throw an exception for a leap second insersion.
+    *
+------------------------------------------------------------
 User: hirayama  Mon Jun 23 21:05:23 PDT 2008
 timeSystem/src
 
