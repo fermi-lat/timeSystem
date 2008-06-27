@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Fri Jun 27 14:17:14 PDT 2008
+timeSystem/src
+
+Modified Files:
+	MjdFormat.cxx 
+Log Message:
+Improve instance creation of MjdFormat class.
+    *
+------------------------------------------------------------
 User: hirayama  Fri Jun 27 14:17:05 PDT 2008
 timeSystem/timeSystem
 
