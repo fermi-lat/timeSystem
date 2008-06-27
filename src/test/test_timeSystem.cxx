@@ -2082,6 +2082,15 @@ namespace {
         ", 0.) into \"" << result_calendar_string << "\", not \"" << expected_calendar_string << "\" as expected." << std::endl;
     }
 
+    // Test formatting into string, for a leap-second case.
+    expected_calendar_string = "2008-06-17T23:59:60.3";
+    result_calendar_string = calendar_format.format(datetime_type(expected_datetime.first, SecPerDay() + 0.3), 1);
+    if (expected_calendar_string != result_calendar_string) {
+      err() << "Object returned by TimeFormat::getFormat(\"Calendar\") formatted datetime_type pair (" << expected_datetime.first <<
+        ", " << SecPerDay() + 0.3 << ") into \"" << result_calendar_string << "\", not \"" << expected_calendar_string <<
+        "\" as expected." << std::endl;
+    }
+
     // Test parsing a string.
     expected_calendar_string = "2008-06-17T12:34:56.789";
     datetime = calendar_format.parse(expected_calendar_string);
