@@ -340,10 +340,12 @@ namespace timeSystem {
 
     // Compute hours.
     ordinal_rep.m_hour = long(std::floor(datetime.second / SecPerHour()) + 0.5);
+    if (ordinal_rep.m_hour > 23) ordinal_rep.m_hour = 23;
 
     // Compute minutes.
     double residual_seconds = datetime.second - ordinal_rep.m_hour * SecPerHour();
     ordinal_rep.m_min = long(std::floor(residual_seconds / SecPerMin()) + 0.5);
+    if (ordinal_rep.m_min > 59) ordinal_rep.m_min = 59;
 
     // Compute seconds.
     ordinal_rep.m_sec = datetime.second - ordinal_rep.m_hour * SecPerHour() - ordinal_rep.m_min * SecPerMin();
@@ -422,12 +424,6 @@ namespace {
 
       virtual datetime_type parse(const std::string & value) const;
   };
-
-  static const CalendarFormat s_calendar_format;
-
-  static const IsoWeekFormat s_iso_week_format;
-
-  static const OrdinalFormat s_ordinal_format;
 
   Iso8601Format::DateType Iso8601Format::split(const std::string & value, array_type & integer_value, double & double_value) const {
     // Separate date part and time part.
@@ -594,4 +590,26 @@ namespace {
     return datetime;
   }
 
+}
+
+namespace timeSystem {
+
+  namespace CalendarFormatInstance {
+
+    const TimeFormat & createCalendarFormatInstance() {
+      static const CalendarFormat s_calendar_format;
+      return s_calendar_format;
+    }
+
+    const TimeFormat & createIsoWeekFormatInstance() {
+      static const IsoWeekFormat s_iso_week_format;
+      return s_iso_week_format;
+    }
+
+    const TimeFormat & createOrdinalFormatInstance() {
+      static const OrdinalFormat s_ordinal_format;
+      return s_ordinal_format;
+    }
+
+  }
 }
