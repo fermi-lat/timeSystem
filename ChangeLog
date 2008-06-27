@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Fri Jun 27 14:16:10 PDT 2008
+timeSystem/timeSystem
+
+Modified Files:
+	CalendarFormat.h 
+Log Message:
+Improve instance creation of CalendarFormat, IsoWeekFormat, and OrdinalFormat classes.
+    *
+------------------------------------------------------------
 User: hirayama  Fri Jun 27 14:15:48 PDT 2008
 timeSystem/src
 
