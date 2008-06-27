@@ -68,8 +68,6 @@ namespace {
       virtual datetime_type parse(const std::string & value) const;
   };
 
-  static const MjdFormat s_mjd_format;
-
   std::string MjdFormat::format(const datetime_type & value, std::streamsize precision) const {
     Mjd mjd_rep(0, 0.);
     convert(value, mjd_rep);
@@ -87,6 +85,19 @@ namespace {
     datetime_type datetime(0, 0.);
     convert(mjd_rep, datetime);
     return datetime;
+  }
+
+}
+
+namespace timeSystem {
+
+  namespace MjdFormatInstance {
+
+    const TimeFormat & createMjdFormatInstance() {
+      static const MjdFormat s_mjd_format;
+      return s_mjd_format;
+    }
+
   }
 
 }
