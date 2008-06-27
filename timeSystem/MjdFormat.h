@@ -29,7 +29,10 @@ namespace timeSystem {
     double m_day;
   };
 
-  // TODO: Implement struct Jd, Jd1.
+  // TODO: Consider implementing Jd and Jd1, with the following note in mind.
+  // NOTE: One can create Jd and Jd1 struct to represent a Julian Day just like Mjd and Mjd1 above, but leap-second handling
+  //       will be more tricky. Because a leap second is usually inserted at the end of an MJD which is the middle of a Julian Day,
+  //       it will be difficult to unambiguously represent a moment in time in the latter half of the day.
 
   template <>
   void TimeFormat::convert(const datetime_type & datetime, Mjd & mjd_rep);
@@ -42,6 +45,13 @@ namespace timeSystem {
 
   template <>
   void TimeFormat::convert(const Mjd1 & mjd1_rep, datetime_type & datetime);
+
+  namespace MjdFormatInstance {
+
+    const TimeFormat & createMjdFormatInstance();
+    static const TimeFormat & s_mjd_format_instance = createMjdFormatInstance();
+
+  }
 
 }
 
