@@ -74,6 +74,19 @@ namespace timeSystem {
   template <>
   void TimeFormat::convert(const Ordinal & ordinal_rep, datetime_type & datetime);
 
+  namespace CalendarFormatInstance {
+
+    const TimeFormat & createCalendarFormatInstance();
+    static const TimeFormat & s_calendar_format_instance = createCalendarFormatInstance();
+
+    const TimeFormat & createIsoWeekFormatInstance();
+    static const TimeFormat & s_iso_week_format_instance = createIsoWeekFormatInstance();
+
+    const TimeFormat & createOrdinalFormatInstance();
+    static const TimeFormat & s_ordinal_format_instance = createOrdinalFormatInstance();
+
+  }
+
 }
 
 #endif
