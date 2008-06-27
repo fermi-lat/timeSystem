@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Fri Jun 27 14:18:01 PDT 2008
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Add a test of proper representation of a time moment during an inserted leap second.
+    *
+------------------------------------------------------------
 User: hirayama  Fri Jun 27 14:17:14 PDT 2008
 timeSystem/src
 
