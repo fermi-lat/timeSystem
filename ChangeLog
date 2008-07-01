@@ -1,5 +1,17 @@
 ------------------------------------------------------------
 User: hirayama  Mon Jun 30 17:02:21 PDT 2008
+timeSystem/src
+
+Modified Files:
+	AbsoluteTime.cxx BaryTimeComputer.cxx CalendarFormat.cxx 
+	MjdFormat.cxx 
+Removed Files:
+	TimeFormat.cxx 
+Log Message:
+Improve TimeFormat design for robustness.
+    *
+------------------------------------------------------------
+User: hirayama  Mon Jun 30 17:02:21 PDT 2008
 timeSystem/timeSystem
 
 Modified Files:
