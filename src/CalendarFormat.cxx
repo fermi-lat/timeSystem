@@ -239,202 +239,75 @@ namespace {
 
 }
 
-namespace timeSystem {
-
-  template <>
-  void TimeFormat::convert(const datetime_type & datetime, Calendar & calendar_rep) {
-    // Convert to the ordinal date representation.
-    Ordinal ordinal_rep(0, 0, 0, 0, 0.);
-    convert(datetime, ordinal_rep);
-
-    // Conmpute month and date of the ordinal date.
-    const GregorianCalendar & calendar(GregorianCalendar::getCalendar());
-    calendar_rep.m_mon = calendar.findMonth(ordinal_rep.m_year, ordinal_rep.m_day, calendar_rep.m_day);
-
-    // Copy year, hour, minute, and second of the representation to the result.
-    calendar_rep.m_year = ordinal_rep.m_year;
-    calendar_rep.m_hour = ordinal_rep.m_hour;
-    calendar_rep.m_min = ordinal_rep.m_min;
-    calendar_rep.m_sec = ordinal_rep.m_sec;
-  }
-
-  template <>
-  void TimeFormat::convert(const Calendar & calendar_rep, datetime_type & datetime) {
-    // Convert calendar representation to ordinal date representation.
-    const GregorianCalendar & calendar(GregorianCalendar::getCalendar());
-    long ordinal_date = calendar.computeOrdinalDate(calendar_rep.m_year, calendar_rep.m_mon, calendar_rep.m_day);
-    Ordinal ordinal_rep(calendar_rep.m_year, ordinal_date, calendar_rep.m_hour, calendar_rep.m_min, calendar_rep.m_sec);
-
-    // Convert to datetime_type.
-    convert(ordinal_rep, datetime);
-  }
-
-  template <>
-  void TimeFormat::convert(const datetime_type & datetime, IsoWeek & iso_week_rep) {
-    // Convert to the ordinal date representation.
-    Ordinal ordinal_rep(0, 0, 0, 0, 0.);
-    convert(datetime, ordinal_rep);
-
-    // Compute MJD of January 1st of the year.
-    long mjd_jan1 = datetime.first - ordinal_rep.m_day + 1;
-
-    // Compute MJD of the first day of the ISO year that is closest to January 1st of the given year.
-    // Note: The first day of the ISO year is the closest Monday to January 1st of the year.
-    const GregorianCalendar & calendar(GregorianCalendar::getCalendar());
-    long mjd_day1 = calendar.findNearestMonday(mjd_jan1);
-
-    // Compute the first day of the ISO year in which the given date is.
-    if (datetime.first < mjd_day1) {
-      // The first day of the ISO year for the given date is in the previous year.
-      long mjd_jan1_prev = calendar.computeMjd(ordinal_rep.m_year - 1, 1);
-      mjd_day1 = calendar.findNearestMonday(mjd_jan1_prev);
-      iso_week_rep.m_year = ordinal_rep.m_year - 1;
-    } else {
-      // The first day of the ISO year for the given date is in this year.
-      long mjd_jan1_next = calendar.computeMjd(ordinal_rep.m_year + 1, 1);
-      long mjd_day1_next = calendar.findNearestMonday(mjd_jan1_next);
-      if (datetime.first < mjd_day1_next) {
-        // The ISO year for the given date is the same as the calendar year for it.
-        iso_week_rep.m_year = ordinal_rep.m_year;
-      } else {
-        // The ISO year for the given date is the next calendar year.
-        mjd_day1 = mjd_day1_next;
-        iso_week_rep.m_year = ordinal_rep.m_year + 1;
-      }
-    }
-
-    // Compute ISO week number and weekday number.
-    long elapsed_day = datetime.first - mjd_day1;
-    iso_week_rep.m_week = elapsed_day / 7 + 1;
-    iso_week_rep.m_day = elapsed_day % 7 + 1;
-
-    // Copy hour, minute, and second of the representation to the result.
-    iso_week_rep.m_hour = ordinal_rep.m_hour;
-    iso_week_rep.m_min = ordinal_rep.m_min;
-    iso_week_rep.m_sec = ordinal_rep.m_sec;
-  }
-
-  template <>
-  void TimeFormat::convert(const IsoWeek & iso_week_rep, datetime_type & datetime) {
-    // Compute date and time of January 1st of calendar year iso_week_rep.m_year.
-    Ordinal ordinal_rep(iso_week_rep.m_year, 1, iso_week_rep.m_hour, iso_week_rep.m_min, iso_week_rep.m_sec);
-    convert(ordinal_rep, datetime);
-
-    // Add weeks and days to the result MJD.
-    datetime.first += (iso_week_rep.m_week - 1) * 7 + iso_week_rep.m_day - 1;
-
-    // Compute the number of days since January 1st of calendar year iso_week_rep.m_year until ISO year iso_week_rep.m_year.
-    const GregorianCalendar & calendar(GregorianCalendar::getCalendar());
-    long mjd_jan1 = calendar.computeMjd(iso_week_rep.m_year, 1);
-    long mjd_day1 = calendar.findNearestMonday(mjd_jan1);
-
-    // Adjust the difference between calendar year and ISO year.
-    datetime.first += mjd_day1 - mjd_jan1;
-  }
-
-  template <>
-  void TimeFormat::convert(const datetime_type & datetime, Ordinal & ordinal_rep) {
-    // Compute the year and the ordinal date for the given MJD.
-    const GregorianCalendar & calendar(GregorianCalendar::getCalendar());
-    ordinal_rep.m_year = calendar.findYear(datetime.first, ordinal_rep.m_day);
-
-    // Compute hours.
-    ordinal_rep.m_hour = long(std::floor(datetime.second / SecPerHour()) + 0.5);
-    if (ordinal_rep.m_hour > 23) ordinal_rep.m_hour = 23;
-
-    // Compute minutes.
-    double residual_seconds = datetime.second - ordinal_rep.m_hour * SecPerHour();
-    ordinal_rep.m_min = long(std::floor(residual_seconds / SecPerMin()) + 0.5);
-    if (ordinal_rep.m_min > 59) ordinal_rep.m_min = 59;
-
-    // Compute seconds.
-    ordinal_rep.m_sec = datetime.second - ordinal_rep.m_hour * SecPerHour() - ordinal_rep.m_min * SecPerMin();
-  }
-
-  template <>
-  void TimeFormat::convert(const Ordinal & ordinal_rep, datetime_type & datetime) {
-    // Compute an integer part of MJD from the given year and the ordinal date.
-    const GregorianCalendar & calendar(GregorianCalendar::getCalendar());
-    datetime.first = calendar.computeMjd(ordinal_rep.m_year, ordinal_rep.m_day);
-
-    // Compute the number of seconds since the beginning of the day.
-    datetime.second = ordinal_rep.m_hour * SecPerHour() + ordinal_rep.m_min * SecPerMin() + ordinal_rep.m_sec;
-  }
-
-}
-
 namespace {
 
   using namespace timeSystem;
 
-  /** \class Iso8601Format
-      \brief Helper class to help CalendarFormat, IsoWeekFormat, and OrdinalFormat classes parse a date-and-time string.
-             Note that this class does NOT cover all possible combinations of date and time representations defined by
+  /** \function parseIso8601Format
+      \brief Helper function to help CalendarFormat, IsoWeekFormat, and OrdinalFormat classes parse a date-and-time string.
+             Note that this function does NOT cover all possible combinations of date and time representations defined by
              the ISO 8601 standard. It interprets only the extended format, and requires all values (i.e., it does not
              allow omission of any value in the given string.
   */
-  class Iso8601Format : public TimeFormat {
-    public:
-      typedef std::vector<long> array_type;
-      enum DateType { CalendarDate, IsoWeekDate, OrdinalDate, UnsupportedDate };
-
-      virtual std::string format(const datetime_type & value, std::streamsize precision = std::numeric_limits<double>::digits10)
-        const = 0;
-
-      virtual datetime_type parse(const std::string & value) const = 0;
-
-    protected:
-      Iso8601Format(const std::string & format_name): TimeFormat(format_name) {}
-
-      DateType split(const std::string & value, array_type & integer_value, double & double_value) const;
-  };
+  typedef std::vector<long> array_type;
+  enum DateType { CalendarDate, IsoWeekDate, OrdinalDate, UnsupportedDate };
+  DateType parseIso8601Format(const std::string & time_string, array_type & integer_value, double & double_value);
 
   /** \class CalendarFormat
       \brief Class to represent a calendar format of time representation.
   */
-  class CalendarFormat : public Iso8601Format {
+  class CalendarFormat : public TimeFormat<Calendar> {
     public:
-      CalendarFormat(): Iso8601Format("Calendar") {}
+      virtual void convert(const datetime_type & datetime, Calendar & time_rep) const;
 
-      virtual std::string format(const datetime_type & value, std::streamsize precision = std::numeric_limits<double>::digits10) const;
+      virtual void convert(const Calendar & time_rep, datetime_type & datetime) const;
 
-      virtual datetime_type parse(const std::string & value) const;
+      virtual datetime_type parse(const std::string & time_string) const;
+
+      virtual std::string format(const datetime_type & time_string, std::streamsize precision = std::numeric_limits<double>::digits10)
+        const;
   };
 
   /** \class IsoWeekFormat
       \brief Class to represent ISO week date and time format of time representation.
   */
-  class IsoWeekFormat : public Iso8601Format {
+  class IsoWeekFormat : public TimeFormat<IsoWeek> {
     public:
-      IsoWeekFormat(): Iso8601Format("IsoWeek") {}
+      virtual void convert(const datetime_type & datetime, IsoWeek & time_rep) const;
 
-      virtual std::string format(const datetime_type & value, std::streamsize precision = std::numeric_limits<double>::digits10) const;
+      virtual void convert(const IsoWeek & time_rep, datetime_type & datetime) const;
 
-      virtual datetime_type parse(const std::string & value) const;
+      virtual datetime_type parse(const std::string & time_string) const;
+
+      virtual std::string format(const datetime_type & time_string, std::streamsize precision = std::numeric_limits<double>::digits10)
+        const;
   };
 
   /** \class OrdinalFormat
       \brief Class to represent an ordinal date and time of time representation.
   */
-  class OrdinalFormat : public Iso8601Format {
+  class OrdinalFormat : public TimeFormat<Ordinal> {
     public:
-      OrdinalFormat(): Iso8601Format("Ordinal") {}
+      virtual void convert(const datetime_type & datetime, Ordinal & time_rep) const;
 
-      virtual std::string format(const datetime_type & value, std::streamsize precision = std::numeric_limits<double>::digits10) const;
+      virtual void convert(const Ordinal & time_rep, datetime_type & datetime) const;
 
-      virtual datetime_type parse(const std::string & value) const;
+      virtual datetime_type parse(const std::string & time_string) const;
+
+      virtual std::string format(const datetime_type & time_string, std::streamsize precision = std::numeric_limits<double>::digits10)
+        const;
   };
 
-  Iso8601Format::DateType Iso8601Format::split(const std::string & value, array_type & integer_value, double & double_value) const {
+  DateType parseIso8601Format(const std::string & time_string, array_type & integer_value, double & double_value) {
     // Separate date part and time part.
-    std::string::size_type pos_sep = value.find('T');
+    std::string::size_type pos_sep = time_string.find('T');
     std::string date_part;
     std::string time_part;
     if (pos_sep != std::string::npos) {
-      date_part = value.substr(0, pos_sep);
-      time_part = value.substr(pos_sep + 1);
+      date_part = time_string.substr(0, pos_sep);
+      time_part = time_string.substr(pos_sep + 1);
     } else {
-      throw std::runtime_error("Missing separator (\"T\") between date and time: " + value);
+      throw std::runtime_error("Missing separator (\"T\") between date and time: " + time_string);
     }
 
     // Split the date part into year, month, and day fields.
@@ -484,7 +357,7 @@ namespace {
       std::istringstream iss(*itor);
       long long_variable = 0;
       iss >> long_variable;
-      if (iss.fail() || !iss.eof()) throw std::runtime_error("Cannot interpret \"" + *itor + "\" in parsing \"" + value + "\"");
+      if (iss.fail() || !iss.eof()) throw std::runtime_error("Cannot interpret \"" + *itor + "\" in parsing \"" + time_string + "\"");
       integer_value.push_back(long_variable);
     }
 
@@ -493,7 +366,9 @@ namespace {
       std::istringstream iss(sec_field);
       double double_variable = 0.;
       iss >> double_variable;
-      if (iss.fail() || !iss.eof()) throw std::runtime_error("Cannot interpret \"" + sec_field + "\" in parsing \"" + value + "\"");
+      if (iss.fail() || !iss.eof()) {
+        throw std::runtime_error("Cannot interpret \"" + sec_field + "\" in parsing \"" + time_string + "\"");
+      }
       double_value = double_variable;
     }
 
@@ -501,9 +376,53 @@ namespace {
     return date_type;
   }
 
-  std::string CalendarFormat::format(const datetime_type & value, std::streamsize precision) const {
+  void CalendarFormat::convert(const datetime_type & datetime, Calendar & calendar_rep) const {
+    // Convert to the ordinal date representation.
+    const TimeFormat<Ordinal> & ordinal_format(TimeFormatFactory<Ordinal>::getFormat());
+    Ordinal ordinal_rep(0, 0, 0, 0, 0.);
+    ordinal_format.convert(datetime, ordinal_rep);
+
+    // Conmpute month and date of the ordinal date.
+    const GregorianCalendar & calendar(GregorianCalendar::getCalendar());
+    calendar_rep.m_mon = calendar.findMonth(ordinal_rep.m_year, ordinal_rep.m_day, calendar_rep.m_day);
+
+    // Copy year, hour, minute, and second of the representation to the result.
+    calendar_rep.m_year = ordinal_rep.m_year;
+    calendar_rep.m_hour = ordinal_rep.m_hour;
+    calendar_rep.m_min = ordinal_rep.m_min;
+    calendar_rep.m_sec = ordinal_rep.m_sec;
+  }
+
+  void CalendarFormat::convert(const Calendar & calendar_rep, datetime_type & datetime) const {
+    // Convert calendar representation to ordinal date representation.
+    const GregorianCalendar & calendar(GregorianCalendar::getCalendar());
+    long ordinal_date = calendar.computeOrdinalDate(calendar_rep.m_year, calendar_rep.m_mon, calendar_rep.m_day);
+    Ordinal ordinal_rep(calendar_rep.m_year, ordinal_date, calendar_rep.m_hour, calendar_rep.m_min, calendar_rep.m_sec);
+
+    // Convert to datetime_type.
+    const TimeFormat<Ordinal> & ordinal_format(TimeFormatFactory<Ordinal>::getFormat());
+    ordinal_format.convert(ordinal_rep, datetime);
+  }
+
+  datetime_type CalendarFormat::parse(const std::string & time_string) const {
+    // Split the given string to integer and double values.
+    array_type int_array;
+    double dbl_value;
+    DateType date_type = parseIso8601Format(time_string, int_array, dbl_value);
+
+    // Check date_type and throw an exception if it is not CalendarDate.
+    if (date_type != CalendarDate) throw std::runtime_error("Unable to recognize as a calendar date format: " + time_string);
+
+    // Convert the date and time into datetime_type, and return it.
+    Calendar calendar_rep(int_array[0], int_array[1], int_array[2], int_array[3], int_array[4], dbl_value);
+    datetime_type datetime(0, 0.);
+    convert(calendar_rep, datetime);
+    return datetime;
+  }
+
+  std::string CalendarFormat::format(const datetime_type & time_string, std::streamsize precision) const {
     Calendar calendar_rep(0, 0, 0, 0, 0, 0.);
-    convert(value, calendar_rep);
+    convert(time_string, calendar_rep);
 
     std::ostringstream os;
     os << std::setfill('0') << std::setw(4) << calendar_rep.m_year << "-" << std::setw(2) << calendar_rep.m_mon << "-" <<
@@ -515,25 +434,88 @@ namespace {
     return os.str();
   }
 
-  datetime_type CalendarFormat::parse(const std::string & value) const {
+  void IsoWeekFormat::convert(const datetime_type & datetime, IsoWeek & iso_week_rep) const {
+    // Convert to the ordinal date representation.
+    const TimeFormat<Ordinal> & ordinal_format(TimeFormatFactory<Ordinal>::getFormat());
+    Ordinal ordinal_rep(0, 0, 0, 0, 0.);
+    ordinal_format.convert(datetime, ordinal_rep);
+
+    // Compute MJD of January 1st of the year.
+    long mjd_jan1 = datetime.first - ordinal_rep.m_day + 1;
+
+    // Compute MJD of the first day of the ISO year that is closest to January 1st of the given year.
+    // Note: The first day of the ISO year is the closest Monday to January 1st of the year.
+    const GregorianCalendar & calendar(GregorianCalendar::getCalendar());
+    long mjd_day1 = calendar.findNearestMonday(mjd_jan1);
+
+    // Compute the first day of the ISO year in which the given date is.
+    if (datetime.first < mjd_day1) {
+      // The first day of the ISO year for the given date is in the previous year.
+      long mjd_jan1_prev = calendar.computeMjd(ordinal_rep.m_year - 1, 1);
+      mjd_day1 = calendar.findNearestMonday(mjd_jan1_prev);
+      iso_week_rep.m_year = ordinal_rep.m_year - 1;
+    } else {
+      // The first day of the ISO year for the given date is in this year.
+      long mjd_jan1_next = calendar.computeMjd(ordinal_rep.m_year + 1, 1);
+      long mjd_day1_next = calendar.findNearestMonday(mjd_jan1_next);
+      if (datetime.first < mjd_day1_next) {
+        // The ISO year for the given date is the same as the calendar year for it.
+        iso_week_rep.m_year = ordinal_rep.m_year;
+      } else {
+        // The ISO year for the given date is the next calendar year.
+        mjd_day1 = mjd_day1_next;
+        iso_week_rep.m_year = ordinal_rep.m_year + 1;
+      }
+    }
+
+    // Compute ISO week number and weekday number.
+    long elapsed_day = datetime.first - mjd_day1;
+    iso_week_rep.m_week = elapsed_day / 7 + 1;
+    iso_week_rep.m_day = elapsed_day % 7 + 1;
+
+    // Copy hour, minute, and second of the representation to the result.
+    iso_week_rep.m_hour = ordinal_rep.m_hour;
+    iso_week_rep.m_min = ordinal_rep.m_min;
+    iso_week_rep.m_sec = ordinal_rep.m_sec;
+  }
+
+  void IsoWeekFormat::convert(const IsoWeek & iso_week_rep, datetime_type & datetime) const {
+    // Compute date and time of January 1st of calendar year iso_week_rep.m_year.
+    const TimeFormat<Ordinal> & ordinal_format(TimeFormatFactory<Ordinal>::getFormat());
+    Ordinal ordinal_rep(iso_week_rep.m_year, 1, iso_week_rep.m_hour, iso_week_rep.m_min, iso_week_rep.m_sec);
+    ordinal_format.convert(ordinal_rep, datetime);
+
+    // Add weeks and days to the result MJD.
+    datetime.first += (iso_week_rep.m_week - 1) * 7 + iso_week_rep.m_day - 1;
+
+    // Compute the number of days since January 1st of calendar year iso_week_rep.m_year until ISO year iso_week_rep.m_year.
+    const GregorianCalendar & calendar(GregorianCalendar::getCalendar());
+    long mjd_jan1 = calendar.computeMjd(iso_week_rep.m_year, 1);
+    long mjd_day1 = calendar.findNearestMonday(mjd_jan1);
+
+    // Adjust the difference between calendar year and ISO year.
+    datetime.first += mjd_day1 - mjd_jan1;
+  }
+
+  datetime_type IsoWeekFormat::parse(const std::string & time_string) const {
     // Split the given string to integer and double values.
     array_type int_array;
     double dbl_value;
-    DateType date_type = split(value, int_array, dbl_value);
+    DateType date_type = parseIso8601Format(time_string, int_array, dbl_value);
 
-    // Check date_type and throw an exception if it is not CalendarDate.
-    if (date_type != CalendarDate) throw std::runtime_error("Unable to recognize as a calendar date format: " + value);
+    // Check date_type and throw an exception if it is not IsoWeekDate.
+    if (date_type != IsoWeekDate) throw std::runtime_error("Unable to recognize as an ISO week date format: " + time_string);
 
     // Convert the date and time into datetime_type, and return it.
-    Calendar calendar_rep(int_array[0], int_array[1], int_array[2], int_array[3], int_array[4], dbl_value);
+    IsoWeek iso_week_rep(int_array[0], int_array[1], int_array[2], int_array[3], int_array[4], dbl_value);
     datetime_type datetime(0, 0.);
-    convert(calendar_rep, datetime);
+    convert(iso_week_rep, datetime);
     return datetime;
   }
 
-  std::string IsoWeekFormat::format(const datetime_type & value, std::streamsize precision) const {
+  std::string IsoWeekFormat::format(const datetime_type & time_string, std::streamsize precision) const {
     IsoWeek iso_week_rep(0, 0, 0, 0, 0, 0.);
-    convert(value, iso_week_rep);
+    convert(time_string, iso_week_rep);
 
     std::ostringstream os;
     os << std::setfill('0') << std::setw(4) << iso_week_rep.m_year << "-W" << std::setw(2) << iso_week_rep.m_week << "-" <<
@@ -545,25 +527,52 @@ namespace {
     return os.str();
   }
 
-  datetime_type IsoWeekFormat::parse(const std::string & value) const {
+  void OrdinalFormat::convert(const datetime_type & datetime, Ordinal & ordinal_rep) const {
+    // Compute the year and the ordinal date for the given MJD.
+    const GregorianCalendar & calendar(GregorianCalendar::getCalendar());
+    ordinal_rep.m_year = calendar.findYear(datetime.first, ordinal_rep.m_day);
+
+    // Compute hours.
+    ordinal_rep.m_hour = long(std::floor(datetime.second / SecPerHour()) + 0.5);
+    if (ordinal_rep.m_hour > 23) ordinal_rep.m_hour = 23;
+
+    // Compute minutes.
+    double residual_seconds = datetime.second - ordinal_rep.m_hour * SecPerHour();
+    ordinal_rep.m_min = long(std::floor(residual_seconds / SecPerMin()) + 0.5);
+    if (ordinal_rep.m_min > 59) ordinal_rep.m_min = 59;
+
+    // Compute seconds.
+    ordinal_rep.m_sec = datetime.second - ordinal_rep.m_hour * SecPerHour() - ordinal_rep.m_min * SecPerMin();
+  }
+
+  void OrdinalFormat::convert(const Ordinal & ordinal_rep, datetime_type & datetime) const {
+    // Compute an integer part of MJD from the given year and the ordinal date.
+    const GregorianCalendar & calendar(GregorianCalendar::getCalendar());
+    datetime.first = calendar.computeMjd(ordinal_rep.m_year, ordinal_rep.m_day);
+
+    // Compute the number of seconds since the beginning of the day.
+    datetime.second = ordinal_rep.m_hour * SecPerHour() + ordinal_rep.m_min * SecPerMin() + ordinal_rep.m_sec;
+  }
+
+  datetime_type OrdinalFormat::parse(const std::string & time_string) const {
     // Split the given string to integer and double values.
     array_type int_array;
     double dbl_value;
-    DateType date_type = split(value, int_array, dbl_value);
+    DateType date_type = parseIso8601Format(time_string, int_array, dbl_value);
 
-    // Check date_type and throw an exception if it is not IsoWeekDate.
-    if (date_type != IsoWeekDate) throw std::runtime_error("Unable to recognize as an ISO week date format: " + value);
+    // Check date_type and throw an exception if it is not OrdinalDate.
+    if (date_type != OrdinalDate) throw std::runtime_error("Unable to recognize as an ordinal date format: " + time_string);
 
     // Convert the date and time into datetime_type, and return it.
-    IsoWeek iso_week_rep(int_array[0], int_array[1], int_array[2], int_array[3], int_array[4], dbl_value);
+    Ordinal ordinal_rep(int_array[0], int_array[1], int_array[2], int_array[3], dbl_value);
     datetime_type datetime(0, 0.);
-    convert(iso_week_rep, datetime);
+    convert(ordinal_rep, datetime);
     return datetime;
   }
 
-  std::string OrdinalFormat::format(const datetime_type & value, std::streamsize precision) const {
+  std::string OrdinalFormat::format(const datetime_type & time_string, std::streamsize precision) const {
     Ordinal ordinal_rep(0, 0, 0, 0, 0.);
-    convert(value, ordinal_rep);
+    convert(time_string, ordinal_rep);
 
     std::ostringstream os;
     os << std::setfill('0') << std::setw(4) << ordinal_rep.m_year << "-" << std::setw(3) << ordinal_rep.m_day << "T" <<
@@ -574,42 +583,23 @@ namespace {
     return os.str();
   }
 
-  datetime_type OrdinalFormat::parse(const std::string & value) const {
-    // Split the given string to integer and double values.
-    array_type int_array;
-    double dbl_value;
-    DateType date_type = split(value, int_array, dbl_value);
-
-    // Check date_type and throw an exception if it is not OrdinalDate.
-    if (date_type != OrdinalDate) throw std::runtime_error("Unable to recognize as an ordinal date format: " + value);
-
-    // Convert the date and time into datetime_type, and return it.
-    Ordinal ordinal_rep(int_array[0], int_array[1], int_array[2], int_array[3], dbl_value);
-    datetime_type datetime(0, 0.);
-    convert(ordinal_rep, datetime);
-    return datetime;
-  }
-
 }
 
 namespace timeSystem {
 
-  namespace CalendarFormatInstance {
-
-    const TimeFormat & createCalendarFormatInstance() {
-      static const CalendarFormat s_calendar_format;
-      return s_calendar_format;
-    }
-
-    const TimeFormat & createIsoWeekFormatInstance() {
-      static const IsoWeekFormat s_iso_week_format;
-      return s_iso_week_format;
-    }
-
-    const TimeFormat & createOrdinalFormatInstance() {
-      static const OrdinalFormat s_ordinal_format;
-      return s_ordinal_format;
-    }
-
+  const TimeFormat<Calendar> & TimeFormatFactory<Calendar>::getFormat() {
+    static const CalendarFormat s_calendar_format;
+    return s_calendar_format;
   }
+
+  const TimeFormat<IsoWeek> & TimeFormatFactory<IsoWeek>::getFormat() {
+    static const IsoWeekFormat s_iso_week_format;
+    return s_iso_week_format;
+  }
+
+  const TimeFormat<Ordinal> & TimeFormatFactory<Ordinal>::getFormat() {
+    static const OrdinalFormat s_ordinal_format;
+    return s_ordinal_format;
+  }
+
 }
