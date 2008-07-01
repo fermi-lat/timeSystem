@@ -22,22 +22,6 @@ namespace timeSystem {
     m_time_system(&TimeSystem::getSystem(time_system_name)), m_moment(mjd_day, Duration(mjd_sec, "Sec")) {
   }
 
-  void AbsoluteTime::set(const std::string & time_system_name, const std::string & time_format_name, const std::string & time_string) {
-    m_time_system = &TimeSystem::getSystem(time_system_name);
-    const TimeFormat & time_format = TimeFormat::getFormat(time_format_name);
-    datetime_type datetime = time_format.parse(time_string);
-    m_moment = moment_type(datetime.first, Duration(datetime.second, "Sec"));
-  }
-
-  std::string AbsoluteTime::represent(const std::string & time_system_name, const std::string & time_format_name,
-    std::streamsize precision) const {
-    const TimeSystem & time_system(TimeSystem::getSystem(time_system_name));
-    moment_type moment = time_system.convertFrom(*m_time_system, m_moment);
-    datetime_type datetime = time_system.computeDateTime(moment);
-    const TimeFormat & time_format = TimeFormat::getFormat(time_format_name);
-    return time_format.format(datetime, precision) + " (" + time_system.getName() + ")";
-  }
-
   AbsoluteTime AbsoluteTime::operator +(const ElapsedTime & elapsed_time) const { return elapsed_time + *this; }
 
   AbsoluteTime AbsoluteTime::operator -(const ElapsedTime & elapsed_time) const { return -elapsed_time + *this; }

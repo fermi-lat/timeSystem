@@ -6,9 +6,7 @@
 #ifndef timeSystem_CalendarFormat_h
 #define timeSystem_CalendarFormat_h
 
-#include "timeSystem/IntFracPair.h"
 #include "timeSystem/TimeFormat.h"
-#include "timeSystem/TimeSystem.h"
 
 #include <limits>
 #include <string>
@@ -57,35 +55,28 @@ namespace timeSystem {
   };
 
   template <>
-  void TimeFormat::convert(const datetime_type & datetime, Calendar & calendar_rep);
+  class TimeFormatFactory<Calendar> {
+    public:
+      static const TimeFormat<Calendar> & getFormat();
+  };
 
   template <>
-  void TimeFormat::convert(const Calendar & calendar_rep, datetime_type & datetime);
+  class TimeFormatFactory<IsoWeek> {
+    public:
+      static const TimeFormat<IsoWeek> & getFormat();
+  };
 
   template <>
-  void TimeFormat::convert(const datetime_type & datetime, IsoWeek & iso_week_rep);
+  class TimeFormatFactory<Ordinal> {
+    public:
+      static const TimeFormat<Ordinal> & getFormat();
+  };
 
-  template <>
-  void TimeFormat::convert(const IsoWeek & iso_week_rep, datetime_type & datetime);
+  static const TimeFormat<Calendar> & CalendarFmt(TimeFormatFactory<Calendar>::getFormat());
 
-  template <>
-  void TimeFormat::convert(const datetime_type & datetime, Ordinal & ordinal_rep);
+  static const TimeFormat<IsoWeek> & IsoWeekFmt(TimeFormatFactory<IsoWeek>::getFormat());
 
-  template <>
-  void TimeFormat::convert(const Ordinal & ordinal_rep, datetime_type & datetime);
-
-  namespace CalendarFormatInstance {
-
-    const TimeFormat & createCalendarFormatInstance();
-    static const TimeFormat & s_calendar_format_instance = createCalendarFormatInstance();
-
-    const TimeFormat & createIsoWeekFormatInstance();
-    static const TimeFormat & s_iso_week_format_instance = createIsoWeekFormatInstance();
-
-    const TimeFormat & createOrdinalFormatInstance();
-    static const TimeFormat & s_ordinal_format_instance = createOrdinalFormatInstance();
-
-  }
+  static const TimeFormat<Ordinal> & OrdinalFmt(TimeFormatFactory<Ordinal>::getFormat());
 
 }
 

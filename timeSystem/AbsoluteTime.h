@@ -41,9 +41,11 @@ namespace timeSystem {
       template <typename TimeRepType>
       void set(const std::string & time_system_name, const TimeRepType & time_rep);
 
-      void set(const std::string & time_system_name, const std::string & time_format_name, const std::string & time_string);
+      template <typename TimeRepType>
+      void set(const std::string & time_system_name, const TimeFormat<TimeRepType> & time_format, const std::string & time_string);
 
-      std::string represent(const std::string & time_system_name, const std::string & time_format_name,
+      template <typename TimeRepType>
+      std::string represent(const std::string & time_system_name, const TimeFormat<TimeRepType> & time_format,
         std::streamsize precision = std::numeric_limits<double>::digits10) const;
 
       AbsoluteTime operator +(const ElapsedTime & elapsed_time) const;
@@ -86,18 +88,49 @@ namespace timeSystem {
 
   template <typename TimeRepType>
   inline void AbsoluteTime::get(const std::string & time_system_name, TimeRepType & time_rep) const {
+    // Convert time systems.
     const TimeSystem & time_system(TimeSystem::getSystem(time_system_name));
     moment_type moment = time_system.convertFrom(*m_time_system, m_moment);
+
+    // Convert time formats.
+    const TimeFormat<TimeRepType> & time_format = TimeFormatFactory<TimeRepType>::getFormat();
     datetime_type datetime = time_system.computeDateTime(moment);
-    TimeFormat::convert(datetime, time_rep);
+    time_format.convert(datetime, time_rep);
   }
 
   template <typename TimeRepType>
   inline void AbsoluteTime::set(const std::string & time_system_name, const TimeRepType & time_rep) {
+    // Set time system.
     m_time_system = &TimeSystem::getSystem(time_system_name);
+
+    // Convert time formats.
+    const TimeFormat<TimeRepType> & time_format = TimeFormatFactory<TimeRepType>::getFormat();
     datetime_type datetime(0, 0.);
-    TimeFormat::convert(time_rep, datetime);
+    time_format.convert(time_rep, datetime);
     m_moment = moment_type(datetime.first, Duration(datetime.second, "Sec"));
+  }
+
+  template <typename TimeRepType>
+  void AbsoluteTime::set(const std::string & time_system_name, const TimeFormat<TimeRepType> & time_format,
+    const std::string & time_string) {
+    // Set time system.
+    m_time_system = &TimeSystem::getSystem(time_system_name);
+
+    // Parse time string.
+    datetime_type datetime = time_format.parse(time_string);
+    m_moment = moment_type(datetime.first, Duration(datetime.second, "Sec"));
+  }
+
+  template <typename TimeRepType>
+  std::string AbsoluteTime::represent(const std::string & time_system_name, const TimeFormat<TimeRepType> & time_format,
+    std::streamsize precision) const {
+    // Convert time systems.
+    const TimeSystem & time_system(TimeSystem::getSystem(time_system_name));
+    moment_type moment = time_system.convertFrom(*m_time_system, m_moment);
+
+    // Format the time into a character string.
+    datetime_type datetime = time_system.computeDateTime(moment);
+    return time_format.format(datetime, precision) + " (" + time_system.getName() + ")";
   }
 
   template <typename StreamType>

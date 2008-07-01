@@ -18,40 +18,32 @@ namespace timeSystem {
   /** \class TimeFormat
       \brief Base class to represent time format, such as MJD and Calender Day of ISO 8601.
   */
+  template <typename TimeRepType>
   class TimeFormat {
     public:
-      virtual ~TimeFormat();
+      virtual ~TimeFormat() {}
 
-      static const TimeFormat & getFormat(const std::string & format_name);
+      virtual void convert(const datetime_type & datetime, TimeRepType & time_rep) const = 0;
 
-      virtual std::string format(const datetime_type & value, std::streamsize precision = std::numeric_limits<double>::digits10) const = 0;
+      virtual void convert(const TimeRepType & time_rep, datetime_type & datetime) const = 0;
 
-      virtual datetime_type parse(const std::string & value) const = 0;
+      virtual datetime_type parse(const std::string & time_string) const = 0;
 
-      template <typename TimeRepType>
-      static void convert(const datetime_type & datetime, TimeRepType & time_rep);
-
-      template <typename TimeRepType>
-      static void convert(const TimeRepType & time_rep, datetime_type & datetime);
-
-    protected:
-      typedef std::map<std::string, TimeFormat *> container_type;
-
-      static container_type & getContainer();
-
-      TimeFormat(const std::string & format_name);
+      virtual std::string format(const datetime_type & time_string, std::streamsize precision = std::numeric_limits<double>::digits10)
+        const = 0;
   };
 
+  /** \class TimeFormatFactory
+      \brief Class to create an instance of a concrete TimeFormat subclass. A concrete factory should be implemented
+             for each time representation via template specialization.
+  */
   template <typename TimeRepType>
-  void TimeFormat::convert(const datetime_type & /* datetime */, TimeRepType & /* time_rep */) {
-    throw std::runtime_error("Unsupported time representation requested for time format conversion");
-  }
-
-  template <typename TimeRepType>
-  void TimeFormat::convert(const TimeRepType & /* time_rep */, datetime_type & /* datetime */) {
-    throw std::runtime_error("Unsupported time representation requested for time format conversion");
-  }
-
+  class TimeFormatFactory {
+    public:
+      static const TimeFormat<TimeRepType> & getFormat() {
+        throw std::runtime_error("Time format not supported for the requested time representation");
+      }
+  };
 }
 
 #endif

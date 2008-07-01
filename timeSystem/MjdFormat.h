@@ -7,7 +7,6 @@
 #define timeSystem_MjdFormat_h
 
 #include "timeSystem/TimeFormat.h"
-#include "timeSystem/TimeSystem.h"
 
 namespace timeSystem {
 
@@ -35,23 +34,20 @@ namespace timeSystem {
   //       it will be difficult to unambiguously represent a moment in time in the latter half of the day.
 
   template <>
-  void TimeFormat::convert(const datetime_type & datetime, Mjd & mjd_rep);
+  class TimeFormatFactory<Mjd> {
+    public:
+      static const TimeFormat<Mjd> & getFormat();
+  };
 
   template <>
-  void TimeFormat::convert(const datetime_type & datetime, Mjd1 & mjd1_rep);
+  class TimeFormatFactory<Mjd1> {
+    public:
+      static const TimeFormat<Mjd1> & getFormat();
+  };
 
-  template <>
-  void TimeFormat::convert(const Mjd & mjd_rep, datetime_type & datetime);
+  static const TimeFormat<Mjd> & MjdFmt(TimeFormatFactory<Mjd>::getFormat());
 
-  template <>
-  void TimeFormat::convert(const Mjd1 & mjd1_rep, datetime_type & datetime);
-
-  namespace MjdFormatInstance {
-
-    const TimeFormat & createMjdFormatInstance();
-    static const TimeFormat & s_mjd_format_instance = createMjdFormatInstance();
-
-  }
+  static const TimeFormat<Mjd1> & Mjd1Fmt(TimeFormatFactory<Mjd1>::getFormat());
 
 }
 

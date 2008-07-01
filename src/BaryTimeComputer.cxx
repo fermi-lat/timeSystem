@@ -89,7 +89,7 @@ namespace timeSystem {
     eposn = dpleph(jdt, iearth, isun);
     if (NULL == eposn) {
       std::ostringstream os;
-      os << "Could not find solar system ephemeris for " << abs_time.represent("TT", "MJD") << ".";
+      os << "Could not find solar system ephemeris for " << abs_time.represent("TT", MjdFmt) << ".";
       throw std::runtime_error(os.str());
     }
 
