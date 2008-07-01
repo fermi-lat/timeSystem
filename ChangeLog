@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Mon Jun 30 17:02:21 PDT 2008
+timeSystem/timeSystem
+
+Modified Files:
+	AbsoluteTime.h CalendarFormat.h MjdFormat.h TimeFormat.h 
+Log Message:
+Improve TimeFormat design for robustness.
+    *
+------------------------------------------------------------
 User: hirayama  Fri Jun 27 14:18:01 PDT 2008
 timeSystem/src/test
 
