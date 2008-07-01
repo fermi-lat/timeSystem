@@ -1,5 +1,14 @@
 ------------------------------------------------------------
 User: hirayama  Mon Jun 30 17:02:21 PDT 2008
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Improve TimeFormat design for robustness.
+    *
+------------------------------------------------------------
+User: hirayama  Mon Jun 30 17:02:21 PDT 2008
 timeSystem/src
 
 Modified Files:
