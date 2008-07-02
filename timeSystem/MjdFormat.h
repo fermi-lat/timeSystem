@@ -24,7 +24,7 @@ namespace timeSystem {
       \brief Class to hold an MJD number in one double-precision variable.
   */
   struct Mjd1 {
-    Mjd1(double day): m_day(day) {}
+    explicit Mjd1(double day): m_day(day) {}
     double m_day;
   };
 
