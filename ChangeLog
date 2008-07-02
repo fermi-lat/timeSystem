@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Wed Jul  2 00:52:52 PDT 2008
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Changes for new TimeFormat design.
+    *
+------------------------------------------------------------
 User: hirayama  Wed Jul  2 00:52:06 PDT 2008
 timeSystem/src
 
