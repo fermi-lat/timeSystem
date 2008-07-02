@@ -23,13 +23,13 @@ namespace timeSystem {
     public:
       virtual ~TimeFormat() {}
 
-      virtual void convert(const datetime_type & datetime, TimeRepType & time_rep) const = 0;
+      virtual TimeRepType convert(const datetime_type & datetime) const = 0;
 
-      virtual void convert(const TimeRepType & time_rep, datetime_type & datetime) const = 0;
+      virtual datetime_type convert(const TimeRepType & time_rep) const = 0;
 
-      virtual datetime_type parse(const std::string & time_string) const = 0;
+      virtual TimeRepType parse(const std::string & time_string) const = 0;
 
-      virtual std::string format(const datetime_type & time_string, std::streamsize precision = std::numeric_limits<double>::digits10)
+      virtual std::string format(const TimeRepType & time_rep, std::streamsize precision = std::numeric_limits<double>::digits10)
         const = 0;
   };
 
