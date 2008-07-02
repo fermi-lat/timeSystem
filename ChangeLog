@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Wed Jul  2 00:52:06 PDT 2008
+timeSystem/src
+
+Modified Files:
+	MjdFormat.cxx CalendarFormat.cxx 
+Log Message:
+Improve TimeFormat design for simplicity and convenience.
+    *
+------------------------------------------------------------
 User: hirayama  Wed Jul  2 00:52:05 PDT 2008
 timeSystem/timeSystem
 
