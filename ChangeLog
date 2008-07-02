@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Wed Jul  2 00:55:03 PDT 2008
+timeSystem/src
+
+Modified Files:
+	BaryTimeComputer.cxx TimeSystem.cxx 
+Log Message:
+Remove inclusion of IntFracPair.h (not used).
+    *
+------------------------------------------------------------
 User: hirayama  Wed Jul  2 00:53:55 PDT 2008
 timeSystem/timeSystem
 
