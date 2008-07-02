@@ -95,7 +95,7 @@ namespace timeSystem {
     // Convert time formats.
     const TimeFormat<TimeRepType> & time_format = TimeFormatFactory<TimeRepType>::getFormat();
     datetime_type datetime = time_system.computeDateTime(moment);
-    time_format.convert(datetime, time_rep);
+    time_rep = time_format.convert(datetime);
   }
 
   template <typename TimeRepType>
@@ -105,8 +105,7 @@ namespace timeSystem {
 
     // Convert time formats.
     const TimeFormat<TimeRepType> & time_format = TimeFormatFactory<TimeRepType>::getFormat();
-    datetime_type datetime(0, 0.);
-    time_format.convert(time_rep, datetime);
+    datetime_type datetime = time_format.convert(time_rep);
     m_moment = moment_type(datetime.first, Duration(datetime.second, "Sec"));
   }
 
@@ -117,7 +116,7 @@ namespace timeSystem {
     m_time_system = &TimeSystem::getSystem(time_system_name);
 
     // Parse time string.
-    datetime_type datetime = time_format.parse(time_string);
+    datetime_type datetime = time_format.convert(time_format.parse(time_string));
     m_moment = moment_type(datetime.first, Duration(datetime.second, "Sec"));
   }
 
@@ -130,7 +129,7 @@ namespace timeSystem {
 
     // Format the time into a character string.
     datetime_type datetime = time_system.computeDateTime(moment);
-    return time_format.format(datetime, precision) + " (" + time_system.getName() + ")";
+    return time_format.format(time_format.convert(datetime), precision) + " (" + time_system.getName() + ")";
   }
 
   template <typename StreamType>
