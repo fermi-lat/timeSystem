@@ -1,5 +1,14 @@
 ------------------------------------------------------------
 User: hirayama  Thu Jul  3 11:23:46 PDT 2008
+timeSystem/src
+
+Removed Files:
+	IntFracPair.cxx 
+Log Message:
+Remove IntFracPair class.
+    *
+------------------------------------------------------------
+User: hirayama  Thu Jul  3 11:23:46 PDT 2008
 timeSystem/timeSystem
 
 Removed Files:
