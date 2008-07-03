@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Thu Jul  3 11:23:05 PDT 2008
+timeSystem/src
+
+Modified Files:
+	EventTimeHandler.cxx GlastTimeHandler.cxx MjdFormat.cxx 
+Log Message:
+Remove IntFracPair class.
+    *
+------------------------------------------------------------
 User: hirayama  Wed Jul  2 22:11:21 PDT 2008
 timeSystem/src/test
 
