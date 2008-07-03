@@ -7,8 +7,8 @@
 
 #include "timeSystem/AbsoluteTime.h"
 #include "timeSystem/BaryTimeComputer.h"
-#include "timeSystem/IntFracPair.h"
 #include "timeSystem/MjdFormat.h"
+#include "timeSystem/TimeFormat.h"
 
 #include "tip/IFileSvc.h"
 
@@ -238,14 +238,18 @@ namespace timeSystem {
 
     // Look for MJDREF keyword next.
     if (!found_mjd_ref) {
+      // Get the keyword value as a string to preserve its precision.
+      std::string mjd_ref_string;
       try {
-        double mjd_ref_dbl = 0.;
-        header["MJDREF"].get(mjd_ref_dbl);
-        IntFracPair mjd_ref_int_frac(mjd_ref_dbl);
-        mjd_ref.m_int = mjd_ref_int_frac.getIntegerPart();
-        mjd_ref.m_frac = mjd_ref_int_frac.getFractionalPart();
+        header["MJDREF"].get(mjd_ref_string);
         found_mjd_ref = true;
       } catch (const std::exception &) {}
+
+      // Parse the keyword value when found.
+      if (found_mjd_ref) {
+        const TimeFormat<Mjd> & mjd_format(TimeFormatFactory<Mjd>::getFormat());
+        mjd_ref = mjd_format.parse(mjd_ref_string);
+      }
     }
 
     // Throw an exception if none of above succeeds.

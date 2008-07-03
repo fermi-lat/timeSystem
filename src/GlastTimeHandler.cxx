@@ -7,7 +7,6 @@
 
 #include "timeSystem/AbsoluteTime.h"
 #include "timeSystem/ElapsedTime.h"
-#include "timeSystem/IntFracPair.h"
 
 #include "tip/IFileSvc.h"
 
@@ -62,10 +61,13 @@ namespace timeSystem {
     if ("FILE" == time_system_rat) time_system_rat = m_time_system->getName();
 
     // Parse time string into an absolute time, and return it.
-    IntFracPair time_value(time_string);
-    long time_int = time_value.getIntegerPart();
-    double time_frac = time_value.getFractionalPart();
-    return AbsoluteTime(time_system_rat, m_mjd_ref) + ElapsedTime(time_system_rat, Duration(time_int, time_frac, "Sec"));
+    std::istringstream iss(time_string);
+    double time_double = 0.;
+    iss >> time_double;
+    if (iss.fail() || !iss.eof()) throw std::runtime_error("Cannot interpret \"" + time_string + "\" as a GLAST event time");
+
+    // Create and return the time.
+    return AbsoluteTime(time_system_rat, m_mjd_ref) + ElapsedTime(time_system_rat, Duration(time_double, "Sec"));
   }
 
   EventTimeHandler * GlastTimeHandler::createInstance(const std::string & file_name, const std::string & extension_name,

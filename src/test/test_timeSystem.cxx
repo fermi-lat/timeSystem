@@ -18,7 +18,6 @@
 #include "timeSystem/ElapsedTime.h"
 #include "timeSystem/EventTimeHandler.h"
 #include "timeSystem/GlastTimeHandler.h"
-#include "timeSystem/IntFracPair.h"
 #include "timeSystem/MjdFormat.h"
 #include "timeSystem/TimeInterval.h"
 #include "timeSystem/TimeFormat.h"
@@ -43,8 +42,6 @@ namespace {
   void TestAbsoluteTime();
 
   void TestElapsedTime();
-
-  void TestIntFracPair();
 
   void TestTimeInterval();
 
@@ -84,9 +81,6 @@ void TestTimeSystemApp::run() {
 
   // Test ElapsedTime class.
   TestElapsedTime();
-
-  // Test IntFracPair class.
-  TestIntFracPair();
 
   // Test TimeInterval class.
   TestTimeInterval();
@@ -1513,199 +1507,6 @@ namespace {
         "(int_part, frac_part) = (" <<  returned_int << ", " << returned_frac << "), not equivalent to (" << expected_int <<
         ", " << expected_frac << ") with tolerance of " << tolerance_dbl << "." << std::endl;
     }
-  }
-
-  static void CompareIntFracPair(const std::string & hint, const IntFracPair & value, long expected_int_part, double expected_frac_part) {
-    if (expected_int_part != value.getIntegerPart()) {
-      err() << hint << ", integer part of the IntFracPair object was " <<
-        value.getIntegerPart() << ", not " << expected_int_part << " as expected." << std::endl;
-    }
-
-    double epsilon = std::numeric_limits<double>::epsilon() * 10.;
-    if (epsilon < std::fabs(expected_frac_part - value.getFractionalPart())) {
-      err() << hint << ", fractional part of the IntFracPair object was " <<
-        value.getFractionalPart() << ", not " << expected_frac_part << " as expected." << std::endl;
-    }
-  }
-
-  void TestIntFracPair() {
-    s_os.setMethod("TestIntFracPair");
-
-    // Construction a test object.
-    IntFracPair int_frac;
-
-    // Setup string stream for error message.
-    std::ostringstream os;
-    os.precision(s_os.err().precision());
-    std::string context;
-
-    // Test construction from a pair of long and double.
-    long int_part = 100;
-    double frac_part = .56789567895678956789;
-    os << int_part << ", " << frac_part;
-    context = os.str();
-    os.str("");
-
-    int_frac = IntFracPair(int_part, frac_part);
-    CompareIntFracPair("After int_frac = IntFracPair(" + context + ")", int_frac, int_part, frac_part);
-
-    // Test construction from a double, making sure the separate int and fractional parts are as expected.
-    double dval = 56789.56789567895678956789;
-    int_part = 56789;
-    frac_part = .567895678900000;
-    os << "dval = " << dval;
-    context = os.str();
-    os.str("");
-
-    int_frac = IntFracPair(dval);
-    CompareIntFracPair("After int_frac = IntFracPair(" + context + ")", int_frac, int_part, frac_part);
-
-    // Test construction from a std::string, making sure the separate int and fractional parts are as expected.
-    std::string sval = "00050089.56789567895678956789";
-    int_part = 50089;
-    frac_part = .56789567895678900000;
-    os << "sval = \"" << sval << "\"";
-    context = os.str();
-    os.str("");
-
-    int_frac = IntFracPair(sval);
-    CompareIntFracPair("After int_frac = IntFracPair(" + context + ")", int_frac, int_part, frac_part);
-
-    sval = "  +1e+3  ";
-    int_part = 1000;
-    frac_part = 0.;
-    os << "sval = \"" << sval << "\"";
-    context = os.str();
-    os.str("");
-    int_frac = IntFracPair(sval);
-    CompareIntFracPair("After int_frac = IntFracPair(" + context + ")", int_frac, int_part, frac_part);
-
-    sval = "  -2e+3";
-    int_part = -2000;
-    frac_part = 0.;
-    os << "sval = \"" << sval << "\"";
-    context = os.str();
-    os.str("");
-    int_frac = IntFracPair(sval);
-    CompareIntFracPair("After int_frac = IntFracPair(" + context + ")", int_frac, int_part, frac_part);
-
-    sval = "3e+3  ";
-    int_part = 3000;
-    frac_part = 0.;
-    os << "sval = \"" << sval << "\"";
-    context = os.str();
-    os.str("");
-    int_frac = IntFracPair(sval);
-    CompareIntFracPair("After int_frac = IntFracPair(" + context + ")", int_frac, int_part, frac_part);
-
-    // Test errors resulting from bad fractional parts.
-    try {
-      IntFracPair(+1, -0.1);
-      err() << "IntFracPair constructor did not throw an exception for IntFracPair(+1, -0.1)" << std::endl;
-    } catch (const std::exception & x) {
-    }
-    try {
-      IntFracPair(+1, +1.0);
-      err() << "IntFracPair constructor did not throw an exception for IntFracPair(+1, +1.0)" << std::endl;
-    } catch (const std::exception & x) {
-    }
-    try {
-      IntFracPair(-1, +0.1);
-      err() << "IntFracPair constructor did not throw an exception for IntFracPair(-1, +0.1)" << std::endl;
-    } catch (const std::exception & x) {
-    }
-    try {
-      IntFracPair(-1, -1.0);
-      err() << "IntFracPair constructor did not throw an exception for IntFracPair(-1, -1.0)" << std::endl;
-    } catch (const std::exception & x) {
-    }
-    try {
-      IntFracPair(0, +1.0);
-      err() << "IntFracPair constructor did not throw an exception for IntFracPair(0, +1.0)" << std::endl;
-    } catch (const std::exception & x) {
-    }
-    try {
-      IntFracPair(0, -1.0);
-      err() << "IntFracPair constructor did not throw an exception for IntFracPair(0, -1.0)" << std::endl;
-    } catch (const std::exception & x) {
-    }
-
-    // Test errors resulting from single number conversions when they overflow or underflow.
-    double large_number = std::numeric_limits<long>::max() + .4;
-    double small_number = std::numeric_limits<long>::min() - .4;
-    double overflow_number = std::numeric_limits<long>::max() + 1.1;
-    double underflow_number = std::numeric_limits<long>::min() - 1.1;
-    try {
-      int_frac = IntFracPair(large_number);
-    } catch (const std::exception & x) {
-      err() << "IntFracPair constructor threw an exception for IntFracPair(" << large_number << "): " << x.what() << std::endl;
-    }
-    try {
-      int_frac = IntFracPair(small_number);
-    } catch (const std::exception & x) {
-      err() << "IntFracPair constructor threw an exception for IntFracPair(" << small_number << "): " << x.what() << std::endl;
-    }
-    try {
-      int_frac = IntFracPair(overflow_number);
-      err() << "IntFracPair constructor did not throw an exception for IntFracPair(" << overflow_number << ")" << std::endl;
-    } catch (const std::exception & x) {
-    }
-    try {
-      int_frac = IntFracPair(underflow_number);
-      err() << "IntFracPair constructor did not throw an exception for IntFracPair(" << underflow_number << ")" << std::endl;
-    } catch (const std::exception & x) {
-    }
-
-    // Test errors resulting from bad string conversions.
-    try {
-      sval = "! 1.e6";
-      int_frac = IntFracPair(sval);
-      err() << "IntFracPair(\"" << sval << "\") did not throw exception." << std::endl;
-    } catch (const std::exception &) {
-      // That's good.
-    }
-
-    try {
-      sval = "1.e6 0";
-      int_frac = IntFracPair(sval);
-      err() << "IntFracPair(\"" << sval << "\") did not throw exception." << std::endl;
-    } catch (const std::exception &) {
-      // That's good.
-    }
-
-    try {
-      sval = "1..e6";
-      int_frac = IntFracPair(sval);
-      err() << "IntFracPair(\"" << sval << "\") did not throw exception." << std::endl;
-    } catch (const std::exception &) {
-      // That's good.
-    }
-
-    try {
-      sval = "1 + 6";
-      int_frac = IntFracPair(sval);
-      err() << "IntFracPair(\"" << sval << "\") did not throw exception." << std::endl;
-    } catch (const std::exception &) {
-      // That's good.
-    }
-
-    try {
-      sval = "0. 0.";
-      int_frac = IntFracPair(sval);
-      err() << "IntFracPair(\"" << sval << "\") did not throw exception." << std::endl;
-    } catch (const std::exception &) {
-      // That's good.
-    }
-
-    // Test getDouble method.
-    int_frac = IntFracPair(125, .0123456789012345);
-    int_part = int_frac.getIntegerPart();
-    frac_part = int_frac.getFractionalPart();
-    dval = int_frac.getDouble();
-    double dval_expected = int_part + frac_part;
-
-    if (dval != dval_expected)
-      err() << "getDouble returned " << dval << ", not " << dval_expected << ", as expected." << std::endl;
   }
 
   void TestTimeInterval() {
