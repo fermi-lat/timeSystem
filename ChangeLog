@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Wed Jul  2 22:11:21 PDT 2008
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Change error messages in TestTimeFormat function for clarity.
+    *
+------------------------------------------------------------
 User: hirayama  Wed Jul  2 00:55:03 PDT 2008
 timeSystem/src
 
