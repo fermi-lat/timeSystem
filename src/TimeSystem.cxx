@@ -6,7 +6,9 @@
 #include "st_facilities/Env.h"
 
 #include "timeSystem/Duration.h"
+#include "timeSystem/MjdFormat.h"
 #include "timeSystem/TimeConstant.h"
+#include "timeSystem/TimeFormat.h"
 #include "timeSystem/TimeSystem.h"
 
 #include "tip/IFileSvc.h"
@@ -119,13 +121,12 @@ namespace {
 
   // Note: Keep computeTdbMinusTt method global, so that TdbSystem and TtSystem can call it.
   Duration computeTdbMinusTt(const datetime_type & datetime) {
-    static const long jd_minus_mjd_int = 2400000;
-    static const double jd_minus_mjd_frac = .5;
+    // Convert the time to JD number.
+    const TimeFormat<Jd> & jd_format(TimeFormatFactory<Jd>::getFormat());
+    Jd jd_rep = jd_format.convert(datetime);
 
-    long jd_int = datetime.first + jd_minus_mjd_int;
-    double jd_frac = datetime.second / SecPerDay() + jd_minus_mjd_frac;
-
-    return Duration(ctatv(jd_int, jd_frac), "Sec");
+    // Compute the difference and return it.
+    return Duration(ctatv(jd_rep.m_int, jd_rep.m_frac), "Sec");
   }
 
   moment_type TdbSystem::convertFrom(const TimeSystem & time_system, const moment_type & moment) const {
