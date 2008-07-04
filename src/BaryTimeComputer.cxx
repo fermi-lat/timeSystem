@@ -75,11 +75,9 @@ namespace timeSystem {
     }
 
     // Set given time to a variable to pass to dpleph C-function.
-    double jdt[2];
-    Mjd mjd(0, 0.);
-    abs_time.get("TT", mjd);
-    jdt[0] = mjd.m_int + 2400001;
-    jdt[1] = mjd.m_frac - 0.5;
+    Jd jd_rep(0, 0.);
+    abs_time.get("TT", jd_rep);
+    double jdt[2] = { jd_rep.m_int, jd_rep.m_frac };
 
     // Read solar system ephemeris for the given time.
     const int iearth = 3;
