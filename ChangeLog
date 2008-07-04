@@ -1,5 +1,14 @@
 ------------------------------------------------------------
 User: hirayama  Thu Jul  3 18:18:42 PDT 2008
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Add support of JD.
+    *
+------------------------------------------------------------
+User: hirayama  Thu Jul  3 18:18:42 PDT 2008
 timeSystem/src
 
 Modified Files:
