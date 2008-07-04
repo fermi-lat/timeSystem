@@ -1640,12 +1640,23 @@ namespace {
   void TestTimeFormat() {
     s_os.setMethod("TestTimeFormat");
 
+    // Test detecting unsupported time representations.
+    try {
+      TimeFormatFactory<NoSuchTimeRep>::getFormat();
+      err() << "TimeFormatFactory<NoSuchTimeRep>::getFormat() did not throw an exception." << std::endl;
+    } catch (const std::exception &) {
+    }
+
     // Prepare test parameters for Mjd and Mjd1 classes.
     const TimeFormat<Mjd> & mjd_format(TimeFormatFactory<Mjd>::getFormat());
     const TimeFormat<Mjd1> & mjd1_format(TimeFormatFactory<Mjd1>::getFormat());
-    datetime_type expected_datetime(51910, 64.814);
+    const TimeFormat<Jd> & jd_format(TimeFormatFactory<Jd>::getFormat());
+    const TimeFormat<Jd1> & jd1_format(TimeFormatFactory<Jd1>::getFormat());
+    datetime_type expected_datetime(51910, 64.814 + SecPerDay() / 2);
     Mjd expected_mjd(expected_datetime.first, expected_datetime.second / SecPerDay());
     Mjd1 expected_mjd1(expected_mjd.m_int + expected_mjd.m_frac);
+    Jd expected_jd(expected_mjd.m_int + 2400001, expected_mjd.m_frac - 0.5);
+    Jd1 expected_jd1(expected_jd.m_int + expected_jd.m_frac);
 
     // Test conversion from an Mjd object (that holds integer part and fractional part of MJD) to a datetime_type object.
     datetime_type datetime = mjd_format.convert(expected_mjd);
@@ -1661,6 +1672,24 @@ namespace {
     tolerance = 10.e-6; // 10 micro-seconds.
     if (expected_datetime.first != datetime.first || tolerance < std::fabs(expected_datetime.second - datetime.second)) {
       err() << "TimeFormat<Mjd>::convert method converted " << expected_mjd1.m_day << " MJD into datetime_type pair (" <<
+        datetime.first << ", " << datetime.second << "), not (" << expected_datetime.first << ", " << expected_datetime.second <<
+        ") as expected." << std::endl;
+    }
+
+    // Test conversion from an Jd object (that holds integer part and fractional part of JD) to a datetime_type object.
+    datetime = jd_format.convert(expected_jd);
+    tolerance = 100.e-9; // 100 nano-seconds.
+    if (expected_datetime.first != datetime.first || tolerance < std::fabs(expected_datetime.second - datetime.second)) {
+      err() << "TimeFormat<Jd>::convert method converted (" << expected_jd.m_int << " + " << expected_jd.m_frac <<
+        ") JD into datetime_type pair (" << datetime.first << ", " << datetime.second << "), not (" <<
+        expected_datetime.first << ", " << expected_datetime.second << ") as expected." << std::endl;
+    }
+
+    // Test conversion from an Jd1 object (that holds a single JD number of double type) to a datetime_type object.
+    datetime = jd_format.convert(expected_jd);
+    tolerance = 10.e-6; // 10 micro-seconds.
+    if (expected_datetime.first != datetime.first || tolerance < std::fabs(expected_datetime.second - datetime.second)) {
+      err() << "TimeFormat<Jd>::convert method converted " << expected_jd1.m_day << " JD into datetime_type pair (" <<
         datetime.first << ", " << datetime.second << "), not (" << expected_datetime.first << ", " << expected_datetime.second <<
         ") as expected." << std::endl;
     }
@@ -1683,8 +1712,26 @@ namespace {
         std::endl;
     }
 
+    // Test conversion from a datetime_type object to an Jd object (that holds integer part and fractional part of JD).
+    Jd result_jd = jd_format.convert(expected_datetime);
+    tolerance = 100.e-9 / SecPerDay(); // 100 nano-seconds in units of day.
+    if (expected_jd.m_int != result_jd.m_int || tolerance < std::fabs(expected_jd.m_frac - result_jd.m_frac)) {
+      err() << "TimeFormat<Jd>::convert method converted datetime_type pair (" << expected_datetime.first << ", " <<
+        expected_datetime.second << ") into (" << result_jd.m_int << " + " << result_jd.m_frac << ") JD, not (" <<
+        expected_jd.m_int << " + " << expected_jd.m_frac << ") JD as expected." << std::endl;
+    }
+
+    // Test conversion from a datetime_type object to an Jd1 object (that holds a single JD number of double type).
+    Jd1 result_jd1 = jd1_format.convert(expected_datetime);
+    tolerance = 100.e-9 / SecPerDay(); // 100 nano-seconds in units of day.
+    if (tolerance < std::fabs(expected_jd1.m_day - result_jd1.m_day)) {
+      err() << "TimeFormat<Jd1>::convert method converted datetime_type pair (" << expected_datetime.first << ", " <<
+        expected_datetime.second << ") into " << result_jd1.m_day << " JD, not " << expected_jd1.m_day << " JD as expected." <<
+        std::endl;
+    }
+
     // Test formatting into string with a TimeFormat<Mjd> object.
-    std::string test_mjd_string = "51910.000750162037037";
+    std::string test_mjd_string = "51910.500750162037037";
     std::string expected_mjd_string = test_mjd_string + " MJD";
     std::string result_mjd_string = mjd_format.format(expected_mjd);
     if (expected_mjd_string != result_mjd_string) {
@@ -1693,7 +1740,7 @@ namespace {
     }
 
     // Test formatting into string with a TimeFormat<Mjd> object, with decimal precision specified.
-    expected_mjd_string = "51910.0007502 MJD";
+    expected_mjd_string = "51910.5007502 MJD";
     result_mjd_string = mjd_format.format(expected_mjd, 7);
     if (expected_mjd_string != result_mjd_string) {
       err() << "TimeFormat<Mjd>::format method formatted (" << expected_mjd.m_int << " + " << expected_mjd.m_frac << ") MJD into \"" <<
@@ -1710,7 +1757,7 @@ namespace {
 
     // Test formatting into string with a TimeFormat<Mjd1> object, with decimal precision specified.
     // Note: Need to specify the number of digits to avoid failing this test due to unimportant rouding errors.
-    expected_mjd_string = "51910.0007502 MJD";
+    expected_mjd_string = "51910.5007502 MJD";
     result_mjd_string = mjd1_format.format(expected_mjd1, 7);
     if (expected_mjd_string != result_mjd_string) {
       err() << "TimeFormat<Mjd1>::format method formatted " << expected_mjd1.m_day << " MJD into \"" << result_mjd_string <<
@@ -1725,11 +1772,46 @@ namespace {
         expected_mjd1.m_day << " MJD as expected." << std::endl;
     }
 
-    // Test detecting unsupported time representations.
-    try {
-      TimeFormatFactory<NoSuchTimeRep>::getFormat();
-      err() << "TimeFormatFactory<NoSuchTimeRep>::getFormat() did not throw an exception." << std::endl;
-    } catch (const std::exception &) {
+    // Test formatting into string with a TimeFormat<Jd> object.
+    std::string test_jd_string = "2451911.000750162037037";
+    std::string expected_jd_string = test_jd_string + " JD";
+    std::string result_jd_string = jd_format.format(expected_jd);
+    if (expected_jd_string != result_jd_string) {
+      err() << "TimeFormat<Jd>::format method formatted (" << expected_jd.m_int << " + " << expected_jd.m_frac << ") JD into \"" <<
+        result_jd_string << "\", not \"" << expected_jd_string << "\" as expected." << std::endl;
+    }
+
+    // Test formatting into string with a TimeFormat<Jd> object, with decimal precision specified.
+    expected_jd_string = "2451911.0007502 JD";
+    result_jd_string = jd_format.format(expected_jd, 7);
+    if (expected_jd_string != result_jd_string) {
+      err() << "TimeFormat<Jd>::format method formatted (" << expected_jd.m_int << " + " << expected_jd.m_frac << ") JD into \"" <<
+        result_jd_string << "\", not \"" << expected_jd_string << "\" as expected." << std::endl;
+    }
+
+    // Test parsing a string with a TimeFormat<Jd> object.
+    result_jd = jd_format.parse(test_jd_string);
+    tolerance = 100.e-9 / SecPerDay(); // 100 nano-seconds in units of day.
+    if (expected_jd.m_int != result_jd.m_int || tolerance < std::fabs(expected_jd.m_frac - result_jd.m_frac)) {
+      err() << "TimeFormat<Jd>::parse method parsed \"" << test_jd_string << "\" into (" << result_jd.m_int << " + " <<
+        result_jd.m_frac << ") JD, not (" << expected_jd.m_int << " + " << expected_jd.m_frac << ") JD as expected." << std::endl;
+    }
+
+    // Test formatting into string with a TimeFormat<Jd1> object, with decimal precision specified.
+    // Note: Need to specify the number of digits to avoid failing this test due to unimportant rouding errors.
+    expected_jd_string = "2451911.0007502 JD";
+    result_jd_string = jd1_format.format(expected_jd1, 7);
+    if (expected_jd_string != result_jd_string) {
+      err() << "TimeFormat<Jd1>::format method formatted " << expected_jd1.m_day << " JD into \"" << result_jd_string <<
+        "\", not \"" << expected_jd_string << "\" as expected." << std::endl;
+    }
+
+    // Test parsing a string with a TimeFormat<Jd1> object.
+    result_jd1 = jd1_format.parse(test_jd_string);
+    tolerance = 10.e-6 / SecPerDay(); // 10 micro-seconds in units of day.
+    if (tolerance < std::fabs(expected_jd1.m_day - result_jd1.m_day)) {
+      err() << "TimeFormat<Jd1>::parse method parsed \"" << test_jd_string << "\" into " << result_jd1.m_day << " JD, not " <<
+        expected_jd1.m_day << " JD as expected." << std::endl;
     }
 
     // Prepare test parameters for Calendar, IsoWeek, and Ordinal classes.
