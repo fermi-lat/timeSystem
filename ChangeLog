@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Thu Jul  3 21:14:53 PDT 2008
+timeSystem/src
+
+Modified Files:
+	BaryTimeComputer.cxx TimeSystem.cxx 
+Log Message:
+Use Jd class, instead of hard-coded numbers like 2400000.
+    *
+------------------------------------------------------------
 User: hirayama  Thu Jul  3 18:18:42 PDT 2008
 timeSystem/src/test
 
