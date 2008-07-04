@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Thu Jul  3 18:18:41 PDT 2008
+timeSystem/timeSystem
+
+Modified Files:
+	MjdFormat.h 
+Log Message:
+Add support of JD.
+    *
+------------------------------------------------------------
 User: hirayama  Thu Jul  3 11:23:46 PDT 2008
 timeSystem/src
 
