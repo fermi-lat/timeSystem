@@ -448,6 +448,7 @@ namespace timeSystem {
     long elapsed_int = 0;
     double elapsed_frac = 0.;
     elapsed_total.get("Day", elapsed_int, elapsed_frac);
+    if (elapsed_frac < 0.) --elapsed_int;
     Duration elapsed_residual = elapsed_total - Duration(elapsed_int, "Day");
     double elapsed_sec = elapsed_residual.get("Sec");
 
