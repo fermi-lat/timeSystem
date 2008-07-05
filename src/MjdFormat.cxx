@@ -153,6 +153,11 @@ namespace {
   }
 
   std::string IntFracUtility::format(long int_part, double frac_part, std::streamsize precision) const {
+    // Check the fractional part.
+    const IntFracUtility & utility(IntFracUtility::getUtility());
+    utility.check(int_part, frac_part);
+
+    // Prepare a stream to store a string.
     std::ostringstream os;
     os.precision(precision);
     os.setf(std::ios::fixed);
@@ -209,7 +214,7 @@ namespace {
 
   Mjd MjdFormat::convert(const datetime_type & datetime) const {
     // Check whether the second part is in bounds.
-    if (datetime.second >= SecPerDay()) {
+    if (datetime.second < 0. || datetime.second >= SecPerDay()) {
       // During an inserted leap-second.
       std::ostringstream os;
       os << "Unable to compute an MJD number for the given time: " << datetime.second << " seconds of " << datetime.first << " MJD.";
