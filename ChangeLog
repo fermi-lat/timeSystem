@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Sat Jul  5 13:20:09 PDT 2008
+timeSystem/src
+
+Modified Files:
+	TimeSystem.cxx 
+Log Message:
+Fix a bug in computeDateTime method that reported a nagative time part.
+    *
+------------------------------------------------------------
 User: hirayama  Sat Jul  5 13:18:38 PDT 2008
 timeSystem/src
 
