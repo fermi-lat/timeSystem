@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Sat Jul  5 13:21:09 PDT 2008
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Add tests of detections of bad MJD/JD inputs. Add a test that reveals the bug in TimeSystem::computeDateTime method that reported a negative time part.
+    *
+------------------------------------------------------------
 User: hirayama  Sat Jul  5 13:20:09 PDT 2008
 timeSystem/src
 
