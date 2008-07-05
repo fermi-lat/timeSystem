@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Sat Jul  5 13:18:38 PDT 2008
+timeSystem/src
+
+Modified Files:
+	MjdFormat.cxx 
+Log Message:
+Improve input parameter checking.
+    *
+------------------------------------------------------------
 User: hirayama  Thu Jul  3 21:14:53 PDT 2008
 timeSystem/src
 
