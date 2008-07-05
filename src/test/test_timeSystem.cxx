@@ -944,10 +944,13 @@ namespace {
     // Non-existing time in UTC
     // Note: As of May 29th, 2008, the design doesn't allow/need this test due to the improved robustness.
 
-    // Test computeAdvancedTime method.
+    // Test computeDateTime method.
     double deltat = 20.;
     // Middle of nowhere
     TestOneDateTimeComputation(moment_type(51910, Duration(0, 100.)), datetime_type(51910, 100.), datetime_type(51910, 100.));
+    // Middle of nowhere, with a negative elapsed time
+    TestOneDateTimeComputation(moment_type(51910, Duration(0, -100.)),
+       datetime_type(51909, SecPerDay() - 100.), datetime_type(51909, SecPerDay() - 100.));
     // Across leap second insertion in UTC
     TestOneDateTimeComputation(moment_type(leap2 - 1, Duration(1, deltat - 10.)),
       datetime_type(leap2, deltat - 10.), datetime_type(leap2, deltat - 10. - 1.));
@@ -1812,6 +1815,158 @@ namespace {
     if (tolerance < std::fabs(expected_jd1.m_day - result_jd1.m_day)) {
       err() << "TimeFormat<Jd1>::parse method parsed \"" << test_jd_string << "\" into " << result_jd1.m_day << " JD, not " <<
         expected_jd1.m_day << " JD as expected." << std::endl;
+    }
+
+    // Test detections of bad times of the day.
+    try {
+      mjd_format.convert(datetime_type(51910, -0.001));
+      err() << "TimeFormat<Mjd>::convert method did not throw an exception for a bad time of the day: -0.001" << std::endl;
+    } catch (const std::exception &) {
+    }
+    try {
+      mjd_format.convert(datetime_type(51910, SecPerDay() + 0.001));
+      err() << "TimeFormat<Mjd>::convert method did not throw an exception for a bad time of the day: " << SecPerDay() + 0.001 <<
+        std::endl;
+    } catch (const std::exception &) {
+    }
+    try {
+      jd_format.convert(datetime_type(51910, -0.001));
+      err() << "TimeFormat<Jd>::convert method did not throw an exception for a bad time of the day: -0.001" << std::endl;
+    } catch (const std::exception &) {
+    }
+    try {
+      jd_format.convert(datetime_type(51910, SecPerDay() + 0.001));
+      err() << "TimeFormat<Jd>::convert method did not throw an exception for a bad time of the day: " << SecPerDay() + 0.001 <<
+        std::endl;
+    } catch (const std::exception &) {
+    }
+
+    // Test detections of bad MJD numbers in conversions.
+    try {
+      mjd_format.convert(Mjd(+1, -.001));
+      err() << "TimeFormat<Mjd>::convert method did not throw an exception for Mjd(+1, -0.001)" << std::endl;
+    } catch (const std::exception &) {
+    }
+    try {
+      mjd_format.convert(Mjd(+1, +1.));
+      err() << "TimeFormat<Mjd>::convert method did not throw an exception for Mjd(+1, +1.)" << std::endl;
+    } catch (const std::exception &) {
+    }
+    try {
+      mjd_format.convert(Mjd(0, +1.));
+      err() << "TimeFormat<Mjd>::convert method did not throw an exception for Mjd(0, +1.)" << std::endl;
+    } catch (const std::exception &) {
+    }
+    try {
+      mjd_format.convert(Mjd(0, -1.));
+      err() << "TimeFormat<Mjd>::convert method did not throw an exception for Mjd(0, -1.)" << std::endl;
+    } catch (const std::exception &) {
+    }
+    try {
+      mjd_format.convert(Mjd(-1, +.001));
+      err() << "TimeFormat<Mjd>::convert method did not throw an exception for Mjd(+1, +0.001)" << std::endl;
+    } catch (const std::exception &) {
+    }
+    try {
+      mjd_format.convert(Mjd(-1, -1.));
+      err() << "TimeFormat<Mjd>::convert method did not throw an exception for Mjd(-1, -1.)" << std::endl;
+    } catch (const std::exception &) {
+    }
+
+    // Test detections of bad JD numbers in conversions.
+    try {
+      jd_format.convert(Jd(+1, -.001));
+      err() << "TimeFormat<Jd>::convert method did not throw an exception for Jd(+1, -0.001)" << std::endl;
+    } catch (const std::exception &) {
+    }
+    try {
+      jd_format.convert(Jd(+1, +1.));
+      err() << "TimeFormat<Jd>::convert method did not throw an exception for Jd(+1, +1.)" << std::endl;
+    } catch (const std::exception &) {
+    }
+    try {
+      jd_format.convert(Jd(0, +1.));
+      err() << "TimeFormat<Jd>::convert method did not throw an exception for Jd(0, +1.)" << std::endl;
+    } catch (const std::exception &) {
+    }
+    try {
+      jd_format.convert(Jd(0, -1.));
+      err() << "TimeFormat<Jd>::convert method did not throw an exception for Jd(0, -1.)" << std::endl;
+    } catch (const std::exception &) {
+    }
+    try {
+      jd_format.convert(Jd(-1, +.001));
+      err() << "TimeFormat<Jd>::convert method did not throw an exception for Jd(+1, +0.001)" << std::endl;
+    } catch (const std::exception &) {
+    }
+    try {
+      jd_format.convert(Jd(-1, -1.));
+      err() << "TimeFormat<Jd>::convert method did not throw an exception for Jd(-1, -1.)" << std::endl;
+    } catch (const std::exception &) {
+    }
+
+    // Test detections of bad MJD numbers in formatting.
+    try {
+      mjd_format.format(Mjd(+1, -.001));
+      err() << "TimeFormat<Mjd>::convert method did not throw an exception for Mjd(+1, -0.001)" << std::endl;
+    } catch (const std::exception &) {
+    }
+    try {
+      mjd_format.format(Mjd(+1, +1.));
+      err() << "TimeFormat<Mjd>::convert method did not throw an exception for Mjd(+1, +1.)" << std::endl;
+    } catch (const std::exception &) {
+    }
+    try {
+      mjd_format.format(Mjd(0, +1.));
+      err() << "TimeFormat<Mjd>::convert method did not throw an exception for Mjd(0, +1.)" << std::endl;
+    } catch (const std::exception &) {
+    }
+    try {
+      mjd_format.format(Mjd(0, -1.));
+      err() << "TimeFormat<Mjd>::convert method did not throw an exception for Mjd(0, -1.)" << std::endl;
+    } catch (const std::exception &) {
+    }
+    try {
+      mjd_format.format(Mjd(-1, +.001));
+      err() << "TimeFormat<Mjd>::convert method did not throw an exception for Mjd(+1, +0.001)" << std::endl;
+    } catch (const std::exception &) {
+    }
+    try {
+      mjd_format.format(Mjd(-1, -1.));
+      err() << "TimeFormat<Mjd>::convert method did not throw an exception for Mjd(-1, -1.)" << std::endl;
+    } catch (const std::exception &) {
+    }
+
+    // Test detections of bad JD numbers in formatting.
+    try {
+      jd_format.format(Jd(+1, -.001));
+      err() << "TimeFormat<Jd>::convert method did not throw an exception for Jd(+1, -0.001)" << std::endl;
+    } catch (const std::exception &) {
+    }
+    try {
+      jd_format.format(Jd(+1, +1.));
+      err() << "TimeFormat<Jd>::convert method did not throw an exception for Jd(+1, +1.)" << std::endl;
+    } catch (const std::exception &) {
+    }
+    try {
+      jd_format.format(Jd(0, +1.));
+      err() << "TimeFormat<Jd>::convert method did not throw an exception for Jd(0, +1.)" << std::endl;
+    } catch (const std::exception &) {
+    }
+    try {
+      jd_format.format(Jd(0, -1.));
+      err() << "TimeFormat<Jd>::convert method did not throw an exception for Jd(0, -1.)" << std::endl;
+    } catch (const std::exception &) {
+    }
+    try {
+      jd_format.format(Jd(-1, +.001));
+      err() << "TimeFormat<Jd>::convert method did not throw an exception for Jd(+1, +0.001)" << std::endl;
+    } catch (const std::exception &) {
+    }
+    try {
+      jd_format.format(Jd(-1, -1.));
+      err() << "TimeFormat<Jd>::convert method did not throw an exception for Jd(-1, -1.)" << std::endl;
+    } catch (const std::exception &) {
     }
 
     // Prepare test parameters for Calendar, IsoWeek, and Ordinal classes.
