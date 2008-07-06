@@ -1830,6 +1830,17 @@ namespace {
     } catch (const std::exception &) {
     }
     try {
+      mjd1_format.convert(datetime_type(51910, -0.001));
+      err() << "TimeFormat<Mjd1>::convert method did not throw an exception for a bad time of the day: -0.001" << std::endl;
+    } catch (const std::exception &) {
+    }
+    try {
+      mjd1_format.convert(datetime_type(51910, SecPerDay() + 0.001));
+      err() << "TimeFormat<Mjd1>::convert method did not throw an exception for a bad time of the day: " << SecPerDay() + 0.001 <<
+        std::endl;
+    } catch (const std::exception &) {
+    }
+    try {
       jd_format.convert(datetime_type(51910, -0.001));
       err() << "TimeFormat<Jd>::convert method did not throw an exception for a bad time of the day: -0.001" << std::endl;
     } catch (const std::exception &) {
@@ -1837,6 +1848,17 @@ namespace {
     try {
       jd_format.convert(datetime_type(51910, SecPerDay() + 0.001));
       err() << "TimeFormat<Jd>::convert method did not throw an exception for a bad time of the day: " << SecPerDay() + 0.001 <<
+        std::endl;
+    } catch (const std::exception &) {
+    }
+    try {
+      jd1_format.convert(datetime_type(51910, -0.001));
+      err() << "TimeFormat<Jd1>::convert method did not throw an exception for a bad time of the day: -0.001" << std::endl;
+    } catch (const std::exception &) {
+    }
+    try {
+      jd1_format.convert(datetime_type(51910, SecPerDay() + 0.001));
+      err() << "TimeFormat<Jd1>::convert method did not throw an exception for a bad time of the day: " << SecPerDay() + 0.001 <<
         std::endl;
     } catch (const std::exception &) {
     }
@@ -1902,6 +1924,28 @@ namespace {
     try {
       jd_format.convert(Jd(-1, -1.));
       err() << "TimeFormat<Jd>::convert method did not throw an exception for Jd(-1, -1.)" << std::endl;
+    } catch (const std::exception &) {
+    }
+
+    // Test detections of bad MJD/JD numbers in parsing.
+    try {
+      mjd_format.parse("Not A Number");
+      err() << "TimeFormat<Mjd>::parse method did not throw an exception for \"Not A Number\"" << std::endl;
+    } catch (const std::exception &) {
+    }
+    try {
+      mjd1_format.parse("Not A Number");
+      err() << "TimeFormat<Mjd1>::parse method did not throw an exception for \"Not A Number\"" << std::endl;
+    } catch (const std::exception &) {
+    }
+    try {
+      jd_format.parse("Not A Number");
+      err() << "TimeFormat<Jd>::parse method did not throw an exception for \"Not A Number\"" << std::endl;
+    } catch (const std::exception &) {
+    }
+    try {
+      jd1_format.parse("Not A Number");
+      err() << "TimeFormat<Jd1>::parse method did not throw an exception for \"Not A Number\"" << std::endl;
     } catch (const std::exception &) {
     }
 
