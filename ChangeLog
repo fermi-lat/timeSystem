@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Sat Jul  5 17:53:51 PDT 2008
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Add more tests on input parameter checking by TimeFormat classes.
+    *
+------------------------------------------------------------
 User: hirayama  Sat Jul  5 13:21:09 PDT 2008
 timeSystem/src/test
 
