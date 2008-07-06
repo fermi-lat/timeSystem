@@ -1638,6 +1638,86 @@ namespace {
     }
   }
 
+  template <typename TimeRepType>
+  void TestOneBadDateTime(const TimeFormat<TimeRepType> & time_format, const datetime_type & datetime,
+    const std::string & time_rep_name, const std::string & data_description, bool exception_expected = true) {
+    // Call TimeFormat<TimeRepType>::convert method.
+    bool exception_thrown = false;
+    try {
+      time_format.convert(datetime);
+    } catch (const std::exception &) {
+      exception_thrown = true;
+    }
+
+    // Check if exception thrown/not thrown as expected.
+    if (exception_expected != exception_thrown) {
+      if (exception_expected) {
+        err() << "TimeFormat<" << time_rep_name << ">::convert method did not throw an exception for " << data_description << std::endl;
+      } else {
+        err() << "TimeFormat<" << time_rep_name << ">::convert method threw an exception for " << data_description << std::endl;
+      }
+    }
+  }
+
+  template <typename TimeRepType>
+  void TestOneBadTimeRep(const TimeFormat<TimeRepType> & time_format, const TimeRepType & time_rep, const std::string & time_rep_name,
+    const std::string & data_description, bool exception_expected = true) {
+    // Call TimeFormat<TimeRepType>::convert method.
+    bool exception_thrown = false;
+    try {
+      time_format.convert(time_rep);
+    } catch (const std::exception &) {
+      exception_thrown = true;
+    }
+
+    // Check if exception thrown/not thrown as expected.
+    if (exception_expected != exception_thrown) {
+      if (exception_expected) {
+        err() << "TimeFormat<" << time_rep_name << ">::convert method did not throw an exception for " << data_description << std::endl;
+      } else {
+        err() << "TimeFormat<" << time_rep_name << ">::convert method threw an exception for " << data_description << std::endl;
+      }
+    }
+
+    // Call TimeFormat<TimeRepType>::format method.
+    exception_thrown = false;
+    try {
+      time_format.format(time_rep);
+    } catch (const std::exception &) {
+      exception_thrown = true;
+    }
+
+    // Check if exception thrown/not thrown as expected.
+    if (exception_expected != exception_thrown) {
+      if (exception_expected) {
+        err() << "TimeFormat<" << time_rep_name << ">::format method did not throw an exception for " << data_description << std::endl;
+      } else {
+        err() << "TimeFormat<" << time_rep_name << ">::format method threw an exception for " << data_description << std::endl;
+      }
+    }
+  }
+
+  template <typename TimeRepType>
+  void TestOneBadTimeString(const TimeFormat<TimeRepType> & time_format, const std::string & time_string,
+    const std::string & time_rep_name, bool exception_expected = true) {
+    // Call TimeFormat<TimeRepType>::parse method.
+    bool exception_thrown = false;
+    try {
+      time_format.parse(time_string);
+    } catch (const std::exception &) {
+      exception_thrown = true;
+    }
+
+    // Check if exception thrown/not thrown as expected.
+    if (exception_expected != exception_thrown) {
+      if (exception_expected) {
+        err() << "TimeFormat<" << time_rep_name << ">::parse method did not throw an exception for " << time_string << std::endl;
+      } else {
+        err() << "TimeFormat<" << time_rep_name << ">::parse method threw an exception for " << time_string << std::endl;
+      }
+    }
+  }
+
   struct NoSuchTimeRep {};
 
   void TestTimeFormat() {
@@ -1818,200 +1898,36 @@ namespace {
     }
 
     // Test detections of bad times of the day.
-    try {
-      mjd_format.convert(datetime_type(51910, -0.001));
-      err() << "TimeFormat<Mjd>::convert method did not throw an exception for a bad time of the day: -0.001" << std::endl;
-    } catch (const std::exception &) {
-    }
-    try {
-      mjd_format.convert(datetime_type(51910, SecPerDay() + 0.001));
-      err() << "TimeFormat<Mjd>::convert method did not throw an exception for a bad time of the day: " << SecPerDay() + 0.001 <<
-        std::endl;
-    } catch (const std::exception &) {
-    }
-    try {
-      mjd1_format.convert(datetime_type(51910, -0.001));
-      err() << "TimeFormat<Mjd1>::convert method did not throw an exception for a bad time of the day: -0.001" << std::endl;
-    } catch (const std::exception &) {
-    }
-    try {
-      mjd1_format.convert(datetime_type(51910, SecPerDay() + 0.001));
-      err() << "TimeFormat<Mjd1>::convert method did not throw an exception for a bad time of the day: " << SecPerDay() + 0.001 <<
-        std::endl;
-    } catch (const std::exception &) {
-    }
-    try {
-      jd_format.convert(datetime_type(51910, -0.001));
-      err() << "TimeFormat<Jd>::convert method did not throw an exception for a bad time of the day: -0.001" << std::endl;
-    } catch (const std::exception &) {
-    }
-    try {
-      jd_format.convert(datetime_type(51910, SecPerDay() + 0.001));
-      err() << "TimeFormat<Jd>::convert method did not throw an exception for a bad time of the day: " << SecPerDay() + 0.001 <<
-        std::endl;
-    } catch (const std::exception &) {
-    }
-    try {
-      jd1_format.convert(datetime_type(51910, -0.001));
-      err() << "TimeFormat<Jd1>::convert method did not throw an exception for a bad time of the day: -0.001" << std::endl;
-    } catch (const std::exception &) {
-    }
-    try {
-      jd1_format.convert(datetime_type(51910, SecPerDay() + 0.001));
-      err() << "TimeFormat<Jd1>::convert method did not throw an exception for a bad time of the day: " << SecPerDay() + 0.001 <<
-        std::endl;
-    } catch (const std::exception &) {
-    }
+    TestOneBadDateTime(mjd_format, datetime_type(51910, -0.001), "Mjd", "a time of the day: -0.001");
+    TestOneBadDateTime(mjd_format, datetime_type(51910, SecPerDay() + 0.001), "Mjd", "a time of the day: 86400.001");
+    TestOneBadDateTime(mjd1_format, datetime_type(51910, -0.001), "Mjd1", "a time of the day: -0.001");
+    TestOneBadDateTime(mjd1_format, datetime_type(51910, SecPerDay() + 0.001), "Mjd1", "a time of the day: 86400.001");
+    TestOneBadDateTime(jd_format, datetime_type(51910, -0.001), "Jd", "a time of the day: -0.001");
+    TestOneBadDateTime(jd_format, datetime_type(51910, SecPerDay() + 0.001), "Jd", "a time of the day: 86400.001");
+    TestOneBadDateTime(jd1_format, datetime_type(51910, -0.001), "Jd1", "a time of the day: -0.001");
+    TestOneBadDateTime(jd1_format, datetime_type(51910, SecPerDay() + 0.001), "Jd1", "a time of the day: 86400.001");
 
-    // Test detections of bad MJD numbers in conversions.
-    try {
-      mjd_format.convert(Mjd(+1, -.001));
-      err() << "TimeFormat<Mjd>::convert method did not throw an exception for Mjd(+1, -0.001)" << std::endl;
-    } catch (const std::exception &) {
-    }
-    try {
-      mjd_format.convert(Mjd(+1, +1.));
-      err() << "TimeFormat<Mjd>::convert method did not throw an exception for Mjd(+1, +1.)" << std::endl;
-    } catch (const std::exception &) {
-    }
-    try {
-      mjd_format.convert(Mjd(0, +1.));
-      err() << "TimeFormat<Mjd>::convert method did not throw an exception for Mjd(0, +1.)" << std::endl;
-    } catch (const std::exception &) {
-    }
-    try {
-      mjd_format.convert(Mjd(0, -1.));
-      err() << "TimeFormat<Mjd>::convert method did not throw an exception for Mjd(0, -1.)" << std::endl;
-    } catch (const std::exception &) {
-    }
-    try {
-      mjd_format.convert(Mjd(-1, +.001));
-      err() << "TimeFormat<Mjd>::convert method did not throw an exception for Mjd(+1, +0.001)" << std::endl;
-    } catch (const std::exception &) {
-    }
-    try {
-      mjd_format.convert(Mjd(-1, -1.));
-      err() << "TimeFormat<Mjd>::convert method did not throw an exception for Mjd(-1, -1.)" << std::endl;
-    } catch (const std::exception &) {
-    }
+    // Test detections of bad MJD numbers.
+    TestOneBadTimeRep(mjd_format, Mjd(+1, -.001), "Mjd", "Mjd(+1, -0.001)");
+    TestOneBadTimeRep(mjd_format, Mjd(+1, +1.), "Mjd", "Mjd(+1, +1.)");
+    TestOneBadTimeRep(mjd_format, Mjd(0, +1.), "Mjd", "Mjd(0, +1.)");
+    TestOneBadTimeRep(mjd_format, Mjd(0, -1.), "Mjd", "Mjd(0, -1.)");
+    TestOneBadTimeRep(mjd_format, Mjd(-1, +.001), "Mjd", "Mjd(-1, +0.001)");
+    TestOneBadTimeRep(mjd_format, Mjd(-1, -1.), "Mjd", "Mjd(-1, -1.)");
 
-    // Test detections of bad JD numbers in conversions.
-    try {
-      jd_format.convert(Jd(+1, -.001));
-      err() << "TimeFormat<Jd>::convert method did not throw an exception for Jd(+1, -0.001)" << std::endl;
-    } catch (const std::exception &) {
-    }
-    try {
-      jd_format.convert(Jd(+1, +1.));
-      err() << "TimeFormat<Jd>::convert method did not throw an exception for Jd(+1, +1.)" << std::endl;
-    } catch (const std::exception &) {
-    }
-    try {
-      jd_format.convert(Jd(0, +1.));
-      err() << "TimeFormat<Jd>::convert method did not throw an exception for Jd(0, +1.)" << std::endl;
-    } catch (const std::exception &) {
-    }
-    try {
-      jd_format.convert(Jd(0, -1.));
-      err() << "TimeFormat<Jd>::convert method did not throw an exception for Jd(0, -1.)" << std::endl;
-    } catch (const std::exception &) {
-    }
-    try {
-      jd_format.convert(Jd(-1, +.001));
-      err() << "TimeFormat<Jd>::convert method did not throw an exception for Jd(+1, +0.001)" << std::endl;
-    } catch (const std::exception &) {
-    }
-    try {
-      jd_format.convert(Jd(-1, -1.));
-      err() << "TimeFormat<Jd>::convert method did not throw an exception for Jd(-1, -1.)" << std::endl;
-    } catch (const std::exception &) {
-    }
+    // Test detections of bad JD numbers.
+    TestOneBadTimeRep(jd_format, Jd(+1, -.001), "Jd", "Jd(+1, -0.001)");
+    TestOneBadTimeRep(jd_format, Jd(+1, +1.), "Jd", "Jd(+1, +1.)");
+    TestOneBadTimeRep(jd_format, Jd(0, +1.), "Jd", "Jd(0, +1.)");
+    TestOneBadTimeRep(jd_format, Jd(0, -1.), "Jd", "Jd(0, -1.)");
+    TestOneBadTimeRep(jd_format, Jd(-1, +.001), "Jd", "Jd(-1, +0.001)");
+    TestOneBadTimeRep(jd_format, Jd(-1, -1.), "Jd", "Jd(-1, -1.)");
 
-    // Test detections of bad MJD/JD numbers in parsing.
-    try {
-      mjd_format.parse("Not A Number");
-      err() << "TimeFormat<Mjd>::parse method did not throw an exception for \"Not A Number\"" << std::endl;
-    } catch (const std::exception &) {
-    }
-    try {
-      mjd1_format.parse("Not A Number");
-      err() << "TimeFormat<Mjd1>::parse method did not throw an exception for \"Not A Number\"" << std::endl;
-    } catch (const std::exception &) {
-    }
-    try {
-      jd_format.parse("Not A Number");
-      err() << "TimeFormat<Jd>::parse method did not throw an exception for \"Not A Number\"" << std::endl;
-    } catch (const std::exception &) {
-    }
-    try {
-      jd1_format.parse("Not A Number");
-      err() << "TimeFormat<Jd1>::parse method did not throw an exception for \"Not A Number\"" << std::endl;
-    } catch (const std::exception &) {
-    }
-
-    // Test detections of bad MJD numbers in formatting.
-    try {
-      mjd_format.format(Mjd(+1, -.001));
-      err() << "TimeFormat<Mjd>::convert method did not throw an exception for Mjd(+1, -0.001)" << std::endl;
-    } catch (const std::exception &) {
-    }
-    try {
-      mjd_format.format(Mjd(+1, +1.));
-      err() << "TimeFormat<Mjd>::convert method did not throw an exception for Mjd(+1, +1.)" << std::endl;
-    } catch (const std::exception &) {
-    }
-    try {
-      mjd_format.format(Mjd(0, +1.));
-      err() << "TimeFormat<Mjd>::convert method did not throw an exception for Mjd(0, +1.)" << std::endl;
-    } catch (const std::exception &) {
-    }
-    try {
-      mjd_format.format(Mjd(0, -1.));
-      err() << "TimeFormat<Mjd>::convert method did not throw an exception for Mjd(0, -1.)" << std::endl;
-    } catch (const std::exception &) {
-    }
-    try {
-      mjd_format.format(Mjd(-1, +.001));
-      err() << "TimeFormat<Mjd>::convert method did not throw an exception for Mjd(+1, +0.001)" << std::endl;
-    } catch (const std::exception &) {
-    }
-    try {
-      mjd_format.format(Mjd(-1, -1.));
-      err() << "TimeFormat<Mjd>::convert method did not throw an exception for Mjd(-1, -1.)" << std::endl;
-    } catch (const std::exception &) {
-    }
-
-    // Test detections of bad JD numbers in formatting.
-    try {
-      jd_format.format(Jd(+1, -.001));
-      err() << "TimeFormat<Jd>::convert method did not throw an exception for Jd(+1, -0.001)" << std::endl;
-    } catch (const std::exception &) {
-    }
-    try {
-      jd_format.format(Jd(+1, +1.));
-      err() << "TimeFormat<Jd>::convert method did not throw an exception for Jd(+1, +1.)" << std::endl;
-    } catch (const std::exception &) {
-    }
-    try {
-      jd_format.format(Jd(0, +1.));
-      err() << "TimeFormat<Jd>::convert method did not throw an exception for Jd(0, +1.)" << std::endl;
-    } catch (const std::exception &) {
-    }
-    try {
-      jd_format.format(Jd(0, -1.));
-      err() << "TimeFormat<Jd>::convert method did not throw an exception for Jd(0, -1.)" << std::endl;
-    } catch (const std::exception &) {
-    }
-    try {
-      jd_format.format(Jd(-1, +.001));
-      err() << "TimeFormat<Jd>::convert method did not throw an exception for Jd(+1, +0.001)" << std::endl;
-    } catch (const std::exception &) {
-    }
-    try {
-      jd_format.format(Jd(-1, -1.));
-      err() << "TimeFormat<Jd>::convert method did not throw an exception for Jd(-1, -1.)" << std::endl;
-    } catch (const std::exception &) {
-    }
+    // Test detections of bad MJD/JD strings.
+    TestOneBadTimeString(mjd_format, "Not A Number", "Mjd");
+    TestOneBadTimeString(mjd1_format, "Not A Number", "Mjd1");
+    TestOneBadTimeString(jd_format, "Not A Number", "Jd");
+    TestOneBadTimeString(jd1_format, "Not A Number", "Jd1");
 
     // Prepare test parameters for Calendar, IsoWeek, and Ordinal classes.
     const TimeFormat<Calendar> & calendar_format(TimeFormatFactory<Calendar>::getFormat());
@@ -2224,43 +2140,139 @@ namespace {
         expected_ordinal.m_hour << ", " << expected_ordinal.m_min << ", " << expected_ordinal.m_sec << ") as expected." << std::endl;
     }
 
-    // Test detections of wrong calendar-like strings to parse.
-    try {
-      calendar_format.parse(expected_iso_week_string);
-      err() << "Object returned by TimeFormat::getFormat(\"Calendar\") did not throw an exception in parsing \"" <<
-        expected_iso_week_string << "\"" << std::endl;
-    } catch (const std::exception &) {
-    } 
-    try {
-      calendar_format.parse(expected_ordinal_string);
-      err() << "Object returned by TimeFormat::getFormat(\"Calendar\") did not throw an exception in parsing \"" <<
-        expected_ordinal_string << "\"" << std::endl;
-    } catch (const std::exception &) {
-    } 
-    try {
-      iso_week_format.parse(expected_calendar_string);
-      err() << "Object returned by TimeFormat::getFormat(\"IsoWeek\") did not throw an exception in parsing \"" <<
-        expected_calendar_string << "\"" << std::endl;
-    } catch (const std::exception &) {
-    }
-    try {
-      iso_week_format.parse(expected_ordinal_string);
-      err() << "Object returned by TimeFormat::getFormat(\"IsoWeek\") did not throw an exception in parsing \"" <<
-        expected_ordinal_string << "\"" << std::endl;
-    } catch (const std::exception &) {
-    } 
-    try {
-      ordinal_format.parse(expected_calendar_string);
-      err() << "Object returned by TimeFormat::getFormat(\"Ordinal\") did not throw an exception in parsing \"" <<
-        expected_calendar_string << "\"" << std::endl;
-    } catch (const std::exception &) {
-    } 
-    try {
-      ordinal_format.parse(expected_iso_week_string);
-      err() << "Object returned by TimeFormat::getFormat(\"Ordinal\") did not throw an exception in parsing \"" <<
-        expected_iso_week_string << "\"" << std::endl;
-    } catch (const std::exception &) {
-    } 
+#if 0
+    // Test detections of bad times of the day.
+    TestOneBadDateTime(calendar_format, datetime_type(51910, -0.001), "Calendar", "a time of the day: -0.001");
+    TestOneBadDateTime(iso_week_format, datetime_type(51910, -0.001), "IsoWeek", "a time of the day: -0.001");
+    TestOneBadDateTime(ordinal_format, datetime_type(51910, -0.001), "Ordinal", "a time of the day: -0.001");
+#endif
+#if 0
+    // Test detections of non-existing month.
+    TestOneBadTimeRep(calendar_format, Calendar(2008,  0, 1, 0, 0, 0.), "Calendar", "a bad calendar month: 0.");
+    TestOneBadTimeRep(calendar_format, Calendar(2008, 13, 1, 0, 0, 0.), "Calendar", "a bad calendar month: 13.");
+
+    TestOneBadTimeString(calendar_format, "2008-00-01T00:00:00.0", "Calendar");
+    TestOneBadTimeString(calendar_format, "2008-13-01T00:00:00.0", "Calendar");
+
+    // Test detections of non-existing day of month.
+    TestOneBadTimeRep(calendar_format, Calendar(2008, 1,  0, 0, 0, 0.), "Calendar", "a non-existing calendar date: 2008-01-00.");
+    TestOneBadTimeRep(calendar_format, Calendar(2008, 1, 32, 0, 0, 0.), "Calendar", "a non-existing calendar date: 2008-01-32.");
+    TestOneBadTimeRep(calendar_format, Calendar(2008, 1, 31, 0, 0, 0.), "Calendar", "an existing calendar date: 2008-01-31.", false);
+    TestOneBadTimeRep(calendar_format, Calendar(2008, 4, 31, 0, 0, 0.), "Calendar", "a non-existing calendar date: 2008-04-31.");
+
+    TestOneBadTimeString(calendar_format, "2008-01-00T00:00:00.0", "Calendar");
+    TestOneBadTimeString(calendar_format, "2008-01-32T00:00:00.0", "Calendar");
+    TestOneBadTimeString(calendar_format, "2008-01-31T00:00:00.0", "Calendar", false);
+    TestOneBadTimeString(calendar_format, "2008-04-31T00:00:00.0", "Calendar");
+
+    // Test detections of non-existing day near the end of February.
+    TestOneBadTimeRep(calendar_format, Calendar(2008, 2, 30, 0, 0, 0.), "Calendar", "a non-existing calendar date: 2008-02-30.");
+    TestOneBadTimeRep(calendar_format, Calendar(2008, 2, 29, 0, 0, 0.), "Calendar", "an existing calendar date: 2008-02-29.", false);
+    TestOneBadTimeRep(calendar_format, Calendar(2009, 2, 29, 0, 0, 0.), "Calendar", "a non-existing calendar date: 2009-02-29.");
+    TestOneBadTimeRep(calendar_format, Calendar(2100, 2, 29, 0, 0, 0.), "Calendar", "a non-existing calendar date: 2100-02-29.");
+    TestOneBadTimeRep(calendar_format, Calendar(2000, 2, 29, 0, 0, 0.), "Calendar", "an existing calendar date: 2000-02-29.", false);
+
+    TestOneBadTimeString(calendar_format, "2008-02-30T00:00:00.0", "Calendar");
+    TestOneBadTimeString(calendar_format, "2008-02-29T00:00:00.0", "Calendar", false);
+    TestOneBadTimeString(calendar_format, "2009-02-29T00:00:00.0", "Calendar");
+    TestOneBadTimeString(calendar_format, "2100-02-29T00:00:00.0", "Calendar");
+    TestOneBadTimeString(calendar_format, "2000-02-29T00:00:00.0", "Calendar", false);
+
+    // Test detections of non-existing time.
+    TestOneBadTimeRep(calendar_format, Calendar(2008, 6, 17, -1,  0,  0.), "Calendar", "a non-existing hour: -1.");
+    TestOneBadTimeRep(calendar_format, Calendar(2008, 6, 17, 24,  0,  0.), "Calendar", "a non-existing hour: 24.");
+    TestOneBadTimeRep(calendar_format, Calendar(2008, 6, 17,  0, -1,  0.), "Calendar", "a non-existing minute: -1.");
+    TestOneBadTimeRep(calendar_format, Calendar(2008, 6, 17,  0, 60,  0.), "Calendar", "a non-existing minute: 60.");
+    TestOneBadTimeRep(calendar_format, Calendar(2008, 6, 17,  0,  0, -1.), "Calendar", "a non-existing second: -1.");
+
+    TestOneBadTimeString(calendar_format, "2008-06-17T-1:00:00.0", "Calendar");
+    TestOneBadTimeString(calendar_format, "2008-06-17T24:00:00.0", "Calendar");
+    TestOneBadTimeString(calendar_format, "2008-06-17T00:-1:00.0", "Calendar");
+    TestOneBadTimeString(calendar_format, "2008-06-17T00:60:00.0", "Calendar");
+    TestOneBadTimeString(calendar_format, "2008-06-17T00:00:-1.0", "Calendar");
+    // Note: TimeFormat<Calendar> cannot detect the second part exceeding its maximum because of a possible leap second insertion,
+    //       and TimeSystem class should test it instead.
+#endif
+#if 0
+    // Test detections of non-existing week number.
+    TestOneBadTimeRep(iso_week_format, IsoWeek(2008,  0, 0, 0,  0,  0.), "IsoWeek", "a non-existing week number: 0.");
+    TestOneBadTimeRep(iso_week_format, IsoWeek(2008, 53, 0, 0,  0,  0.), "IsoWeek", "a non-existing week number: 53.");
+    TestOneBadTimeRep(iso_week_format, IsoWeek(2009, 53, 0, 0,  0,  0.), "IsoWeek", "an existing week number: 53.", false);
+    TestOneBadTimeRep(iso_week_format, IsoWeek(2009, 54, 0, 0,  0,  0.), "IsoWeek", "a non-existing week number: 54.");
+
+    TestOneBadTimeString(iso_week_format, "2008-W00-0T00:00:00.0", "IsoWeek");
+    TestOneBadTimeString(iso_week_format, "2008-W53-0T00:00:00.0", "IsoWeek");
+    TestOneBadTimeString(iso_week_format, "2009-W53-0T00:00:00.0", "IsoWeek", false);
+    TestOneBadTimeString(iso_week_format, "2009-W54-0T00:00:00.0", "IsoWeek");
+
+    // Test detections of non-existing day of week.
+    TestOneBadTimeRep(iso_week_format, IsoWeek(2008, 25, 0, 0,  0,  0.), "IsoWeek", "a non-existing day of the week: 0.");
+    TestOneBadTimeRep(iso_week_format, IsoWeek(2008, 25, 8, 0,  0,  0.), "IsoWeek", "a non-existing day of the week: 8.");
+
+    TestOneBadTimeString(iso_week_format, "2008-W25-0T00:00:00.0", "IsoWeek");
+    TestOneBadTimeString(iso_week_format, "2008-W25-8T00:00:00.0", "IsoWeek");
+
+    // Test detections of non-existing time.
+    TestOneBadTimeRep(iso_week_format, IsoWeek(2008, 25, 2, -1,  0,  0.), "IsoWeek", "a non-existing hour: -1.");
+    TestOneBadTimeRep(iso_week_format, IsoWeek(2008, 25, 2, 24,  0,  0.), "IsoWeek", "a non-existing hour: 24.");
+    TestOneBadTimeRep(iso_week_format, IsoWeek(2008, 25, 2,  0, -1,  0.), "IsoWeek", "a non-existing minute: -1.");
+    TestOneBadTimeRep(iso_week_format, IsoWeek(2008, 25, 2,  0, 60,  0.), "IsoWeek", "a non-existing minute: 60.");
+    TestOneBadTimeRep(iso_week_format, IsoWeek(2008, 25, 2,  0,  0, -1.), "IsoWeek", "a non-existing second: -1.");
+
+    TestOneBadTimeString(iso_week_format, "2008-W25-2T-1:00:00.0", "IsoWeek");
+    TestOneBadTimeString(iso_week_format, "2008-W25-2T24:00:00.0", "IsoWeek");
+    TestOneBadTimeString(iso_week_format, "2008-W25-2T00:-1:00.0", "IsoWeek");
+    TestOneBadTimeString(iso_week_format, "2008-W25-2T00:60:00.0", "IsoWeek");
+    TestOneBadTimeString(iso_week_format, "2008-W25-2T00:00:-1.0", "IsoWeek");
+    // Note: TimeFormat<IsoWeek> cannot detect the second part exceeding its maximum because of a possible leap second insertion,
+    //       and TimeSystem class should test it instead.
+#endif
+#if 0
+    // Test detections of non-existing ordinal day.
+    TestOneBadTimeRep(ordinal_format, Ordinal(2008, 367, 0, 0, 0.), "Ordinal", "a non-existing ordinal date: 2008-367.");
+    TestOneBadTimeRep(ordinal_format, Ordinal(2008, 366, 0, 0, 0.), "Ordinal", "an existing ordinal date: 2008-366.", false);
+    TestOneBadTimeRep(ordinal_format, Ordinal(2009, 366, 0, 0, 0.), "Ordinal", "a non-existing ordinal date: 2009-366.");
+    TestOneBadTimeRep(ordinal_format, Ordinal(2100, 366, 0, 0, 0.), "Ordinal", "a non-existing ordinal date: 2100-366.");
+    TestOneBadTimeRep(ordinal_format, Ordinal(2000, 366, 0, 0, 0.), "Ordinal", "an existing ordinal date: 2000-366.", false);
+
+    TestOneBadTimeString(ordinal_format, "2008-367T00:00:00.0", "Ordinal");
+    TestOneBadTimeString(ordinal_format, "2008-366T00:00:00.0", "Ordinal", false);
+    TestOneBadTimeString(ordinal_format, "2009-366T00:00:00.0", "Ordinal");
+    TestOneBadTimeString(ordinal_format, "2100-366T00:00:00.0", "Ordinal");
+    TestOneBadTimeString(ordinal_format, "2000-366T00:00:00.0", "Ordinal", false);
+
+    // Test detections of non-existing time.
+    TestOneBadTimeRep(ordinal_format, Ordinal(2008, 169, -1,  0,  0.), "Ordinal", "a non-existing hour: -1.");
+    TestOneBadTimeRep(ordinal_format, Ordinal(2008, 169, 24,  0,  0.), "Ordinal", "a non-existing hour: 24.");
+    TestOneBadTimeRep(ordinal_format, Ordinal(2008, 169,  0, -1,  0.), "Ordinal", "a non-existing minute: -1.");
+    TestOneBadTimeRep(ordinal_format, Ordinal(2008, 169,  0, 60,  0.), "Ordinal", "a non-existing minute: 60.");
+    TestOneBadTimeRep(ordinal_format, Ordinal(2008, 169,  0,  0, -1.), "Ordinal", "a non-existing second: -1.");
+
+    TestOneBadTimeString(ordinal_format, "2008-169T-1:00:00.0", "Ordinal");
+    TestOneBadTimeString(ordinal_format, "2008-169T24:00:00.0", "Ordinal");
+    TestOneBadTimeString(ordinal_format, "2008-169T00:-1:00.0", "Ordinal");
+    TestOneBadTimeString(ordinal_format, "2008-169T00:60:00.0", "Ordinal");
+    TestOneBadTimeString(ordinal_format, "2008-169T00:00:-1.0", "Ordinal");
+    // Note: TimeFormat<Ordinal> cannot detect the second part exceeding its maximum because of a possible leap second insertion,
+    //       and TimeSystem class should test it instead.
+
+
+    // Note: No need for testing ordinal dates and ISO week dates out of bounds, because those can be correctly interpreted
+    //       as an elapsed days even beyond their regular limits.
+#endif
+
+    // Test detections of bad Calendar, IsoWeek, and Ordinal strings.
+    TestOneBadTimeString(calendar_format, "Not A Number", "Calendar");
+    TestOneBadTimeString(iso_week_format, "Not A Number", "IsoWeek");
+    TestOneBadTimeString(ordinal_format, "Not A Number", "Ordinal");
+
+    // Test detections of wrong kinds of calendar-like strings to parse.
+    TestOneBadTimeString(calendar_format, expected_iso_week_string, "Calendar");
+    TestOneBadTimeString(calendar_format, expected_ordinal_string, "Calendar");
+    TestOneBadTimeString(iso_week_format, expected_calendar_string, "IsoWeek");
+    TestOneBadTimeString(iso_week_format, expected_ordinal_string, "IsoWeek");
+    TestOneBadTimeString(ordinal_format, expected_calendar_string, "Ordinal");
+    TestOneBadTimeString(ordinal_format, expected_iso_week_string, "Ordinal");
 
     // Test date conversions in year 1995, where the calendar year is not divisible by 4, 100, nor 400.
     TestOneCalendarDate(49776, 1995,  2, 28, 1995,  9, 2,  59);
@@ -2317,75 +2329,6 @@ namespace {
     TestOneCalendarDate(55198, 2010,  1,  2, 2009, 53, 6,   2);
     TestOneCalendarDate(55199, 2010,  1,  3, 2009, 53, 7,   3);
     TestOneCalendarDate(55200, 2010,  1,  4, 2010,  1, 1,   4);
-
-    // Test detections of non-existing month.
-    try {
-      calendar_format.convert(Calendar(2008,  0, 1, 0, 0, 0.));
-      err() << "TimeFormat<Calendar>::convert method did not throw an exception for a bad calendar month: 0." << std::endl;
-    } catch (const std::exception &) {
-    }
-    try {
-      calendar_format.convert(Calendar(2008, 13, 1, 0, 0, 0.));
-      err() << "TimeFormat<Calendar>::convert method did not throw an exception for a bad calendar month: 13." << std::endl;
-    } catch (const std::exception &) {
-    }
-
-    // Test detections of non-existing day of month.
-    try {
-      calendar_format.convert(Calendar(2008, 1, 0, 0, 0, 0.));
-      err() << "TimeFormat<Calendar>::convert method did not throw an exception for a non-existing calendar date: 2008-01-00." <<
-        std::endl;
-    } catch (const std::exception &) {
-    }
-    try {
-      calendar_format.convert(Calendar(2008, 1, 32, 0, 0, 0.));
-      err() << "TimeFormat<Calendar>::convert method did not throw an exception for a non-existing calendar date: 2008-01-32." <<
-        std::endl;
-    } catch (const std::exception &) {
-    }
-    try {
-      calendar_format.convert(Calendar(2008, 1, 31, 0, 0, 0.));
-    } catch (const std::exception &) {
-      err() << "TimeFormat<Calendar>::convert method threw an exception for an existing calendar date: 2008-01-31." << std::endl;
-    }
-    try {
-      calendar_format.convert(Calendar(2008, 4, 31, 0, 0, 0.));
-      err() << "TimeFormat<Calendar>::convert method did not throw an exception for a non-existing calendar date: 2008-04-31." <<
-        std::endl;
-    } catch (const std::exception &) {
-    }
-
-    // Test detections of non-existing day near the end of February.
-    try {
-      calendar_format.convert(Calendar(2008, 2, 30, 0, 0, 0.));
-      err() << "TimeFormat<Calendar>::convert method did not throw an exception for a non-existing calendar date: 2008-02-30." <<
-        std::endl;
-    } catch (const std::exception &) {
-    }
-    try {
-      calendar_format.convert(Calendar(2008, 2, 29, 0, 0, 0.));
-    } catch (const std::exception &) {
-      err() << "TimeFormat<Calendar>::convert method threw an exception for an existing calendar date: 2008-02-29." << std::endl;
-    }
-    try {
-      calendar_format.convert(Calendar(2009, 2, 29, 0, 0, 0.));
-      err() << "TimeFormat<Calendar>::convert method did not throw an exception for a non-existing calendar date: 2009-02-29." <<
-        std::endl;
-    } catch (const std::exception &) {
-    }
-    try {
-      calendar_format.convert(Calendar(2100, 2, 29, 0, 0, 0.));
-      err() << "TimeFormat<Calendar>::convert method did not throw an exception for a non-existing calendar date: 2100-02-29." <<
-        std::endl;
-    } catch (const std::exception &) {
-    }
-    try {
-      calendar_format.convert(Calendar(2000, 2, 29, 0, 0, 0.));
-    } catch (const std::exception &) {
-      err() << "TimeFormat<Calendar>::convert method threw an exception for an existing calendar date: 2000-02-29." << std::endl;
-    }
-    // Note: No need for testing ordinal dates and ISO week dates out of bounds, because those can be correctly interpreted
-    //       as an elapsed days even beyond their regular limits.
   }
 
   void TestBaryTimeComputer() {
