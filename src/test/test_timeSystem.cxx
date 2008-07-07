@@ -678,8 +678,7 @@ namespace {
     }
   }
 
-  void TestOneDateTimeComputation(const moment_type & moment, const datetime_type & expected_datetime,
-      const datetime_type & expected_datetime_utc) {
+  void TestOneDateTimeComputation(const moment_type & moment, const datetime_type & datetime, const datetime_type & datetime_utc) {
     std::list<std::string> time_system_name_list;
     time_system_name_list.push_back("TAI");
     time_system_name_list.push_back("TDB");
@@ -687,17 +686,18 @@ namespace {
     time_system_name_list.push_back("UTC");
     double tolerance = 1.e-9;
 
-    for (std::list<std::string>::const_iterator itor_sys = time_system_name_list.begin(); itor_sys != time_system_name_list.end(); ++itor_sys) {
+    for (std::list<std::string>::const_iterator itor_sys = time_system_name_list.begin(); itor_sys != time_system_name_list.end();
+      ++itor_sys) {
       std::string time_system_name = *itor_sys;
       const TimeSystem & time_system(TimeSystem::getSystem(time_system_name));
-      datetime_type expected(expected_datetime);
-      if ("UTC" == time_system_name) expected = expected_datetime_utc;
-      datetime_type result = time_system.computeDateTime(moment);
+      datetime_type expected_datetime(datetime);
+      if ("UTC" == time_system_name) expected_datetime = datetime_utc;
+      datetime_type result_datetime = time_system.computeDateTime(moment);
 
-      if (result.first != expected.first || std::fabs(result.second - expected.second) > tolerance) {
-        err() << "computeDateTime of " << time_system_name << " returned datetime_type(" << result.first <<
-          ", " << result.second << ") for moment_type(" << moment.first << ", " << moment.second <<
-          "), not equivalent to the expected result of moment_type(" << expected.first << ", " << expected.second <<
+      if (result_datetime.first != expected_datetime.first || std::fabs(result_datetime.second - expected_datetime.second) > tolerance) {
+        err() << "computeDateTime of " << time_system_name << " returned datetime_type(" << result_datetime.first <<
+          ", " << result_datetime.second << ") for moment_type(" << moment.first << ", " << moment.second <<
+          "), not equivalent to the expected result of datetime_type(" << expected_datetime.first << ", " << expected_datetime.second <<
           "), with tolerance of " << tolerance << " seconds." << std::endl;
       }
     }
@@ -993,6 +993,77 @@ namespace {
     // --- After the end of a leap second.
     TestOneDateTimeComputation(moment_type(leap1 - 1, Duration(1, deltat - 0.7)),
       datetime_type(leap1, deltat - 0.7), datetime_type(leap1, deltat + 0.3));
+
+    // Test computeMoment method.
+    std::list<std::string> time_system_name_list;
+    time_system_name_list.push_back("TAI");
+    time_system_name_list.push_back("TDB");
+    time_system_name_list.push_back("TT");
+    time_system_name_list.push_back("UTC");
+    for (std::list<std::string>::const_iterator itor_sys = time_system_name_list.begin(); itor_sys != time_system_name_list.end();
+      ++itor_sys) {
+      std::string time_system_name = *itor_sys;
+      const TimeSystem & time_system(TimeSystem::getSystem(time_system_name));
+
+      // Test conversions in the middle of nowhere.
+      datetime_type input_datetime(51910, 100.);
+      moment_type expected_moment(51910, Duration(0, 100.));
+      moment_type result_moment = time_system.computeMoment(input_datetime);
+      Duration tolerance(0, 1.e-9);
+      if (result_moment.first != expected_moment.first || !result_moment.second.equivalentTo(expected_moment.second, tolerance)) {
+        err() << "computeMoment of " << time_system_name << " returned moment_type(" << result_moment.first <<
+          ", " << result_moment.second << ") for datetime_type(" << input_datetime.first << ", " << input_datetime.second <<
+          "), not equivalent to the expected result of moment_type(" << expected_moment.first << ", " << expected_moment.second <<
+          "), with tolerance of " << tolerance << " seconds." << std::endl;
+      }
+
+      // Test detections of the time part that is out of bounds, below the lower boundary.
+      input_datetime = datetime_type(51910, -.001);
+      try {
+        time_system.computeMoment(input_datetime);
+        err() << "computeMoment of " << time_system_name << " did not throw an exception for for datetime_type(" <<
+          input_datetime.first << ", " << input_datetime.second << ")." << std::endl;
+      } catch (const std::exception &) {
+      }
+
+      // Test detections of the time part that is out of bounds, at the upper boundary.
+      input_datetime = datetime_type(51910, SecPerDay());
+      try {
+        time_system.computeMoment(input_datetime);
+        err() << "computeMoment of " << time_system_name << " did not throw an exception for for datetime_type(" <<
+          input_datetime.first << ", " << input_datetime.second << ")." << std::endl;
+      } catch (const std::exception &) {
+      }
+
+      if ("UTC" == time_system_name) {
+        // Test NO detections of the time part that is out of bounds, during an inserted leap second.
+        input_datetime = datetime_type(leap2 - 1, SecPerDay() + .999);
+        try {
+          time_system.computeMoment(input_datetime);
+        } catch (const std::exception &) {
+          err() << "computeMoment of " << time_system_name << " threw an exception for for datetime_type(" <<
+            input_datetime.first << ", " << input_datetime.second << ")." << std::endl;
+        }
+
+        // Test detections of the time part that is out of bounds, after an inserted leap second.
+        input_datetime = datetime_type(leap2 - 1, SecPerDay() + 1.001);
+        try {
+          time_system.computeMoment(input_datetime);
+          err() << "computeMoment of " << time_system_name << " did not throw an exception for for datetime_type(" <<
+            input_datetime.first << ", " << input_datetime.second << ")." << std::endl;
+        } catch (const std::exception &) {
+        }
+
+        // Test detections of the time part that is out of bounds, during a removed leap second.
+        input_datetime = datetime_type(leap1 - 1, SecPerDay() + -.999);
+        try {
+          time_system.computeMoment(input_datetime);
+          err() << "computeMoment of " << time_system_name << " did not throw an exception for for datetime_type(" <<
+            input_datetime.first << ", " << input_datetime.second << ")." << std::endl;
+        } catch (const std::exception &) {
+        }
+      }
+    }
 
     // Note: The following test became unnecessary as of May 29th, 2008 due to the improved robustness of the design.
 #if 0

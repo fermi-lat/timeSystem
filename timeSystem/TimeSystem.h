@@ -40,6 +40,8 @@ namespace timeSystem {
 
       virtual datetime_type computeDateTime(const moment_type & moment) const;
 
+      virtual moment_type computeMoment(const datetime_type & datetime) const;
+
       virtual void checkMoment(const moment_type & moment) const;
 
       std::string getName() const;
