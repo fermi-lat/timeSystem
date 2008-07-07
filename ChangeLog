@@ -1,5 +1,14 @@
 ------------------------------------------------------------
 User: hirayama  Sun Jul  6 23:31:31 PDT 2008
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Add TimeSystem::computeMoment method to improve parameter checking.
+    *
+------------------------------------------------------------
+User: hirayama  Sun Jul  6 23:31:31 PDT 2008
 timeSystem/src
 
 Modified Files:
