@@ -106,7 +106,7 @@ namespace timeSystem {
     // Convert time formats.
     const TimeFormat<TimeRepType> & time_format = TimeFormatFactory<TimeRepType>::getFormat();
     datetime_type datetime = time_format.convert(time_rep);
-    m_moment = moment_type(datetime.first, Duration(datetime.second, "Sec"));
+    m_moment = m_time_system->computeMoment(datetime);
   }
 
   template <typename TimeRepType>
@@ -117,7 +117,7 @@ namespace timeSystem {
 
     // Parse time string.
     datetime_type datetime = time_format.convert(time_format.parse(time_string));
-    m_moment = moment_type(datetime.first, Duration(datetime.second, "Sec"));
+    m_moment = m_time_system->computeMoment(datetime);
   }
 
   template <typename TimeRepType>

@@ -60,6 +60,8 @@ namespace {
 
       virtual datetime_type computeDateTime(const moment_type & moment) const;
 
+      virtual moment_type computeMoment(const datetime_type & datetime) const;
+
       void checkMoment(const moment_type & moment) const;
   };
 
@@ -279,6 +281,23 @@ namespace {
     return datetime;
   }
 
+  moment_type UtcSystem::computeMoment(const datetime_type & datetime) const {
+    // Compute the number of seconds in the given date.
+    moment_type this_date(datetime.first, Duration::zero());
+    moment_type next_date(datetime.first + 1, Duration::zero());
+    double max_second = computeTimeDifference(next_date, this_date).get("Sec");
+
+    // Check the date and time.
+    if (datetime.second < 0. || datetime.second >= max_second) {
+      std::ostringstream os;
+      os << "Time part of the given date and time out of bounds: " << datetime.second << " seconds of " << datetime.first << " MJD.";
+      throw std::runtime_error(os.str());
+    }
+
+    // Compute and return the moment.
+    return moment_type(datetime.first, Duration(datetime.second, "Sec"));
+  }
+
   void UtcSystem::checkMoment(const moment_type & moment) const {
     // Get the leap-second table and the oldest MJD in the table.
     const LeapSecTable & leap_sec_table(LeapSecTable::getTable());
@@ -456,6 +475,22 @@ namespace timeSystem {
     return datetime_type(moment.first + elapsed_int, elapsed_sec);
   }
 
+  moment_type TimeSystem::computeMoment(const datetime_type & datetime) const {
+    // Check the date and time.
+    if (datetime.second < 0. || datetime.second >= SecPerDay()) {
+      std::ostringstream os;
+      os << "Time part of the given date and time out of bounds: " << datetime.second << " seconds of " << datetime.first << " MJD.";
+      throw std::runtime_error(os.str());
+    }
+
+    // Compute and return the moment.
+    return moment_type(datetime.first, Duration(datetime.second, "Sec"));
+  }
+
+  void TimeSystem::checkMoment(const moment_type & /* moment */) const {
+    // Do nothing for most time systems.
+  }
+
   std::ostream & operator <<(std::ostream & os, const TimeSystem & sys) {
     sys.write(os);
     return os;
@@ -464,10 +499,6 @@ namespace timeSystem {
   st_stream::OStream & operator <<(st_stream::OStream & os, const TimeSystem & sys) {
     sys.write(os);
     return os;
-  }
-
-  void TimeSystem::checkMoment(const moment_type & /* moment */) const {
-    // Do nothing for most time systems.
   }
 
 }
