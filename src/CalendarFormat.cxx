@@ -28,6 +28,10 @@ namespace {
 
       long findNearestMonday(long mjd) const;
 
+      void checkCalendarDate(long year, long month, long day) const;
+
+      void checkOrdinalDate(long year, long day) const;
+
     private:
       typedef std::vector<long> table_type;
 
@@ -159,24 +163,11 @@ namespace {
   }
 
   long GregorianCalendar::computeOrdinalDate(long year, long month, long day) const {
+    // Check the given month and day numbers.
+    checkCalendarDate(year, month, day);
+    
     // Get the table of the number of days per month.
     const table_type & day_per_month = DayPerMonth(year);
-
-    // Check the given month number.
-    long max_month = day_per_month.size();
-    if (month < 1 || month > max_month) {
-      std::ostringstream os;
-      os << "Month number out of bounds (1-" << max_month << "): " << month;
-      throw std::runtime_error(os.str());
-    }
-
-    // Check the given day numbers.
-    long max_day = day_per_month[month - 1];
-    if (day < 1 || day > max_day) {
-      std::ostringstream os;
-      os << "Day number out of bounds (1-" << max_day << "): " << day;
-      throw std::runtime_error(os.str());
-    }
 
     // Compute an ordinal date for the given month and day numbers.
     long ordinal_date = 0;
@@ -200,6 +191,39 @@ namespace {
 
     // Return MJD of the Monday.
     return mjd_monday;
+  }
+
+  void GregorianCalendar::checkCalendarDate(long year, long month, long day) const {
+    // Get the table of the number of days per month.
+    const table_type & day_per_month = DayPerMonth(year);
+
+    // Check the given month number.
+    long max_month = day_per_month.size();
+    if (month < 1 || month > max_month) {
+      std::ostringstream os;
+      os << "Month number out of bounds (1-" << max_month << "): " << month;
+      throw std::runtime_error(os.str());
+    }
+
+    // Check the given day number.
+    long max_day = day_per_month[month - 1];
+    if (day < 1 || day > max_day) {
+      std::ostringstream os;
+      os << "Day number out of bounds (1-" << max_day << "): " << day;
+      throw std::runtime_error(os.str());
+    }
+  }
+
+  void GregorianCalendar::checkOrdinalDate(long year, long day) const {
+    // Compute the maximum ordinal date.
+    long max_day = computeOrdinalDate(year, 12, 31);
+
+    // Check the given ordinal date.
+    if (day < 1 || day > max_day) {
+      std::ostringstream os;
+      os << "Ordinal date out of bounds (1-" << max_day << "): " << day;
+      throw std::runtime_error(os.str());
+    }
   }
 
   long GregorianCalendar::DayPer400Year() const {
@@ -253,6 +277,11 @@ namespace {
   enum DateType { CalendarDate, IsoWeekDate, OrdinalDate, UnsupportedDate };
   DateType parseIso8601Format(const std::string & time_string, array_type & integer_value, double & double_value);
 
+  /** \function checkHourMinSec
+      \brief Helper function to help CalendarFormat, IsoWeekFormat, and OrdinalFormat classes check the time part.
+  */
+  void checkHourMinSec(long hour, long min, double sec);
+
   /** \class CalendarFormat
       \brief Class to represent a calendar format of time representation.
   */
@@ -279,6 +308,9 @@ namespace {
       virtual IsoWeek parse(const std::string & time_string) const;
 
       virtual std::string format(const IsoWeek & time_rep, std::streamsize precision = std::numeric_limits<double>::digits10) const;
+
+    private:
+      void checkWeekDate(long iso_year, long week_number, long weekday_number) const;
   };
 
   /** \class OrdinalFormat
@@ -373,6 +405,25 @@ namespace {
     return date_type;
   }
 
+  void checkHourMinSec(long hour, long min, double sec) {
+    // Check the time part of the given time representation.
+    if (hour < 0 || hour > 23) {
+      std::ostringstream os;
+      os << "Hours of the day out of bounds (0-23): " << hour;
+      throw std::runtime_error(os.str());
+
+    } else if (min < 0 || min > 59) {
+      std::ostringstream os;
+      os << "Minutes of the hour out of bounds (0-59): " << min;
+      throw std::runtime_error(os.str());
+
+    } else if (sec < 0) {
+      std::ostringstream os;
+      os << "Seconds of the minute out of bounds: " << sec;
+      throw std::runtime_error(os.str());
+    }
+  }
+
   Calendar CalendarFormat::convert(const datetime_type & datetime) const {
     // Convert to the ordinal date representation.
     const TimeFormat<Ordinal> & ordinal_format(TimeFormatFactory<Ordinal>::getFormat());
@@ -387,11 +438,14 @@ namespace {
     return Calendar(ordinal_rep.m_year, month, day, ordinal_rep.m_hour, ordinal_rep.m_min, ordinal_rep.m_sec);
   }
 
-  datetime_type CalendarFormat::convert(const Calendar & calendar_rep) const {
-    // Convert calendar representation to ordinal date representation.
+  datetime_type CalendarFormat::convert(const Calendar & time_rep) const {
+    // Check the date part of the given time representation.
     const GregorianCalendar & calendar(GregorianCalendar::getCalendar());
-    long ordinal_date = calendar.computeOrdinalDate(calendar_rep.m_year, calendar_rep.m_mon, calendar_rep.m_day);
-    Ordinal ordinal_rep(calendar_rep.m_year, ordinal_date, calendar_rep.m_hour, calendar_rep.m_min, calendar_rep.m_sec);
+    calendar.checkCalendarDate(time_rep.m_year, time_rep.m_mon, time_rep.m_day);
+
+    // Convert calendar representation to ordinal date representation.
+    long ordinal_date = calendar.computeOrdinalDate(time_rep.m_year, time_rep.m_mon, time_rep.m_day);
+    Ordinal ordinal_rep(time_rep.m_year, ordinal_date, time_rep.m_hour, time_rep.m_min, time_rep.m_sec);
 
     // Convert to datetime_type.
     const TimeFormat<Ordinal> & ordinal_format(TimeFormatFactory<Ordinal>::getFormat());
@@ -407,11 +461,26 @@ namespace {
     // Check date_type and throw an exception if it is not CalendarDate.
     if (date_type != CalendarDate) throw std::runtime_error("Unable to recognize as a calendar date format: " + time_string);
 
+    // Check the date part of the given time representation.
+    const GregorianCalendar & calendar(GregorianCalendar::getCalendar());
+    calendar.checkCalendarDate(int_array[0], int_array[1], int_array[2]);
+
+    // Check the time part of the given time representation.
+    checkHourMinSec(int_array[3], int_array[4], dbl_value);
+
     // Return the result.
     return Calendar(int_array[0], int_array[1], int_array[2], int_array[3], int_array[4], dbl_value);
   }
 
   std::string CalendarFormat::format(const Calendar & time_rep, std::streamsize precision) const {
+    // Check the date part of the given time representation.
+    const GregorianCalendar & calendar(GregorianCalendar::getCalendar());
+    calendar.checkCalendarDate(time_rep.m_year, time_rep.m_mon, time_rep.m_day);
+
+    // Check the time part of the given time representation.
+    checkHourMinSec(time_rep.m_hour, time_rep.m_min, time_rep.m_sec);
+
+    // Format the time into a string.
     std::ostringstream os;
     os << std::setfill('0') << std::setw(4) << time_rep.m_year << "-" << std::setw(2) << time_rep.m_mon << "-" <<
       std::setw(2) << time_rep.m_day << "T" << std::setw(2) << time_rep.m_hour << ":" << std::setw(2) << time_rep.m_min << ":";
@@ -464,18 +533,21 @@ namespace {
     return IsoWeek(iso_year, week_number, weekday_number, ordinal_rep.m_hour, ordinal_rep.m_min, ordinal_rep.m_sec);
   }
 
-  datetime_type IsoWeekFormat::convert(const IsoWeek & iso_week_rep) const {
-    // Compute date and time of January 1st of calendar year iso_week_rep.m_year.
+  datetime_type IsoWeekFormat::convert(const IsoWeek & time_rep) const {
+    // Check the date part of the given time representation.
+    checkWeekDate(time_rep.m_year, time_rep.m_week, time_rep.m_day);
+
+    // Compute date and time of January 1st of calendar year time_rep.m_year.
     const TimeFormat<Ordinal> & ordinal_format(TimeFormatFactory<Ordinal>::getFormat());
-    Ordinal ordinal_rep(iso_week_rep.m_year, 1, iso_week_rep.m_hour, iso_week_rep.m_min, iso_week_rep.m_sec);
+    Ordinal ordinal_rep(time_rep.m_year, 1, time_rep.m_hour, time_rep.m_min, time_rep.m_sec);
     datetime_type datetime = ordinal_format.convert(ordinal_rep);
 
     // Add weeks and days to the result MJD.
-    datetime.first += (iso_week_rep.m_week - 1) * 7 + iso_week_rep.m_day - 1;
+    datetime.first += (time_rep.m_week - 1) * 7 + time_rep.m_day - 1;
 
-    // Compute the number of days since January 1st of calendar year iso_week_rep.m_year until ISO year iso_week_rep.m_year.
+    // Compute the number of days since January 1st of calendar year time_rep.m_year until ISO year time_rep.m_year.
     const GregorianCalendar & calendar(GregorianCalendar::getCalendar());
-    long mjd_jan1 = calendar.computeMjd(iso_week_rep.m_year, 1);
+    long mjd_jan1 = calendar.computeMjd(time_rep.m_year, 1);
     long mjd_day1 = calendar.findNearestMonday(mjd_jan1);
 
     // Adjust the difference between calendar year and ISO year.
@@ -494,11 +566,24 @@ namespace {
     // Check date_type and throw an exception if it is not IsoWeekDate.
     if (date_type != IsoWeekDate) throw std::runtime_error("Unable to recognize as an ISO week date format: " + time_string);
 
+    // Check the date part of the given time representation.
+    checkWeekDate(int_array[0], int_array[1], int_array[2]);
+
+    // Check the time part of the given time representation.
+    checkHourMinSec(int_array[3], int_array[4], dbl_value);
+
     // Return the result.
     return IsoWeek(int_array[0], int_array[1], int_array[2], int_array[3], int_array[4], dbl_value);
   }
 
   std::string IsoWeekFormat::format(const IsoWeek & time_rep, std::streamsize precision) const {
+    // Check the date part of the given time representation.
+    checkWeekDate(time_rep.m_year, time_rep.m_week, time_rep.m_day);
+
+    // Check the time part of the given time representation.
+    checkHourMinSec(time_rep.m_hour, time_rep.m_min, time_rep.m_sec);
+
+    // Format the time into a string.
     std::ostringstream os;
     os << std::setfill('0') << std::setw(4) << time_rep.m_year << "-W" << std::setw(2) << time_rep.m_week << "-" <<
       std::setw(1) << time_rep.m_day << "T" << std::setw(2) << time_rep.m_hour << ":" << std::setw(2) << time_rep.m_min << ":";
@@ -508,7 +593,42 @@ namespace {
     return os.str();
   }
 
+  void IsoWeekFormat::checkWeekDate(long iso_year, long week_number, long weekday_number) const {
+    // Check the given weekday_number.
+    if (weekday_number < 1 || weekday_number > 7) {
+      std::ostringstream os;
+      os << "Weekday number out of bounds (1-7): " << weekday_number;
+      throw std::runtime_error(os.str());
+    }
+
+    // Compute the first day of the given ISO year.
+    const GregorianCalendar & calendar(GregorianCalendar::getCalendar());
+    long mjd_jan1 = calendar.computeMjd(iso_year, 1);
+    long mjd_day1 = calendar.findNearestMonday(mjd_jan1);
+
+    // Compute the first day of the next ISO year.
+    long mjd_jan1_next = calendar.computeMjd(iso_year + 1, 1);
+    long mjd_day1_next = calendar.findNearestMonday(mjd_jan1_next);
+
+    // Compute the number of weeks in this ISO year.
+    long max_week = (mjd_day1_next - mjd_day1) / 7;
+
+    // Check the given week_number.
+    if (week_number < 1 || week_number > max_week) {
+      std::ostringstream os;
+      os << "Weekday number out of bounds (1-" << max_week << "): " << weekday_number;
+      throw std::runtime_error(os.str());
+    }
+  }
+
   Ordinal OrdinalFormat::convert(const datetime_type & datetime) const {
+    // Check the time part of the given date and time.
+    if (datetime.second < 0.) {
+      std::ostringstream os;
+      os << "Negative number is given for a time of the day: " << datetime.second << " seconds of " << datetime.first << " MJD.";
+      throw std::runtime_error(os.str());
+    }
+
     // Compute the year and the ordinal date for the given MJD.
     const GregorianCalendar & calendar(GregorianCalendar::getCalendar());
     long day = 0;
@@ -530,13 +650,19 @@ namespace {
     return Ordinal(year, day, hour, min, sec);
   }
 
-  datetime_type OrdinalFormat::convert(const Ordinal & ordinal_rep) const {
-    // Compute an integer part of MJD from the given year and the ordinal date.
+  datetime_type OrdinalFormat::convert(const Ordinal & time_rep) const {
+    // Check the date part of the given time representation.
     const GregorianCalendar & calendar(GregorianCalendar::getCalendar());
-    long mjd_number = calendar.computeMjd(ordinal_rep.m_year, ordinal_rep.m_day);
+    calendar.checkOrdinalDate(time_rep.m_year, time_rep.m_day);
+
+    // Check the time part of the given time representation.
+    checkHourMinSec(time_rep.m_hour, time_rep.m_min, time_rep.m_sec);
+
+    // Compute an integer part of MJD from the given year and the ordinal date.
+    long mjd_number = calendar.computeMjd(time_rep.m_year, time_rep.m_day);
 
     // Compute the number of seconds since the beginning of the day.
-    double num_second = ordinal_rep.m_hour * SecPerHour() + ordinal_rep.m_min * SecPerMin() + ordinal_rep.m_sec;
+    double num_second = time_rep.m_hour * SecPerHour() + time_rep.m_min * SecPerMin() + time_rep.m_sec;
 
     // Return the result.
     return datetime_type(mjd_number, num_second);
@@ -551,11 +677,26 @@ namespace {
     // Check date_type and throw an exception if it is not OrdinalDate.
     if (date_type != OrdinalDate) throw std::runtime_error("Unable to recognize as an ordinal date format: " + time_string);
 
+    // Check the date part of the given time representation.
+    const GregorianCalendar & calendar(GregorianCalendar::getCalendar());
+    calendar.checkOrdinalDate(int_array[0], int_array[1]);
+
+    // Check the time part of the given time representation.
+    checkHourMinSec(int_array[2], int_array[3], dbl_value);
+
     // Return the result.
     return Ordinal(int_array[0], int_array[1], int_array[2], int_array[3], dbl_value);
   }
 
   std::string OrdinalFormat::format(const Ordinal & time_rep, std::streamsize precision) const {
+    // Check the date part of the given time representation.
+    const GregorianCalendar & calendar(GregorianCalendar::getCalendar());
+    calendar.checkOrdinalDate(time_rep.m_year, time_rep.m_day);
+
+    // Check the time part of the given time representation.
+    checkHourMinSec(time_rep.m_hour, time_rep.m_min, time_rep.m_sec);
+
+    // Format the time into a string.
     std::ostringstream os;
     os << std::setfill('0') << std::setw(4) << time_rep.m_year << "-" << std::setw(3) << time_rep.m_day << "T" <<
       std::setw(2) << time_rep.m_hour << ":" << std::setw(2) << time_rep.m_min << ":";

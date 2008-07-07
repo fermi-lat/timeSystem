@@ -2140,13 +2140,11 @@ namespace {
         expected_ordinal.m_hour << ", " << expected_ordinal.m_min << ", " << expected_ordinal.m_sec << ") as expected." << std::endl;
     }
 
-#if 0
     // Test detections of bad times of the day.
     TestOneBadDateTime(calendar_format, datetime_type(51910, -0.001), "Calendar", "a time of the day: -0.001");
     TestOneBadDateTime(iso_week_format, datetime_type(51910, -0.001), "IsoWeek", "a time of the day: -0.001");
     TestOneBadDateTime(ordinal_format, datetime_type(51910, -0.001), "Ordinal", "a time of the day: -0.001");
-#endif
-#if 0
+
     // Test detections of non-existing month.
     TestOneBadTimeRep(calendar_format, Calendar(2008,  0, 1, 0, 0, 0.), "Calendar", "a bad calendar month: 0.");
     TestOneBadTimeRep(calendar_format, Calendar(2008, 13, 1, 0, 0, 0.), "Calendar", "a bad calendar month: 13.");
@@ -2192,18 +2190,17 @@ namespace {
     TestOneBadTimeString(calendar_format, "2008-06-17T00:00:-1.0", "Calendar");
     // Note: TimeFormat<Calendar> cannot detect the second part exceeding its maximum because of a possible leap second insertion,
     //       and TimeSystem class should test it instead.
-#endif
-#if 0
-    // Test detections of non-existing week number.
-    TestOneBadTimeRep(iso_week_format, IsoWeek(2008,  0, 0, 0,  0,  0.), "IsoWeek", "a non-existing week number: 0.");
-    TestOneBadTimeRep(iso_week_format, IsoWeek(2008, 53, 0, 0,  0,  0.), "IsoWeek", "a non-existing week number: 53.");
-    TestOneBadTimeRep(iso_week_format, IsoWeek(2009, 53, 0, 0,  0,  0.), "IsoWeek", "an existing week number: 53.", false);
-    TestOneBadTimeRep(iso_week_format, IsoWeek(2009, 54, 0, 0,  0,  0.), "IsoWeek", "a non-existing week number: 54.");
 
-    TestOneBadTimeString(iso_week_format, "2008-W00-0T00:00:00.0", "IsoWeek");
-    TestOneBadTimeString(iso_week_format, "2008-W53-0T00:00:00.0", "IsoWeek");
-    TestOneBadTimeString(iso_week_format, "2009-W53-0T00:00:00.0", "IsoWeek", false);
-    TestOneBadTimeString(iso_week_format, "2009-W54-0T00:00:00.0", "IsoWeek");
+    // Test detections of non-existing week number.
+    TestOneBadTimeRep(iso_week_format, IsoWeek(2008,  0, 1, 0,  0,  0.), "IsoWeek", "a non-existing week number: 0.");
+    TestOneBadTimeRep(iso_week_format, IsoWeek(2008, 53, 1, 0,  0,  0.), "IsoWeek", "a non-existing week number: 53.");
+    TestOneBadTimeRep(iso_week_format, IsoWeek(2009, 53, 1, 0,  0,  0.), "IsoWeek", "an existing week number: 53.", false);
+    TestOneBadTimeRep(iso_week_format, IsoWeek(2009, 54, 1, 0,  0,  0.), "IsoWeek", "a non-existing week number: 54.");
+
+    TestOneBadTimeString(iso_week_format, "2008-W00-1T00:00:00.0", "IsoWeek");
+    TestOneBadTimeString(iso_week_format, "2008-W53-1T00:00:00.0", "IsoWeek");
+    TestOneBadTimeString(iso_week_format, "2009-W53-1T00:00:00.0", "IsoWeek", false);
+    TestOneBadTimeString(iso_week_format, "2009-W54-1T00:00:00.0", "IsoWeek");
 
     // Test detections of non-existing day of week.
     TestOneBadTimeRep(iso_week_format, IsoWeek(2008, 25, 0, 0,  0,  0.), "IsoWeek", "a non-existing day of the week: 0.");
@@ -2226,8 +2223,7 @@ namespace {
     TestOneBadTimeString(iso_week_format, "2008-W25-2T00:00:-1.0", "IsoWeek");
     // Note: TimeFormat<IsoWeek> cannot detect the second part exceeding its maximum because of a possible leap second insertion,
     //       and TimeSystem class should test it instead.
-#endif
-#if 0
+
     // Test detections of non-existing ordinal day.
     TestOneBadTimeRep(ordinal_format, Ordinal(2008, 367, 0, 0, 0.), "Ordinal", "a non-existing ordinal date: 2008-367.");
     TestOneBadTimeRep(ordinal_format, Ordinal(2008, 366, 0, 0, 0.), "Ordinal", "an existing ordinal date: 2008-366.", false);
@@ -2255,11 +2251,6 @@ namespace {
     TestOneBadTimeString(ordinal_format, "2008-169T00:00:-1.0", "Ordinal");
     // Note: TimeFormat<Ordinal> cannot detect the second part exceeding its maximum because of a possible leap second insertion,
     //       and TimeSystem class should test it instead.
-
-
-    // Note: No need for testing ordinal dates and ISO week dates out of bounds, because those can be correctly interpreted
-    //       as an elapsed days even beyond their regular limits.
-#endif
 
     // Test detections of bad Calendar, IsoWeek, and Ordinal strings.
     TestOneBadTimeString(calendar_format, "Not A Number", "Calendar");
