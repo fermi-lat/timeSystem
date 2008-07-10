@@ -1,4 +1,54 @@
 ------------------------------------------------------------
+TAG
+Tag name: ScienceTools-09-06-00, operation: add
+Package: timeSystem
+User: glastrm  Wed Jul  9 20:33:38 2008
+Files:
+  timeSystem/cmt/requirements  1.3
+  timeSystem/data/my_pulsar_events_bary_v3.fits  1.1
+  timeSystem/data/my_pulsar_spacecraft_data_v3r1.fits  1.1
+  timeSystem/data/bogusls.fits  1.1
+  timeSystem/data/my_pulsar_spacecraft_data_v3.fits  1.1
+  timeSystem/data/my_pulsar_events_v3.fits  1.1
+  timeSystem/doc/release.notes  1.17
+  timeSystem/pfiles/gtbary.par  1.6
+  timeSystem/src/axBary.c  1.2
+  timeSystem/src/AbsoluteTime.cxx  1.13
+  timeSystem/src/scorbit.c  1.1.1.1
+  timeSystem/src/bary.c  1.1.1.1
+  timeSystem/src/clock.c  1.1.1.1
+  timeSystem/src/ElapsedTime.cxx  1.3
+  timeSystem/src/phaseHist.c  1.1.1.1
+  timeSystem/src/mainpage.h  1.5
+  timeSystem/src/TimeSystem.cxx  1.22
+  timeSystem/src/bary.h  1.1.1.1
+  timeSystem/src/TimeRep.cxx  1.14
+  timeSystem/src/xCC.c  1.1.1.1
+  timeSystem/src/EventTimeHandler.cxx  1.18
+  timeSystem/src/BaryTimeComputer.cxx  1.4
+  timeSystem/src/TimeInterval.cxx  1.1.1.1
+  timeSystem/src/glastscorbit.c  1.1.1.1
+  timeSystem/src/ctatv.c  1.1.1.1
+  timeSystem/src/GlastTimeHandler.cxx  1.7
+  timeSystem/src/dpleph.c  1.1.1.1
+  timeSystem/src/gtbary/gtbary.cxx  1.5
+  timeSystem/src/test/test_timeSystem.cxx  1.57
+  timeSystem/timeSystem/TimeRep.h  1.14
+  timeSystem/timeSystem/TimeInterval.h  1.1.1.1
+  timeSystem/timeSystem/GlastMetRep.h  1.1
+  timeSystem/timeSystem/IntFracPair.h  1.4
+  timeSystem/timeSystem/Duration.h  1.13
+  timeSystem/timeSystem/AbsoluteTime.h  1.11
+  timeSystem/timeSystem/TimeConstant.h  1.3
+  timeSystem/timeSystem/ElapsedTime.h  1.2
+  timeSystem/timeSystem/GlastTimeHandler.h  1.5
+  timeSystem/timeSystem/EventTimeHandler.h  1.15
+  timeSystem/timeSystem/Field.h  1.1
+  timeSystem/timeSystem/BaryTimeComputer.h  1.4
+  timeSystem/timeSystem/TimeSystem.h  1.11
+
+    *
+------------------------------------------------------------
 User: hirayama  Sun Jul  6 23:31:31 PDT 2008
 timeSystem/src/test
 
