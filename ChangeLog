@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: peachey  Tue Jul 15 13:42:47 PDT 2008
+timeSystem/timeSystem
+
+Modified Files:
+	EventTimeHandler.h 
+Log Message:
+Remove TODO markers for which action is declined.
+    *
+------------------------------------------------------------
 User: peachey  Tue Jul 15 13:18:46 PDT 2008
 timeSystem/data
 
