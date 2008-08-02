@@ -1,5 +1,14 @@
 ------------------------------------------------------------
 User: hirayama  Fri Aug  1 17:10:27 PDT 2008
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Remove unnecesary const qualifiers from argument lists.
+    *
+------------------------------------------------------------
+User: hirayama  Fri Aug  1 17:10:27 PDT 2008
 timeSystem/src
 
 Modified Files:
