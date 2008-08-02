@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Fri Aug  1 17:10:26 PDT 2008
+timeSystem/timeSystem
+
+Modified Files:
+	BaryTimeComputer.h EventTimeHandler.h GlastTimeHandler.h 
+Log Message:
+Remove unnecesary const qualifiers from argument lists.
+    *
+------------------------------------------------------------
 TAG
 Tag name: ScienceTools-09-07-00, operation: add
 Package: timeSystem
