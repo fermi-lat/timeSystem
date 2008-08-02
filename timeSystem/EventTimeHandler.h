@@ -38,13 +38,13 @@ namespace timeSystem {
       void deregisterHandler();
 
       static EventTimeHandler * createHandler(const std::string & file_name, const std::string & extension_name,
-        const double angular_tolerance, const bool read_only = true);
+        double angular_tolerance, bool read_only = true);
 
     private:
       static cont_type & getFactoryContainer();
 
       virtual EventTimeHandler * createInstance(const std::string & file_name, const std::string & extension_name,
-        const double angular_tolerance, const bool read_only = true) const = 0;
+        double angular_tolerance, bool read_only = true) const = 0;
   };
 
   /** \class IEventTimeHandlerFactory
@@ -54,7 +54,7 @@ namespace timeSystem {
   class EventTimeHandlerFactory: public IEventTimeHandlerFactory {
     private:
       virtual EventTimeHandler * createInstance(const std::string & file_name, const std::string & extension_name,
-        const double angular_tolerance, const bool read_only = true) const {
+        double angular_tolerance, bool read_only = true) const {
         return HandlerType::createInstance(file_name, extension_name, angular_tolerance, read_only);
       }
   };
@@ -68,7 +68,7 @@ namespace timeSystem {
       virtual ~EventTimeHandler();
 
       static EventTimeHandler * createInstance(const std::string & file_name, const std::string & extension_name,
-        const double angular_tolerance, const bool read_only = true);
+        double angular_tolerance, bool read_only = true);
 
       virtual void setSpacecraftFile(const std::string & sc_file_name, const std::string & sc_extension_name) = 0;
 
@@ -76,11 +76,11 @@ namespace timeSystem {
 
       AbsoluteTime readHeader(const std::string & keyword_name) const;
 
-      AbsoluteTime readHeader(const std::string & keyword_name, const double ra, const double dec) const;
+      AbsoluteTime readHeader(const std::string & keyword_name, double ra, double dec) const;
 
       AbsoluteTime readColumn(const std::string & column_name) const;
 
-      AbsoluteTime readColumn(const std::string & column_name, const double ra, const double dec) const;
+      AbsoluteTime readColumn(const std::string & column_name, double ra, double dec) const;
 
       void setFirstRecord();
 
@@ -96,23 +96,23 @@ namespace timeSystem {
 
       tip::TableRecord & getCurrentRecord() const;
 
-      void checkSkyPosition(const double ra, const double dec) const;
+      void checkSkyPosition(double ra, double dec) const;
 
       void checkSolarEph(const std::string & solar_eph) const;
 
     protected:
-      EventTimeHandler(const std::string & file_name, const std::string & extension_name, const double angular_tolerance,
-        const bool read_only = true);
+      EventTimeHandler(const std::string & file_name, const std::string & extension_name, double angular_tolerance,
+        bool read_only = true);
 
-      virtual AbsoluteTime readTime(const tip::Header & header, const std::string & keyword_name, const bool request_bary_time,
-        const double ra, const double dec) const = 0;
+      virtual AbsoluteTime readTime(const tip::Header & header, const std::string & keyword_name, bool request_bary_time,
+        double ra, double dec) const = 0;
 
-      virtual AbsoluteTime readTime(const tip::TableRecord & record, const std::string & column_name, const bool request_bary_time,
-        const double ra, const double dec) const = 0;
+      virtual AbsoluteTime readTime(const tip::TableRecord & record, const std::string & column_name, bool request_bary_time,
+        double ra, double dec) const = 0;
 
       Mjd readMjdRef(const tip::Header & header) const;
 
-      void computeBaryTime(const double ra, const double dec, const std::vector<double> & sc_position, AbsoluteTime & abs_time)
+      void computeBaryTime(double ra, double dec, const std::vector<double> & sc_position, AbsoluteTime & abs_time)
         const;
 
     private:
@@ -133,7 +133,7 @@ namespace timeSystem {
 
       double computeInnerProduct(const std::vector<double> & vect_x, const std::vector<double> & vect_y) const;
 
-      std::vector<double> computeThreeVector(const double ra, const double dec) const;
+      std::vector<double> computeThreeVector(double ra, double dec) const;
   };
 }
 

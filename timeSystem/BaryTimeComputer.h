@@ -26,7 +26,7 @@ namespace timeSystem {
 
       void initialize(const std::string & pl_ephem);
 
-      void computeBaryTime(const double ra, const double dec, const std::vector<double> & sc_position, AbsoluteTime & abs_time)
+      void computeBaryTime(double ra, double dec, const std::vector<double> & sc_position, AbsoluteTime & abs_time)
         const;
 
     private:
@@ -38,7 +38,7 @@ namespace timeSystem {
 
       double computeInnerProduct(const std::vector<double> & vect_x, const std::vector<double> & vect_y) const;
 
-      std::vector<double> computeThreeVector(const double ra, const double dec) const;
+      std::vector<double> computeThreeVector(double ra, double dec) const;
   };
 
 }

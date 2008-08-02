@@ -2452,7 +2452,7 @@ namespace {
       virtual ~BogusTimeHandler1() {}
 
       static EventTimeHandler * createInstance(const std::string & /*file_name*/, const std::string & /*extension_name*/,
-        const double /*angular_tolerance*/, const bool /*read_only*/ = true)
+        double /*angular_tolerance*/, bool /*read_only*/ = true)
         { return 0; }
 
       virtual void setSpacecraftFile(const std::string & /*sc_file_name*/, const std::string & /*sc_extension_name*/) {}
@@ -2462,11 +2462,11 @@ namespace {
 
     protected:
       virtual AbsoluteTime readTime(const tip::Header & /*header*/, const std::string & /*keyword_name*/,
-        const bool /*request_bary_time*/, const double /*ra*/, const double /*dec*/) const
+        bool /*request_bary_time*/, double /*ra*/, double /*dec*/) const
         { return AbsoluteTime("TDB", 51911, 0.); }
 
       virtual AbsoluteTime readTime(const tip::TableRecord & /*record*/, const std::string & /*column_name*/,
-        const bool /*request_bary_time*/, const double /*ra*/, const double /*dec*/) const
+        bool /*request_bary_time*/, double /*ra*/, double /*dec*/) const
         { return AbsoluteTime("TDB", 51911, 0.); }
 
     private:
@@ -2479,7 +2479,7 @@ namespace {
       virtual ~BogusTimeHandler2() {}
 
       static EventTimeHandler * createInstance(const std::string & file_name, const std::string & extension_name,
-        const double angular_tolerance, const bool read_only = true)
+        double angular_tolerance, bool read_only = true)
         { return new BogusTimeHandler2(file_name, extension_name, angular_tolerance, read_only); }
 
       virtual void setSpacecraftFile(const std::string & /*sc_file_name*/, const std::string & /*sc_extension_name*/) {}
@@ -2489,16 +2489,16 @@ namespace {
 
     protected:
       virtual AbsoluteTime readTime(const tip::Header & /*header*/, const std::string & /*keyword_name*/,
-        const bool /*request_bary_time*/, const double /*ra*/, const double /*dec*/) const
+        bool /*request_bary_time*/, double /*ra*/, double /*dec*/) const
         { return AbsoluteTime("TDB", 51912, 0.); }
 
       virtual AbsoluteTime readTime(const tip::TableRecord & /*record*/, const std::string & /*column_name*/,
-        const bool /*request_bary_time*/, const double /*ra*/, const double /*dec*/) const
+        bool /*request_bary_time*/, double /*ra*/, double /*dec*/) const
         { return AbsoluteTime("TDB", 51912, 0.); }
 
     private:
-      BogusTimeHandler2(const std::string & file_name, const std::string & extension_name, const double angular_tolerance,
-        const bool read_only = true):
+      BogusTimeHandler2(const std::string & file_name, const std::string & extension_name, double angular_tolerance,
+        bool read_only = true):
       EventTimeHandler(file_name, extension_name, angular_tolerance, read_only) {}
   };
 

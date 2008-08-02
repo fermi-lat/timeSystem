@@ -31,18 +31,18 @@ namespace timeSystem {
       virtual ~GlastTimeHandler();
 
       static EventTimeHandler * createInstance(const std::string & file_name, const std::string & extension_name,
-        const double angular_tolerance, const bool read_only = true);
+        double angular_tolerance, bool read_only = true);
 
       virtual void setSpacecraftFile(const std::string & sc_file_name, const std::string & sc_extension_name);
 
       virtual AbsoluteTime parseTimeString(const std::string & time_string, const std::string & time_system = "FILE") const;
 
     protected:
-      virtual AbsoluteTime readTime(const tip::Header & header, const std::string & keyword_name, const bool request_bary_time,
-        const double ra, const double dec) const;
+      virtual AbsoluteTime readTime(const tip::Header & header, const std::string & keyword_name, bool request_bary_time,
+        double ra, double dec) const;
 
-      virtual AbsoluteTime readTime(const tip::TableRecord & record, const std::string & column_name, const bool request_bary_time,
-        const double ra, const double dec) const;
+      virtual AbsoluteTime readTime(const tip::TableRecord & record, const std::string & column_name, bool request_bary_time,
+        double ra, double dec) const;
 
     private:
       const TimeSystem * m_time_system;
@@ -50,10 +50,10 @@ namespace timeSystem {
       std::string m_sc_file;
       char * m_sc_file_char;
 
-      GlastTimeHandler(const std::string & file_name, const std::string & extension_name, const double angular_tolerance,
-        const bool read_only = true);
+      GlastTimeHandler(const std::string & file_name, const std::string & extension_name, double angular_tolerance,
+        bool read_only = true);
 
-      AbsoluteTime computeAbsoluteTime(const double glast_time, const bool request_bary_time, const double ra, const double dec) const;
+      AbsoluteTime computeAbsoluteTime(double glast_time, bool request_bary_time, double ra, double dec) const;
 
       static bool checkHeaderKeyword(const std::string & file_name, const std::string & extension_name);
   };
