@@ -20,8 +20,8 @@ extern "C" {
 
 namespace timeSystem {
 
-  GlastTimeHandler::GlastTimeHandler(const std::string & file_name, const std::string & extension_name, const double angular_tolerance,
-    const bool read_only): EventTimeHandler(file_name, extension_name, angular_tolerance, read_only), m_time_system(0),
+  GlastTimeHandler::GlastTimeHandler(const std::string & file_name, const std::string & extension_name, double angular_tolerance,
+    bool read_only): EventTimeHandler(file_name, extension_name, angular_tolerance, read_only), m_time_system(0),
     m_mjd_ref(0, 0.), m_sc_file(), m_sc_file_char(0) {
     // Get time system name from TIMESYS keyword.
     const tip::Header & header(getHeader());
@@ -71,7 +71,7 @@ namespace timeSystem {
   }
 
   EventTimeHandler * GlastTimeHandler::createInstance(const std::string & file_name, const std::string & extension_name,
-    const double angular_tolerance, const bool read_only) {
+    double angular_tolerance, bool read_only) {
     // Create an object to hold a return value and set a default return value.
     EventTimeHandler * handler(0);
 
@@ -103,8 +103,8 @@ namespace timeSystem {
     return (telescope == "GLAST" && instrument == "LAT");
   }
 
-  AbsoluteTime GlastTimeHandler::readTime(const tip::Header & header, const std::string & keyword_name, const bool request_bary_time,
-    const double ra, const double dec) const {
+  AbsoluteTime GlastTimeHandler::readTime(const tip::Header & header, const std::string & keyword_name, bool request_bary_time,
+    double ra, double dec) const {
     // Read keyword value from header as a signle variable of double type.
     double keyword_value = 0.;
     header[keyword_name].get(keyword_value);
@@ -113,8 +113,8 @@ namespace timeSystem {
     return computeAbsoluteTime(keyword_value, request_bary_time, ra, dec);
   }
 
-  AbsoluteTime GlastTimeHandler::readTime(const tip::TableRecord & record, const std::string & column_name, const bool request_bary_time,
-    const double ra, const double dec) const {
+  AbsoluteTime GlastTimeHandler::readTime(const tip::TableRecord & record, const std::string & column_name, bool request_bary_time,
+    double ra, double dec) const {
     // Read column value from a given record as a signle variable of double type.
     double column_value;
     record[column_name].get(column_value);
@@ -123,8 +123,7 @@ namespace timeSystem {
     return computeAbsoluteTime(column_value, request_bary_time, ra, dec);
   }
 
-  AbsoluteTime GlastTimeHandler::computeAbsoluteTime(const double glast_time, const bool request_bary_time,
-    const double ra, const double dec) const {
+  AbsoluteTime GlastTimeHandler::computeAbsoluteTime(double glast_time, bool request_bary_time, double ra, double dec) const {
     // Convert GLAST time to AbsoluteTime.
     const std::string time_system_name(m_time_system->getName());
     AbsoluteTime abs_time = AbsoluteTime(time_system_name, m_mjd_ref) + ElapsedTime(time_system_name, Duration(glast_time, "Sec"));

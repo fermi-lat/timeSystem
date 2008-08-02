@@ -45,7 +45,7 @@ namespace timeSystem {
   }
 
   EventTimeHandler * IEventTimeHandlerFactory::createHandler(const std::string & file_name, const std::string & extension_name,
-    const double angular_tolerance, const bool read_only) {
+    double angular_tolerance, bool read_only) {
     // Get the factory container.
     cont_type factory_cont(getFactoryContainer());
 
@@ -64,8 +64,8 @@ namespace timeSystem {
     }
   }
 
-  EventTimeHandler::EventTimeHandler(const std::string & file_name, const std::string & extension_name, const double angular_tolerance,
-    const bool read_only):
+  EventTimeHandler::EventTimeHandler(const std::string & file_name, const std::string & extension_name, double angular_tolerance,
+    bool read_only):
     m_file_name(file_name), m_ext_name(extension_name), m_table(0), m_bary_time(false), m_ra_nom(0.), m_dec_nom(0.), m_vect_nom(3),
     m_max_vect_diff(0.), m_pl_ephem(), m_computer(BaryTimeComputer::getComputer()) {
     // Get the table.
@@ -127,7 +127,7 @@ namespace timeSystem {
   }
 
   EventTimeHandler * EventTimeHandler::createInstance(const std::string & /*file_name*/, const std::string & /*extension_name*/,
-    const double /*angular_tolerance*/, const bool /*read_only*/) {
+    double /*angular_tolerance*/, bool /*read_only*/) {
     return 0;
   }
 
@@ -135,7 +135,7 @@ namespace timeSystem {
     return readTime(m_table->getHeader(), keyword_name, false, 0., 0.);
   }
   
-  AbsoluteTime EventTimeHandler::readHeader(const std::string & keyword_name, const double ra, const double dec) const {
+  AbsoluteTime EventTimeHandler::readHeader(const std::string & keyword_name, double ra, double dec) const {
     // Check RA & Dec in argument list match the table header, if already barycentered.
     if (m_bary_time) checkSkyPosition(ra, dec);
 
@@ -148,7 +148,7 @@ namespace timeSystem {
     return readTime(*m_record_itor, column_name, false, 0., 0.);
   }
   
-  AbsoluteTime EventTimeHandler::readColumn(const std::string & column_name, const double ra, const double dec) const {
+  AbsoluteTime EventTimeHandler::readColumn(const std::string & column_name, double ra, double dec) const {
     // Check RA & Dec in argument list match the table header, if already barycentered.
     if (m_bary_time) checkSkyPosition(ra, dec);
 
@@ -186,7 +186,7 @@ namespace timeSystem {
     return *m_record_itor;
   }
 
-  void EventTimeHandler::checkSkyPosition(const double ra, const double dec) const {
+  void EventTimeHandler::checkSkyPosition(double ra, double dec) const {
     std::vector<double> source = computeThreeVector(ra, dec);
     std::vector<double> diff(3);
     diff[0] = source[0] - m_vect_nom[0];
@@ -260,7 +260,7 @@ namespace timeSystem {
     return mjd_ref;
   }
 
-  void EventTimeHandler::computeBaryTime(const double ra, const double dec, const std::vector<double> & sc_position,
+  void EventTimeHandler::computeBaryTime(double ra, double dec, const std::vector<double> & sc_position,
     AbsoluteTime & abs_time) const {
     m_computer.computeBaryTime(ra, dec, sc_position, abs_time);
   }
@@ -269,7 +269,7 @@ namespace timeSystem {
     return vect_x[0]*vect_y[0] + vect_x[1]*vect_y[1] + vect_x[2]*vect_y[2];
   }
 
-  std::vector<double> EventTimeHandler::computeThreeVector(const double ra, const double dec) const {
+  std::vector<double> EventTimeHandler::computeThreeVector(double ra, double dec) const {
     std::vector<double> vect(3);
 
     vect[0] = std::cos(ra/RADEG) * std::cos(dec/RADEG);
