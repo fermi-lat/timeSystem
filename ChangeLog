@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Fri Aug  1 17:10:27 PDT 2008
+timeSystem/src
+
+Modified Files:
+	BaryTimeComputer.cxx EventTimeHandler.cxx GlastTimeHandler.cxx 
+Log Message:
+Remove unnecesary const qualifiers from argument lists.
+    *
+------------------------------------------------------------
 User: hirayama  Fri Aug  1 17:10:26 PDT 2008
 timeSystem/timeSystem
 
