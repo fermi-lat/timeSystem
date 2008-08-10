@@ -1,5 +1,14 @@
 ------------------------------------------------------------
 User: hirayama  Sat Aug  9 19:34:29 PDT 2008
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Restructure EventTimeHandler classes to avoid unnecessary reading of spacecraft files.
+    *
+------------------------------------------------------------
+User: hirayama  Sat Aug  9 19:34:29 PDT 2008
 timeSystem/src
 
 Modified Files:
