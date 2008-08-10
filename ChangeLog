@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Sat Aug  9 19:34:29 PDT 2008
+timeSystem/timeSystem
+
+Modified Files:
+	EventTimeHandler.h GlastTimeHandler.h 
+Log Message:
+Restructure EventTimeHandler classes to avoid unnecessary reading of spacecraft files.
+    *
+------------------------------------------------------------
 User: hirayama  Fri Aug  1 17:10:27 PDT 2008
 timeSystem/src/test
 
