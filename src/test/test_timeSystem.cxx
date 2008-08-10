@@ -2447,100 +2447,99 @@ namespace {
     }
   }
 
-  class BogusTimeHandler1: public EventTimeHandler {
+  class BogusTimeHandlerBase: public EventTimeHandler {
     public:
-      virtual ~BogusTimeHandler1() {}
+      virtual ~BogusTimeHandlerBase() {}
 
       static EventTimeHandler * createInstance(const std::string & /*file_name*/, const std::string & /*extension_name*/,
-        double /*angular_tolerance*/, bool /*read_only*/ = true)
+        bool /*read_only*/ = true)
         { return 0; }
 
-      virtual void setSpacecraftFile(const std::string & /*sc_file_name*/, const std::string & /*sc_extension_name*/) {}
+      virtual void initTimeCorrection(const std::string & /*sc_file_name*/, const std::string & /*sc_extension_name*/,
+        const std::string & /*solar_eph*/, bool /*match_solar_eph*/, double /*angular_tolerance*/) {}
+
+      virtual void setSourcePosition(double /*ra*/, double /*dec*/) {}
+
+      virtual AbsoluteTime readTime(const std::string & /*field_name*/, bool /*from_header*/ = false) const
+        { return AbsoluteTime("TDB", 51910, 0.); }
+
+      virtual AbsoluteTime getBaryTime(const std::string & /*field_name*/, bool /*from_header*/ = false) const
+        { return AbsoluteTime("TDB", 51910, 0.); }
 
       virtual AbsoluteTime parseTimeString(const std::string & /*time_string*/, const std::string & /*time_system*/ = "FILE") const
-        { return AbsoluteTime("TDB", 51911, 0.); }
+        { return AbsoluteTime("TDB", 51910, 0.); }
 
     protected:
-      virtual AbsoluteTime readTime(const tip::Header & /*header*/, const std::string & /*keyword_name*/,
-        bool /*request_bary_time*/, double /*ra*/, double /*dec*/) const
-        { return AbsoluteTime("TDB", 51911, 0.); }
+      BogusTimeHandlerBase(const std::string & file_name, const std::string & extension_name, bool read_only = true):
+      EventTimeHandler(file_name, extension_name, read_only) {}
+  };
 
-      virtual AbsoluteTime readTime(const tip::TableRecord & /*record*/, const std::string & /*column_name*/,
-        bool /*request_bary_time*/, double /*ra*/, double /*dec*/) const
-        { return AbsoluteTime("TDB", 51911, 0.); }
+  class BogusTimeHandler1: public BogusTimeHandlerBase {
+    public:
+      static EventTimeHandler * createInstance(const std::string & /*file_name*/, const std::string & /*extension_name*/,
+        bool /*read_only*/ = true)
+        { return 0; }
 
     private:
       BogusTimeHandler1(const std::string & file_name, const std::string & extension_name):
-      EventTimeHandler(file_name, extension_name, 0.) {}
+      BogusTimeHandlerBase(file_name, extension_name) {}
   };
 
-  class BogusTimeHandler2: public EventTimeHandler {
+  class BogusTimeHandler2: public BogusTimeHandlerBase {
     public:
-      virtual ~BogusTimeHandler2() {}
-
       static EventTimeHandler * createInstance(const std::string & file_name, const std::string & extension_name,
-        double angular_tolerance, bool read_only = true)
-        { return new BogusTimeHandler2(file_name, extension_name, angular_tolerance, read_only); }
-
-      virtual void setSpacecraftFile(const std::string & /*sc_file_name*/, const std::string & /*sc_extension_name*/) {}
-
-      virtual AbsoluteTime parseTimeString(const std::string & /*time_string*/, const std::string & /*time_system*/ = "FILE") const
-        { return AbsoluteTime("TDB", 51911, 0.); }
-
-    protected:
-      virtual AbsoluteTime readTime(const tip::Header & /*header*/, const std::string & /*keyword_name*/,
-        bool /*request_bary_time*/, double /*ra*/, double /*dec*/) const
-        { return AbsoluteTime("TDB", 51912, 0.); }
-
-      virtual AbsoluteTime readTime(const tip::TableRecord & /*record*/, const std::string & /*column_name*/,
-        bool /*request_bary_time*/, double /*ra*/, double /*dec*/) const
-        { return AbsoluteTime("TDB", 51912, 0.); }
+        bool read_only = true)
+        { return new BogusTimeHandler2(file_name, extension_name, read_only); }
 
     private:
-      BogusTimeHandler2(const std::string & file_name, const std::string & extension_name, double angular_tolerance,
-        bool read_only = true):
-      EventTimeHandler(file_name, extension_name, angular_tolerance, read_only) {}
+      BogusTimeHandler2(const std::string & file_name, const std::string & extension_name, bool read_only = true):
+      BogusTimeHandlerBase(file_name, extension_name, read_only) {}
+  };
+
+  class BogusTimeHandler3: public BogusTimeHandlerBase {
+    public:
+      static EventTimeHandler * createInstance(const std::string & file_name, const std::string & extension_name,
+        bool read_only = true)
+        { return new BogusTimeHandler3(file_name, extension_name, read_only); }
+
+    private:
+      BogusTimeHandler3(const std::string & file_name, const std::string & extension_name, bool read_only = true):
+      BogusTimeHandlerBase(file_name, extension_name, read_only) {}
   };
 
   void TestEventTimeHandlerFactory() {
     s_os.setMethod("TestEventtTimeHandler");
     using namespace facilities;
 
-    // Set tolerance for AbsoluteTime comparison.
-    ElapsedTime time_tolerance("TT", Duration(0, 1.e-7));
-
     // Prepare test parameters in this method.
     std::string event_file = commonUtilities::joinPath(commonUtilities::getDataPath("timeSystem"), "my_pulsar_events_v3.fits");
-    AbsoluteTime glast_tt_origin("TT", 51910, 64.184);
-    double glast_time = 2.123393677090199E+08; // TSTART in my_pulsar_events_v3.fits.
-    AbsoluteTime expected_glast = glast_tt_origin + ElapsedTime("TT", Duration(0, glast_time));
-    AbsoluteTime expected_bogus2("TDB", 51912, 0.);
-    double angular_tolerance = 0.;
 
     // Test creation of BogusTimeHandler1 (an EventTimeHandler sub-class) through its createInstance method.
     std::auto_ptr<EventTimeHandler> handler(0);
-    handler.reset(BogusTimeHandler1::createInstance(event_file, "EVENTS", angular_tolerance));
+    handler.reset(BogusTimeHandler1::createInstance(event_file, "EVENTS"));
     if (handler.get() != 0) {
       err() << "BogusTimeHandler1::createInstance method did not return a null pointer (0)." << std::endl;
     }
 
     // Test creation of BogusTimeHandler2 (an EventTimeHandler sub-class) through its createInstance method.
-    handler.reset(BogusTimeHandler2::createInstance(event_file, "EVENTS", angular_tolerance));
-    AbsoluteTime result = handler->readHeader("TSTART");
-    if (!result.equivalentTo(expected_bogus2, time_tolerance)) {
+    handler.reset(BogusTimeHandler2::createInstance(event_file, "EVENTS"));
+    if (0 == handler.get()) {
+      err() << "BogusTimeHandler2::createInstance method returned a null pointer (0)." << std::endl;
+    } else if (0 == dynamic_cast<BogusTimeHandler2 *>(handler.get())) {
       err() << "BogusTimeHandler2::createInstance method did not return a BogusTimeHandler2 object." << std::endl;
     }
 
-    // Test creation of GlastTimeHandler (an EventTimeHandler sub-class) through its createInstance method.
-    handler.reset(GlastTimeHandler::createInstance(event_file, "EVENTS", angular_tolerance));
-    result = handler->readHeader("TSTART");
-    if (!result.equivalentTo(expected_glast, time_tolerance)) {
-      err() << "GlastTimeHandler::createInstance method did not return a GlastTimeHandler object." << std::endl;
+    // Test creation of BogusTimeHandler3 (an EventTimeHandler sub-class) through its createInstance method.
+    handler.reset(BogusTimeHandler3::createInstance(event_file, "EVENTS"));
+    if (0 == handler.get()) {
+      err() << "BogusTimeHandler3::createInstance method returned a null pointer (0)." << std::endl;
+    } else if (0 == dynamic_cast<BogusTimeHandler3 *>(handler.get())) {
+      err() << "BogusTimeHandler3::createInstance method did not return a BogusTimeHandler3 object." << std::endl;
     }
 
     // Test the decision-making mechanism for cases without a prior setup.
     try {
-      handler.reset(IEventTimeHandlerFactory::createHandler(event_file, "EVENTS", angular_tolerance));
+      handler.reset(IEventTimeHandlerFactory::createHandler(event_file, "EVENTS"));
       err() << "IEventTimeHandlerFactory::createHandler method did not throw an exception when no handler was registered." << std::endl;
     } catch (const std::exception &) {
     }
@@ -2550,31 +2549,33 @@ namespace {
 
     // Test the decision-making mechanism for cases with only BogusTimeHandler1 registered.
     try {
-      handler.reset(IEventTimeHandlerFactory::createHandler(event_file, "EVENTS", angular_tolerance));
+      handler.reset(IEventTimeHandlerFactory::createHandler(event_file, "EVENTS"));
       err() << "IEventTimeHandlerFactory::createHandler method did not throw an exception when only BogusTimeHandler1 was registered."
         << std::endl;
     } catch (const std::exception &) {
     }
 
-    // Register GlastTimeHandler to EventTimeHandlerFactory.
-    EventTimeHandlerFactory<GlastTimeHandler> factory2;
+    // Register BogusTimeHandler3 to EventTimeHandlerFactory.
+    EventTimeHandlerFactory<BogusTimeHandler3> factory2;
 
-    // Test the decision-making mechanism for cases with BogusTimeHandler1 and GlastTimeHandler registered.
-    handler.reset(IEventTimeHandlerFactory::createHandler(event_file, "EVENTS", angular_tolerance));
-    result = handler->readHeader("TSTART");
-    if (!result.equivalentTo(expected_glast, time_tolerance)) {
-      err() << "IEventTimeHandlerFactory::createHandler method did not return a GlastTimeHandler object" <<
+    // Test the decision-making mechanism for cases with BogusTimeHandler1 and BogusTimeHandler3 registered.
+    handler.reset(IEventTimeHandlerFactory::createHandler(event_file, "EVENTS"));
+    if (0 == handler.get()) {
+      err() << "IEventTimeHandlerFactory::createHandler method returned a null pointer (0)." << std::endl;
+    } else if (0 == dynamic_cast<BogusTimeHandler3 *>(handler.get())) {
+      err() << "IEventTimeHandlerFactory::createHandler method did not return a BogusTimeHandler3 object" <<
         " when it is the only appropriate handler." << std::endl;
     }
 
-    // Register GlastTimeHandler to EventTimeHandlerFactory.
+    // Register BogusTimeHandler2 to EventTimeHandlerFactory.
     EventTimeHandlerFactory<BogusTimeHandler2> factory3;
 
-    // Test the decision-making mechanism for cases with BogusTimeHandler1, GlastTimeHandler, and BogusTimeHandler2 registered.
-    handler.reset(IEventTimeHandlerFactory::createHandler(event_file, "EVENTS", angular_tolerance));
-    result = handler->readHeader("TSTART");
-    if (!result.equivalentTo(expected_glast, time_tolerance)) {
-      err() << "IEventTimeHandlerFactory::createHandler method did not return a GlastTimeHandler object" <<
+    // Test the decision-making mechanism for cases with BogusTimeHandler1, BogusTimeHandler3, and BogusTimeHandler2 registered.
+    handler.reset(IEventTimeHandlerFactory::createHandler(event_file, "EVENTS"));
+    if (0 == handler.get()) {
+      err() << "IEventTimeHandlerFactory::createHandler method returned a null pointer (0)." << std::endl;
+    } else if (0 == dynamic_cast<BogusTimeHandler3 *>(handler.get())) {
+      err() << "IEventTimeHandlerFactory::createHandler method did not return a BogusTimeHandler3 object" <<
         " when it is an appropriate handler that can respond first." << std::endl;
     }
 
@@ -2586,10 +2587,11 @@ namespace {
     factory2.registerHandler();
     factory1.registerHandler();
 
-    // Test the decision-making mechanism for cases with BogusTimeHandler1, GlastTimeHandler, and BogusTimeHandler2 registered.
-    handler.reset(IEventTimeHandlerFactory::createHandler(event_file, "EVENTS", angular_tolerance));
-    result = handler->readHeader("TSTART");
-    if (!result.equivalentTo(expected_bogus2, time_tolerance)) {
+    // Test the decision-making mechanism for cases with BogusTimeHandler2, BogusTimeHandler3, and BogusTimeHandler1 registered.
+    handler.reset(IEventTimeHandlerFactory::createHandler(event_file, "EVENTS"));
+    if (0 == handler.get()) {
+      err() << "IEventTimeHandlerFactory::createHandler method returned a null pointer (0)." << std::endl;
+    } else if (0 == dynamic_cast<BogusTimeHandler2 *>(handler.get())) {
       err() << "IEventTimeHandlerFactory::createHandler method did not return a BogusTimeHandler2 object" <<
         " when it is an appropriate handler that can respond first." << std::endl;
     }
@@ -2601,10 +2603,6 @@ namespace {
 
     // Set tolerance for AbsoluteTime comparison.
     ElapsedTime time_tolerance("TT", Duration(0, 1.e-7));
-
-    // Get and initialize a barycentric time computer.
-    BaryTimeComputer & computer = BaryTimeComputer::getComputer();
-    computer.initialize("JPL DE405");
 
     // Prepare test parameters in this method.
     std::string event_file = commonUtilities::joinPath(commonUtilities::getDataPath("timeSystem"), "my_pulsar_events_v3.fits");
@@ -2621,10 +2619,59 @@ namespace {
     double ra_opposite = ra + 180.;
     double dec_opposite = -dec;
     std::string pl_ephem = "JPL DE405";
+    bool from_header = true;
+    bool from_column = false;
+    bool match_solar_eph = true;
 
-    // Create an GlastTimeHandler object for EVENTS extension of an event file.
+    // Create an auto-pointer object.
     std::auto_ptr<EventTimeHandler> handler(0);
-    handler.reset(GlastTimeHandler::createInstance(event_file, "EVENTS", 0.));
+
+    // Test creation of GlastScTimeHandler through its createInstance method.
+    handler.reset(GlastScTimeHandler::createInstance(event_file, "EVENTS"));
+    if (0 == handler.get()) {
+      err() << "GlastScTimeHandler::createInstance method returned a null pointer (0)." << std::endl;
+    } else if (0 == dynamic_cast<GlastScTimeHandler *>(handler.get())) {
+      err() << "GlastScTimeHandler::createInstance method did not return a GlastScTimeHandler object." << std::endl;
+    }
+
+    // Test creation of GlastBaryTimeHandler through its createInstance method.
+    handler.reset(GlastBaryTimeHandler::createInstance(event_file_bary, "EVENTS"));
+    if (0 == handler.get()) {
+      err() << "GlastBaryTimeHandler::createInstance method returned a null pointer (0)." << std::endl;
+    } else if (0 == dynamic_cast<GlastBaryTimeHandler *>(handler.get())) {
+      err() << "GlastBaryTimeHandler::createInstance method did not return a GlastBaryTimeHandler object." << std::endl;
+    }
+
+    // Test non-creation of GlastScTimeHandler through its createInstance method for a barycentered file.
+    handler.reset(GlastScTimeHandler::createInstance(event_file_bary, "EVENTS"));
+    if (0 != handler.get()) {
+      err() << "GlastScTimeHandler::createInstance method did not return a null pointer (0)." << std::endl;
+    }
+
+    // Test non-creation of GlastBaryTimeHandler through its createInstance method for a non-barycentered file.
+    handler.reset(GlastBaryTimeHandler::createInstance(event_file, "EVENTS"));
+    if (0 != handler.get()) {
+      err() << "GlastBaryTimeHandler::createInstance method did not return a null pointer (0)." << std::endl;
+    }
+
+    // Test creation of GlastScTimeHandler through GlastTimeHandler::createInstance method.
+    handler.reset(GlastTimeHandler::createInstance(event_file, "EVENTS"));
+    if (0 == handler.get()) {
+      err() << "GlastTimeHandler::createInstance method returned a null pointer (0)." << std::endl;
+    } else if (0 == dynamic_cast<GlastScTimeHandler *>(handler.get())) {
+      err() << "GlastTimeHandler::createInstance method did not return a GlastScTimeHandler object." << std::endl;
+    }
+
+    // Test creation of GlastBaryTimeHandler through GlastTimeHandler:: createInstance method.
+    handler.reset(GlastTimeHandler::createInstance(event_file_bary, "EVENTS"));
+    if (0 == handler.get()) {
+      err() << "GlastTimeHandler::createInstance method returned a null pointer (0)." << std::endl;
+    } else if (0 == dynamic_cast<GlastBaryTimeHandler *>(handler.get())) {
+      err() << "GlastTimeHandler::createInstance method did not return a GlastBaryTimeHandler object." << std::endl;
+    }
+
+    // Create a GlastScTimeHandler object for EVENTS extension of an event file.
+    handler.reset(GlastScTimeHandler::createInstance(event_file, "EVENTS"));
 
     // Test setting to the first record.
     handler->setFirstRecord();
@@ -2633,7 +2680,7 @@ namespace {
     double expected_glast_time = 2.123393701794728E+08; // TIME in the first row of my_pulsar_events_v3.fits.
     double epsilon = 1.e-7; // 100 nano-seconds.
     if (std::fabs(glast_time - expected_glast_time) > epsilon) {
-      err() << "GlastTimeHandler::getCurrentRecord() did not return the first record after GlastTimeHandler::setFirstRecord()." <<
+      err() << "GlastScTimeHandler::getCurrentRecord() did not return the first record after GlastScTimeHandler::setFirstRecord()." <<
         std::endl;
     }
 
@@ -2644,8 +2691,8 @@ namespace {
     handler->getCurrentRecord()["TIME"].get(glast_time);
     expected_glast_time = 2.123393750454886E+08; // TIME in the third row of my_pulsar_events_v3.fits.
     if (std::fabs(glast_time - expected_glast_time) > epsilon) {
-      err() << "GlastTimeHandler::getCurrentRecord() did not return the third record after GlastTimeHandler::setFirstRecord()" <<
-        " followed by two GlastTimeHandler::setNextRecord() calls." << std::endl;
+      err() << "GlastScTimeHandler::getCurrentRecord() did not return the third record after GlastScTimeHandler::setFirstRecord()" <<
+        " followed by two GlastScTimeHandler::setNextRecord() calls." << std::endl;
     }
 
     // Test setting to the last record.
@@ -2653,19 +2700,19 @@ namespace {
     handler->getCurrentRecord()["TIME"].get(glast_time);
     expected_glast_time = 2.124148548657289E+08; // TIME in the last row of my_pulsar_events_v3.fits.
     if (std::fabs(glast_time - expected_glast_time) > epsilon) {
-      err() << "GlastTimeHandler::getCurrentRecord() did not return the last record after GlastTimeHandler::setLastRecord()." <<
+      err() << "GlastScTimeHandler::getCurrentRecord() did not return the last record after GlastScTimeHandler::setLastRecord()." <<
         std::endl;
     }
 
     // Test testing the end of table.
     handler->setLastRecord();
     if (handler->isEndOfTable()) {
-      err() << "GlastTimeHandler::isEndOfTable() returned true after GlastTimeHandler::setLastRecord()." << std::endl;
+      err() << "GlastScTimeHandler::isEndOfTable() returned true after GlastScTimeHandler::setLastRecord()." << std::endl;
     }
     handler->setNextRecord();
     if (!handler->isEndOfTable()) {
-      err() << "GlastTimeHandler::isEndOfTable() returned false after GlastTimeHandler::setLastRecord()" <<
-        " followed by GlastTimeHandler::setNextRecord()." << std::endl;
+      err() << "GlastScTimeHandler::isEndOfTable() returned false after GlastScTimeHandler::setLastRecord()" <<
+        " followed by GlastScTimeHandler::setNextRecord()." << std::endl;
     }
 
     // Test parsing a time string.
@@ -2674,7 +2721,7 @@ namespace {
     AbsoluteTime glast_tt_origin("TT", 51910, 64.184);
     AbsoluteTime expected = glast_tt_origin + ElapsedTime("TT", Duration(0, 12345.6789012345));
     if (!result.equivalentTo(expected, time_tolerance)) {
-      err() << "GlastTimeHandler::parseTimeString(\"" << time_string << "\") returned AbsoluteTime(" << result <<
+      err() << "GlastScTimeHandler::parseTimeString(\"" << time_string << "\") returned AbsoluteTime(" << result <<
         "), not equivalent to AbsoluteTime(" << expected << ") with tolerance of " << time_tolerance << "." << std::endl;
     }
 
@@ -2684,36 +2731,37 @@ namespace {
     AbsoluteTime glast_tdb_origin("TDB", 51910, 64.184);
     expected = glast_tdb_origin + ElapsedTime("TDB", Duration(0, 12345.6789012345));
     if (!result.equivalentTo(expected, time_tolerance)) {
-      err() << "GlastTimeHandler::parseTimeString(\"" << time_string << "\", \"TDB\") returned AbsoluteTime(" << result <<
+      err() << "GlastScTimeHandler::parseTimeString(\"" << time_string << "\", \"TDB\") returned AbsoluteTime(" << result <<
         "), not equivalent to AbsoluteTime(" << expected << ") with tolerance of " << time_tolerance << "." << std::endl;
     }
 
     // Test reading header keyword value.
-    result = handler->readHeader("TSTART");
+    result = handler->readTime("TSTART", from_header);
     glast_time = 2.123393677090199E+08; // TSTART in my_pulsar_events_v3.fits.
     expected = glast_tt_origin + ElapsedTime("TT", Duration(0, glast_time));
     if (!result.equivalentTo(expected, time_tolerance)) {
-      err() << "GlastTimeHandler::readHeader(\"TSTART\") returned AbsoluteTime(" << result << "), not equivalent to AbsoluteTime(" <<
-        expected << ") with tolerance of " << time_tolerance << "." << std::endl;
+      err() << "GlastScTimeHandler::readTime(\"TSTART\", " << from_header << ") returned AbsoluteTime(" << result <<
+        "), not equivalent to AbsoluteTime(" << expected << ") with tolerance of " << time_tolerance << "." << std::endl;
     }
 
-    // Test reading header keyword value, requesting barycentering, before setting a spacecraft file.
+    // Test reading header keyword value, requesting barycentering, before initializing handler for arrival time corrections.
     try {
-      result = handler->readHeader("TSTART", ra, dec);
-      err() << "GlastTimeHandler::readHeader(\"TSTART\", " << ra << ", " << dec << 
-        ") did not throw an exception when it should." << std::endl;
+      result = handler->getBaryTime("TSTART", from_header);
+      err() << "GlastScTimeHandler::getBaryTime(\"TSTART\", " << from_header << ") did not throw an exception when it should." <<
+        std::endl;
     } catch (const std::exception &) {
     }
 
-    // Set a spacecraft file name.
-    handler->setSpacecraftFile(sc_file, "SC_DATA");
+    // Initialize handler for barycentric corrections.
+    handler->initTimeCorrection(sc_file, "SC_DATA", pl_ephem, match_solar_eph, angular_tolerance);
+    handler->setSourcePosition(ra, dec);
 
     // Test reading header keyword value, requesting barycentering.
-    result = handler->readHeader("TSTART", ra, dec);
+    result = handler->getBaryTime("TSTART", from_header);
     glast_time = 2.123393824137859E+08; // TSTART in my_pulsar_events_bary_v3.fits.
     expected = glast_tdb_origin + ElapsedTime("TDB", Duration(0, glast_time));
     if (!result.equivalentTo(expected, time_tolerance)) {
-      err() << "GlastTimeHandler::readHeader(\"TSTART\", " << ra << ", " << dec << ") returned AbsoluteTime(" << result <<
+      err() << "GlastScTimeHandler::getBaryTime(\"TSTART\", " << from_header << ") returned AbsoluteTime(" << result <<
         "), not equivalent to AbsoluteTime(" << expected << ") with tolerance of " << time_tolerance << "." << std::endl;
     }
 
@@ -2721,11 +2769,11 @@ namespace {
     handler->setFirstRecord(); // Points to the first event.
     handler->setNextRecord();  // Points to the second event.
     handler->setNextRecord();  // Points to the third event.
-    result = handler->readColumn("TIME");
+    result = handler->readTime("TIME", from_column);
     glast_time = 2.123393750454886E+08; // TIME of the third row in my_pulsar_events_v3.fits.
     expected = glast_tt_origin + ElapsedTime("TT", Duration(0, glast_time));
     if (!result.equivalentTo(expected, time_tolerance)) {
-      err() << "GlastTimeHandler::readColumn(\"TIME\", " << ra << ", " << dec << ") returned AbsoluteTime(" << result <<
+      err() << "GlastScTimeHandler::readTime(\"TIME\", " << from_column << ") returned AbsoluteTime(" << result <<
         "), not equivalent to AbsoluteTime(" << expected << ") with tolerance of " << time_tolerance << "." << std::endl;
     }
 
@@ -2733,24 +2781,25 @@ namespace {
     handler->setFirstRecord(); // Re-setting to the first event.
     handler->setNextRecord();  // Points to the second event.
     handler->setNextRecord();  // Points to the third event.
-    result = handler->readColumn("TIME", ra, dec);
+    result = handler->getBaryTime("TIME", from_column);
     glast_time = 2.123393897503012E+08; // TIME of the third row in my_pulsar_events_bary_v3.fits.
     expected = glast_tdb_origin + ElapsedTime("TDB", Duration(0, glast_time));
     if (!result.equivalentTo(expected, time_tolerance)) {
-      err() << "GlastTimeHandler::readColumn(\"TIME\", " << ra << ", " << dec << ") returned AbsoluteTime(" << result <<
+      err() << "GlastScTimeHandler::getBaryTime(\"TIME\", " << from_column << ") returned AbsoluteTime(" << result <<
         "), not equivalent to AbsoluteTime(" << expected << ") with tolerance of " << time_tolerance << "." << std::endl;
     }
 
-    // Create an GlastTimeHandler object for EVENTS extension of a barycentered event file.
-    handler.reset(GlastTimeHandler::createInstance(event_file_bary, "EVENTS", angular_tolerance));
-    handler->setSpacecraftFile(sc_file, "SC_DATA");
+    // Create an GlastBaryTimeHandler object for EVENTS extension of a barycentered event file.
+    handler.reset(GlastBaryTimeHandler::createInstance(event_file_bary, "EVENTS"));
+    handler->initTimeCorrection(sc_file, "SC_DATA", pl_ephem, match_solar_eph, angular_tolerance);
+    handler->setSourcePosition(ra, dec);
 
     // Test parsing a time string.
     time_string = "12345.6789012345";
     result = handler->parseTimeString(time_string);
     expected = glast_tdb_origin + ElapsedTime("TDB", Duration(0, 12345.6789012345));
     if (!result.equivalentTo(expected, time_tolerance)) {
-      err() << "GlastTimeHandler::parseTimeString(\"" << time_string << "\") returned AbsoluteTime(" << result <<
+      err() << "GlastBaryTimeHandler::parseTimeString(\"" << time_string << "\") returned AbsoluteTime(" << result <<
         "), not equivalent to AbsoluteTime(" << expected << ") with tolerance of " << time_tolerance << "." << std::endl;
     }
 
@@ -2759,32 +2808,32 @@ namespace {
     result = handler->parseTimeString(time_string, "TT");
     expected = glast_tt_origin + ElapsedTime("TT", Duration(0, 12345.6789012345));
     if (!result.equivalentTo(expected, time_tolerance)) {
-      err() << "GlastTimeHandler::parseTimeString(\"" << time_string << "\", \"TT\") returned AbsoluteTime(" << result <<
+      err() << "GlastBaryTimeHandler::parseTimeString(\"" << time_string << "\", \"TT\") returned AbsoluteTime(" << result <<
         "), not equivalent to AbsoluteTime(" << expected << ") with tolerance of " << time_tolerance << "." << std::endl;
     }
 
     // Test reading header keyword value, requesting barycentering.
-    result = handler->readHeader("TSTART", ra, dec);
+    result = handler->getBaryTime("TSTART", from_header);
     glast_time = 2.123393824137859E+08; // TSTART in my_pulsar_events_bary_v3.fits.
     expected = glast_tdb_origin + ElapsedTime("TDB", Duration(0, glast_time));
     if (!result.equivalentTo(expected, time_tolerance)) {
-      err() << "GlastTimeHandler::readHeader(\"TSTART\", " << ra << ", " << dec << ") returned AbsoluteTime(" << result <<
+      err() << "GlastBaryTimeHandler::getBaryTime(\"TSTART\", " << from_header << ") returned AbsoluteTime(" << result <<
         "), not equivalent to AbsoluteTime(" << expected << ") with tolerance of " << time_tolerance << "." << std::endl;
     }
 
     // Test reading header keyword value, requesting barycentering with a wrong sky position (ra, dec).
     try {
-      result = handler->readHeader("TSTART", ra_wrong, dec_wrong);
-      err() << "GlastTimeHandler::readHeader(\"TSTART\", " << ra_wrong << ", " << dec_wrong << 
+      handler->setSourcePosition(ra_wrong, dec_wrong);
+      err() << "GlastBaryTimeHandler::setSourcePosition(" << ra_wrong << ", " << dec_wrong << 
         ") did not throw an exception when it should." << std::endl;
     } catch (const std::exception &) {
     }
 
     // Test reading header keyword value, requesting barycentering with a different, but close sky position (ra, dec).
     try {
-      result = handler->readHeader("TSTART", ra_close, dec_close);
+      handler->setSourcePosition(ra_close, dec_close);
     } catch (const std::exception &) {
-      err() << "GlastTimeHandler::readHeader(\"TSTART\", " << ra_close << ", " << dec_close << 
+      err() << "GlastBaryTimeHandler::setSourcePosition(" << ra_close << ", " << dec_close << 
         ") threw an exception when it should not." << std::endl;
     }
 
@@ -2792,131 +2841,113 @@ namespace {
     handler->setFirstRecord(); // Points to the first event.
     handler->setNextRecord();  // Points to the second event.
     handler->setNextRecord();  // Points to the third event.
-    result = handler->readColumn("TIME", ra, dec);
+    result = handler->getBaryTime("TIME", from_column);
     glast_time = 2.123393897503012E+08; // TIME of the third row in my_pulsar_events_bary_v3.fits.
     expected = glast_tdb_origin + ElapsedTime("TDB", Duration(0, glast_time));
     if (!result.equivalentTo(expected, time_tolerance)) {
-      err() << "GlastTimeHandler::readColumn(\"TIME\", " << ra << ", " << dec << ") returned AbsoluteTime(" << result <<
+      err() << "GlastBaryTimeHandler::getBaryTime(\"TIME\", " << from_column << ") returned AbsoluteTime(" << result <<
         "), not equivalent to AbsoluteTime(" << expected << ") with tolerance of " << time_tolerance << "." << std::endl;
     }
 
     // Test reading column value, requesting barycentering with a wrong sky position (ra, dec).
     try {
-      result = handler->readColumn("TIME", ra_wrong, dec_wrong);
-      err() << "GlastTimeHandler::readColumn(\"TIME\", " << ra_wrong << ", " << dec_wrong << 
+      handler->setSourcePosition(ra_wrong, dec_wrong);
+      err() << "GlastBaryTimeHandler::setSourcePosition(" << ra_wrong << ", " << dec_wrong << 
         ") did not throw an exception when it should." << std::endl;
     } catch (const std::exception &) {
     }
 
     // Test reading column value, requesting barycentering with a different, but close sky position (ra, dec).
     try {
-      result = handler->readColumn("TIME", ra_close, dec_close);
+      handler->setSourcePosition(ra_close, dec_close);
     } catch (const std::exception &) {
-      err() << "GlastTimeHandler::readHeader(\"TIME\", " << ra_close << ", " << dec_close << 
+      err() << "GlastBaryTimeHandler::setSourcePosition(" << ra_close << ", " << dec_close << 
         ") threw an exception when it should not." << std::endl;
     }
 
     // Test exact match in sky position (ra, dec), with angular tolerance of zero (0) degree.
     angular_tolerance = 0.;
-    handler.reset(GlastTimeHandler::createInstance(event_file_bary, "EVENTS", angular_tolerance));
-    handler->setSpacecraftFile(sc_file, "SC_DATA");
+    handler->initTimeCorrection(sc_file, "SC_DATA", pl_ephem, match_solar_eph, angular_tolerance);
     try {
-      handler->checkSkyPosition(ra, dec);
+      handler->setSourcePosition(ra, dec);
     } catch (const std::exception &) {
-      err() << "GlastTimeHandler::checkSkyPosition(" << ra << ", " << dec << 
+      err() << "GlastBaryTimeHandler::setSourcePosition(" << ra << ", " << dec << 
         ") threw an exception with angular tolerance of zero (0) degree." << std::endl;
     }
 
     // Test large angular tolerance of 180 degrees.
     angular_tolerance = 180.;
-    handler.reset(GlastTimeHandler::createInstance(event_file_bary, "EVENTS", angular_tolerance));
-    handler->setSpacecraftFile(sc_file, "SC_DATA");
+    handler->initTimeCorrection(sc_file, "SC_DATA", pl_ephem, match_solar_eph, angular_tolerance);
     try {
-      handler->checkSkyPosition(ra_wrong, dec_wrong);
+      handler->setSourcePosition(ra_wrong, dec_wrong);
     } catch (const std::exception &) {
-      err() << "GlastTimeHandler::checkSkyPosition(" << ra_wrong << ", " << dec_wrong << 
+      err() << "GlastBaryTimeHandler::setSourcePosition(" << ra_wrong << ", " << dec_wrong << 
         ") threw an exception with angular tolerance of 180 degrees." << std::endl;
     }
 
     // Test large angular difference, with small angular tolerance.
     angular_tolerance = 1.e-8;
-    handler.reset(GlastTimeHandler::createInstance(event_file_bary, "EVENTS", angular_tolerance));
-    handler->setSpacecraftFile(sc_file, "SC_DATA");
+    handler->initTimeCorrection(sc_file, "SC_DATA", pl_ephem, match_solar_eph, angular_tolerance);
     try {
-      handler->checkSkyPosition(ra_opposite, dec_opposite);
-      err() << "GlastTimeHandler::checkSkyPosition(\"TSTART\", " << ra_opposite << ", " << dec_opposite << 
+      handler->setSourcePosition(ra_opposite, dec_opposite);
+      err() << "GlastBaryTimeHandler::setSourcePosition(\"TSTART\", " << ra_opposite << ", " << dec_opposite << 
         ") did not throw an exception with angular tolerance of zero (0) degrees." << std::endl;
     } catch (const std::exception &) {
     }
 
     // Test large angular difference, with large angular tolerance of 180 degrees.
     angular_tolerance = 180.;
-    handler.reset(GlastTimeHandler::createInstance(event_file_bary, "EVENTS", angular_tolerance));
-    handler->setSpacecraftFile(sc_file, "SC_DATA");
+    handler->initTimeCorrection(sc_file, "SC_DATA", pl_ephem, match_solar_eph, angular_tolerance);
     try {
-      handler->checkSkyPosition(ra_opposite, dec_opposite);
+      handler->setSourcePosition(ra_opposite, dec_opposite);
     } catch (const std::exception &) {
-      err() << "GlastTimeHandler::checkSkyPosition(" << ra_opposite << ", " << dec_opposite << 
+      err() << "GlastBaryTimeHandler::setSourcePosition(" << ra_opposite << ", " << dec_opposite << 
         ") threw an exception with angular tolerance of 180 degrees." << std::endl;
     }
 
     // Test checking solar system ephemeris name, with a non-barycentered event extension.
+    handler.reset(GlastScTimeHandler::createInstance(event_file, "EVENTS"));
     angular_tolerance = 1.e-8;
-    handler.reset(GlastTimeHandler::createInstance(event_file, "EVENTS", angular_tolerance));
-    handler->setSpacecraftFile(sc_file, "SC_DATA");
     try {
-      handler->checkSolarEph("Bogus Name");
+      handler->initTimeCorrection(sc_file, "SC_DATA", "Bogus Name", match_solar_eph, angular_tolerance);
+      err() << "GlastScTimeHandler::initTimeCorrection(\"" << sc_file << "\", \"SC_DATA\", \"Bogus Name\", " << match_solar_eph <<
+        ", " << angular_tolerance << ") did not throw an exception for non-barycentered event extension." << std::endl;
     } catch (const std::exception &) {
-      err() << "GlastTimeHandler::checkSolarEph(\"Bogus Name\") threw an exception for non-barycentered event extension." << std::endl;
     }
 
-    // Test checking solar system ephemeris name, with a barycentered event extension (exact match).
-    handler.reset(GlastTimeHandler::createInstance(event_file_bary, "EVENTS", angular_tolerance));
-    handler->setSpacecraftFile(sc_file, "SC_DATA");
+    // Test checking solar system ephemeris name, with a barycentered event extension (match).
+    handler.reset(GlastBaryTimeHandler::createInstance(event_file_bary, "EVENTS"));
     try {
-      handler->checkSolarEph("JPL-DE405");
+      handler->initTimeCorrection(sc_file, "SC_DATA", "JPL DE405", match_solar_eph, angular_tolerance);
     } catch (const std::exception &) {
-      err() << "GlastTimeHandler::checkSolarEph(\"JPL-DE405\") threw an exception for a barycentered event extension." << std::endl;
-    }
-
-    // Test checking solar system ephemeris name, with a barycentered event extension (rough match).
-    handler.reset(GlastTimeHandler::createInstance(event_file_bary, "EVENTS", angular_tolerance));
-    handler->setSpacecraftFile(sc_file, "SC_DATA");
-    try {
-      handler->checkSolarEph("JPL DE405");
-    } catch (const std::exception &) {
-      err() << "GlastTimeHandler::checkSolarEph(\"JPL DE405\") threw an exception for a barycentered event extension." << std::endl;
+      err() << "GlastBaryTimeHandler::initTimeCorrection(\"" << sc_file << "\", \"SC_DATA\", \"JPL DE405\", " << match_solar_eph <<
+        ", " << angular_tolerance << ") threw an exception for a barycentered event extension." << std::endl;
     }
 
     // Test checking solar system ephemeris name, with a barycentered event extension (no match).
-    handler.reset(GlastTimeHandler::createInstance(event_file_bary, "EVENTS", angular_tolerance));
-    handler->setSpacecraftFile(sc_file, "SC_DATA");
     try {
-      handler->checkSolarEph("JPL DE200");
-      err() << "GlastTimeHandler::checkSolarEph(\"JPL DE200\") did not throw an exception for a barycentered event extension." <<
-        std::endl;
+      handler->initTimeCorrection(sc_file, "SC_DATA", "JPL DE200", match_solar_eph, angular_tolerance);
+      err() << "GlastBaryTimeHandler::initTimeCorrection(\"" << sc_file << "\", \"SC_DATA\", \"JPL DE200\", " << match_solar_eph <<
+        ", " << angular_tolerance << ") did not throw an exception for a barycentered event extension." << std::endl;
     } catch (const std::exception &) {
     }
 
     // Test checking solar system ephemeris name, with a barycentered GTI extension (rough match).
-    handler.reset(GlastTimeHandler::createInstance(event_file_bary, "GTI", angular_tolerance));
-    handler->setSpacecraftFile(sc_file, "SC_DATA");
+    handler.reset(GlastBaryTimeHandler::createInstance(event_file_bary, "GTI"));
     try {
-      handler->checkSolarEph("JPL DE405");
+      handler->initTimeCorrection(sc_file, "SC_DATA", "JPL DE405", match_solar_eph, angular_tolerance);
     } catch (const std::exception &) {
-      err() << "GlastTimeHandler::checkSolarEph(\"JPL DE405\") threw an exception for a barycentered GTI extension." << std::endl;
+      err() << "GlastBaryTimeHandler::initTimeCorrection(\"" << sc_file << "\", \"SC_DATA\", \"JPL DE405\", " << match_solar_eph <<
+        ", " << angular_tolerance << ") threw an exception for a barycentered GTI extension." << std::endl;
     }
 
     // Test checking solar system ephemeris name, with a barycentered GTI extension (no match).
-    handler.reset(GlastTimeHandler::createInstance(event_file_bary, "GTI", angular_tolerance));
-    handler->setSpacecraftFile(sc_file, "SC_DATA");
     try {
-      handler->checkSolarEph("JPL DE200");
-      err() << "GlastTimeHandler::checkSolarEph(\"JPL DE200\") did not throw an exception for a barycentered GTI extension." <<
-        std::endl;
+      handler->initTimeCorrection(sc_file, "SC_DATA", "JPL DE200", match_solar_eph, angular_tolerance);
+      err() << "GlastBaryTimeHandler::initTimeCorrection(\"" << sc_file << "\", \"SC_DATA\", \"JPL DE200\", " << match_solar_eph <<
+        ", " << angular_tolerance << ") did not throw an exception for a barycentered GTI extension." << std::endl;
     } catch (const std::exception &) {
     }
-
   }
 }
 
