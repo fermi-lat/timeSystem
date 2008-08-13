@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Wed Aug 13 14:30:27 PDT 2008
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Make BaryTimeComputer more generic. Throw an exception when JPL DE200 and DE405 are to be used at a time.
+    *
+------------------------------------------------------------
 User: hirayama  Wed Aug 13 14:30:26 PDT 2008
 timeSystem/src
 
