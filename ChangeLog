@@ -1,5 +1,14 @@
 ------------------------------------------------------------
 User: hirayama  Wed Aug 13 14:30:26 PDT 2008
+timeSystem/src
+
+Modified Files:
+	BaryTimeComputer.cxx GlastTimeHandler.cxx 
+Log Message:
+Make BaryTimeComputer more generic. Throw an exception when JPL DE200 and DE405 are to be used at a time.
+    *
+------------------------------------------------------------
+User: hirayama  Wed Aug 13 14:30:26 PDT 2008
 timeSystem/timeSystem
 
 Modified Files:
