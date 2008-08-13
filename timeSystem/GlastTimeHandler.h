@@ -83,7 +83,7 @@ namespace timeSystem {
       char * m_sc_file_char;
       double m_ra_bary;  // RA and Dec for barycentering.
       double m_dec_bary;
-      BaryTimeComputer & m_computer;
+      const BaryTimeComputer * m_computer;
 
       GlastScTimeHandler(const std::string & file_name, const std::string & extension_name, bool read_only = true);
   };

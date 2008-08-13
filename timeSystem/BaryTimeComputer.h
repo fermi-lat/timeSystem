@@ -6,6 +6,7 @@
 #ifndef timeSystem_BaryTimeComputer_h
 #define timeSystem_BaryTimeComputer_h
 
+#include <map>
 #include <string>
 #include <vector>
 
@@ -18,27 +19,25 @@ namespace timeSystem {
   */
   class BaryTimeComputer {
     public:
-      ~BaryTimeComputer();
+      virtual ~BaryTimeComputer();
 
-      static BaryTimeComputer & getComputer();
+      static const BaryTimeComputer & getComputer(const std::string & pl_ephem);
 
       std::string getPlanetaryEphemerisName() const;
 
-      void initialize(const std::string & pl_ephem);
+      virtual void computeBaryTime(double ra, double dec, const std::vector<double> & sc_position, AbsoluteTime & abs_time) const = 0;
 
-      void computeBaryTime(double ra, double dec, const std::vector<double> & sc_position, AbsoluteTime & abs_time)
-        const;
+    protected:
+      BaryTimeComputer(const std::string & pl_ephem);
+
+      virtual void initializeComputer() = 0;
 
     private:
+      typedef std::map<std::string, BaryTimeComputer *> container_type;
+
       std::string m_pl_ephem;
-      double m_speed_of_light;
-      double m_solar_mass;
 
-      BaryTimeComputer();
-
-      double computeInnerProduct(const std::vector<double> & vect_x, const std::vector<double> & vect_y) const;
-
-      std::vector<double> computeThreeVector(double ra, double dec) const;
+      static container_type & getContainer();
   };
 
 }
