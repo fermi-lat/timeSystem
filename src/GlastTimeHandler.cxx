@@ -132,7 +132,7 @@ namespace timeSystem {
 
   GlastScTimeHandler::GlastScTimeHandler(const std::string & file_name, const std::string & extension_name, bool read_only):
     GlastTimeHandler(file_name, extension_name, read_only), m_sc_file(), m_sc_file_char(0), m_ra_bary(0.), m_dec_bary(0.),
-    m_computer(BaryTimeComputer::getComputer()) {}
+    m_computer(0) {}
 
   GlastScTimeHandler::~GlastScTimeHandler() {}
 
@@ -167,9 +167,8 @@ namespace timeSystem {
     //scorbitinit(mission);
     //clockinit(mission);
 
-    // Initialize barycentric time computer with a given solar system ephemeris.
-    // TODO: Is it OK to initialize BaryTimeComputer for each EventTimeHandler class? What if different solar_eph is given?
-    BaryTimeComputer::getComputer().initialize(solar_eph);
+    // Get a barycentric time computer for the given solar system ephemeris.
+    m_computer = &BaryTimeComputer::getComputer(solar_eph);
   }
 
   void GlastScTimeHandler::setSourcePosition(double ra, double dec) {
@@ -179,8 +178,8 @@ namespace timeSystem {
   }
 
   AbsoluteTime GlastScTimeHandler::getBaryTime(const std::string & field_name, bool from_header) const {
-    // Check spacecraft file.
-    if (m_sc_file.empty()) throw std::runtime_error("Spacecraft file not properly set.");
+    // Check initialization status.
+    if (!m_computer) throw std::runtime_error("Arrival time corrections not initialized.");
 
     // Read the field value as a GLAST time.
     double glast_time = readGlastTime(field_name, from_header);
@@ -199,7 +198,7 @@ namespace timeSystem {
     std::vector<double> sc_position(sc_position_array, sc_position_array + 3);
 
     // Perform barycentric correction on abs_time.
-    m_computer.computeBaryTime(m_ra_bary, m_dec_bary, sc_position, abs_time);
+    m_computer->computeBaryTime(m_ra_bary, m_dec_bary, sc_position, abs_time);
 
     // Return the requested time.
     return abs_time;

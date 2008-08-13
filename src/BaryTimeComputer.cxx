@@ -11,6 +11,7 @@
 #include "timeSystem/MjdFormat.h"
 
 #include <cmath>
+#include <set>
 #include <sstream>
 #include <stdexcept>
 #include <vector>
@@ -19,56 +20,75 @@ extern "C" {
 #include "bary.h"
 }
 
-namespace timeSystem {
+namespace {
 
-  BaryTimeComputer::BaryTimeComputer(): m_pl_ephem(), m_speed_of_light(0.), m_solar_mass(0.) {}
+  using namespace timeSystem;
 
-  BaryTimeComputer::~BaryTimeComputer() {}
+  class JplComputer: public BaryTimeComputer {
+    public:
+      virtual void computeBaryTime(double ra, double dec, const std::vector<double> & sc_position, AbsoluteTime & abs_time) const;
 
-  BaryTimeComputer & BaryTimeComputer::getComputer() {
-    static BaryTimeComputer s_computer;
-    return s_computer;
-  }
+    protected:
+      JplComputer(const std::string & pl_ephem, int eph_num);
 
-  std::string BaryTimeComputer::getPlanetaryEphemerisName() const {
-    return m_pl_ephem;
-  }
+      virtual void initializeComputer();
 
-  void BaryTimeComputer::initialize(const std::string & pl_ephem) {
-    // Convert pl_ephem argument of this method to ephnum argument of initephem C-function.
-    int ephnum = 0;
-    std::string pl_ephem_uc(pl_ephem);
-    for (std::string::iterator itor = pl_ephem_uc.begin(); itor != pl_ephem_uc.end(); ++itor) *itor = std::toupper(*itor);
-    if ("JPL DE200" == pl_ephem_uc) ephnum = 200;
-    else if ("JPL DE405" == pl_ephem_uc) ephnum = 405;
-    else if ("AUTO" == pl_ephem_uc) ephnum = 0;
-    else throw std::runtime_error("Solar system ephemeris \"" + pl_ephem + "\" not supported.");
+    private:
+      int m_ephnum;
+      double m_speed_of_light;
+      double m_solar_mass;
+      static const JplComputer * m_initialized_computer;
 
-    // Call initephem C-function.
-    int denum = 0;
-    double radsol = 0.;
-    int status = initephem(ephnum, &denum, &m_speed_of_light, &radsol, &m_solar_mass);
+      double computeInnerProduct(const std::vector<double> & vect_x, const std::vector<double> & vect_y) const;
+  };
 
-    // Check initialization status.
-    std::ostringstream os;
-    if (status) {
-      os << "Error while initializing ephemeris (status = " << status << ").";
-      throw std::runtime_error(os.str());
-    } else {
-      // Store solar system ephemeris name.
-      os << "JPL DE" << denum;
-      m_pl_ephem = os.str();
-    }
+  class JplDe200Computer: public JplComputer {
+    public:
+      JplDe200Computer(): JplComputer("JPL DE200", 200) {}
+  };
 
-  }
+  class JplDe405Computer: public JplComputer {
+    public:
+      JplDe405Computer(): JplComputer("JPL DE405", 405) {}
+  };
 
-  void BaryTimeComputer::computeBaryTime(double ra, double dec, const std::vector<double> & sc_position,
-    AbsoluteTime & abs_time) const {
+  const JplComputer * JplComputer::m_initialized_computer(0);
+
+  JplComputer::JplComputer(const std::string & pl_ephem, int eph_num): BaryTimeComputer(pl_ephem), m_ephnum(eph_num),
+    m_speed_of_light(0.), m_solar_mass(0.) {}
+
+  void JplComputer::initializeComputer() {
     // Check whether initialized or not.
-    if (m_pl_ephem.empty()) {
-      throw std::runtime_error("BaryTimeComputer::computeBaryTime was called before initialized.");
-    }
+    if (m_initialized_computer) {
+      if (this != m_initialized_computer) {
+        // Alrady initialized with a different planetary ephemeris (currently JPL DE200 and DE405 cannot coexist).
+        // TODO: Allow JPL DE200 and DE405 to coexist.
+        std::ostringstream os;
+        os << "Requested planetary ephemeris \"" << getPlanetaryEphemerisName() << "\" cannot coexist with \"" <<
+          m_initialized_computer->getPlanetaryEphemerisName() << "\" that is already in use.";
+        throw std::runtime_error(os.str());
+      }
 
+    } else {
+      // Call initephem C-function.
+      int denum = 0;
+      double radsol = 0.;
+      int status = initephem(m_ephnum, &denum, &m_speed_of_light, &radsol, &m_solar_mass);
+
+      // Check initialization status.
+      if (status) {
+        std::ostringstream os;
+        os << "Error while initializing ephemeris (status = " << status << ").";
+        throw std::runtime_error(os.str());
+      }
+        
+      // Store the pointer to this object to indicate a sucessful initialization.
+      m_initialized_computer = this;
+    }
+  }
+
+  void JplComputer::computeBaryTime(double ra, double dec, const std::vector<double> & sc_position,
+    AbsoluteTime & abs_time) const {
     // Check the size of sc_position.
     if (sc_position.size() < 3) {
       throw std::runtime_error("Space craft position was given in a wrong format.");
@@ -105,7 +125,11 @@ namespace timeSystem {
     }
 
     // Convert source direction from (RA, Dec) to a three-vector.
-    std::vector<double> sourcedir = computeThreeVector(ra, dec);
+    std::vector<double> sourcedir(3);
+
+    sourcedir[0] = std::cos(ra/RADEG) * std::cos(dec/RADEG);
+    sourcedir[1] = std::sin(ra/RADEG) * std::cos(dec/RADEG);
+    sourcedir[2] = std::sin(dec/RADEG);
 
     // Compute total propagation delay.
     double sundis = sqrt(computeInnerProduct(rsa, rsa));
@@ -117,18 +141,60 @@ namespace timeSystem {
     abs_time += ElapsedTime("TDB", Duration(delay, "Sec"));
   }
 
-  double BaryTimeComputer::computeInnerProduct(const std::vector<double> & vect_x, const std::vector<double> & vect_y) const {
+  double JplComputer::computeInnerProduct(const std::vector<double> & vect_x, const std::vector<double> & vect_y) const {
     return vect_x[0]*vect_y[0] + vect_x[1]*vect_y[1] + vect_x[2]*vect_y[2];
   }
 
-  std::vector<double> BaryTimeComputer::computeThreeVector(double ra, double dec) const {
-    std::vector<double> vect(3);
+}
 
-    vect[0] = std::cos(ra/RADEG) * std::cos(dec/RADEG);
-    vect[1] = std::sin(ra/RADEG) * std::cos(dec/RADEG);
-    vect[2] = std::sin(dec/RADEG);
+namespace timeSystem {
 
-    return vect;
+  BaryTimeComputer::BaryTimeComputer(const std::string & pl_ephem): m_pl_ephem(pl_ephem) {
+    std::string uc_pl_ephem = pl_ephem;
+    for (std::string::iterator itor = uc_pl_ephem.begin(); itor != uc_pl_ephem.end(); ++itor) *itor = std::toupper(*itor);
+    getContainer()[uc_pl_ephem] = this;
+  }
+
+  BaryTimeComputer::~BaryTimeComputer() {}
+
+  const BaryTimeComputer & BaryTimeComputer::getComputer(const std::string & pl_ephem) {
+    // Create instances of BaryTimeComputer's.
+    static JplDe200Computer s_jpl_de200;
+    static JplDe405Computer s_jpl_de405;
+
+    // Make the given planeraty ephemeris name case-insensitive.
+    std::string pl_ephem_uc(pl_ephem);
+    for (std::string::iterator itor = pl_ephem_uc.begin(); itor != pl_ephem_uc.end(); ++itor) *itor = std::toupper(*itor);
+
+    // Find a requested BaryTimeComputer object.
+    const container_type & container(getContainer());
+    container_type::const_iterator cont_itor = container.find(pl_ephem_uc);
+    if (container.end() == cont_itor) {
+      throw std::runtime_error("BaryTimeComputer::getComputer could not find a barycentric time computer for planetary ephemeris "
+        + pl_ephem);
+    }
+    BaryTimeComputer & computer(*cont_itor->second);
+
+    // Check whether the chosen computer has already been initialized.
+    static std::set<const BaryTimeComputer *> s_initialized;
+    std::set<const BaryTimeComputer *>::iterator init_itor = s_initialized.find(&computer);
+    if (s_initialized.end() == init_itor) {
+      // Initialize the computer on the first request.
+      computer.initializeComputer();
+      s_initialized.insert(&computer);
+    }
+
+    // Return the barycentric time computer.
+    return computer;
+  }
+
+  std::string BaryTimeComputer::getPlanetaryEphemerisName() const {
+    return m_pl_ephem;
+  }
+
+  BaryTimeComputer::container_type & BaryTimeComputer::getContainer() {
+    static container_type s_container;
+    return s_container;
   }
 
 }

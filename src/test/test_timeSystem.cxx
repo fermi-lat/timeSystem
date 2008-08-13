@@ -2396,9 +2396,6 @@ namespace {
   void TestBaryTimeComputer() {
     s_os.setMethod("TestBaryTimeComputer");
 
-    // Get a barycentric time computer.
-    BaryTimeComputer & computer = BaryTimeComputer::getComputer();
-
     // Prepare a time to be barycentered and an expected result after barycentered.
     AbsoluteTime glast_tt_origin("TT", 51910, 64.184);
     double glast_time = 2.123393677090199E+08; // TSTART in my_pulsar_events_v3.fits.
@@ -2414,36 +2411,43 @@ namespace {
     double sc_pos_array[] = {3311146.54815027, 5301968.82897028, 3056651.22812332}; // SC position at TSTART (computed separately).
     std::vector<double> sc_pos(sc_pos_array, sc_pos_array + 3);
 
-    // Check initial setting of ephemeris name.
-    std::string ephem_name = computer.getPlanetaryEphemerisName();
-    if (!ephem_name.empty()) {
-      err() << "BaryTimeComputer::getPlanetaryEphemerisName() returned a non-empty string before initialized." << std::endl;
-    }
-
-    // Test error handling for calls before initialization.
+    // Test error detection in getting a BaryTimeComputer object for non-existing ephemeris.
     try {
-      computer.computeBaryTime(ra, dec, sc_pos, result);
-      err() << "BaryTimeComputer::computeBaryTime(" << ra << ", " << dec << ", array(" << sc_pos[0] << ", " << sc_pos[1] << ", " <<
-        sc_pos[2] << "), AbsoluteTime(" << result << ")) did not throw an exception when it should." << std::endl;
+      BaryTimeComputer::getComputer("No Such Ephemeris");
+      err() << "BaryTimeComputer::getComputer(\"No Such Ephemeris\") did not throw an exception when it should." << std::endl;
     } catch (const std::exception &) {
     }
 
-    // Initialize the barycentric time computer.
-    computer.initialize("JPL DE405");
+    // Get a barycentric time computer for JPL DE405 ephemeris.
+    const BaryTimeComputer & computer405 = BaryTimeComputer::getComputer("JPL DE405");
 
     // Check ephemeris name.
-    ephem_name = computer.getPlanetaryEphemerisName();
+    std::string ephem_name = computer405.getPlanetaryEphemerisName();
     if ("JPL DE405" != ephem_name) {
       err() << "BaryTimeComputer::getPlanetaryEphemerisName() returned \"" << ephem_name << "\", not \"JPL DE405\"." << std::endl;
     }
 
     // Test barycentric correction.
-    computer.computeBaryTime(ra, dec, sc_pos, result);
+    computer405.computeBaryTime(ra, dec, sc_pos, result);
     ElapsedTime tolerance("TDB", Duration(0, 1.e-7));
     if (!result.equivalentTo(expected, tolerance)) {
-      err() << "BaryTimeComputer::correct(" << ra << ", " << dec << ", " << original << ")" <<
+      err() << "BaryTimeComputer::computeBaryTime(" << ra << ", " << dec << ", " << original << ")" <<
         " returned AbsoluteTime(" << result << "), not equivalent to AbsoluteTime(" << expected <<
         ") with tolerance of " << tolerance << "." << std::endl;
+    }
+
+    // Test error detection in getting a BaryTimeComputer object for a different, supported JPL ephemeris.
+    try {
+      BaryTimeComputer::getComputer("JPL DE200");
+      err() << "BaryTimeComputer::getComputer(\"JPL DE200\") did not throw an exception when it should." << std::endl;
+    } catch (const std::exception &) {
+    }
+
+    // Test error non-detection in getting a BaryTimeComputer object for JPL DE405 again.
+    try {
+      BaryTimeComputer::getComputer("JPL DE405");
+    } catch (const std::exception &) {
+      err() << "BaryTimeComputer::getComputer(\"JPL DE405\") threw an exception when it should not." << std::endl;
     }
   }
 
