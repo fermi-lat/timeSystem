@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Wed Aug 27 15:22:29 PDT 2008
+timeSystem/src/gtbary
+
+Modified Files:
+	gtbary.cxx 
+Log Message:
+Call getParGroup with no argument.
+    *
+------------------------------------------------------------
 TAG
 Tag name: timeSystem-04-01-00, operation: add
 Package: timeSystem
