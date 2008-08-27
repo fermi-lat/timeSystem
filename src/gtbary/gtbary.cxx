@@ -27,11 +27,12 @@ class GbaryApp : public st_app::StApp {
 };
 
 GbaryApp::GbaryApp() {
+  setName("gtbary");
   setVersion(s_cvs_id);
 }
 
 void GbaryApp::run() {
-  st_app::AppParGroup & pars = getParGroup("gtbary");
+  st_app::AppParGroup & pars = getParGroup();
   pars.Prompt();
   pars.Save();
   std::string inFile_s = pars["evfile"];
