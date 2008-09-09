@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: peachey  Tue Sep  9 14:30:45 PDT 2008
+timeSystem/src
+
+Modified Files:
+	BaryTimeComputer.cxx MjdFormat.cxx 
+Log Message:
+Add #include <cctype>.
+    *
+------------------------------------------------------------
 User: hirayama  Wed Aug 27 15:22:29 PDT 2008
 timeSystem/src/gtbary
 
