@@ -5,6 +5,7 @@
 */
 #include "timeSystem/MjdFormat.h"
 
+#include <cctype>
 #include <cmath>
 #include <iomanip>
 #include <sstream>

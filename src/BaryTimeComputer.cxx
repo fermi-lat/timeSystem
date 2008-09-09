@@ -10,6 +10,7 @@
 #include "timeSystem/ElapsedTime.h"
 #include "timeSystem/MjdFormat.h"
 
+#include <cctype>
 #include <cmath>
 #include <set>
 #include <sstream>
