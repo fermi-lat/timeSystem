@@ -11,6 +11,7 @@
 
 #include "tip/IFileSvc.h"
 
+#include <cctype>
 #include <cmath>
 #include <sstream>
 #include <stdexcept>
