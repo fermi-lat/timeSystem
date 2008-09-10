@@ -1,4 +1,12 @@
 ------------------------------------------------------------
+User: glastrm  Wed Sep 10 07:30:35 PDT 2008
+timeSystem
+
+Modified Files:
+	SConscript 
+Log Message:
+    *
+------------------------------------------------------------
 TAG
 Tag name: v4r1p2, operation: add
 Package: timeSystem
