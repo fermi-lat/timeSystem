@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Wed Sep 10 01:17:20 PDT 2008
+timeSystem/src
+
+Modified Files:
+	Duration.cxx 
+Log Message:
+Add necessary headers.
+    *
+------------------------------------------------------------
 TAG
 Tag name: timeSystem-04-01-01, operation: add
 Package: timeSystem
