@@ -9,6 +9,7 @@
 #include "timeSystem/TimeFormat.h"
 #include "timeSystem/TimeSystem.h"
 
+#include <limits>
 #include <string>
 
 namespace st_stream {
