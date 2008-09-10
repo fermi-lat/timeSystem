@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Wed Sep 10 15:55:41 PDT 2008
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Improve tests of Duration getters.
+    *
+------------------------------------------------------------
 TAG
 Tag name: timeSystem-04-01-02, operation: add
 Package: timeSystem
