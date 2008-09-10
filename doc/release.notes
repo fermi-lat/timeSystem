@@ -5,6 +5,7 @@
 
 \verbatim
 --------------------------------------------------------------------------------
+10-sep-2008    v4r1p2 JP  Add more missing headers.
 09-sep-2008    v4r1p1 JP  Add #include <cctype> where needed. Use setName
                           method to tell application name of parameter file.
 14-aug-2008      v4r1 MH  Reorganize the time handling classes. Support a few
