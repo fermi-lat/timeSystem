@@ -108,12 +108,13 @@ namespace {
     return s_os.err() << prefix;
   }
 
-  void TestDurationGetter(long day, double sec, const std::string & time_unit_name, long int_part, double frac_part, double tolerance) {
+  void TestDurationGetter(long day, double sec, const std::string & time_unit_name, long int_part, double frac_part,
+    double tolerance_high, double tolerance_low) {
     // Test the getter that takes a long variable, a double variable, and a time unit name.
     long result_int = 0;
     double result_frac = 0.;
     Duration(day, sec).get(time_unit_name, result_int, result_frac);
-    if (!(int_part == result_int && std::fabs(frac_part - result_frac) < tolerance)) {
+    if (!(int_part == result_int && std::fabs(frac_part - result_frac) < tolerance_high)) {
       err() << "Duration(" << day << ", " << sec << ").get(int_part, frac_part, " << time_unit_name <<
         ") returned (int_part, frac_part) = (" << result_int << ", " << result_frac << "), not (" << int_part << ", " <<
         frac_part << ") as expected." << std::endl;
@@ -123,7 +124,7 @@ namespace {
     double result_double = 0.;
     Duration(day, sec).get(time_unit_name, result_double);
     double expected_double = int_part + frac_part;
-    if (std::fabs(expected_double - result_double) > tolerance) {
+    if (std::fabs(expected_double - result_double) > tolerance_low) {
       err() << "Duration(" << day << ", " << sec << ").get(result_double, " << time_unit_name << ") returned result_double = " <<
         result_double << ", not " << expected_double << " as expected." << std::endl;
     }
@@ -131,7 +132,7 @@ namespace {
     // Test the getter that takes a time unit name only.
     result_double = Duration(day, sec).get(time_unit_name);
     expected_double = int_part + frac_part;
-    if (std::fabs(expected_double - result_double) > tolerance) {
+    if (std::fabs(expected_double - result_double) > tolerance_low) {
       err() << "Duration(" << day << ", " << sec << ").get(" << time_unit_name << ") returned " <<
         result_double << ", not " << expected_double << " as expected." << std::endl;
     }
@@ -198,31 +199,54 @@ namespace {
 
   void TestDuration() {
     s_os.setMethod("TestDuration");
-    double epsilon = std::numeric_limits<double>::epsilon();
+
+    // Set the smallest number of seconds that can be correctly expressed by a Duration object.
+    double tol_sec = std::numeric_limits<double>::epsilon() * 10. * 86400.;
+
+    // Set the smallest difference in the unit of days expressible by a single number that expresses 6 days.
+    double tol_6day = std::numeric_limits<double>::epsilon() * 10. * 6.;
+
+    // Set the smallest difference in the unit of days expressible by a single number that expresses 1 day.
+    double tol_1day = std::numeric_limits<double>::epsilon() * 10. * 1.;
+
+    // Set the smallest difference in the unit of days expressible by a single number that expresses 6 days and 6 seconds.
+    double tol_6day6sec = std::numeric_limits<double>::epsilon() * 10. * (6. + 6./86400.);
 
     // For tests of Duration getters for duration of +6 days.
-    TestDurationGetter(6, 0., "Day",  6,         0., epsilon);
-    TestDurationGetter(6, 0., "Hour", 6 * 24,    0., epsilon);
-    TestDurationGetter(6, 0., "Min",  6 * 1440,  0., epsilon);
-    TestDurationGetter(6, 0., "Sec",  6 * 86400, 0., epsilon);
+    TestDurationGetter(6, 0., "Day",  6,         0., tol_sec / 86400., tol_6day);
+    TestDurationGetter(6, 0., "Hour", 6 * 24,    0., tol_sec / 3600.,  tol_6day * 24.);
+    TestDurationGetter(6, 0., "Min",  6 * 1440,  0., tol_sec / 60.,    tol_6day * 1440.);
+    TestDurationGetter(6, 0., "Sec",  6 * 86400, 0., tol_sec,          tol_6day * 86400.);
 
     // For tests of Duration::getters for duration of +6 seconds.
-    TestDurationGetter(0, 6., "Day",  0, 6. / 86400., epsilon);
-    TestDurationGetter(0, 6., "Hour", 0, 6. / 3600.,  epsilon);
-    TestDurationGetter(0, 6., "Min",  0, 6. / 60.,    epsilon);
-    TestDurationGetter(0, 6., "Sec",  6, 0.,          epsilon);
+    TestDurationGetter(0, 6., "Day",  0, 6. / 86400., tol_sec / 86400., tol_1day);
+    TestDurationGetter(0, 6., "Hour", 0, 6. / 3600.,  tol_sec / 3600.,  tol_1day * 24.);
+    TestDurationGetter(0, 6., "Min",  0, 6. / 60.,    tol_sec / 60.,    tol_1day * 1440.);
+    TestDurationGetter(0, 6., "Sec",  6, 0.,          tol_sec,          tol_1day * 86400.);
+
+    // For tests of Duration::getters for duration of +6 days +6 seconds.
+    TestDurationGetter(6, 6., "Day",  6,             6. / 86400., tol_sec / 86400., tol_6day6sec);
+    TestDurationGetter(6, 6., "Hour", 6 * 24,        6. / 3600.,  tol_sec / 3600.,  tol_6day6sec * 24.);
+    TestDurationGetter(6, 6., "Min",  6 * 1440,      6. / 60.,    tol_sec / 60.,    tol_6day6sec * 1440.);
+    TestDurationGetter(6, 6., "Sec",  6 * 86400 + 6, 0.,          tol_sec,          tol_6day6sec * 86400.);
 
     // For tests of Duration getters for duration of -6 days.
-    TestDurationGetter(-6, 0., "Day",  -6,         0., epsilon);
-    TestDurationGetter(-6, 0., "Hour", -6 * 24,    0., epsilon);
-    TestDurationGetter(-6, 0., "Min",  -6 * 1440,  0., epsilon);
-    TestDurationGetter(-6, 0., "Sec",  -6 * 86400, 0., epsilon);
+    TestDurationGetter(-6, 0., "Day",  -6,         0., tol_sec / 86400., tol_6day);
+    TestDurationGetter(-6, 0., "Hour", -6 * 24,    0., tol_sec / 3600.,  tol_6day * 24.);
+    TestDurationGetter(-6, 0., "Min",  -6 * 1440,  0., tol_sec / 60.,    tol_6day * 1440.);
+    TestDurationGetter(-6, 0., "Sec",  -6 * 86400, 0., tol_sec,          tol_6day * 86400.);
 
     // For tests of Duration::getters for duration of -6 seconds.
-    TestDurationGetter(0, -6., "Day",   0, -6. / 86400., epsilon);
-    TestDurationGetter(0, -6., "Hour",  0, -6. / 3600.,  epsilon);
-    TestDurationGetter(0, -6., "Min",   0, -6. / 60.,    epsilon);
-    TestDurationGetter(0, -6., "Sec",  -6,  0.,          epsilon);
+    TestDurationGetter(0, -6., "Day",   0, -6. / 86400., tol_sec / 86400., tol_1day);
+    TestDurationGetter(0, -6., "Hour",  0, -6. / 3600.,  tol_sec / 3600.,  tol_1day * 24.);
+    TestDurationGetter(0, -6., "Min",   0, -6. / 60.,    tol_sec / 60.,    tol_1day * 1440.);
+    TestDurationGetter(0, -6., "Sec",  -6,  0.,          tol_sec,          tol_1day * 86400.);
+
+    // For tests of Duration::getters for duration of -6 days -6 seconds.
+    TestDurationGetter(-6, -6., "Day",  -6,             -6. / 86400., tol_sec / 86400., tol_6day6sec);
+    TestDurationGetter(-6, -6., "Hour", -6 * 24,        -6. / 3600.,  tol_sec / 3600.,  tol_6day6sec * 24.);
+    TestDurationGetter(-6, -6., "Min",  -6 * 1440,      -6. / 60.,    tol_sec / 60.,    tol_6day6sec * 1440.);
+    TestDurationGetter(-6, -6., "Sec",  -6 * 86400 - 6,  0.,          tol_sec,          tol_6day6sec * 86400.);
 
     // Tests of constructors.
     long int_part = 3456789;
@@ -531,7 +555,7 @@ namespace {
     TestOneComputation("u-", dur1, dur2, Duration(-322, 85745.679), tolerance);
 
     // Test proper handling of small difference in second part when two Duration's are added.
-    epsilon = std::numeric_limits<double>::epsilon() * 10.;
+    double epsilon = std::numeric_limits<double>::epsilon() * 10.;
     std::string result = (Duration(0, 86399.) + Duration(0, 1. - epsilon)).describe();
     std::string expected("Duration(1, 0)");
     if (result != expected) {
