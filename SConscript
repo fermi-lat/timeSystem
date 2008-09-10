@@ -1,7 +1,7 @@
 # -*- python -*-
-# $Id: SConscript,v 1.6 2008/08/14 21:31:32 glastrm Exp $
+# $Id: SConscript,v 1.7 2008/09/09 22:30:52 glastrm Exp $
 # Authors: James Peachey <James.Peachey-1@nasa.gov>
-# Version: timeSystem-04-01-01
+# Version: timeSystem-04-01-02
 
 Import('baseEnv')
 Import('listFiles')
