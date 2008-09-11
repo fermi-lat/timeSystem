@@ -5,6 +5,7 @@
 
 \verbatim
 --------------------------------------------------------------------------------
+11-sep-2008    v4r1p3 MH  Improve the unit test to prevent false alarms.
 10-sep-2008    v4r1p2 JP  Add more missing headers.
 09-sep-2008    v4r1p1 JP  Add #include <cctype> where needed. Use setName
                           method to tell application name of parameter file.
