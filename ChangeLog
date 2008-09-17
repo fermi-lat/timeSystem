@@ -1,5 +1,13 @@
 ------------------------------------------------------------
 TAG
+Tag name: ScienceTools-09-07-00, operation: del
+Package: timeSystem
+User: glastrm  Wed Sep 17 13:12:28 2008
+Files:
+
+    *
+------------------------------------------------------------
+TAG
 Tag name: timeSystem-04-01-03, operation: add
 Package: timeSystem
 User: glastrm  Thu Sep 11 16:30:51 2008
