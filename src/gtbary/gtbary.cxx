@@ -47,8 +47,18 @@ void GbaryApp::run() {
   std::string outFile_s = pars["outfile"];
   double ra = pars["ra"];
   double dec = pars["dec"];
+  std::string t_correct = pars["tcorrect"];
   std::string solar_eph = pars["solareph"];
+  double ang_tolerance = pars["angtol"];
+  std::string sc_extension = pars["sctable"];
   bool clobber = pars["clobber"];
+
+  // Check time correction mode.
+  std::string t_correct_uc(t_correct);
+  for (std::string::iterator itor = t_correct_uc.begin(); itor != t_correct_uc.end(); ++itor) *itor = std::toupper(*itor);
+  if ("BARY" != t_correct_uc) {
+    throw std::runtime_error("Unsupported arrival time correction: " + t_correct_uc);
+  }
 
   // Check whether output file name already exists or not, if clobber parameter is set to no.
   if (!clobber) {
@@ -153,24 +163,29 @@ void GbaryApp::run() {
     output_header["CREATOR"].setComment("software and version creating file");
     output_header["DATE"].set(output_header.formatTime(time(0)));
     output_header["DATE"].setComment("file creation date (YYYY-MM-DDThh:mm:ss UT)");
-    // TODO: Do we need TIERRELA?
-    double tierrela = 0.;
+
+    // Determine TIERRELA value, in the same manner as in axBary.c by Arnold Rots, and set it to the header.
+    double tierrela = -1.;
     try {
       output_header["TIERRELA"].get(tierrela);
     } catch (const tip::TipException &) {
-      output_header["TIERRELA"].set(1.e-9);
+      tierrela = 1.e-9;
+    }
+    if (tierrela > 0.) {
+      output_header["TIERRELA"].set(tierrela);
       output_header["TIERRELA"].setComment("short-term clock stability");
     }
-    // TODO: Add treatment of TIERABSO?
+
+    // Determine TIERABSO value, and set it to the header.
+    // TODO: Add mission-dependent determination of TIERABSO value?
+    // Note: TIERABSO was not added for GLAST by axBary.c by Arnold Rots.
     //output_header["TIERABSO"].set(???);
     //output_header["TIERABSO"].setComment("absolute precision of clock correction");
 
     // Initialize arrival time corrections.
-    // TODO: Read values of sc_extension_name, match_solar_eph, and angular_tolerance from the parameter file?
-    std::string sc_extension_name = "SC_DATA";
-    bool match_solar_eph = true;
-    double angular_tolerance = 0.;
-    input_handler->initTimeCorrection(orbitFile_s, sc_extension_name, solar_eph, match_solar_eph, angular_tolerance);
+    // Note: Always require for solar system ephemeris to match between successive arrival time conversions.
+    static const bool match_solar_eph = true;
+    input_handler->initTimeCorrection(orbitFile_s, sc_extension, solar_eph, match_solar_eph, ang_tolerance);
     input_handler->setSourcePosition(ra, dec);
 
     // Apply barycentric correction to header keyword values.
