@@ -7,9 +7,12 @@
 
 #include "timeSystem/AbsoluteTime.h"
 #include "timeSystem/BaryTimeComputer.h"
+#include "timeSystem/CalendarFormat.h"
 #include "timeSystem/ElapsedTime.h"
+#include "timeSystem/TimeInterval.h"
 
 #include "tip/IFileSvc.h"
+#include "tip/TipException.h"
 
 #include <cctype>
 #include <cmath>
@@ -25,16 +28,24 @@ namespace timeSystem {
 
   GlastTimeHandler::GlastTimeHandler(const std::string & file_name, const std::string & extension_name, bool read_only):
     EventTimeHandler(file_name, extension_name, read_only), m_time_system(0), m_mjd_ref(0, 0.) {
-    // Get time system name from TIMESYS keyword.
+    // Get time system name from TIMESYS keyword. If not found, assume TT system.
     const tip::Header & header(getHeader());
     std::string time_system_name;
-    header["TIMESYS"].get(time_system_name);
+    try {
+      header["TIMESYS"].get(time_system_name);
+    } catch (const tip::TipException &) {
+      time_system_name = "TT";
+    }
 
     // Get a TimeSystem object.
     m_time_system = &TimeSystem::getSystem(time_system_name);
 
     // Get MJDREF value.
-    m_mjd_ref = readMjdRef(header);
+    try {
+      m_mjd_ref = readMjdRef(header);
+    } catch (const std::exception &) {
+      m_mjd_ref = Mjd(51910, 64.184 / SecPerDay());
+    }
   }
 
   GlastTimeHandler::~GlastTimeHandler() {}
@@ -59,6 +70,14 @@ namespace timeSystem {
     return computeAbsoluteTime(glast_time);
   }
 
+  void GlastTimeHandler::writeTime(const std::string & field_name, const AbsoluteTime & abs_time, bool from_header) {
+    // Convert AbsoluteTime to GLAST time.
+    double glast_time = computeGlastTime(abs_time);
+
+    // Write the GLAST time to the specified field.
+    writeGlastTime(field_name, glast_time, from_header);
+  }
+
   AbsoluteTime GlastTimeHandler::parseTimeString(const std::string & time_string, const std::string & time_system) const {
     // Rationalize time system name.
     std::string time_system_rat(time_system);
@@ -78,8 +97,17 @@ namespace timeSystem {
   bool GlastTimeHandler::checkHeaderKeyword(const std::string & file_name, const std::string & extension_name,
     const std::string & time_ref_value, const std::string & time_sys_value) {
     // Get the table and the header.
-    std::auto_ptr<const tip::Table> table(tip::IFileSvc::instance().readTable(file_name, extension_name));
+    std::auto_ptr<const tip::Extension> table(tip::IFileSvc::instance().readExtension(file_name, extension_name));
     const tip::Header & header(table->getHeader());
+
+    // Check whether required keywords exist or not.
+    try {
+      std::string dummy_string;
+      header["TELESCOP"].get(dummy_string);
+      header["INSTRUME"].get(dummy_string);
+    } catch (const tip::TipException &) {
+      return false;
+    }
 
     // Get TELESCOP keyword value.
     std::string telescope;
@@ -93,14 +121,22 @@ namespace timeSystem {
 
     // Get TIMEREF keyword value to check whether times in this table are already barycentered.
     std::string time_ref;
-    header["TIMEREF"].get(time_ref);
+    try {
+      header["TIMEREF"].get(time_ref);
+    } catch (const tip::TipException &) {
+      time_ref = "LOCAL";
+    }
     for (std::string::iterator itor = time_ref.begin(); itor != time_ref.end(); ++itor) *itor = std::toupper(*itor);
     std::string time_ref_arg(time_ref_value);
     for (std::string::iterator itor = time_ref_arg.begin(); itor != time_ref_arg.end(); ++itor) *itor = std::toupper(*itor);
 
     // Get TIMESYS keyword value to check whether times in this table are already barycentered.
     std::string time_sys;
-    header["TIMESYS"].get(time_sys);
+    try {
+      header["TIMESYS"].get(time_sys);
+    } catch (const tip::TipException &) {
+      time_sys = "TT";
+    }
     for (std::string::iterator itor = time_sys.begin(); itor != time_sys.end(); ++itor) *itor = std::toupper(*itor);
     std::string time_sys_arg(time_sys_value);
     for (std::string::iterator itor = time_sys_arg.begin(); itor != time_sys_arg.end(); ++itor) *itor = std::toupper(*itor);
@@ -111,14 +147,61 @@ namespace timeSystem {
 
   double GlastTimeHandler::readGlastTime(const std::string & field_name, bool from_header) const {
     double field_value = 0.;
+
     if (from_header) {
+      // Read the time from the header.
       const tip::Header & header(getHeader());
-      header[field_name].get(field_value);
+
+      // Interpret the time in ISO 8601 format.
+      std::string field_name_uc(field_name);
+      for (std::string::iterator itor = field_name_uc.begin(); itor != field_name_uc.end(); ++itor) *itor = std::toupper(*itor);
+      if ("DATE-OBS" == field_name_uc || "DATE-END" == field_name_uc) {
+        std::string field_value_string;
+        header[field_name].get(field_value_string);
+        // Note: DATE-OBS and DATE-END keywords should be in UTC system, according to the definition of GLAST event file format
+        //       as of this writing (September 24th, 2008).
+        AbsoluteTime abs_time("UTC", CalendarFmt, field_value_string);
+        field_value = computeGlastTime(abs_time);
+
+      // Read the time as a GLAST MET.
+      } else {
+        header[field_name].get(field_value);
+      }
+
     } else {
+      // Read it from the current record.
       const tip::TableRecord & record(getCurrentRecord());
       record[field_name].get(field_value);
     }
     return field_value;
+  }
+
+  void GlastTimeHandler::writeGlastTime(const std::string & field_name, double glast_time, bool to_header) {
+    if (to_header) {
+      // Write the time to the header.
+      tip::Header & header(getHeader());
+
+      // Interpret the time in ISO 8601 format.
+      std::string field_name_uc(field_name);
+      for (std::string::iterator itor = field_name_uc.begin(); itor != field_name_uc.end(); ++itor) *itor = std::toupper(*itor);
+      if ("DATE-OBS" == field_name_uc || "DATE-END" == field_name_uc) {
+        AbsoluteTime abs_time = computeAbsoluteTime(glast_time);
+        // Note: DATE-OBS and DATE-END keywords should be in UTC system, according to the definition of GLAST event file format
+        //       as of this writing (September 24th, 2008).
+        std::string time_string = abs_time.represent("UTC", CalendarFmt, 4);
+        time_string.erase(time_string.find_first_of(' '));
+        header[field_name].set(time_string);
+
+      // Write the time as a GLAST MET.
+      } else {
+        header[field_name].set(glast_time);
+      }
+
+    } else {
+      // Write the time to the current record.
+      tip::TableRecord & record(getCurrentRecord());
+      record[field_name].set(glast_time);
+    }
   }
 
   AbsoluteTime GlastTimeHandler::computeAbsoluteTime(double glast_time) const {
@@ -129,6 +212,12 @@ namespace timeSystem {
   AbsoluteTime GlastTimeHandler::computeAbsoluteTime(double glast_time, const std::string & time_system_name) const {
     // Convert GLAST time to AbsoluteTime, and return it.
     return AbsoluteTime(time_system_name, m_mjd_ref) + ElapsedTime(time_system_name, Duration(glast_time, "Sec"));
+  }
+
+  double GlastTimeHandler::computeGlastTime(const AbsoluteTime & abs_time) const {
+    // Convert AbsoluteTime to GLAST time, and return it.
+    const std::string time_system_name = m_time_system->getName();
+    return (abs_time - AbsoluteTime(time_system_name, m_mjd_ref)).computeDuration(time_system_name, "Sec");
   }
 
   GlastScTimeHandler::GlastScTimeHandler(const std::string & file_name, const std::string & extension_name, bool read_only):
