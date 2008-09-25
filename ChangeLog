@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Thu Sep 25 15:34:54 PDT 2008
+timeSystem/src/gtbary
+
+Modified Files:
+	gtbary.cxx 
+Log Message:
+Add new parameters (tcorrect, angtol, and sctable) and use them.
+    *
+------------------------------------------------------------
 User: hirayama  Thu Sep 25 15:34:22 PDT 2008
 timeSystem/pfiles
 
