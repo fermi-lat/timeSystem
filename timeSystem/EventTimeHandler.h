@@ -75,6 +75,8 @@ namespace timeSystem {
 
       virtual AbsoluteTime readTime(const std::string & field_name, bool from_header = false) const = 0;
 
+      virtual void writeTime(const std::string & field_name, const AbsoluteTime & abs_time, bool to_header = false) = 0;
+
       virtual AbsoluteTime getBaryTime(const std::string & field_name, bool from_header = false) const = 0;
 
       virtual AbsoluteTime parseTimeString(const std::string & time_string, const std::string & time_system = "FILE") const = 0;
@@ -99,6 +101,7 @@ namespace timeSystem {
       Mjd readMjdRef(const tip::Header & header) const;
 
     private:
+      tip::Extension * m_extension;
       tip::Table * m_table;
       tip::Table::Iterator m_record_itor;
   };
