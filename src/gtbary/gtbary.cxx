@@ -3,6 +3,8 @@
 #include <cstring>
 #include <fstream>
 #include <iostream>
+#include <list>
+#include <memory>
 #include <stdexcept>
 #include <string>
 
@@ -10,14 +12,19 @@
 #include "st_app/StApp.h"
 #include "st_app/StAppFactory.h"
 
+#include "timeSystem/AbsoluteTime.h"
+#include "timeSystem/EventTimeHandler.h"
+#include "timeSystem/GlastTimeHandler.h"
+
+#include "tip/FileSummary.h"
+#include "tip/Header.h"
 #include "tip/IFileSvc.h"
+#include "tip/TipException.h"
 #include "tip/TipFile.h"
 
 static const std::string s_cvs_id = "$Name:  $";
 
-extern "C" {
-  int axBary(char * inFile, char * orbitFile, char * outFile, double ra, double dec, char * refFrame, int debug);
-}
+using namespace timeSystem;
 
 class GbaryApp : public st_app::StApp {
   public:
@@ -42,7 +49,6 @@ void GbaryApp::run() {
   double dec = pars["dec"];
   std::string solar_eph = pars["solareph"];
   bool clobber = pars["clobber"];
-  bool debug = pars["debug"];
 
   // Check whether output file name already exists or not, if clobber parameter is set to no.
   if (!clobber) {
@@ -75,31 +81,140 @@ void GbaryApp::run() {
   // Set reference frame for the given solar system ephemeris.
   std::string solar_eph_uc = solar_eph;
   for (std::string::iterator itor = solar_eph_uc.begin(); itor != solar_eph_uc.end(); ++itor) *itor = std::toupper(*itor);
-  char refFrame[32] = "";
+  std::string pl_ephem;
+  std::string refFrame;
   if (solar_eph_uc == "JPL DE200") {
-    std::strncpy(refFrame, "FK5", 32);
+    pl_ephem = "JPL-DE200";
+    refFrame = "FK5";
   } else if (solar_eph_uc == "JPL DE405") {
-    std::strncpy(refFrame, "ICRS", 32);
+    pl_ephem = "JPL-DE405";
+    refFrame = "ICRS";
   } else {
     throw std::runtime_error("Solar system ephemeris \"" + solar_eph + "\" not supported");
   }
 
-  // Apply barycentric correction.
-  char * orbitFile = const_cast<char *>(orbitFile_s.c_str());
-  char * tmpOutFile = const_cast<char *>(tmpOutFile_s.c_str());
-  int error = axBary(tmpOutFile, orbitFile, tmpOutFile, ra, dec, refFrame, debug ? 1 : 0);
-  if (0 != error) {
-    if (!debug) std::remove(tmpOutFile);
-    throw std::runtime_error("GbaryApp::run() encountered an error when calling axBary");
+  // List header keyword names to convert.
+  std::list<std::string> keyword_list;
+  keyword_list.push_back("TSTART");
+  keyword_list.push_back("TSTOP");
+  keyword_list.push_back("DATE-OBS");
+  keyword_list.push_back("DATE-END");
+
+  // List column names to convert.
+  std::list<std::string> column_gti;
+  column_gti.push_back("START");
+  column_gti.push_back("STOP");
+  std::list<std::string> column_other;
+  column_other.push_back("TIME");
+
+  // Get the number of extensions of the input FITS file.
+  tip::FileSummary file_summary;
+  tip::IFileSvc::instance().getFileSummary(inFile_s, file_summary);
+
+  // Modify the output file so that an appropriate EventTimeHandler object will be created from it.
+  for (tip::FileSummary::size_type ext_index = 0; ext_index < file_summary.size(); ++ext_index) {
+    // Open the extension of the output file.
+    std::ostringstream oss;
+    oss << ext_index;
+    std::string ext_name = oss.str();
+    std::auto_ptr<tip::Extension> output_extension(tip::IFileSvc::instance().editExtension(tmpOutFile_s, ext_name));
+
+    // Change the header keywords of the output file that determine how to interpret event times.
+    tip::Header & output_header = output_extension->getHeader();
+    output_header["TIMESYS"].set("TDB");
+    output_header["TIMESYS"].setComment("type of time system that is used");
+    output_header["TIMEREF"].set("SOLARSYSTEM");
+    output_header["TIMEREF"].setComment("reference frame used for times");
+  }
+
+  // Loop over all extensions in input and output files, including primary HDU.
+  int ext_number = 0;
+  for (tip::FileSummary::const_iterator ext_itor = file_summary.begin(); ext_itor != file_summary.end(); ++ext_itor, ++ext_number) {
+    // Open this extension of the input file, and the corresponding extension of the output file.
+    std::ostringstream oss;
+    oss << ext_number;
+    std::string ext_name = oss.str();
+    std::auto_ptr<EventTimeHandler> input_handler(IEventTimeHandlerFactory::createHandler(inFile_s, ext_name, true));
+    std::auto_ptr<EventTimeHandler> output_handler(IEventTimeHandlerFactory::createHandler(tmpOutFile_s, ext_name, false));
+
+    // Update header keywords with parameters of barycentric corrections.
+    tip::Header & output_header = output_handler->getHeader();
+    output_header["RA_NOM"].set(ra);
+    output_header["RA_NOM"].setComment("Right Ascension used for barycentric corrections");
+    output_header["DEC_NOM"].set(dec);
+    output_header["DEC_NOM"].setComment("Declination used for barycentric corrections");
+    output_header["RADECSYS"].set(refFrame);
+    output_header["RADECSYS"].setComment("coordinate reference system");
+    output_header["PLEPHEM"].set(pl_ephem);
+    output_header["PLEPHEM"].setComment("solar system ephemeris used for barycentric corrections");
+    output_header["TIMEZERO"].set(0.);
+    output_header["TIMEZERO"].setComment("clock correction");
+    output_header["CREATOR"].set(getName() + " " + getVersion());
+    output_header["CREATOR"].setComment("software and version creating file");
+    output_header["DATE"].set(output_header.formatTime(time(0)));
+    output_header["DATE"].setComment("file creation date (YYYY-MM-DDThh:mm:ss UT)");
+    // TODO: Do we need TIERRELA?
+    double tierrela = 0.;
+    try {
+      output_header["TIERRELA"].get(tierrela);
+    } catch (const tip::TipException &) {
+      output_header["TIERRELA"].set(1.e-9);
+      output_header["TIERRELA"].setComment("short-term clock stability");
+    }
+    // TODO: Add treatment of TIERABSO?
+    //output_header["TIERABSO"].set(???);
+    //output_header["TIERABSO"].setComment("absolute precision of clock correction");
+
+    // Initialize arrival time corrections.
+    // TODO: Read values of sc_extension_name, match_solar_eph, and angular_tolerance from the parameter file?
+    std::string sc_extension_name = "SC_DATA";
+    bool match_solar_eph = true;
+    double angular_tolerance = 0.;
+    input_handler->initTimeCorrection(orbitFile_s, sc_extension_name, solar_eph, match_solar_eph, angular_tolerance);
+    input_handler->setSourcePosition(ra, dec);
+
+    // Apply barycentric correction to header keyword values.
+    for (std::list<std::string>::const_iterator name_itor = keyword_list.begin(); name_itor != keyword_list.end(); ++name_itor) {
+      const std::string & keyword_name = *name_itor;
+      try {
+        const AbsoluteTime abs_time = input_handler->getBaryTime(keyword_name, true);
+        output_handler->writeTime(keyword_name, abs_time, true);
+      } catch (const tip::TipException &) {
+        // Skip if this keyword does not exist.
+      }
+    }
+
+    // Select columns to convert.
+    const std::list<std::string> & column_list = ("GTI" == ext_itor->getExtId() ? column_gti : column_other);
+
+    // Loop over all FITS rows.
+    output_handler->setFirstRecord();
+    for (input_handler->setFirstRecord(); !(input_handler->isEndOfTable() || output_handler->isEndOfTable());
+      input_handler->setNextRecord(), output_handler->setNextRecord()) {
+
+      // Apply barycentric correction to the specified columns.
+      for (std::list<std::string>::const_iterator name_itor = column_list.begin(); name_itor != column_list.end(); ++name_itor) {
+        const std::string & column_name = *name_itor;
+        try {
+          const AbsoluteTime abs_time = input_handler->getBaryTime(column_name);
+          output_handler->writeTime(column_name, abs_time);
+        } catch (const tip::TipException &) {
+          // Skip if this column does not exist.
+        }
+      }
+    }
   }
 
   // Move the temporary output file to the real output file.
   std::remove(outFile_s.c_str());
-  std::rename(tmpOutFile, outFile_s.c_str());
+  std::rename(tmpOutFile_s.c_str(), outFile_s.c_str());
 }
 
 std::string GbaryApp::tmpFileName(const std::string & file_name) const {
   return file_name + ".tmp";
 }
+
+// List supported mission(s).
+timeSystem::EventTimeHandlerFactory<timeSystem::GlastTimeHandler> glast_handler;
 
 st_app::StAppFactory<GbaryApp> g_factory("gtbary");
