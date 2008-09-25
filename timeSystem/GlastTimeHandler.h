@@ -39,6 +39,8 @@ namespace timeSystem {
 
       virtual AbsoluteTime readTime(const std::string & field_name, bool from_header = false) const;
 
+      virtual void writeTime(const std::string & field_name, const AbsoluteTime & abs_time, bool to_header = false);
+
       virtual AbsoluteTime getBaryTime(const std::string & field_name, bool from_header = false) const = 0;
 
       virtual AbsoluteTime parseTimeString(const std::string & time_string, const std::string & time_system = "FILE") const;
@@ -51,9 +53,13 @@ namespace timeSystem {
 
       double readGlastTime(const std::string & field_name, bool from_header) const;
 
+      void writeGlastTime(const std::string & field_name, double glast_time, bool to_header);
+
       AbsoluteTime computeAbsoluteTime(double glast_time) const;
 
       AbsoluteTime computeAbsoluteTime(double glast_time, const std::string & time_system_name) const;
+
+      double computeGlastTime(const AbsoluteTime & abs_time) const;
 
     private:
       const TimeSystem * m_time_system;
