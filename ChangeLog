@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Wed Sep 24 20:30:25 PDT 2008
+timeSystem/timeSystem
+
+Modified Files:
+	AbsoluteTime.h 
+Log Message:
+Add a constructor that takes time string. Add inline qualifier to set and represent methods.
+    *
+------------------------------------------------------------
 User: hirayama  Wed Sep 24 20:29:04 PDT 2008
 timeSystem/src/test
 
