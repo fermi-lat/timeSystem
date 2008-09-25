@@ -51,18 +51,36 @@ namespace timeSystem {
     if (handler) {
       return handler;
     } else {
-      throw std::runtime_error("Unsupported event file \"" + file_name + "[EXTNAME=" + extension_name + "]\"");
+      throw std::runtime_error("Unsupported timing FITS extension \"" + file_name + "[EXTNAME=" + extension_name + "]\"");
     }
   }
 
-  EventTimeHandler::EventTimeHandler(const std::string & file_name, const std::string & extension_name, bool read_only): m_table(0) {
-    // Get the table.
-    // Note: for convenience, read-only and read-write tables are stored as non-const tip::Table pointers in the container.
+  EventTimeHandler::EventTimeHandler(const std::string & file_name, const std::string & extension_name, bool read_only):
+    m_extension(0), m_table(0) {
+    // Try to open it as a tip::Table first.
     if (read_only) {
-      const tip::Table * const_table = tip::IFileSvc::instance().readTable(file_name, extension_name);
-      m_table = const_cast<tip::Table *>(const_table);
+      try {
+        // Note: for convenience, read-only and read-write tables are stored as non-const tip::Table pointers in the container.
+        m_table = const_cast<tip::Table *>(tip::IFileSvc::instance().readTable(file_name, extension_name));
+      } catch (const tip::TipException &) {
+        m_table = 0;
+      }
+
     } else {
-      m_table = tip::IFileSvc::instance().editTable(file_name, extension_name);
+      try {
+        m_table = tip::IFileSvc::instance().editTable(file_name, extension_name);
+      } catch (const tip::TipException &) {
+        m_table = 0;
+      } 
+    }
+
+    // Set a pointer to a tip::Extension object.
+    if (m_table) {
+      m_extension = m_table;
+    } else if (read_only) {
+      m_extension = const_cast<tip::Extension *>(tip::IFileSvc::instance().readExtension(file_name, extension_name));
+    } else {
+      m_extension = tip::IFileSvc::instance().editExtension(file_name, extension_name);
     }
 
     // Set to the first record in the table.
@@ -70,7 +88,8 @@ namespace timeSystem {
   }
 
   EventTimeHandler::~EventTimeHandler() {
-    delete m_table;
+    delete m_extension;
+    // Note: No need to delete m_table because it points to the same object as m_extension does.
   }
 
   EventTimeHandler * EventTimeHandler::createInstance(const std::string & /*file_name*/, const std::string & /*extension_name*/,
@@ -79,32 +98,36 @@ namespace timeSystem {
   }
 
   void EventTimeHandler::setFirstRecord() {
-    m_record_itor = m_table->begin();
+    if (m_table) m_record_itor = m_table->begin();
   }
 
   void EventTimeHandler::setNextRecord() {
-    if (m_record_itor != m_table->end()) ++m_record_itor;
+    if (!isEndOfTable()) ++m_record_itor;
   }
 
   void EventTimeHandler::setLastRecord() {
-    m_record_itor = m_table->end();
-    if (m_table->begin() != m_table->end()) --m_record_itor;
+    if (m_table) {
+      m_record_itor = m_table->end();
+      if (m_table->begin() != m_table->end()) --m_record_itor;
+    }
   }
 
   bool EventTimeHandler::isEndOfTable() const {
-    return (m_record_itor == m_table->end());
+    return (m_table == 0 || m_record_itor == m_table->end());
   }
 
   tip::Table & EventTimeHandler::getTable() const {
-    return *m_table;
+    if (m_table) return *m_table;
+    else throw std::runtime_error("EventTimeHandler::getTable was called for a FITS extension that contains no data table.");
   }
 
   tip::Header & EventTimeHandler::getHeader() const {
-    return m_table->getHeader();
+    return m_extension->getHeader();
   }
 
   tip::TableRecord & EventTimeHandler::getCurrentRecord() const {
-    return *m_record_itor;
+    if (m_table) return *m_record_itor;
+    else throw std::runtime_error("EventTimeHandler::getCurrentRecord was called for a FITS extension that contains no data table.");
   }
 
   Mjd EventTimeHandler::readMjdRef(const tip::Header & header) const {
