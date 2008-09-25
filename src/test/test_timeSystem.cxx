@@ -2865,7 +2865,20 @@ namespace {
         ", not equivalent to " << expected_double << " with tolerance of " << tolerance_double << "." << std::endl;
     }
 
+    // Test writing header keyword value, in Calendar date & time format.
+    std::string expected_time_string = "2008-10-25T12:34:56.1234";
+    abs_time = AbsoluteTime("UTC", CalendarFmt, expected_time_string);
+    handler->writeTime("DATE-OBS", abs_time, to_header);
+    std::string result_time_string;
+    header["DATE-OBS"].get(result_time_string);
+    if (result_time_string != expected_time_string) {
+      err() << "GlastScTimeHandler::writeTime(\"DATE-OBS\", " << to_header << ") wrote " << result_time_string <<
+        ", not " << expected_time_string << " as expected." << std::endl;
+    }
+
     // Test writing TIME column value.
+    expected_double = 12345678.1234567;
+    abs_time = glast_tt_origin + ElapsedTime("TT", Duration(0, expected_double));
     handler->setFirstRecord(); // Points to the first event.
     handler->setNextRecord();  // Points to the second event.
     handler->setNextRecord();  // Points to the third event.
