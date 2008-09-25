@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Wed Sep 24 20:26:28 PDT 2008
+timeSystem/src
+
+Modified Files:
+	GlastTimeHandler.cxx 
+Log Message:
+Add writeTime method. Add support non-table extension. Add support reading and writing of DATE-OBS and DATE-END in calendar format. Make it robust against missing header keywords.
+    *
+------------------------------------------------------------
 User: hirayama  Wed Sep 24 20:23:53 PDT 2008
 timeSystem/timeSystem
 
