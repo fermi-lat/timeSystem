@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Wed Sep 24 20:27:08 PDT 2008
+timeSystem/src/gtbary
+
+Modified Files:
+	gtbary.cxx 
+Log Message:
+Replace axBary with the original C++ code.
+    *
+------------------------------------------------------------
 User: hirayama  Wed Sep 24 20:26:28 PDT 2008
 timeSystem/src
 
