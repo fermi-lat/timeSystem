@@ -9,6 +9,7 @@
 #include "timeSystem/TimeFormat.h"
 
 #include "tip/IFileSvc.h"
+#include "tip/TipException.h"
 
 #include <stdexcept>
 
