@@ -37,6 +37,11 @@ namespace timeSystem {
       AbsoluteTime(const std::string & time_system_name, const TimeRepType & time_rep) { set(time_system_name, time_rep); }
 
       template <typename TimeRepType>
+      AbsoluteTime(const std::string & time_system_name, const TimeFormat<TimeRepType> & time_format, const std::string & time_string) {
+        set(time_system_name, time_format, time_string);
+      }
+
+      template <typename TimeRepType>
       void get(const std::string & time_system_name, TimeRepType & time_rep) const;
 
       template <typename TimeRepType>
@@ -111,7 +116,7 @@ namespace timeSystem {
   }
 
   template <typename TimeRepType>
-  void AbsoluteTime::set(const std::string & time_system_name, const TimeFormat<TimeRepType> & time_format,
+  inline void AbsoluteTime::set(const std::string & time_system_name, const TimeFormat<TimeRepType> & time_format,
     const std::string & time_string) {
     // Set time system.
     m_time_system = &TimeSystem::getSystem(time_system_name);
@@ -122,7 +127,7 @@ namespace timeSystem {
   }
 
   template <typename TimeRepType>
-  std::string AbsoluteTime::represent(const std::string & time_system_name, const TimeFormat<TimeRepType> & time_format,
+  inline std::string AbsoluteTime::represent(const std::string & time_system_name, const TimeFormat<TimeRepType> & time_format,
     std::streamsize precision) const {
     // Convert time systems.
     const TimeSystem & time_system(TimeSystem::getSystem(time_system_name));
