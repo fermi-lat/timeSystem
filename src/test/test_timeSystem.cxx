@@ -23,6 +23,9 @@
 #include "timeSystem/TimeFormat.h"
 #include "timeSystem/TimeSystem.h"
 
+#include "tip/IFileSvc.h"
+#include "tip/TipFile.h"
+
 #include <cmath>
 #include <exception>
 #include <iomanip>
@@ -1366,6 +1369,18 @@ namespace {
         "), not (" << expected_mjd.m_int << ", " << expected_mjd.m_frac << ") as expected." << std::endl;
     }
 
+    // Test the constructor taking an MJD string.
+    std::string mjd_string("54321.142881944444444");
+    abs_time = AbsoluteTime("TT", MjdFmt, mjd_string);
+    result_mjd = Mjd(0, 0.);
+    abs_time.get("TT", result_mjd);
+    double_tol = 100.e-9 / SecPerDay(); // 100 nano-seconds in days.
+    if (expected_mjd.m_int != result_mjd.m_int || std::fabs(expected_mjd.m_frac - result_mjd.m_frac) > double_tol) {
+      err() << "After abs_time = AbsoluteTime(\"TT\", MjdFmt, \"" << mjd_string <<
+        "\"), abs_time.get(\"TT\", result_mjd) gave result_mjd = (" << result_mjd.m_int << ", " << result_mjd.m_frac <<
+        "), not (" << expected_mjd.m_int << ", " << expected_mjd.m_frac << ") as expected." << std::endl;
+    }
+
     // Test the setter taking a high-precision MJD.
     abs_time.set("TT", Mjd(mjd_day, mjd_sec / SecPerDay()));
     result_mjd = Mjd(0, 0.);
@@ -1389,13 +1404,12 @@ namespace {
     }
 
     // Test the setter taking an MJD string.
-    std::string mjd_string("54321.142881944444444");
     abs_time.set("TT", MjdFmt, mjd_string);
     result_mjd = Mjd(0, 0.);
     abs_time.get("TT", result_mjd);
     double_tol = 100.e-9 / SecPerDay(); // 100 nano-seconds in days.
     if (expected_mjd.m_int != result_mjd.m_int || std::fabs(expected_mjd.m_frac - result_mjd.m_frac) > double_tol) {
-      err() << "After abs_time.set(\"TT\", \"MJD\", \"" << mjd_string <<
+      err() << "After abs_time.set(\"TT\", MjdFmt, \"" << mjd_string <<
         "\"), abs_time.get(\"TT\", result_mjd) gave result_mjd = (" << result_mjd.m_int << ", " << result_mjd.m_frac <<
         "), not (" << expected_mjd.m_int << ", " << expected_mjd.m_frac << ") as expected." << std::endl;
     }
@@ -2491,6 +2505,8 @@ namespace {
       virtual AbsoluteTime readTime(const std::string & /*field_name*/, bool /*from_header*/ = false) const
         { return AbsoluteTime("TDB", 51910, 0.); }
 
+      virtual void writeTime(const std::string & /*field_name*/, const AbsoluteTime & /*abs_time*/, bool /*to_header*/ = false) {}
+
       virtual AbsoluteTime getBaryTime(const std::string & /*field_name*/, bool /*from_header*/ = false) const
         { return AbsoluteTime("TDB", 51910, 0.); }
 
@@ -2635,6 +2651,7 @@ namespace {
     // Prepare test parameters in this method.
     std::string event_file = commonUtilities::joinPath(commonUtilities::getDataPath("timeSystem"), "my_pulsar_events_v3.fits");
     std::string event_file_bary = commonUtilities::joinPath(commonUtilities::getDataPath("timeSystem"), "my_pulsar_events_bary_v3.fits");
+    std::string event_file_copy = commonUtilities::joinPath(commonUtilities::getDataPath("timeSystem"), "my_pulsar_events_copy_v3.fits");
     std::string sc_file = commonUtilities::joinPath(commonUtilities::getDataPath("timeSystem"), "my_pulsar_spacecraft_data_v3r1.fits");
     double ra = 85.0482;
     double dec = -69.3319;
@@ -2649,7 +2666,13 @@ namespace {
     std::string pl_ephem = "JPL DE405";
     bool from_header = true;
     bool from_column = false;
+    bool to_header = true;
+    bool to_column = false;
     bool match_solar_eph = true;
+
+    // Copy the event file for write testing.
+    tip::TipFile tip_file = tip::IFileSvc::instance().openFile(event_file);
+    tip_file.copyFile(event_file_copy, true);
 
     // Create an auto-pointer object.
     std::auto_ptr<EventTimeHandler> handler(0);
@@ -2772,6 +2795,15 @@ namespace {
         "), not equivalent to AbsoluteTime(" << expected << ") with tolerance of " << time_tolerance << "." << std::endl;
     }
 
+    // Test reading header keyword value, in Calendar date & time format.
+    result = handler->readTime("DATE-OBS", from_header);
+    time_string = "2007-09-24T15:09:31"; // DATE-OBS in my_pulsar_events_v3.fits.
+    expected = AbsoluteTime("UTC", CalendarFmt, time_string);
+    if (!result.equivalentTo(expected, time_tolerance)) {
+      err() << "GlastScTimeHandler::readTime(\"DATE-OBS\", " << from_header << ") returned AbsoluteTime(" << result <<
+        "), not equivalent to AbsoluteTime(" << expected << ") with tolerance of " << time_tolerance << "." << std::endl;
+    }
+
     // Test reading header keyword value, requesting barycentering, before initializing handler for arrival time corrections.
     try {
       result = handler->getBaryTime("TSTART", from_header);
@@ -2815,6 +2847,35 @@ namespace {
     if (!result.equivalentTo(expected, time_tolerance)) {
       err() << "GlastScTimeHandler::getBaryTime(\"TIME\", " << from_column << ") returned AbsoluteTime(" << result <<
         "), not equivalent to AbsoluteTime(" << expected << ") with tolerance of " << time_tolerance << "." << std::endl;
+    }
+
+    // Create a GlastScTimeHandler object for EVENTS extension of a copied event file for write testing.
+    handler.reset(GlastScTimeHandler::createInstance(event_file_copy, "EVENTS", false));
+
+    // Test writing header keyword value.
+    double expected_double = 12345678.1234567;
+    AbsoluteTime abs_time = glast_tt_origin + ElapsedTime("TT", Duration(0, expected_double));
+    handler->writeTime("TSTART", abs_time, to_header);
+    const tip::Header & header = handler->getHeader();
+    double result_double = 0.;
+    header["TSTART"].get(result_double);
+    double tolerance_double = 1.e-9; // 1 nano-second.
+    if (std::fabs(result_double - expected_double) > tolerance_double) {
+      err() << "GlastScTimeHandler::writeTime(\"TSTART\", " << to_header << ") wrote " << result_double <<
+        ", not equivalent to " << expected_double << " with tolerance of " << tolerance_double << "." << std::endl;
+    }
+
+    // Test writing TIME column value.
+    handler->setFirstRecord(); // Points to the first event.
+    handler->setNextRecord();  // Points to the second event.
+    handler->setNextRecord();  // Points to the third event.
+    handler->writeTime("TIME", abs_time, to_column);
+    const tip::TableRecord & record = handler->getCurrentRecord();
+    result_double = 0.;
+    record["TIME"].get(result_double);
+    if (std::fabs(result_double - expected_double) > tolerance_double) {
+      err() << "GlastScTimeHandler::writeTime(\"TIME\", " << to_column << ") wrote " << result_double <<
+        ", not equivalent to " << expected_double << " with tolerance of " << tolerance_double << "." << std::endl;
     }
 
     // Create an GlastBaryTimeHandler object for EVENTS extension of a barycentered event file.
