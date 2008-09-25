@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Wed Sep 24 20:23:53 PDT 2008
+timeSystem/timeSystem
+
+Modified Files:
+	EventTimeHandler.h GlastTimeHandler.h 
+Log Message:
+Add writeTime method.
+    *
+------------------------------------------------------------
 User: hirayama  Wed Sep 24 20:23:17 PDT 2008
 timeSystem/src
 
