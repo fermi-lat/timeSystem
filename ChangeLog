@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Wed Sep 24 20:29:04 PDT 2008
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Add test of GlastScTimeHandler::writeTime method. Add test of reading DATE-OBS header keyword.
+    *
+------------------------------------------------------------
 User: hirayama  Wed Sep 24 20:27:08 PDT 2008
 timeSystem/src/gtbary
 
