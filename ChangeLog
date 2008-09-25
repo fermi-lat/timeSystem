@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Thu Sep 25 14:36:06 PDT 2008
+timeSystem/src
+
+Modified Files:
+	EventTimeHandler.cxx 
+Log Message:
+Include tip/TipException.h.
+    *
+------------------------------------------------------------
 User: hirayama  Wed Sep 24 20:48:59 PDT 2008
 timeSystem/src/test
 
