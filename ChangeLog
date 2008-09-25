@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Wed Sep 24 20:48:59 PDT 2008
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Add test of writing a header keyword value in Calendar format.
+    *
+------------------------------------------------------------
 User: hirayama  Wed Sep 24 20:30:25 PDT 2008
 timeSystem/timeSystem
 
