@@ -5,6 +5,8 @@
 
 \verbatim
 --------------------------------------------------------------------------------
+26-sep-2008        v5 MH  Use EventTimeHandler for barycentric corrections,
+                          instead of axBary function.
 11-sep-2008    v4r1p3 MH  Improve the unit test to prevent false alarms.
 10-sep-2008    v4r1p2 JP  Add more missing headers.
 09-sep-2008    v4r1p1 JP  Add #include <cctype> where needed. Use setName
