@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Mon Sep 29 15:46:15 PDT 2008
+timeSystem/src/gtbary
+
+Modified Files:
+	gtbary.cxx 
+Log Message:
+Write all parameter values in HISTORY keywords of all extensions of all event files.
+    *
+------------------------------------------------------------
 TAG
 Tag name: timeSystem-05-00-00, operation: add
 Package: timeSystem
