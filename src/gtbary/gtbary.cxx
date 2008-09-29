@@ -1,6 +1,7 @@
 #include <cctype>
 #include <cstdio>
 #include <cstring>
+#include <ctime>
 #include <fstream>
 #include <iostream>
 #include <list>
@@ -159,9 +160,11 @@ void GbaryApp::run() {
     output_header["PLEPHEM"].setComment("solar system ephemeris used for barycentric corrections");
     output_header["TIMEZERO"].set(0.);
     output_header["TIMEZERO"].setComment("clock correction");
-    output_header["CREATOR"].set(getName() + " " + getVersion());
+    const std::string creator_value(getName() + " " + getVersion());
+    output_header["CREATOR"].set(creator_value);
     output_header["CREATOR"].setComment("software and version creating file");
-    output_header["DATE"].set(output_header.formatTime(time(0)));
+    const std::string date_value(output_header.formatTime(time(0)));
+    output_header["DATE"].set(date_value);
     output_header["DATE"].setComment("file creation date (YYYY-MM-DDThh:mm:ss UT)");
 
     // Determine TIERRELA value, in the same manner as in axBary.c by Arnold Rots, and set it to the header.
@@ -181,6 +184,15 @@ void GbaryApp::run() {
     // Note: TIERABSO was not added for GLAST by axBary.c by Arnold Rots.
     //output_header["TIERABSO"].set(???);
     //output_header["TIERABSO"].setComment("absolute precision of clock correction");
+
+    // Write out all the parameters into HISTORY keywords.
+    output_header.addHistory("File created or modified by " + creator_value + " on " + date_value);
+    const st_app::AppParGroup & const_pars(pars);
+    for (hoops::ConstGenParItor par_itor = const_pars.begin(); par_itor != const_pars.end(); ++par_itor) {
+      std::ostringstream oss_par;
+      oss_par << getName() << ".par: " << **par_itor;
+      output_header.addHistory(oss_par.str());
+    }
 
     // Initialize arrival time corrections.
     // Note: Always require for solar system ephemeris to match between successive arrival time conversions.
