@@ -5,6 +5,7 @@
 
 \verbatim
 --------------------------------------------------------------------------------
+30-sep-2008      v5r1 JP  Write parameters into history keywords in output file.
 26-sep-2008        v5 MH  Use EventTimeHandler for barycentric corrections,
                           instead of axBary function.
 11-sep-2008    v4r1p3 MH  Improve the unit test to prevent false alarms.
