@@ -34,6 +34,10 @@ class GbaryApp : public st_app::StApp {
     std::string tmpFileName(const std::string & file_name) const;
 };
 
+// List supported event file format(s).
+EventTimeHandlerFactory<GlastScTimeHandler> glast_sctime_handler;
+EventTimeHandlerFactory<GlastBaryTimeHandler> glast_barytime_handler;
+
 GbaryApp::GbaryApp() {
   setName("gtbary");
   setVersion(s_cvs_id);
@@ -54,11 +58,15 @@ void GbaryApp::run() {
   std::string sc_extension = pars["sctable"];
   bool clobber = pars["clobber"];
 
-  // Check time correction mode.
+  // Prepare for event file reading/writing, based on given time correction mode.
+  typedef std::list<std::pair<IEventTimeHandlerFactory *, IEventTimeHandlerFactory *> > factory_cont_type;
+  factory_cont_type factory_cont;
   std::string t_correct_uc(t_correct);
   for (std::string::iterator itor = t_correct_uc.begin(); itor != t_correct_uc.end(); ++itor) *itor = std::toupper(*itor);
-  if ("BARY" != t_correct_uc) {
-    throw std::runtime_error("Unsupported arrival time correction: " + t_correct_uc);
+  if ("BARY" == t_correct_uc) {
+    factory_cont.push_back(std::make_pair(&glast_sctime_handler, &glast_barytime_handler));
+  } else {
+    throw std::runtime_error("Unsupported arrival time correction: " + t_correct);
   }
 
   // Check whether output file name already exists or not, if clobber parameter is set to no.
@@ -145,8 +153,21 @@ void GbaryApp::run() {
     std::ostringstream oss;
     oss << ext_number;
     std::string ext_name = oss.str();
-    std::auto_ptr<EventTimeHandler> input_handler(IEventTimeHandlerFactory::createHandler(inFile_s, ext_name, true));
-    std::auto_ptr<EventTimeHandler> output_handler(IEventTimeHandlerFactory::createHandler(tmpOutFile_s, ext_name, false));
+    std::auto_ptr<EventTimeHandler> input_handler(0);
+    std::auto_ptr<EventTimeHandler> output_handler(0);
+    for (factory_cont_type::const_iterator fact_itor = factory_cont.begin();
+      fact_itor != factory_cont.end() && (0 == input_handler.get() || (0 == output_handler.get())); ++fact_itor) {
+      input_handler.reset(IEventTimeHandlerFactory::createHandler(inFile_s, ext_name, true));
+      output_handler.reset(IEventTimeHandlerFactory::createHandler(tmpOutFile_s, ext_name, false));
+    }
+
+    // Check whether both of the input and the output files were successfully opened or not.
+    if (0 == input_handler.get()) {
+      throw std::runtime_error("Unsupported input file: " + inFile_s);
+    }
+    if (0 == output_handler.get()) {
+      throw std::runtime_error("Arrival time correction \"" + t_correct + "\" not supported for input file " + inFile_s);
+    }
 
     // Update header keywords with parameters of barycentric corrections.
     tip::Header & output_header = output_handler->getHeader();
@@ -240,8 +261,5 @@ void GbaryApp::run() {
 std::string GbaryApp::tmpFileName(const std::string & file_name) const {
   return file_name + ".tmp";
 }
-
-// List supported mission(s).
-timeSystem::EventTimeHandlerFactory<timeSystem::GlastTimeHandler> glast_handler;
 
 st_app::StAppFactory<GbaryApp> g_factory("gtbary");
