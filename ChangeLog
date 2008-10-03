@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Fri Oct  3 16:57:48 PDT 2008
+timeSystem/src/gtbary
+
+Modified Files:
+	gtbary.cxx 
+Log Message:
+Limit choice of EventTimeHandler. Produce errors when input/output files are not supported.
+    *
+------------------------------------------------------------
 TAG
 Tag name: timeSystem-05-01-00, operation: add
 Package: timeSystem
