@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Fri Oct  3 17:38:00 PDT 2008
+timeSystem/timeSystem
+
+Modified Files:
+	BaryTimeComputer.h 
+Log Message:
+Add computeGeoTime method.
+    *
+------------------------------------------------------------
 User: hirayama  Fri Oct  3 16:57:48 PDT 2008
 timeSystem/src/gtbary
 
