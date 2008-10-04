@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Sat Oct  4 12:53:39 PDT 2008
+timeSystem/src/gtbary
+
+Modified Files:
+	gtbary.cxx 
+Log Message:
+Modify header keywords before opening an input file with EventTimeHandler.
+    *
+------------------------------------------------------------
 User: hirayama  Fri Oct  3 17:38:01 PDT 2008
 timeSystem/src/test
 
