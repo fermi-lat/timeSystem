@@ -2434,14 +2434,15 @@ namespace {
   void TestBaryTimeComputer() {
     s_os.setMethod("TestBaryTimeComputer");
 
-    // Prepare a time to be barycentered and an expected result after barycentered.
+    // Prepare a time to be geo/barycentered and an expected result after geo/barycentered.
     AbsoluteTime glast_tt_origin("TT", 51910, 64.184);
     double glast_time = 2.123393677090199E+08; // TSTART in my_pulsar_events_v3.fits.
     AbsoluteTime original = glast_tt_origin + ElapsedTime("TT", Duration(0, glast_time));
-    AbsoluteTime result = original;
     AbsoluteTime glast_tdb_origin("TDB", 51910, 64.184);
     glast_time = 2.123393824137859E+08; // TSTART in my_pulsar_events_bary_v3.fits.
-    AbsoluteTime expected = glast_tdb_origin + ElapsedTime("TDB", Duration(0, glast_time));
+    AbsoluteTime expected_bary = glast_tdb_origin + ElapsedTime("TDB", Duration(0, glast_time));
+    glast_time = 212339367.70603555441; // Once computed by BaryTimeComputer::computeGeoTime method.
+    AbsoluteTime expected_geo = glast_tt_origin + ElapsedTime("TT", Duration(0, glast_time));
 
     // Set parameters for barycentering.
     double ra = 85.0482;
@@ -2466,11 +2467,22 @@ namespace {
     }
 
     // Test barycentric correction.
+    AbsoluteTime result = original;
     computer405.computeBaryTime(ra, dec, sc_pos, result);
     ElapsedTime tolerance("TDB", Duration(0, 1.e-7));
-    if (!result.equivalentTo(expected, tolerance)) {
+    if (!result.equivalentTo(expected_bary, tolerance)) {
       err() << "BaryTimeComputer::computeBaryTime(" << ra << ", " << dec << ", " << original << ")" <<
-        " returned AbsoluteTime(" << result << "), not equivalent to AbsoluteTime(" << expected <<
+        " returned AbsoluteTime(" << result << "), not equivalent to AbsoluteTime(" << expected_bary <<
+        ") with tolerance of " << tolerance << "." << std::endl;
+    }
+
+    // Test geocentric correction.
+    result = original;
+    computer405.computeGeoTime(ra, dec, sc_pos, result);
+    tolerance = ElapsedTime("TT", Duration(0, 1.e-7));
+    if (!result.equivalentTo(expected_geo, tolerance)) {
+      err() << "BaryTimeComputer::computeGeoTime(" << ra << ", " << dec << ", " << original << ")" <<
+        " returned AbsoluteTime(" << result << "), not equivalent to AbsoluteTime(" << expected_geo <<
         ") with tolerance of " << tolerance << "." << std::endl;
     }
 

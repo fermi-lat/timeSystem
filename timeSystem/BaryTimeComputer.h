@@ -27,6 +27,8 @@ namespace timeSystem {
 
       virtual void computeBaryTime(double ra, double dec, const std::vector<double> & sc_position, AbsoluteTime & abs_time) const = 0;
 
+      virtual void computeGeoTime(double ra, double dec, const std::vector<double> & sc_position, AbsoluteTime & abs_time) const = 0;
+
     protected:
       BaryTimeComputer(const std::string & pl_ephem);
 
