@@ -29,6 +29,8 @@ namespace {
     public:
       virtual void computeBaryTime(double ra, double dec, const std::vector<double> & sc_position, AbsoluteTime & abs_time) const;
 
+      virtual void computeGeoTime(double ra, double dec, const std::vector<double> & sc_position, AbsoluteTime & abs_time) const;
+
     protected:
       JplComputer(const std::string & pl_ephem, int eph_num);
 
@@ -127,7 +129,6 @@ namespace {
 
     // Convert source direction from (RA, Dec) to a three-vector.
     std::vector<double> sourcedir(3);
-
     sourcedir[0] = std::cos(ra/RADEG) * std::cos(dec/RADEG);
     sourcedir[1] = std::sin(ra/RADEG) * std::cos(dec/RADEG);
     sourcedir[2] = std::sin(dec/RADEG);
@@ -139,7 +140,34 @@ namespace {
       + 2*m_solar_mass*log(1.+cth);
 
     // Compute a barycenteric time for the give arrival time.
+    // Note: Time system used below must be TDB.  By giving "TDB" to the ElapsedTime constructor, the given absolute time
+    //       (abs_time variable) is first converted to TDB, then the propagation delay, etc., (delay variable) are added to it.
+    //       As a result, the time difference between time systems, TDB - TT, is computed at the given absolute time, and
+    //       that is the computation procedure that is needed here.
+    //       On the contrary, if "TT" is given, TT-to-TDB conversion would take place after the time difference is added.
+    //       In that case, the time difference, TDB - TT, would be computed at a time different from the given absolute time,
+    //       and may be significantly different from that at the given absolute time,
     abs_time += ElapsedTime("TDB", Duration(delay, "Sec"));
+  }
+
+  void JplComputer::computeGeoTime(double ra, double dec, const std::vector<double> & sc_position,
+    AbsoluteTime & abs_time) const {
+    // Check the size of sc_position.
+    if (sc_position.size() < 3) {
+      throw std::runtime_error("Space craft position was given in a wrong format.");
+    }
+
+    // Convert source direction from (RA, Dec) to a three-vector.
+    std::vector<double> sourcedir(3);
+    sourcedir[0] = std::cos(ra/RADEG) * std::cos(dec/RADEG);
+    sourcedir[1] = std::sin(ra/RADEG) * std::cos(dec/RADEG);
+    sourcedir[2] = std::sin(dec/RADEG);
+
+    // Compute total propagation delay.
+    double delay = computeInnerProduct(sourcedir, sc_position)/m_speed_of_light;
+
+    // Compute a geocenteric time for the give arrival time.
+    abs_time += ElapsedTime("TT", Duration(delay, "Sec"));
   }
 
   double JplComputer::computeInnerProduct(const std::vector<double> & vect_x, const std::vector<double> & vect_y) const {
