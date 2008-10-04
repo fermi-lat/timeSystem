@@ -112,20 +112,6 @@ void GbaryApp::run() {
     throw std::runtime_error("Solar system ephemeris \"" + solar_eph + "\" not supported");
   }
 
-  // List header keyword names to convert.
-  std::list<std::string> keyword_list;
-  keyword_list.push_back("TSTART");
-  keyword_list.push_back("TSTOP");
-  keyword_list.push_back("DATE-OBS");
-  keyword_list.push_back("DATE-END");
-
-  // List column names to convert.
-  std::list<std::string> column_gti;
-  column_gti.push_back("START");
-  column_gti.push_back("STOP");
-  std::list<std::string> column_other;
-  column_other.push_back("TIME");
-
   // Get the number of extensions of the input FITS file.
   tip::FileSummary file_summary;
   tip::IFileSvc::instance().getFileSummary(inFile_s, file_summary);
@@ -144,7 +130,56 @@ void GbaryApp::run() {
     output_header["TIMESYS"].setComment("type of time system that is used");
     output_header["TIMEREF"].set("SOLARSYSTEM");
     output_header["TIMEREF"].setComment("reference frame used for times");
+
+    // Update header keywords with parameters of barycentric corrections.
+    output_header["RA_NOM"].set(ra);
+    output_header["RA_NOM"].setComment("Right Ascension used for barycentric corrections");
+    output_header["DEC_NOM"].set(dec);
+    output_header["DEC_NOM"].setComment("Declination used for barycentric corrections");
+    output_header["RADECSYS"].set(refFrame);
+    output_header["RADECSYS"].setComment("coordinate reference system");
+    output_header["PLEPHEM"].set(pl_ephem);
+    output_header["PLEPHEM"].setComment("solar system ephemeris used for barycentric corrections");
+    output_header["TIMEZERO"].set(0.);
+    output_header["TIMEZERO"].setComment("clock correction");
+    output_header["CREATOR"].set(getName() + " " + getVersion());
+    output_header["CREATOR"].setComment("software and version creating file");
+    output_header["DATE"].set(output_header.formatTime(time(0)));
+    output_header["DATE"].setComment("file creation date (YYYY-MM-DDThh:mm:ss UT)");
+
+    // Determine TIERRELA value, in the same manner as in axBary.c by Arnold Rots, and set it to the header.
+    double tierrela = -1.;
+    try {
+      output_header["TIERRELA"].get(tierrela);
+    } catch (const tip::TipException &) {
+      tierrela = 1.e-9;
+    }
+    if (tierrela > 0.) {
+      output_header["TIERRELA"].set(tierrela);
+      output_header["TIERRELA"].setComment("short-term clock stability");
+    }
+
+    // Determine TIERABSO value, and set it to the header if necessary.
+    // Note: A value of TIERABSO is dependent on a mission and an instrument, and TIERABSO was added only for XTE cases
+    //       in axBary.c by Arnold Rots. Leave this part commented out until the keyword becomes necessary.
+    //double tierabso = 0.0;
+    //output_header["TIERABSO"].set(tierabso);
+    //output_header["TIERABSO"].setComment("absolute precision of clock correction");
   }
+
+  // List header keyword names to convert.
+  std::list<std::string> keyword_list;
+  keyword_list.push_back("TSTART");
+  keyword_list.push_back("TSTOP");
+  keyword_list.push_back("DATE-OBS");
+  keyword_list.push_back("DATE-END");
+
+  // List column names to convert.
+  std::list<std::string> column_gti;
+  column_gti.push_back("START");
+  column_gti.push_back("STOP");
+  std::list<std::string> column_other;
+  column_other.push_back("TIME");
 
   // Loop over all extensions in input and output files, including primary HDU.
   int ext_number = 0;
@@ -169,44 +204,12 @@ void GbaryApp::run() {
       throw std::runtime_error("Arrival time correction \"" + t_correct + "\" not supported for input file " + inFile_s);
     }
 
-    // Update header keywords with parameters of barycentric corrections.
-    tip::Header & output_header = output_handler->getHeader();
-    output_header["RA_NOM"].set(ra);
-    output_header["RA_NOM"].setComment("Right Ascension used for barycentric corrections");
-    output_header["DEC_NOM"].set(dec);
-    output_header["DEC_NOM"].setComment("Declination used for barycentric corrections");
-    output_header["RADECSYS"].set(refFrame);
-    output_header["RADECSYS"].setComment("coordinate reference system");
-    output_header["PLEPHEM"].set(pl_ephem);
-    output_header["PLEPHEM"].setComment("solar system ephemeris used for barycentric corrections");
-    output_header["TIMEZERO"].set(0.);
-    output_header["TIMEZERO"].setComment("clock correction");
-    const std::string creator_value(getName() + " " + getVersion());
-    output_header["CREATOR"].set(creator_value);
-    output_header["CREATOR"].setComment("software and version creating file");
-    const std::string date_value(output_header.formatTime(time(0)));
-    output_header["DATE"].set(date_value);
-    output_header["DATE"].setComment("file creation date (YYYY-MM-DDThh:mm:ss UT)");
-
-    // Determine TIERRELA value, in the same manner as in axBary.c by Arnold Rots, and set it to the header.
-    double tierrela = -1.;
-    try {
-      output_header["TIERRELA"].get(tierrela);
-    } catch (const tip::TipException &) {
-      tierrela = 1.e-9;
-    }
-    if (tierrela > 0.) {
-      output_header["TIERRELA"].set(tierrela);
-      output_header["TIERRELA"].setComment("short-term clock stability");
-    }
-
-    // Determine TIERABSO value, and set it to the header.
-    // TODO: Add mission-dependent determination of TIERABSO value?
-    // Note: TIERABSO was not added for GLAST by axBary.c by Arnold Rots.
-    //output_header["TIERABSO"].set(???);
-    //output_header["TIERABSO"].setComment("absolute precision of clock correction");
-
     // Write out all the parameters into HISTORY keywords.
+    tip::Header & output_header = output_handler->getHeader();
+    std::string creator_value;
+    output_header["CREATOR"].get(creator_value);
+    std::string date_value;
+    output_header["DATE"].get(date_value);
     output_header.addHistory("File created or modified by " + creator_value + " on " + date_value);
     const st_app::AppParGroup & const_pars(pars);
     for (hoops::ConstGenParItor par_itor = const_pars.begin(); par_itor != const_pars.end(); ++par_itor) {
