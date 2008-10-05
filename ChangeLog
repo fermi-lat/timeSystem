@@ -1,5 +1,14 @@
 ------------------------------------------------------------
 User: hirayama  Sat Oct  4 19:49:38 PDT 2008
+timeSystem/timeSystem
+
+Added Files:
+	TimeCorrectorApp.h 
+Log Message:
+Split gtbary.cxx into three files: gtbary.cxx and TimeCorrectorApp.{h,cxx}.
+    *
+------------------------------------------------------------
+User: hirayama  Sat Oct  4 19:49:38 PDT 2008
 timeSystem/src
 
 Added Files:
