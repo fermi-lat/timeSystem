@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Mon Oct  6 16:26:16 PDT 2008
+timeSystem/src
+
+Modified Files:
+	TimeCorrectorApp.cxx 
+Log Message:
+Further improve format checking and error messages.
+    *
+------------------------------------------------------------
 User: hirayama  Sat Oct  4 19:49:38 PDT 2008
 timeSystem/timeSystem
 
