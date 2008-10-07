@@ -120,22 +120,13 @@ namespace timeSystem {
     st_app::AppParGroup & pars = getParGroup();
     pars.Prompt();
     pars.Save();
-    std::string inFile_s = pars["evfile"];
-    std::string orbitFile_s = pars["scfile"];
-    std::string outFile_s = pars["outfile"];
-    double ra = pars["ra"];
-    double dec = pars["dec"];
-    std::string t_correct = pars["tcorrect"];
-    std::string solar_eph = pars["solareph"];
-    double ang_tolerance = pars["angtol"];
-    std::string sc_extension = pars["sctable"];
-    bool clobber = pars["clobber"];
 
     // Prepare for event file reading/writing, based on given time correction mode.
-    typedef std::list<IHandlerPairFactory *> factory_cont_type;
-    factory_cont_type factory_cont;
+    std::string t_correct = pars["tcorrect"];
     std::string t_correct_uc(t_correct);
     for (std::string::iterator itor = t_correct_uc.begin(); itor != t_correct_uc.end(); ++itor) *itor = std::toupper(*itor);
+    typedef std::list<IHandlerPairFactory *> factory_cont_type;
+    factory_cont_type factory_cont;
     if ("BARY" == t_correct_uc) {
       factory_cont.push_back(new HandlerPairFactory<GlastScTimeHandler, GlastBaryTimeHandler>());
     } else {
@@ -143,6 +134,7 @@ namespace timeSystem {
     }
 
     // Get file summary of the input FITS file.
+    std::string inFile_s = pars["evfile"];
     tip::FileSummary file_summary;
     tip::IFileSvc::instance().getFileSummary(inFile_s, file_summary);
 
@@ -165,6 +157,8 @@ namespace timeSystem {
     }
 
     // Check whether output file name already exists or not, if clobber parameter is set to no.
+    std::string outFile_s = pars["outfile"];
+    bool clobber = pars["clobber"];
     if (!clobber) {
       bool file_readable = false;
       try {
@@ -193,6 +187,7 @@ namespace timeSystem {
     inTipFile.copyFile(tmpOutFile_s, true);
 
     // Set reference frame for the given solar system ephemeris.
+    std::string solar_eph = pars["solareph"];
     std::string solar_eph_uc = solar_eph;
     for (std::string::iterator itor = solar_eph_uc.begin(); itor != solar_eph_uc.end(); ++itor) *itor = std::toupper(*itor);
     std::string pl_ephem;
@@ -206,6 +201,14 @@ namespace timeSystem {
     } else {
       throw std::runtime_error("Solar system ephemeris \"" + solar_eph + "\" not supported");
     }
+
+    // Handle leap seconds.
+    std::string leap_sec_file = pars["leapsecfile"];
+    timeSystem::TimeSystem::setDefaultLeapSecFileName(leap_sec_file);
+
+    // Get RA and Dec.
+    double ra = pars["ra"];
+    double dec = pars["dec"];
 
     // Modify the output file so that an appropriate EventTimeHandler object will be created from it.
     for (tip::FileSummary::size_type ext_index = 0; ext_index < file_summary.size(); ++ext_index) {
@@ -258,6 +261,11 @@ namespace timeSystem {
       //output_header["TIERABSO"].setComment("absolute precision of clock correction");
     }
 
+    // Get spacecraft file name, spacecraft data extension name, and angular tolerance.
+    std::string orbitFile_s = pars["scfile"];
+    std::string sc_extension = pars["sctable"];
+    double ang_tolerance = pars["angtol"];
+
     // List header keyword names to convert.
     std::list<std::string> keyword_list;
     keyword_list.push_back("TSTART");
@@ -270,7 +278,8 @@ namespace timeSystem {
     column_gti.push_back("START");
     column_gti.push_back("STOP");
     std::list<std::string> column_other;
-    column_other.push_back("TIME");
+    std::string time_field = pars["timefield"];
+    column_other.push_back(time_field);
 
     // Loop over all extensions in input and output files, including primary HDU.
     ext_number = 0;
