@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Mon Oct  6 18:31:35 PDT 2008
+timeSystem/src
+
+Modified Files:
+	TimeCorrectorApp.cxx 
+Log Message:
+Add timefield and leapsecfile parameters. Read parameters immediately before their use.
+    *
+------------------------------------------------------------
 User: hirayama  Mon Oct  6 18:30:47 PDT 2008
 timeSystem/pfiles
 
