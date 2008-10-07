@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Mon Oct  6 18:30:47 PDT 2008
+timeSystem/pfiles
+
+Modified Files:
+	gtbary.par 
+Log Message:
+Add timefield and leapsecfile parameters.
+    *
+------------------------------------------------------------
 User: hirayama  Mon Oct  6 16:26:16 PDT 2008
 timeSystem/src
 
