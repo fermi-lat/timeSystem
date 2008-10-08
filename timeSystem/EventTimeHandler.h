@@ -77,6 +77,8 @@ namespace timeSystem {
 
       virtual void writeTime(const std::string & field_name, const AbsoluteTime & abs_time, bool to_header = false) = 0;
 
+      virtual AbsoluteTime getGeoTime(const std::string & field_name, bool from_header = false) const = 0;
+
       virtual AbsoluteTime getBaryTime(const std::string & field_name, bool from_header = false) const = 0;
 
       virtual AbsoluteTime parseTimeString(const std::string & time_string, const std::string & time_system = "FILE") const = 0;

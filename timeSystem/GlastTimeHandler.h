@@ -41,6 +41,8 @@ namespace timeSystem {
 
       virtual void writeTime(const std::string & field_name, const AbsoluteTime & abs_time, bool to_header = false);
 
+      virtual AbsoluteTime getGeoTime(const std::string & field_name, bool from_header = false) const = 0;
+
       virtual AbsoluteTime getBaryTime(const std::string & field_name, bool from_header = false) const = 0;
 
       virtual AbsoluteTime parseTimeString(const std::string & time_string, const std::string & time_system = "FILE") const;
@@ -82,6 +84,8 @@ namespace timeSystem {
 
       virtual void setSourcePosition(double ra, double dec);
 
+      virtual AbsoluteTime getGeoTime(const std::string & field_name, bool from_header = false) const;
+
       virtual AbsoluteTime getBaryTime(const std::string & field_name, bool from_header = false) const;
 
     private:
@@ -92,6 +96,8 @@ namespace timeSystem {
       const BaryTimeComputer * m_computer;
 
       GlastScTimeHandler(const std::string & file_name, const std::string & extension_name, bool read_only = true);
+
+      AbsoluteTime getCorrectedTime(const std::string & field_name, bool from_header, bool compute_bary) const;
   };
 
   /** \class GlastBaryTimeHandler
@@ -109,6 +115,8 @@ namespace timeSystem {
         const std::string & solar_eph, bool match_solar_eph, double angular_tolerance);
 
       virtual void setSourcePosition(double ra, double dec);
+
+      virtual AbsoluteTime getGeoTime(const std::string & field_name, bool from_header = false) const;
 
       virtual AbsoluteTime getBaryTime(const std::string & field_name, bool from_header = false) const;
 
