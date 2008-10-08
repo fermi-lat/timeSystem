@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Tue Oct  7 19:06:10 PDT 2008
+timeSystem/timeSystem
+
+Modified Files:
+	GlastTimeHandler.h 
+Log Message:
+Add GlastGeoTimeHandler class.
+    *
+------------------------------------------------------------
 User: hirayama  Tue Oct  7 18:08:05 PDT 2008
 timeSystem/src/test
 
