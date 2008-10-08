@@ -267,7 +267,15 @@ namespace timeSystem {
     m_dec_bary = dec;
   }
 
+  AbsoluteTime GlastScTimeHandler::getGeoTime(const std::string & field_name, bool from_header) const {
+    return getCorrectedTime(field_name, from_header, false);
+  }
+
   AbsoluteTime GlastScTimeHandler::getBaryTime(const std::string & field_name, bool from_header) const {
+    return getCorrectedTime(field_name, from_header, true);
+  }
+
+  AbsoluteTime GlastScTimeHandler::getCorrectedTime(const std::string & field_name, bool from_header, bool compute_bary) const {
     // Check initialization status.
     if (!m_computer) throw std::runtime_error("Arrival time corrections not initialized.");
 
@@ -287,8 +295,9 @@ namespace timeSystem {
     }
     std::vector<double> sc_position(sc_position_array, sc_position_array + 3);
 
-    // Perform barycentric correction on abs_time.
-    m_computer->computeBaryTime(m_ra_bary, m_dec_bary, sc_position, abs_time);
+    // Perform geocentric or barycentric correction on abs_time.
+    if (compute_bary) m_computer->computeBaryTime(m_ra_bary, m_dec_bary, sc_position, abs_time);
+    else m_computer->computeGeoTime(m_ra_bary, m_dec_bary, sc_position, abs_time);
 
     // Return the requested time.
     return abs_time;
@@ -382,6 +391,10 @@ namespace timeSystem {
         ") does not match RA_NOM (" << m_ra_nom << ") and DEC_NOM (" << m_dec_nom << ") in Event file.";
       throw std::runtime_error(os.str());
     }
+  }
+
+  AbsoluteTime GlastBaryTimeHandler::getGeoTime(const std::string & /*field_name*/, bool /*from_header*/) const {
+    throw std::runtime_error("GlastBaryTimeHandler does not support computations of geocentic times");
   }
 
   AbsoluteTime GlastBaryTimeHandler::getBaryTime(const std::string & field_name, bool from_header) const {
