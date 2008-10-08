@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Tue Oct  7 18:08:05 PDT 2008
+timeSystem/timeSystem
+
+Modified Files:
+	EventTimeHandler.h GlastTimeHandler.h 
+Log Message:
+Add EventTimeHandler::getGeoTime method.
+    *
+------------------------------------------------------------
 User: hirayama  Mon Oct  6 18:31:35 PDT 2008
 timeSystem/src
 
