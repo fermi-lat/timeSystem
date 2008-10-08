@@ -1,5 +1,14 @@
 ------------------------------------------------------------
 User: hirayama  Tue Oct  7 18:08:05 PDT 2008
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Add EventTimeHandler::getGeoTime method.
+    *
+------------------------------------------------------------
+User: hirayama  Tue Oct  7 18:08:05 PDT 2008
 timeSystem/src
 
 Modified Files:
