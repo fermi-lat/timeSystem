@@ -70,8 +70,8 @@ namespace timeSystem {
 
   /** \class GlastScTimeHandler
       \brief Class which reads out event times from a GLAST event file that is not applied barycentric corrections,
-             creates AbsoluteTime objects for event times, and performs barycentric correction on event times,
-             typically recorded at a space craft.
+             creates AbsoluteTime objects for event times, and performs geocentric and barycentric correction on
+             event times that are typically recorded at a spacecraft.
   */
   class GlastScTimeHandler: public GlastTimeHandler {
     public:
@@ -100,10 +100,35 @@ namespace timeSystem {
       AbsoluteTime getCorrectedTime(const std::string & field_name, bool from_header, bool compute_bary) const;
   };
 
+  /** \class GlastGeoTimeHandler
+      \brief Class which reads out event times from a GLAST event file that is applied geocentric corrections,
+             creates AbsoluteTime objects for event times, and performs geocentric and barycentric correction on
+             event times that are typically recorded at a spacecraft.
+             typically recorded at a space craft.
+  */
+  class GlastGeoTimeHandler: public GlastTimeHandler {
+    public:
+      virtual ~GlastGeoTimeHandler();
+
+      static EventTimeHandler * createInstance(const std::string & file_name, const std::string & extension_name, bool read_only = true);
+
+      virtual void initTimeCorrection(const std::string & sc_file_name, const std::string & sc_extension_name, 
+        const std::string & solar_eph, bool match_solar_eph, double angular_tolerance);
+
+      virtual void setSourcePosition(double ra, double dec);
+
+      virtual AbsoluteTime getGeoTime(const std::string & field_name, bool from_header = false) const;
+
+      virtual AbsoluteTime getBaryTime(const std::string & field_name, bool from_header = false) const;
+
+    private:
+      GlastGeoTimeHandler(const std::string & file_name, const std::string & extension_name, bool read_only = true);
+  };
+
   /** \class GlastBaryTimeHandler
       \brief Class which reads out event times from a GLAST event file that is applied barycentric corrections,
-             creates AbsoluteTime objects for event times, and performs barycentric correction on event times,
-             typically recorded at a space craft.
+             creates AbsoluteTime objects for event times, and performs geocentric and barycentric correction on
+             event times that are typically recorded at a spacecraft.
   */
   class GlastBaryTimeHandler: public GlastTimeHandler {
     public:

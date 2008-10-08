@@ -55,6 +55,9 @@ namespace timeSystem {
     // Try GlastScTimeHandler first.
     EventTimeHandler * handler = GlastScTimeHandler::createInstance(file_name, extension_name, read_only);
 
+    // Try GlastGeoTimeHandler next.
+    if (0 == handler) handler = GlastGeoTimeHandler::createInstance(file_name, extension_name, read_only);
+
     // Try GlastBaryTimeHandler next.
     if (0 == handler) handler = GlastBaryTimeHandler::createInstance(file_name, extension_name, read_only);
 
@@ -301,6 +304,38 @@ namespace timeSystem {
 
     // Return the requested time.
     return abs_time;
+  }
+
+  GlastGeoTimeHandler::GlastGeoTimeHandler(const std::string & file_name, const std::string & extension_name, bool read_only):
+    GlastTimeHandler(file_name, extension_name, read_only) {}
+
+  GlastGeoTimeHandler::~GlastGeoTimeHandler() {}
+
+  EventTimeHandler * GlastGeoTimeHandler::createInstance(const std::string & file_name, const std::string & extension_name,
+    bool read_only) {
+    // Create an object to hold a return value and set a default return value.
+    EventTimeHandler * handler(0);
+
+    // Check header keywords to identify an event file with barycentric corrections applied.
+    if (checkHeaderKeyword(file_name, extension_name, "GEOCENTRIC", "TT")) {
+      handler = new GlastGeoTimeHandler(file_name, extension_name, read_only);
+    }
+
+    // Return the handler (or zero if this class cannot handle it).
+    return handler;
+  }
+
+  void GlastGeoTimeHandler::initTimeCorrection(const std::string & /*sc_file_name*/, const std::string & /*sc_extension_name*/,
+     const std::string & /*solar_eph*/, bool /*match_solar_eph*/, double /*angular_tolerance*/) {}
+
+  void GlastGeoTimeHandler::setSourcePosition(double /*ra*/, double /*dec*/) {}
+
+  AbsoluteTime GlastGeoTimeHandler::getGeoTime(const std::string & field_name, bool from_header) const {
+    return readTime(field_name, from_header);
+  }
+
+  AbsoluteTime GlastGeoTimeHandler::getBaryTime(const std::string & /*field_name*/, bool /*from_header*/) const {
+    throw std::runtime_error("GlastGeoTimeHandler does not support computations of barycentic times");
   }
 
   GlastBaryTimeHandler::GlastBaryTimeHandler(const std::string & file_name, const std::string & extension_name, bool read_only):
