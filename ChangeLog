@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Thu Oct  9 15:47:58 PDT 2008
+timeSystem/src
+
+Modified Files:
+	GlastTimeHandler.cxx 
+Log Message:
+Improve the error message for not being able to get a spacecraft position.
+    *
+------------------------------------------------------------
 User: hirayama  Thu Oct  9 15:14:22 PDT 2008
 timeSystem/src
 
