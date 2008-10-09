@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Wed Oct  8 17:12:17 PDT 2008
+timeSystem/src
+
+Modified Files:
+	glastscorbit.c 
+Log Message:
+Fix a bug reported by Stefan (JIRA PULS-47).
+    *
+------------------------------------------------------------
 User: hirayama  Tue Oct  7 19:06:10 PDT 2008
 timeSystem/data
 
