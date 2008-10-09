@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Wed Oct  8 19:31:32 PDT 2008
+timeSystem/src
+
+Modified Files:
+	glastscorbit.c 
+Log Message:
+Enforce checking of status code returned by fitsio routines. Improve comments.
+    *
+------------------------------------------------------------
 User: hirayama  Wed Oct  8 17:12:17 PDT 2008
 timeSystem/src
 
