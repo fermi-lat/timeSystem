@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Thu Oct  9 15:14:22 PDT 2008
+timeSystem/pfiles
+
+Modified Files:
+	gtbary.par 
+Log Message:
+Add geocentric option.
+    *
+------------------------------------------------------------
 User: hirayama  Wed Oct  8 19:31:32 PDT 2008
 timeSystem/src
 
