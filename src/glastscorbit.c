@@ -62,8 +62,11 @@ double *glastscorbit (char *filename, double t, int *oerror)
   if (t < sctime1) index = 0;
 
   for (; index < num_rows; ++index) {
-    /* "START" column is # 1 */
+    /* Read "START" column, which is column # 1 */
     fits_read_col(OE, TDOUBLE, 1, index + 1, 1, 1, 0, &sctime2, 0, oerror);
+
+    /* Return if an error occurs. */
+    if ( *oerror ) return intposn ;
 
     /* Find the first time which is > the time being corrected. */
     if (t < sctime2) break;
@@ -81,12 +84,15 @@ double *glastscorbit (char *filename, double t, int *oerror)
     return intposn;
   }
 
-  /* Read the previous and current row. */
+  /* Read "START" column in the previous row. */
   fits_read_col(OE, TDOUBLE, 1, index, 1, 1, 0, &sctime1, 0, oerror);
 
-  /* "SC_POSITION" column is # 3 */
+  /* Read "SC_POSITION" column, which is column # 3, in the previous and the current rows. */
   fits_read_col(OE, TDOUBLE, 3, index, 1, 3, 0, scposn1, 0, oerror);
   fits_read_col(OE, TDOUBLE, 3, index + 1, 1, 3, 0, scposn2, 0, oerror);
+
+  /* Return if an error occurs while reading "START" and "SC_POSITION" columns. */
+  if ( *oerror ) return intposn ;
 
   /* Interpolate. */
   fract = (t - sctime1) / (sctime2 - sctime1);
