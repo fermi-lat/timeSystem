@@ -127,8 +127,16 @@ namespace timeSystem {
     for (std::string::iterator itor = t_correct_uc.begin(); itor != t_correct_uc.end(); ++itor) *itor = std::toupper(*itor);
     typedef std::list<IHandlerPairFactory *> factory_cont_type;
     factory_cont_type factory_cont;
+    std::string target_time_ref;
+    std::string target_time_sys;
     if ("BARY" == t_correct_uc) {
+      target_time_ref = "SOLARSYSTEM";
+      target_time_sys = "TDB";
       factory_cont.push_back(new HandlerPairFactory<GlastScTimeHandler, GlastBaryTimeHandler>());
+    } else if ("GEO" == t_correct_uc) {
+      target_time_ref = "GEOCENTRIC";
+      target_time_sys = "TT";
+      factory_cont.push_back(new HandlerPairFactory<GlastScTimeHandler, GlastGeoTimeHandler>());
     } else {
       throw std::runtime_error("Unsupported arrival time correction: " + t_correct);
     }
@@ -220,9 +228,9 @@ namespace timeSystem {
 
       // Change the header keywords of the output file that determine how to interpret event times.
       tip::Header & output_header = output_extension->getHeader();
-      output_header["TIMESYS"].set("TDB");
+      output_header["TIMESYS"].set(target_time_sys);
       output_header["TIMESYS"].setComment("type of time system that is used");
-      output_header["TIMEREF"].set("SOLARSYSTEM");
+      output_header["TIMEREF"].set(target_time_ref);
       output_header["TIMEREF"].setComment("reference frame used for times");
 
       // Update header keywords with parameters of barycentric corrections.
