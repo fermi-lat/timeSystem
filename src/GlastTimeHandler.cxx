@@ -16,6 +16,8 @@
 
 #include <cctype>
 #include <cmath>
+#include <iomanip>
+#include <limits>
 #include <sstream>
 #include <stdexcept>
 #include <vector>
@@ -293,7 +295,10 @@ namespace timeSystem {
     double * sc_position_array = glastscorbit(m_sc_file_char, glast_time, &error);
     if (error) {
       std::ostringstream os;
-      os << "Error in getting GLAST spacecraft position for " << glast_time << " GLAST MET (TT).";
+      os << "Cannot get GLAST spacecraft position for " << std::setprecision(std::numeric_limits<double>::digits10) <<
+        glast_time << " GLAST MET (TT):";
+      if (error > 0) os << " FITSIO error (status code = " << error << ") occurred while reading spacecraft file " << m_sc_file;
+      else os << " the time is not covered by spacecraft file " << m_sc_file;
       throw std::runtime_error(os.str());
     }
     std::vector<double> sc_position(sc_position_array, sc_position_array + 3);
