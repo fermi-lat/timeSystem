@@ -76,6 +76,7 @@ double *glastscorbit (char *filename, double t, int *oerror)
        the penultimate row. */
     index = num_rows - 1;
   } else if (0 == index || num_rows == index) {
+    index = 0;
     *oerror = -2;
     return intposn;
   }
