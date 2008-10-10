@@ -233,15 +233,15 @@ namespace timeSystem {
       output_header["TIMEREF"].set(target_time_ref);
       output_header["TIMEREF"].setComment("reference frame used for times");
 
-      // Update header keywords with parameters of barycentric corrections.
+      // Update header keywords with parameters of arrival time corrections.
       output_header["RA_NOM"].set(ra);
-      output_header["RA_NOM"].setComment("Right Ascension used for barycentric corrections");
+      output_header["RA_NOM"].setComment("Right Ascension used for arrival time corrections");
       output_header["DEC_NOM"].set(dec);
-      output_header["DEC_NOM"].setComment("Declination used for barycentric corrections");
+      output_header["DEC_NOM"].setComment("Declination used for arrival time corrections");
       output_header["RADECSYS"].set(refFrame);
       output_header["RADECSYS"].setComment("coordinate reference system");
       output_header["PLEPHEM"].set(pl_ephem);
-      output_header["PLEPHEM"].setComment("solar system ephemeris used for barycentric corrections");
+      output_header["PLEPHEM"].setComment("solar system ephemeris used for arrival time corrections");
       output_header["TIMEZERO"].set(0.);
       output_header["TIMEZERO"].setComment("clock correction");
       output_header["CREATOR"].set(getName() + " " + getVersion());
@@ -332,12 +332,15 @@ namespace timeSystem {
       input_handler->initTimeCorrection(orbitFile_s, sc_extension, solar_eph, match_solar_eph, ang_tolerance);
       input_handler->setSourcePosition(ra, dec);
 
-      // Apply barycentric correction to header keyword values.
+      // Apply arrival time correction to header keyword values.
       for (std::list<std::string>::const_iterator name_itor = keyword_list.begin(); name_itor != keyword_list.end(); ++name_itor) {
         const std::string & keyword_name = *name_itor;
         try {
-          const AbsoluteTime abs_time = input_handler->getBaryTime(keyword_name, true);
-          output_handler->writeTime(keyword_name, abs_time, true);
+          if ("BARY" == t_correct_uc) {
+            output_handler->writeTime(keyword_name, input_handler->getBaryTime(keyword_name, true), true);
+          } else if ("GEO" == t_correct_uc) {
+            output_handler->writeTime(keyword_name, input_handler->getGeoTime(keyword_name, true), true);
+          }
         } catch (const tip::TipException &) {
           // Skip if this keyword does not exist.
         }
@@ -351,12 +354,15 @@ namespace timeSystem {
       for (input_handler->setFirstRecord(); !(input_handler->isEndOfTable() || output_handler->isEndOfTable());
         input_handler->setNextRecord(), output_handler->setNextRecord()) {
 
-        // Apply barycentric correction to the specified columns.
+        // Apply arrival time correction to the specified columns.
         for (std::list<std::string>::const_iterator name_itor = column_list.begin(); name_itor != column_list.end(); ++name_itor) {
           const std::string & column_name = *name_itor;
           try {
-            const AbsoluteTime abs_time = input_handler->getBaryTime(column_name);
-            output_handler->writeTime(column_name, abs_time);
+            if ("BARY" == t_correct_uc) {
+              output_handler->writeTime(column_name, input_handler->getBaryTime(column_name));
+            } else if ("GEO" == t_correct_uc) {
+              output_handler->writeTime(column_name, input_handler->getGeoTime(column_name));
+            }
           } catch (const tip::TipException &) {
             // Skip if this column does not exist.
           }
