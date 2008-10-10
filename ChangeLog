@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Thu Oct  9 18:25:57 PDT 2008
+timeSystem/src
+
+Modified Files:
+	TimeCorrectorApp.cxx 
+Log Message:
+Compute geocentric times when requested so. Improve FITS comments.
+    *
+------------------------------------------------------------
 User: hirayama  Thu Oct  9 15:47:58 PDT 2008
 timeSystem/src
 
