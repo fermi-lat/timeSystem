@@ -5,6 +5,8 @@
 
 \verbatim
 --------------------------------------------------------------------------------
+09-oct-2008        v6 MH  Add geocentric option to gtbary. Fix the bug reported
+                          as JIRA PULS-47. Separate StApp subclass from gtbary.cxx.
 30-sep-2008      v5r1 JP  Write parameters into history keywords in output file.
 26-sep-2008        v5 MH  Use EventTimeHandler for barycentric corrections,
                           instead of axBary function.
