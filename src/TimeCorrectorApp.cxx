@@ -15,6 +15,8 @@
 #include <memory>
 #include <stdexcept>
 
+#include "hoops/hoops.h"
+
 #include "st_app/AppParGroup.h"
 #include "st_app/StAppFactory.h"
 
