@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Sat Oct 11 19:14:30 PDT 2008
+timeSystem/src
+
+Modified Files:
+	TimeCorrectorApp.cxx 
+Log Message:
+Include header file hoops.h.
+    *
+------------------------------------------------------------
 TAG
 Tag name: timeSystem-06-00-00, operation: add
 Package: timeSystem
