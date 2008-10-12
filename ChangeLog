@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Sun Oct 12 16:07:05 PDT 2008
+timeSystem/src
+
+Added Files:
+	PulsarTestApp.cxx 
+Log Message:
+Introduce a common base class for a unit test of a pulsar tool package.
+    *
+------------------------------------------------------------
 User: hirayama  Sat Oct 11 19:14:30 PDT 2008
 timeSystem/src
 
