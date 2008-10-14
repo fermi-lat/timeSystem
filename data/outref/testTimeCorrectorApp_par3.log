@@ -1,0 +1,1 @@
+Caught St13runtime_error at the top level: Unsupported timing extension: HDU 1 (EXTNAME=EVENTS) of input file "/net/glast02/users/hirayama/glast/science_tools/coding/develop/timeSystem/v0/data/my_pulsar_events_bary_v3.fits"
