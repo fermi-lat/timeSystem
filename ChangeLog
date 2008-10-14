@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Mon Oct 13 18:11:33 PDT 2008
+timeSystem/src
+
+Modified Files:
+	PulsarTestApp.cxx 
+Log Message:
+Add two methods: checkOutputText and testApplication.
+    *
+------------------------------------------------------------
 User: hirayama  Mon Oct 13 18:11:21 PDT 2008
 timeSystem/timeSystem
 
