@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Mon Oct 13 20:49:56 PDT 2008
+timeSystem/data
+
+Modified Files:
+	my_pulsar_events_geo_v3.fits 
+Log Message:
+Replace the geocentered file with an actual output of gtbary.
+    *
+------------------------------------------------------------
 User: hirayama  Mon Oct 13 18:13:00 PDT 2008
 timeSystem/src/test
 
