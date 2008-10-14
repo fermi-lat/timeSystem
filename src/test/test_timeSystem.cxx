@@ -5,11 +5,11 @@
 
 #include "facilities/commonUtilities.h"
 
+#include "st_app/AppParGroup.h"
 #include "st_app/StApp.h"
 #include "st_app/StAppFactory.h"
 
 #include "st_stream/st_stream.h"
-#include "st_stream/StreamFormatter.h"
 
 #include "timeSystem/AbsoluteTime.h"
 #include "timeSystem/BaryTimeComputer.h"
@@ -20,8 +20,9 @@
 #include "timeSystem/GlastTimeHandler.h"
 #include "timeSystem/MjdFormat.h"
 #include "timeSystem/PulsarTestApp.h"
-#include "timeSystem/TimeInterval.h"
+#include "timeSystem/TimeCorrectorApp.h"
 #include "timeSystem/TimeFormat.h"
+#include "timeSystem/TimeInterval.h"
 #include "timeSystem/TimeSystem.h"
 
 #include "tip/IFileSvc.h"
@@ -32,6 +33,7 @@
 #include <iomanip>
 #include <limits>
 #include <list>
+#include <memory>
 #include <stdexcept>
 
 static const std::string s_cvs_id("$Name:  $");
@@ -46,59 +48,61 @@ class TimeSystemTestApp : public PulsarTestApp {
 
     virtual void run();
 
-    void TestDuration();
+    void testDuration();
 
-    void TestTimeSystem();
+    void testTimeSystem();
 
-    void TestAbsoluteTime();
+    void testAbsoluteTime();
 
-    void TestElapsedTime();
+    void testElapsedTime();
 
-    void TestTimeInterval();
+    void testTimeInterval();
 
-    void TestTimeFormat();
+    void testTimeFormat();
 
-    void TestBaryTimeComputer();
+    void testBaryTimeComputer();
 
-    void TestEventTimeHandlerFactory();
+    void testEventTimeHandlerFactory();
 
-    void TestGlastTimeHandler();
+    void testGlastTimeHandler();
+
+    void testTimeCorrectorApp();
 
   private:
-    void TestDurationGetter(long day, double sec, const std::string & time_unit_name, long int_part, double frac_part,
+    void testDurationGetter(long day, double sec, const std::string & time_unit_name, long int_part, double frac_part,
       double tolerance_high, double tolerance_low);
 
-    void TestDurationConstructor(const std::string & time_unit_name, long int_part, double frac_part, const Duration & expected_result,
+    void testDurationConstructor(const std::string & time_unit_name, long int_part, double frac_part, const Duration & expected_result,
     const Duration & tolerance_high, const Duration & tolerance_low);
 
-    void TestOneComparison(const std::string & comparator, const Duration & dur1, const Duration & dur2,
+    void testOneComparison(const std::string & comparator, const Duration & dur1, const Duration & dur2,
       bool expected_result);
 
-    void TestOneComputation(const std::string & computation, const Duration & dur1, const Duration & dur2,
+    void testOneComputation(const std::string & computation, const Duration & dur1, const Duration & dur2,
       const Duration & expected_result, const Duration & tolerance);
 
-    void TestOneConversion(const std::string & src_system_name, const moment_type & src_moment,
+    void testOneConversion(const std::string & src_system_name, const moment_type & src_moment,
       const std::string & dest_system_name, const moment_type & expected_moment, double tolerance = 1.e-9);
 
-    void TestOneSubtraction(const moment_type & moment1, const moment_type & moment2, double difference, double difference_utc);
+    void testOneSubtraction(const moment_type & moment1, const moment_type & moment2, double difference, double difference_utc);
 
-    void TestOneDateTimeComputation(const moment_type & moment, const datetime_type & datetime, const datetime_type & datetime_utc);
+    void testOneDateTimeComputation(const moment_type & moment, const datetime_type & datetime, const datetime_type & datetime_utc);
 
-    void CompareAbsoluteTime(const AbsoluteTime & abs_time, const AbsoluteTime & later_time);
+    void compareAbsoluteTime(const AbsoluteTime & abs_time, const AbsoluteTime & later_time);
 
-    void TestOneCalendarDate(long mjd, long calendar_year, long month, long month_day, long iso_year, long week_number,
+    void testOneCalendarDate(long mjd, long calendar_year, long month, long month_day, long iso_year, long week_number,
       long weekday_number, long ordinal_date);
 
     template <typename TimeRepType>
-    void TestOneBadDateTime(const TimeFormat<TimeRepType> & time_format, const datetime_type & datetime,
+    void testOneBadDateTime(const TimeFormat<TimeRepType> & time_format, const datetime_type & datetime,
       const std::string & time_rep_name, const std::string & data_description, bool exception_expected = true);
 
     template <typename TimeRepType>
-    void TestOneBadTimeRep(const TimeFormat<TimeRepType> & time_format, const TimeRepType & time_rep, const std::string & time_rep_name,
+    void testOneBadTimeRep(const TimeFormat<TimeRepType> & time_format, const TimeRepType & time_rep, const std::string & time_rep_name,
       const std::string & data_description, bool exception_expected = true);
 
     template <typename TimeRepType>
-    void TestOneBadTimeString(const TimeFormat<TimeRepType> & time_format, const std::string & time_string,
+    void testOneBadTimeString(const TimeFormat<TimeRepType> & time_format, const std::string & time_string,
       const std::string & time_rep_name, bool exception_expected = true);
 
 };
@@ -113,37 +117,40 @@ void TimeSystemTestApp::run() {
   setPrecision(std::numeric_limits<double>::digits10);
 
   // Test Duration class.
-  TestDuration();
+  testDuration();
 
   // Test TimeSystem class and subclasses.
-  TestTimeSystem();
+  testTimeSystem();
 
   // Test AbsoluteTime class.
-  TestAbsoluteTime();
+  testAbsoluteTime();
 
   // Test ElapsedTime class.
-  TestElapsedTime();
+  testElapsedTime();
 
   // Test TimeInterval class.
-  TestTimeInterval();
+  testTimeInterval();
 
   // Test TimeFormat class.
-  TestTimeFormat();
+  testTimeFormat();
 
   // Test BaryTimeComputer class.
-  TestBaryTimeComputer();
+  testBaryTimeComputer();
 
   // Test EventTimeHandlerFactory class.
-  TestEventTimeHandlerFactory();
+  testEventTimeHandlerFactory();
 
   // Test GlastTimeHandler class.
-  TestGlastTimeHandler();
+  testGlastTimeHandler();
+
+  // Test TimeCorrectorApp class.
+  testTimeCorrectorApp();
 
   // Interpret failure flag to report error.
   reportStatus();
 }
 
-void TimeSystemTestApp::TestDurationGetter(long day, double sec, const std::string & time_unit_name, long int_part, double frac_part,
+void TimeSystemTestApp::testDurationGetter(long day, double sec, const std::string & time_unit_name, long int_part, double frac_part,
   double tolerance_high, double tolerance_low) {
   // Test the getter that takes a long variable, a double variable, and a time unit name.
   long result_int = 0;
@@ -173,7 +180,7 @@ void TimeSystemTestApp::TestDurationGetter(long day, double sec, const std::stri
   }
 }
 
-void TimeSystemTestApp::TestDurationConstructor(const std::string & time_unit_name, long int_part, double frac_part,
+void TimeSystemTestApp::testDurationConstructor(const std::string & time_unit_name, long int_part, double frac_part,
   const Duration & expected_result, const Duration & tolerance_high, const Duration & tolerance_low) {
   // Test the constructor that takes a pair of long and double variables.
   Duration result(int_part, frac_part, time_unit_name);
@@ -192,7 +199,7 @@ void TimeSystemTestApp::TestDurationConstructor(const std::string & time_unit_na
   }
 }
 
-void TimeSystemTestApp::TestOneComparison(const std::string & comparator, const Duration & dur1, const Duration & dur2,
+void TimeSystemTestApp::testOneComparison(const std::string & comparator, const Duration & dur1, const Duration & dur2,
   bool expected_result) {
   bool result;
   if      ("!=" == comparator) result = (dur1 != dur2);
@@ -210,7 +217,7 @@ void TimeSystemTestApp::TestOneComparison(const std::string & comparator, const 
   }
 }
 
-void TimeSystemTestApp::TestOneComputation(const std::string & computation, const Duration & dur1, const Duration & dur2,
+void TimeSystemTestApp::testOneComputation(const std::string & computation, const Duration & dur1, const Duration & dur2,
   const Duration & expected_result, const Duration & tolerance) {
   Duration result;
   if      ("+"  == computation) { result = dur1 + dur2; }
@@ -232,8 +239,8 @@ void TimeSystemTestApp::TestOneComputation(const std::string & computation, cons
   }
 }
 
-void TimeSystemTestApp::TestDuration() {
-  setMethod("TestDuration");
+void TimeSystemTestApp::testDuration() {
+  setMethod("testDuration");
 
   // Set the smallest number of seconds that can be correctly expressed by a Duration object.
   double tol_sec = std::numeric_limits<double>::epsilon() * 10. * 86400.;
@@ -248,50 +255,50 @@ void TimeSystemTestApp::TestDuration() {
   double tol_6day6sec = std::numeric_limits<double>::epsilon() * 10. * (6. + 6./86400.);
 
   // For tests of Duration getters for duration of +6 days.
-  TestDurationGetter(6, 0., "Day",  6,         0., tol_sec / 86400., tol_6day);
-  TestDurationGetter(6, 0., "Hour", 6 * 24,    0., tol_sec / 3600.,  tol_6day * 24.);
-  TestDurationGetter(6, 0., "Min",  6 * 1440,  0., tol_sec / 60.,    tol_6day * 1440.);
-  TestDurationGetter(6, 0., "Sec",  6 * 86400, 0., tol_sec,          tol_6day * 86400.);
+  testDurationGetter(6, 0., "Day",  6,         0., tol_sec / 86400., tol_6day);
+  testDurationGetter(6, 0., "Hour", 6 * 24,    0., tol_sec / 3600.,  tol_6day * 24.);
+  testDurationGetter(6, 0., "Min",  6 * 1440,  0., tol_sec / 60.,    tol_6day * 1440.);
+  testDurationGetter(6, 0., "Sec",  6 * 86400, 0., tol_sec,          tol_6day * 86400.);
 
   // For tests of Duration::getters for duration of +6 seconds.
-  TestDurationGetter(0, 6., "Day",  0, 6. / 86400., tol_sec / 86400., tol_1day);
-  TestDurationGetter(0, 6., "Hour", 0, 6. / 3600.,  tol_sec / 3600.,  tol_1day * 24.);
-  TestDurationGetter(0, 6., "Min",  0, 6. / 60.,    tol_sec / 60.,    tol_1day * 1440.);
-  TestDurationGetter(0, 6., "Sec",  6, 0.,          tol_sec,          tol_1day * 86400.);
+  testDurationGetter(0, 6., "Day",  0, 6. / 86400., tol_sec / 86400., tol_1day);
+  testDurationGetter(0, 6., "Hour", 0, 6. / 3600.,  tol_sec / 3600.,  tol_1day * 24.);
+  testDurationGetter(0, 6., "Min",  0, 6. / 60.,    tol_sec / 60.,    tol_1day * 1440.);
+  testDurationGetter(0, 6., "Sec",  6, 0.,          tol_sec,          tol_1day * 86400.);
 
   // For tests of Duration::getters for duration of +6 days +6 seconds.
-  TestDurationGetter(6, 6., "Day",  6,             6. / 86400., tol_sec / 86400., tol_6day6sec);
-  TestDurationGetter(6, 6., "Hour", 6 * 24,        6. / 3600.,  tol_sec / 3600.,  tol_6day6sec * 24.);
-  TestDurationGetter(6, 6., "Min",  6 * 1440,      6. / 60.,    tol_sec / 60.,    tol_6day6sec * 1440.);
-  TestDurationGetter(6, 6., "Sec",  6 * 86400 + 6, 0.,          tol_sec,          tol_6day6sec * 86400.);
+  testDurationGetter(6, 6., "Day",  6,             6. / 86400., tol_sec / 86400., tol_6day6sec);
+  testDurationGetter(6, 6., "Hour", 6 * 24,        6. / 3600.,  tol_sec / 3600.,  tol_6day6sec * 24.);
+  testDurationGetter(6, 6., "Min",  6 * 1440,      6. / 60.,    tol_sec / 60.,    tol_6day6sec * 1440.);
+  testDurationGetter(6, 6., "Sec",  6 * 86400 + 6, 0.,          tol_sec,          tol_6day6sec * 86400.);
 
   // For tests of Duration getters for duration of -6 days.
-  TestDurationGetter(-6, 0., "Day",  -6,         0., tol_sec / 86400., tol_6day);
-  TestDurationGetter(-6, 0., "Hour", -6 * 24,    0., tol_sec / 3600.,  tol_6day * 24.);
-  TestDurationGetter(-6, 0., "Min",  -6 * 1440,  0., tol_sec / 60.,    tol_6day * 1440.);
-  TestDurationGetter(-6, 0., "Sec",  -6 * 86400, 0., tol_sec,          tol_6day * 86400.);
+  testDurationGetter(-6, 0., "Day",  -6,         0., tol_sec / 86400., tol_6day);
+  testDurationGetter(-6, 0., "Hour", -6 * 24,    0., tol_sec / 3600.,  tol_6day * 24.);
+  testDurationGetter(-6, 0., "Min",  -6 * 1440,  0., tol_sec / 60.,    tol_6day * 1440.);
+  testDurationGetter(-6, 0., "Sec",  -6 * 86400, 0., tol_sec,          tol_6day * 86400.);
 
   // For tests of Duration::getters for duration of -6 seconds.
-  TestDurationGetter(0, -6., "Day",   0, -6. / 86400., tol_sec / 86400., tol_1day);
-  TestDurationGetter(0, -6., "Hour",  0, -6. / 3600.,  tol_sec / 3600.,  tol_1day * 24.);
-  TestDurationGetter(0, -6., "Min",   0, -6. / 60.,    tol_sec / 60.,    tol_1day * 1440.);
-  TestDurationGetter(0, -6., "Sec",  -6,  0.,          tol_sec,          tol_1day * 86400.);
+  testDurationGetter(0, -6., "Day",   0, -6. / 86400., tol_sec / 86400., tol_1day);
+  testDurationGetter(0, -6., "Hour",  0, -6. / 3600.,  tol_sec / 3600.,  tol_1day * 24.);
+  testDurationGetter(0, -6., "Min",   0, -6. / 60.,    tol_sec / 60.,    tol_1day * 1440.);
+  testDurationGetter(0, -6., "Sec",  -6,  0.,          tol_sec,          tol_1day * 86400.);
 
   // For tests of Duration::getters for duration of -6 days -6 seconds.
-  TestDurationGetter(-6, -6., "Day",  -6,             -6. / 86400., tol_sec / 86400., tol_6day6sec);
-  TestDurationGetter(-6, -6., "Hour", -6 * 24,        -6. / 3600.,  tol_sec / 3600.,  tol_6day6sec * 24.);
-  TestDurationGetter(-6, -6., "Min",  -6 * 1440,      -6. / 60.,    tol_sec / 60.,    tol_6day6sec * 1440.);
-  TestDurationGetter(-6, -6., "Sec",  -6 * 86400 - 6,  0.,          tol_sec,          tol_6day6sec * 86400.);
+  testDurationGetter(-6, -6., "Day",  -6,             -6. / 86400., tol_sec / 86400., tol_6day6sec);
+  testDurationGetter(-6, -6., "Hour", -6 * 24,        -6. / 3600.,  tol_sec / 3600.,  tol_6day6sec * 24.);
+  testDurationGetter(-6, -6., "Min",  -6 * 1440,      -6. / 60.,    tol_sec / 60.,    tol_6day6sec * 1440.);
+  testDurationGetter(-6, -6., "Sec",  -6 * 86400 - 6,  0.,          tol_sec,          tol_6day6sec * 86400.);
 
   // Tests of constructors.
   long int_part = 3456789;
   double frac_part = .56789567895678956789;
   Duration tol_high(0, 1.e-9); // 1 nano-second.
   Duration tol_low(0, 1.e-3); // 1 milli-second.
-  TestDurationConstructor("Day", int_part, frac_part, Duration(int_part, frac_part*86400.), tol_high, tol_low);
-  TestDurationConstructor("Hour", int_part, frac_part, Duration(int_part/24, (int_part%24 + frac_part)*3600.), tol_high, tol_low);
-  TestDurationConstructor("Min", int_part, frac_part, Duration(int_part/1440, (int_part%1440 + frac_part)*60.), tol_high, tol_low);
-  TestDurationConstructor("Sec", int_part, frac_part, Duration(int_part/86400, int_part%86400 + frac_part), tol_high, tol_low);
+  testDurationConstructor("Day", int_part, frac_part, Duration(int_part, frac_part*86400.), tol_high, tol_low);
+  testDurationConstructor("Hour", int_part, frac_part, Duration(int_part/24, (int_part%24 + frac_part)*3600.), tol_high, tol_low);
+  testDurationConstructor("Min", int_part, frac_part, Duration(int_part/1440, (int_part%1440 + frac_part)*60.), tol_high, tol_low);
+  testDurationConstructor("Sec", int_part, frac_part, Duration(int_part/86400, int_part%86400 + frac_part), tol_high, tol_low);
 
   // Tests of equality and inequality operators.
   Duration six_sec(0, 6.);
@@ -571,23 +578,23 @@ void TimeSystemTestApp::TestDuration() {
   test_input.push_back(std::make_pair(Duration(345, 456.789), +1));
 
   for (std::list<std::pair<Duration, int> >::iterator itor = test_input.begin(); itor != test_input.end(); itor++) {
-    TestOneComparison("!=", itor->first, dur0, (itor->second != 0));
-    TestOneComparison("==", itor->first, dur0, (itor->second == 0));
-    TestOneComparison("<",  itor->first, dur0, (itor->second <  0));
-    TestOneComparison("<=", itor->first, dur0, (itor->second <= 0));
-    TestOneComparison(">",  itor->first, dur0, (itor->second >  0));
-    TestOneComparison(">=", itor->first, dur0, (itor->second >= 0));
+    testOneComparison("!=", itor->first, dur0, (itor->second != 0));
+    testOneComparison("==", itor->first, dur0, (itor->second == 0));
+    testOneComparison("<",  itor->first, dur0, (itor->second <  0));
+    testOneComparison("<=", itor->first, dur0, (itor->second <= 0));
+    testOneComparison(">",  itor->first, dur0, (itor->second >  0));
+    testOneComparison(">=", itor->first, dur0, (itor->second >= 0));
   }
 
   // Test computation operators: +, +=, -, -=, and unary .-
   Duration dur1(321, 654.321);
   Duration dur2(123, 123.456);
   Duration tolerance(0, 1.e-9); // 1 nanosecond.
-  TestOneComputation("+",  dur1, dur2, Duration( 444,   777.777), tolerance);
-  TestOneComputation("+=", dur1, dur2, Duration( 444,   777.777), tolerance);
-  TestOneComputation("-",  dur1, dur2, Duration( 198,   530.865), tolerance);
-  TestOneComputation("-=", dur1, dur2, Duration( 198,   530.865), tolerance);
-  TestOneComputation("u-", dur1, dur2, Duration(-322, 85745.679), tolerance);
+  testOneComputation("+",  dur1, dur2, Duration( 444,   777.777), tolerance);
+  testOneComputation("+=", dur1, dur2, Duration( 444,   777.777), tolerance);
+  testOneComputation("-",  dur1, dur2, Duration( 198,   530.865), tolerance);
+  testOneComputation("-=", dur1, dur2, Duration( 198,   530.865), tolerance);
+  testOneComputation("u-", dur1, dur2, Duration(-322, 85745.679), tolerance);
 
   // Test proper handling of small difference in second part when two Duration's are added.
   double epsilon = std::numeric_limits<double>::epsilon() * 10.;
@@ -621,20 +628,20 @@ void TimeSystemTestApp::TestDuration() {
   Duration min_plus_one(std::numeric_limits<long>::min() + 1, 0.);
 
   // Additive identity.
-  TestOneComputation("+",  max, zero, max, tolerance);
-  TestOneComputation("+",  zero, max, max, tolerance);
-  TestOneComputation("+",  min, zero, min, tolerance);
-  TestOneComputation("+",  zero, min, min, tolerance);
-  TestOneComputation("-",  max, zero, max, tolerance);
-  TestOneComputation("-",  min, zero, min, tolerance);
+  testOneComputation("+",  max, zero, max, tolerance);
+  testOneComputation("+",  zero, max, max, tolerance);
+  testOneComputation("+",  min, zero, min, tolerance);
+  testOneComputation("+",  zero, min, min, tolerance);
+  testOneComputation("-",  max, zero, max, tolerance);
+  testOneComputation("-",  min, zero, min, tolerance);
 
   // Test addition of two numbers adding up to max.
-  TestOneComputation("+",  max_minus_one, one, max, tolerance);
-  TestOneComputation("+",  one, max_minus_one, max, tolerance);
-  TestOneComputation("+",  min, one, min_plus_one, tolerance);
-  TestOneComputation("+",  one, min, min_plus_one, tolerance);
-  TestOneComputation("-",  max, one, max_minus_one, tolerance);
-  TestOneComputation("-",  min_plus_one, one, min, tolerance);
+  testOneComputation("+",  max_minus_one, one, max, tolerance);
+  testOneComputation("+",  one, max_minus_one, max, tolerance);
+  testOneComputation("+",  min, one, min_plus_one, tolerance);
+  testOneComputation("+",  one, min, min_plus_one, tolerance);
+  testOneComputation("-",  max, one, max_minus_one, tolerance);
+  testOneComputation("-",  min_plus_one, one, min, tolerance);
 
   // Test printing the positive time duration.
   Duration positive_duration(12, 34567.89);
@@ -700,7 +707,7 @@ void TimeSystemTestApp::TestDuration() {
   }
 }
 
-void TimeSystemTestApp::TestOneConversion(const std::string & src_system_name, const moment_type & src_moment,
+void TimeSystemTestApp::testOneConversion(const std::string & src_system_name, const moment_type & src_moment,
   const std::string & dest_system_name, const moment_type & expected_moment, double tolerance) {
   const TimeSystem & src_sys(TimeSystem::getSystem(src_system_name));
   const TimeSystem & dest_sys(TimeSystem::getSystem(dest_system_name));
@@ -714,7 +721,7 @@ void TimeSystemTestApp::TestOneConversion(const std::string & src_system_name, c
   }
 }
 
-void TimeSystemTestApp::TestOneSubtraction(const moment_type & moment1, const moment_type & moment2, double difference,
+void TimeSystemTestApp::testOneSubtraction(const moment_type & moment1, const moment_type & moment2, double difference,
   double difference_utc) {
   std::map<std::string, Duration> expected_diff;
   expected_diff["TAI"] = Duration(0, difference);
@@ -737,7 +744,7 @@ void TimeSystemTestApp::TestOneSubtraction(const moment_type & moment1, const mo
   }
 }
 
-void TimeSystemTestApp::TestOneDateTimeComputation(const moment_type & moment, const datetime_type & datetime,
+void TimeSystemTestApp::testOneDateTimeComputation(const moment_type & moment, const datetime_type & datetime,
   const datetime_type & datetime_utc) {
   std::list<std::string> time_system_name_list;
   time_system_name_list.push_back("TAI");
@@ -763,8 +770,8 @@ void TimeSystemTestApp::TestOneDateTimeComputation(const moment_type & moment, c
   }
 }
 
-void TimeSystemTestApp::TestTimeSystem() {
-  setMethod("TestTimeSystem");
+void TimeSystemTestApp::testTimeSystem() {
+  setMethod("testTimeSystem");
   using namespace facilities;
 
   // Set the default leap second file to a local copy of an actual leap second table.
@@ -799,30 +806,30 @@ void TimeSystemTestApp::TestTimeSystem() {
   double tdb_tolerance = 1.e-7; // 100 ns is the accuracy of algorithms involving TDB.
 
   // Test conversions, reflexive cases.
-  TestOneConversion("TAI", tai_ref_moment, "TAI", tai_ref_moment);
-  TestOneConversion("TDB", tdb_ref_moment, "TDB", tdb_ref_moment);
-  TestOneConversion("TT",  tt_ref_moment,  "TT",  tt_ref_moment);
-  TestOneConversion("UTC", utc_ref_moment, "UTC", utc_ref_moment);
+  testOneConversion("TAI", tai_ref_moment, "TAI", tai_ref_moment);
+  testOneConversion("TDB", tdb_ref_moment, "TDB", tdb_ref_moment);
+  testOneConversion("TT",  tt_ref_moment,  "TT",  tt_ref_moment);
+  testOneConversion("UTC", utc_ref_moment, "UTC", utc_ref_moment);
 
   // Test conversions from TAI to...
-  TestOneConversion("TAI", tai_ref_moment, "TDB", tdb_ref_moment, tdb_tolerance);
-  TestOneConversion("TAI", tai_ref_moment, "TT",  tt_ref_moment);
-  TestOneConversion("TAI", tai_ref_moment, "UTC", utc_ref_moment);
+  testOneConversion("TAI", tai_ref_moment, "TDB", tdb_ref_moment, tdb_tolerance);
+  testOneConversion("TAI", tai_ref_moment, "TT",  tt_ref_moment);
+  testOneConversion("TAI", tai_ref_moment, "UTC", utc_ref_moment);
 
   // Test conversions from TDB to...
-  TestOneConversion("TDB", tdb_ref_moment, "TAI", tai_ref_moment, tdb_tolerance);
-  TestOneConversion("TDB", tdb_ref_moment, "TT",  tt_ref_moment, tdb_tolerance);
-  TestOneConversion("TDB", tdb_ref_moment, "UTC", utc_ref_moment, tdb_tolerance);
+  testOneConversion("TDB", tdb_ref_moment, "TAI", tai_ref_moment, tdb_tolerance);
+  testOneConversion("TDB", tdb_ref_moment, "TT",  tt_ref_moment, tdb_tolerance);
+  testOneConversion("TDB", tdb_ref_moment, "UTC", utc_ref_moment, tdb_tolerance);
 
   // Test conversions from TT to...
-  TestOneConversion("TT",  tt_ref_moment, "TAI", tai_ref_moment);
-  TestOneConversion("TT",  tt_ref_moment, "TDB", tdb_ref_moment, tdb_tolerance);
-  TestOneConversion("TT",  tt_ref_moment, "UTC", utc_ref_moment);
+  testOneConversion("TT",  tt_ref_moment, "TAI", tai_ref_moment);
+  testOneConversion("TT",  tt_ref_moment, "TDB", tdb_ref_moment, tdb_tolerance);
+  testOneConversion("TT",  tt_ref_moment, "UTC", utc_ref_moment);
 
   // Test conversions from UTC to...
-  TestOneConversion("UTC", utc_ref_moment, "TAI", tai_ref_moment);
-  TestOneConversion("UTC", utc_ref_moment, "TDB", tdb_ref_moment, tdb_tolerance);
-  TestOneConversion("UTC", utc_ref_moment, "TT",  tt_ref_moment);
+  testOneConversion("UTC", utc_ref_moment, "TAI", tai_ref_moment);
+  testOneConversion("UTC", utc_ref_moment, "TDB", tdb_ref_moment, tdb_tolerance);
+  testOneConversion("UTC", utc_ref_moment, "TT",  tt_ref_moment);
 
   // Use three leap seconds for generating tests.
   double diff0 = 31.;
@@ -838,49 +845,49 @@ void TimeSystemTestApp::TestTimeSystem() {
   // To ensure UTC->TAI is handled correctly, do some tougher conversions, i.e. times which are close to
   // times when leap seconds are inserted.
   // --- At an exact time of leap second insertion.
-  TestOneConversion("UTC", moment_type(leap1, Duration(0, 0.)),
+  testOneConversion("UTC", moment_type(leap1, Duration(0, 0.)),
                     "TAI", moment_type(leap1, Duration(0, diff1)));
   // --- Slightly before a leap second is inserted.
-  TestOneConversion("UTC", moment_type(leap1 - 1, Duration(0, SecPerDay() - .001)),
+  testOneConversion("UTC", moment_type(leap1 - 1, Duration(0, SecPerDay() - .001)),
                     "TAI", moment_type(leap1 - 1, Duration(0, SecPerDay() - .001 + diff0)));
   // --- Same as above, but with a large elapsed time.
   //     Although the total time (origin + elapsed) is large enough to cross two leap second boundaries, still
   //     the earliest leap second should be used because the choice of leap second is based only on the origin time.
-  TestOneConversion("UTC", moment_type(leap1 - 1, Duration(delta_leap + 1, -.001 + 2.002)),
+  testOneConversion("UTC", moment_type(leap1 - 1, Duration(delta_leap + 1, -.001 + 2.002)),
                     "TAI", moment_type(leap1 - 1, Duration(delta_leap + 1, -.001 + 2.002 + diff0)));
 
   // To ensure TAI->UTC is handled correctly, do some tougher conversions, i.e. times which are close to
   // times when leap seconds are inserted.
   // --- At the end of a leap second.
-  TestOneConversion("TAI", moment_type(leap1, Duration(0, diff1)),
+  testOneConversion("TAI", moment_type(leap1, Duration(0, diff1)),
                     "UTC", moment_type(leap1, Duration(0, 0.)));
   // --- During a leap second.
-  TestOneConversion("TAI", moment_type(leap1, Duration(0, -0.3 + diff1)),
+  testOneConversion("TAI", moment_type(leap1, Duration(0, -0.3 + diff1)),
                     "UTC", moment_type(leap1, Duration(0, -0.3)));
   // --- At the beginning of a leap second.
-  TestOneConversion("TAI", moment_type(leap1, Duration(0, -1.0 + diff1)),
+  testOneConversion("TAI", moment_type(leap1, Duration(0, -1.0 + diff1)),
                     "UTC", moment_type(leap1, Duration(0, -1.0)));
   // --- After the end of a leap second.
-  TestOneConversion("TAI", moment_type(leap1, Duration(0, +0.3 + diff1)),
+  testOneConversion("TAI", moment_type(leap1, Duration(0, +0.3 + diff1)),
                     "UTC", moment_type(leap1, Duration(0, +0.3)));
   // --- Before the beginning of a leap second.
-  TestOneConversion("TAI", moment_type(leap1, Duration(0, -1.3 + diff1)),
+  testOneConversion("TAI", moment_type(leap1, Duration(0, -1.3 + diff1)),
                     "UTC", moment_type(leap1, Duration(0, -1.3)));
 
   // Test that conversion uses table keyed by TAI times, not by UTC.
-  TestOneConversion("TAI", moment_type(leap1 - 1, Duration(0, SecPerDay() - 2.)),
+  testOneConversion("TAI", moment_type(leap1 - 1, Duration(0, SecPerDay() - 2.)),
                     "UTC", moment_type(leap1 - 1, Duration(0, SecPerDay() - 2. - diff0)));
 
   // Test case before first time covered by the current UTC definition. This is "undefined" in the current scheme.
   long diff_oldest = 10;
   try {
-    TestOneConversion("UTC", moment_type(0, Duration(0, 0.)), "TAI", moment_type(0, Duration(0, diff_oldest)));
+    testOneConversion("UTC", moment_type(0, Duration(0, 0.)), "TAI", moment_type(0, Duration(0, diff_oldest)));
     err() << "Conversion of time 0. MJD UTC to TAI did not throw an exception." << std::endl;
   } catch (const std::exception &) {
     // That's OK!
   }
   try {
-    TestOneConversion("TAI", moment_type(0, Duration(0, diff_oldest)), "UTC", moment_type(0, Duration(0, 0.)));
+    testOneConversion("TAI", moment_type(0, Duration(0, diff_oldest)), "UTC", moment_type(0, Duration(0, 0.)));
     err() << "Conversion of time 0. MJD TAI to UTC did not throw an exception." << std::endl;
   } catch (const std::exception &) {
     // That's OK!
@@ -889,7 +896,7 @@ void TimeSystemTestApp::TestTimeSystem() {
   // Test undefined UTC time, with the time origin covered by the current definition.
   long oldest_mjd = 41317;
   try {
-    TestOneConversion("UTC", moment_type(oldest_mjd + 1, Duration(-2, 0.)),
+    testOneConversion("UTC", moment_type(oldest_mjd + 1, Duration(-2, 0.)),
                       "TAI", moment_type(oldest_mjd + 1, Duration(-2, diff_oldest)));
     err() << "Conversion of moment_type(" << oldest_mjd + 1 << ", " << Duration(-2, 0.) <<
       ") from UTC to TAI did not throw an exception." << std::endl;
@@ -897,7 +904,7 @@ void TimeSystemTestApp::TestTimeSystem() {
     // That's OK!
   }
   try {
-    TestOneConversion("TAI", moment_type(oldest_mjd + 1, Duration(-2, diff_oldest)),
+    testOneConversion("TAI", moment_type(oldest_mjd + 1, Duration(-2, diff_oldest)),
                       "UTC", moment_type(oldest_mjd + 1, Duration(-2, 0.)));
     err() << "Conversion of moment_type(" << oldest_mjd + 1 << ", " << Duration(-2, diff_oldest) <<
       ") from TAI to UTC did not throw an exception." << std::endl;
@@ -938,7 +945,7 @@ void TimeSystemTestApp::TestTimeSystem() {
   // Test case after last time covered by the current UTC definition.
   long leap_last = 53737;
   double diff_last = 31.;
-  TestOneConversion("UTC", moment_type(leap_last, Duration(0, 100.)), "TAI", moment_type(leap_last, Duration(0, 100. + diff_last)));
+  testOneConversion("UTC", moment_type(leap_last, Duration(0, 100.)), "TAI", moment_type(leap_last, Duration(0, 100. + diff_last)));
 
   // Reset default leap second file name.
   TimeSystem::setDefaultLeapSecFileName("");
@@ -949,7 +956,7 @@ void TimeSystemTestApp::TestTimeSystem() {
   // Test case after last time covered by the current UTC definition.
   leap_last = 53737;
   diff_last = 31.;
-  TestOneConversion("UTC", moment_type(leap_last, Duration(0, 100.)), "TAI", moment_type(leap_last, Duration(0, 100. + diff_last)));
+  testOneConversion("UTC", moment_type(leap_last, Duration(0, 100.)), "TAI", moment_type(leap_last, Duration(0, 100. + diff_last)));
 
   // Use three leap seconds for generating tests.
   diff0 = 30.;
@@ -966,56 +973,56 @@ void TimeSystemTestApp::TestTimeSystem() {
   // To ensure TAI->UTC is handled correctly, do some tougher conversions, i.e. times which are close to
   // times when leap seconds are removed.
   // --- At an exact time of leap second removal.
-  TestOneConversion("TAI", moment_type(leap1, Duration(0, diff1)),
+  testOneConversion("TAI", moment_type(leap1, Duration(0, diff1)),
                     "UTC", moment_type(leap1, Duration(0, 0.)));
   // --- Slightly before a leap second is removed.
-  TestOneConversion("TAI", moment_type(leap1, Duration(0, -.001 + diff1)),
+  testOneConversion("TAI", moment_type(leap1, Duration(0, -.001 + diff1)),
                     "UTC", moment_type(leap1, Duration(0, -.001)));
   // --- Same as above, but with a large elapsed time.
   //     Although the total time (origin + elapsed) is large enough to cross two leap second boundaries, still
   //     the earliest leap second should be used because the choice of leap second is based only on the origin time.
-  TestOneConversion("TAI", moment_type(leap1, Duration(delta_leap, -.001 + .002)),
+  testOneConversion("TAI", moment_type(leap1, Duration(delta_leap, -.001 + .002)),
                     "UTC", moment_type(leap1, Duration(delta_leap, -.001 + .002 - diff1)));
 
   // To ensure UTC->TAI is handled correctly, do some tougher conversions, i.e. times which are close to
   // times when leap seconds are removed.
   // --- At the end of a leap second.
-  TestOneConversion("UTC", moment_type(leap1, Duration(0, 0.)),
+  testOneConversion("UTC", moment_type(leap1, Duration(0, 0.)),
                     "TAI", moment_type(leap1, Duration(0, diff1)));
   // --- During a leap second
   // Note: As of May 29th, 2008, the design doesn't allow/need this test due to the improved robustness.
   // --- At the beginning of a leap second.
-  TestOneConversion("UTC", moment_type(leap1 - 1, Duration(0, SecPerDay() - 1.0)),
+  testOneConversion("UTC", moment_type(leap1 - 1, Duration(0, SecPerDay() - 1.0)),
                     "TAI", moment_type(leap1 - 1, Duration(0, SecPerDay() - 1.0 + diff0)));
   // --- After the end of a leap second.
-  TestOneConversion("UTC", moment_type(leap1, Duration(0, 0.3)),
+  testOneConversion("UTC", moment_type(leap1, Duration(0, 0.3)),
                     "TAI", moment_type(leap1, Duration(0, diff1 + 0.3)));
   // --- Before the beginning of a leap second.
-  TestOneConversion("UTC", moment_type(leap1 - 1, Duration(0, SecPerDay() - 1.3)),
+  testOneConversion("UTC", moment_type(leap1 - 1, Duration(0, SecPerDay() - 1.3)),
                     "TAI", moment_type(leap1 - 1, Duration(0, SecPerDay() - 1.3 + diff0)));
 
   // Test computeTimeDifference method.
   // Middle of nowhere
-  TestOneSubtraction(moment_type(51910, Duration(0, 120.)), moment_type(51910, Duration(0, 100.)),  20., 20.);
+  testOneSubtraction(moment_type(51910, Duration(0, 120.)), moment_type(51910, Duration(0, 100.)),  20., 20.);
   // Leap second insertion
-  TestOneSubtraction(moment_type(leap2, Duration(0, +10.)), moment_type(leap2 - 1, Duration(0, SecPerDay() - 10.)), 20., 21.);
+  testOneSubtraction(moment_type(leap2, Duration(0, +10.)), moment_type(leap2 - 1, Duration(0, SecPerDay() - 10.)), 20., 21.);
   // leap second removal
-  TestOneSubtraction(moment_type(leap1, Duration(0, +10.)), moment_type(leap1 - 1, Duration(0, SecPerDay() - 10.)), 20., 19.);
+  testOneSubtraction(moment_type(leap1, Duration(0, +10.)), moment_type(leap1 - 1, Duration(0, SecPerDay() - 10.)), 20., 19.);
   // Non-existing time in UTC
   // Note: As of May 29th, 2008, the design doesn't allow/need this test due to the improved robustness.
 
   // Test computeDateTime method.
   double deltat = 20.;
   // Middle of nowhere
-  TestOneDateTimeComputation(moment_type(51910, Duration(0, 100.)), datetime_type(51910, 100.), datetime_type(51910, 100.));
+  testOneDateTimeComputation(moment_type(51910, Duration(0, 100.)), datetime_type(51910, 100.), datetime_type(51910, 100.));
   // Middle of nowhere, with a negative elapsed time
-  TestOneDateTimeComputation(moment_type(51910, Duration(0, -100.)),
+  testOneDateTimeComputation(moment_type(51910, Duration(0, -100.)),
      datetime_type(51909, SecPerDay() - 100.), datetime_type(51909, SecPerDay() - 100.));
   // Across leap second insertion in UTC
-  TestOneDateTimeComputation(moment_type(leap2 - 1, Duration(1, deltat - 10.)),
+  testOneDateTimeComputation(moment_type(leap2 - 1, Duration(1, deltat - 10.)),
     datetime_type(leap2, deltat - 10.), datetime_type(leap2, deltat - 10. - 1.));
   // Across leap second removal in UTC
-  TestOneDateTimeComputation(moment_type(leap1 - 1, Duration(1, deltat - 10.)),
+  testOneDateTimeComputation(moment_type(leap1 - 1, Duration(1, deltat - 10.)),
     datetime_type(leap1, deltat - 10.), datetime_type(leap1, deltat - 10. + 1.));
   // Non-existing time in UTC
   // Note: As of May 29th, 2008, the design doesn't allow/need this test due to the improved robustness.
@@ -1023,35 +1030,35 @@ void TimeSystemTestApp::TestTimeSystem() {
   // Tests at times close to times when leap seconds are inserted (in UTC).
   // Note: As of May 29th, 2008, the design isn't sensitive to those tests due to the improved robustness.
   // --- Before the beginning of a leap second.
-  TestOneDateTimeComputation(moment_type(leap2 - 1, Duration(1, deltat - 0.3)),
+  testOneDateTimeComputation(moment_type(leap2 - 1, Duration(1, deltat - 0.3)),
     datetime_type(leap2, deltat - 0.3), datetime_type(leap2, deltat - 1.3));
   // --- At the beginning of a leap second.
-  TestOneDateTimeComputation(moment_type(leap2 - 1, Duration(1, deltat)),
+  testOneDateTimeComputation(moment_type(leap2 - 1, Duration(1, deltat)),
     datetime_type(leap2, deltat), datetime_type(leap2, deltat - 1.0));
   // --- During a leap second.
-  TestOneDateTimeComputation(moment_type(leap2 - 1, Duration(1, deltat + 0.3)),
+  testOneDateTimeComputation(moment_type(leap2 - 1, Duration(1, deltat + 0.3)),
     datetime_type(leap2, deltat + 0.3), datetime_type(leap2, deltat - 0.7));
   // --- At the end of a leap second.
-  TestOneDateTimeComputation(moment_type(leap2 - 1, Duration(1, deltat + 1.0)),
+  testOneDateTimeComputation(moment_type(leap2 - 1, Duration(1, deltat + 1.0)),
     datetime_type(leap2, deltat + 1.0), datetime_type(leap2, deltat));
   // --- After the end of a leap second.
-  TestOneDateTimeComputation(moment_type(leap2 - 1, Duration(1, deltat + 1.3)),
+  testOneDateTimeComputation(moment_type(leap2 - 1, Duration(1, deltat + 1.3)),
     datetime_type(leap2, deltat + 1.3), datetime_type(leap2, deltat + 0.3));
 
   // Tests at times close to times when leap seconds are removed (in UTC).
   // Note: As of May 29th, 2008, the design isn't sensitive to those tests due to the improved robustness.
   // --- Before the beginning of a leap second.
-  TestOneDateTimeComputation(moment_type(leap1 - 1, Duration(1, deltat - 1.3)),
+  testOneDateTimeComputation(moment_type(leap1 - 1, Duration(1, deltat - 1.3)),
     datetime_type(leap1, deltat - 1.3), datetime_type(leap1, deltat - 0.3));
   // --- At the beginning of a leap second.
-  TestOneDateTimeComputation(moment_type(leap1 - 1, Duration(1, deltat - 1.0)),
+  testOneDateTimeComputation(moment_type(leap1 - 1, Duration(1, deltat - 1.0)),
     datetime_type(leap1, deltat - 1.0), datetime_type(leap1, deltat));
   // --- During a leap second.
   // Note: As of May 29th, 2008, the design doesn't allow/need this test due to the improved robustness.
   // --- At the end of a leap second.
   // Note: As of May 29th, 2008, the design doesn't allow/need this test due to the improved robustness.
   // --- After the end of a leap second.
-  TestOneDateTimeComputation(moment_type(leap1 - 1, Duration(1, deltat - 0.7)),
+  testOneDateTimeComputation(moment_type(leap1 - 1, Duration(1, deltat - 0.7)),
     datetime_type(leap1, deltat - 0.7), datetime_type(leap1, deltat + 0.3));
 
   // Test computeMoment method.
@@ -1132,15 +1139,15 @@ void TimeSystemTestApp::TestTimeSystem() {
   // does NOT exist in UTC system because it expresses the "removed" second, which requires some adjustment for UTC origin.
   Duration mjd_tai(leap1, -.7);
   Duration mjd_utc(leap1, -diff0 -.7);
-  TestOneConversion("UTC", mjd_utc, Duration(0, 0.), "TAI", mjd_tai, Duration(0, 0.)); // easy test.
-  TestOneConversion("TAI", mjd_tai, Duration(0, 0.), "UTC", mjd_utc, Duration(0, 0.)); // tougher test, need handle with care.
+  testOneConversion("UTC", mjd_utc, Duration(0, 0.), "TAI", mjd_tai, Duration(0, 0.)); // easy test.
+  testOneConversion("TAI", mjd_tai, Duration(0, 0.), "UTC", mjd_utc, Duration(0, 0.)); // tougher test, need handle with care.
 
   // Another tricky test.  MJD Duration(leap1, 0.) DOES exist in UTC system, too, but it is immediately after the leap
   // second removal. So, below needs a different kind of careful handling of UTC origin than above.
   mjd_tai = Duration(leap1, 0.);
   mjd_utc = Duration(leap1, -diff0);
-  TestOneConversion("UTC", mjd_utc, Duration(0, 0.), "TAI", mjd_tai, Duration(0, 0.)); // easy test.
-  TestOneConversion("TAI", mjd_tai, Duration(0, 0.), "UTC", mjd_utc, Duration(0, 0.)); // tougher test, need handle with care.
+  testOneConversion("UTC", mjd_utc, Duration(0, 0.), "TAI", mjd_tai, Duration(0, 0.)); // easy test.
+  testOneConversion("TAI", mjd_tai, Duration(0, 0.), "UTC", mjd_utc, Duration(0, 0.)); // tougher test, need handle with care.
 #endif
 
   // Test of conversion condition of TAI-to-UTC conversion.
@@ -1148,7 +1155,7 @@ void TimeSystemTestApp::TestTimeSystem() {
   long tai_day = 0;
   double tai_sec = 100. + 51910. * SecPerDay();
   try {
-    TestOneConversion("TAI", moment_type(tai_day, Duration(0, tai_sec)),
+    testOneConversion("TAI", moment_type(tai_day, Duration(0, tai_sec)),
                       "UTC", moment_type(oldest_mjd, Duration(51910 - oldest_mjd, 100. - diff_oldest)));
   } catch (const std::exception &) {
     err() << "Conversion of TAI to UTC for moment_type(" << tai_day << ", " << tai_sec << ") threw an exception." << std::endl;
@@ -1159,7 +1166,7 @@ void TimeSystemTestApp::TestTimeSystem() {
   tai_day = 51910;
   tai_sec = 100. - 51910. * SecPerDay();
   try {
-    TestOneConversion("TAI", moment_type(tai_day, Duration(0, tai_sec)),
+    testOneConversion("TAI", moment_type(tai_day, Duration(0, tai_sec)),
                       "UTC", moment_type(0, Duration(0, 100. - diff2)));
     err() << "Conversion of TAI to UTC for moment_type(" << tai_day << ", " << tai_sec << ") did not throw an exception." << std::endl;
   } catch (const std::exception &) {
@@ -1171,7 +1178,7 @@ void TimeSystemTestApp::TestTimeSystem() {
   long utc_day = 0;
   double utc_sec = 100. + 51910. * SecPerDay() - diff2;
   try {
-    TestOneConversion("UTC", moment_type(utc_day, Duration(0, utc_sec)),
+    testOneConversion("UTC", moment_type(utc_day, Duration(0, utc_sec)),
                       "TAI", moment_type(51910, Duration(0, 100.)));
     err() << "Conversion of UTC to TAI for moment_type(" << utc_day << ", " << utc_sec << ") did not throw an exception." << std::endl;
   } catch (const std::exception &) {
@@ -1183,7 +1190,7 @@ void TimeSystemTestApp::TestTimeSystem() {
   utc_day = 51910;
   utc_sec = 100. - 51910. * SecPerDay() - diff2;
   try {
-    TestOneConversion("UTC", moment_type(utc_day, Duration(0, utc_sec)),
+    testOneConversion("UTC", moment_type(utc_day, Duration(0, utc_sec)),
                       "TAI", moment_type(utc_day, Duration(-utc_day, 100.)));
     err() << "Conversion of UTC to TAI for moment_type(" << utc_day << ", " << utc_sec << ") did not throw an exception." << std::endl;
   } catch (const std::exception &) {
@@ -1222,7 +1229,7 @@ void TimeSystemTestApp::TestTimeSystem() {
   }
 }
 
-void TimeSystemTestApp::CompareAbsoluteTime(const AbsoluteTime & abs_time, const AbsoluteTime & later_time) {
+void TimeSystemTestApp::compareAbsoluteTime(const AbsoluteTime & abs_time, const AbsoluteTime & later_time) {
   // Test operator >.
   if (abs_time > later_time) err() << "AbsoluteTime::operator > returned true for \"" << abs_time << "\" > \"" <<
     later_time << "\"" << std::endl;
@@ -1256,8 +1263,8 @@ void TimeSystemTestApp::CompareAbsoluteTime(const AbsoluteTime & abs_time, const
     abs_time << "\"" << std::endl;
 }
 
-void TimeSystemTestApp::TestAbsoluteTime() {
-  setMethod("TestAbsoluteTime");
+void TimeSystemTestApp::testAbsoluteTime() {
+  setMethod("testAbsoluteTime");
 
   // Use the bogus leap second table for this unit test.
   using namespace facilities;
@@ -1534,13 +1541,13 @@ void TimeSystemTestApp::TestAbsoluteTime() {
   AbsoluteTime later_time("TDB", mjd_day, mjd_sec + 100.);
 
   // Test comparison operators: >, >=, <, and <=.
-  CompareAbsoluteTime(abs_time, later_time);
+  compareAbsoluteTime(abs_time, later_time);
 
   // Test comparison operators (>, >=, <, and <=) in UTC system.
   long mjd_leap = 51179;
   AbsoluteTime abs_time_utc("UTC", mjd_leap - 1, 86400.8);
   AbsoluteTime later_time_utc("UTC", mjd_leap, 0.2);
-  CompareAbsoluteTime(abs_time_utc, later_time_utc);
+  compareAbsoluteTime(abs_time_utc, later_time_utc);
 
   // Test equivalentTo.
   // Test situations where they are not equivalent.
@@ -1577,8 +1584,8 @@ void TimeSystemTestApp::TestAbsoluteTime() {
       ", not " << expected_diff << " as expected." << std::endl;
 }
 
-void TimeSystemTestApp::TestElapsedTime() {
-  setMethod("TestElapsedTime");
+void TimeSystemTestApp::testElapsedTime() {
+  setMethod("testElapsedTime");
 
   // Test of the getter that returns a Duration object.
   Duration original_dur(1, SecPerDay() * 0.125);
@@ -1653,8 +1660,8 @@ void TimeSystemTestApp::TestElapsedTime() {
   }
 }
 
-void TimeSystemTestApp::TestTimeInterval() {
-  setMethod("TestTimeInterval");
+void TimeSystemTestApp::testTimeInterval() {
+  setMethod("testTimeInterval");
 
   // Create some test inputs.
   AbsoluteTime time1("TDB", 51910, 1000.);
@@ -1728,7 +1735,7 @@ void TimeSystemTestApp::TestTimeInterval() {
   }
 }
 
-void TimeSystemTestApp::TestOneCalendarDate(long mjd, long calendar_year, long month, long month_day, long iso_year, long week_number,
+void TimeSystemTestApp::testOneCalendarDate(long mjd, long calendar_year, long month, long month_day, long iso_year, long week_number,
   long weekday_number, long ordinal_date) {
   // Test conversion from a calendar date to an MJD.
   const TimeFormat<Calendar> & calendar_format(TimeFormatFactory<Calendar>::getFormat());
@@ -1780,7 +1787,7 @@ void TimeSystemTestApp::TestOneCalendarDate(long mjd, long calendar_year, long m
 }
 
 template <typename TimeRepType>
-void TimeSystemTestApp::TestOneBadDateTime(const TimeFormat<TimeRepType> & time_format, const datetime_type & datetime,
+void TimeSystemTestApp::testOneBadDateTime(const TimeFormat<TimeRepType> & time_format, const datetime_type & datetime,
   const std::string & time_rep_name, const std::string & data_description, bool exception_expected) {
   // Call TimeFormat<TimeRepType>::convert method.
   bool exception_thrown = false;
@@ -1801,7 +1808,7 @@ void TimeSystemTestApp::TestOneBadDateTime(const TimeFormat<TimeRepType> & time_
 }
 
 template <typename TimeRepType>
-void TimeSystemTestApp::TestOneBadTimeRep(const TimeFormat<TimeRepType> & time_format, const TimeRepType & time_rep,
+void TimeSystemTestApp::testOneBadTimeRep(const TimeFormat<TimeRepType> & time_format, const TimeRepType & time_rep,
   const std::string & time_rep_name, const std::string & data_description, bool exception_expected) {
   // Call TimeFormat<TimeRepType>::convert method.
   bool exception_thrown = false;
@@ -1839,7 +1846,7 @@ void TimeSystemTestApp::TestOneBadTimeRep(const TimeFormat<TimeRepType> & time_f
 }
 
 template <typename TimeRepType>
-void TimeSystemTestApp::TestOneBadTimeString(const TimeFormat<TimeRepType> & time_format, const std::string & time_string,
+void TimeSystemTestApp::testOneBadTimeString(const TimeFormat<TimeRepType> & time_format, const std::string & time_string,
   const std::string & time_rep_name, bool exception_expected) {
   // Call TimeFormat<TimeRepType>::parse method.
   bool exception_thrown = false;
@@ -1861,8 +1868,8 @@ void TimeSystemTestApp::TestOneBadTimeString(const TimeFormat<TimeRepType> & tim
 
 struct NoSuchTimeRep {};
 
-void TimeSystemTestApp::TestTimeFormat() {
-  setMethod("TestTimeFormat");
+void TimeSystemTestApp::testTimeFormat() {
+  setMethod("testTimeFormat");
 
   // Test detecting unsupported time representations.
   try {
@@ -2039,36 +2046,36 @@ void TimeSystemTestApp::TestTimeFormat() {
   }
 
   // Test detections of bad times of the day.
-  TestOneBadDateTime(mjd_format, datetime_type(51910, -0.001), "Mjd", "a time of the day: -0.001");
-  TestOneBadDateTime(mjd_format, datetime_type(51910, SecPerDay() + 0.001), "Mjd", "a time of the day: 86400.001");
-  TestOneBadDateTime(mjd1_format, datetime_type(51910, -0.001), "Mjd1", "a time of the day: -0.001");
-  TestOneBadDateTime(mjd1_format, datetime_type(51910, SecPerDay() + 0.001), "Mjd1", "a time of the day: 86400.001");
-  TestOneBadDateTime(jd_format, datetime_type(51910, -0.001), "Jd", "a time of the day: -0.001");
-  TestOneBadDateTime(jd_format, datetime_type(51910, SecPerDay() + 0.001), "Jd", "a time of the day: 86400.001");
-  TestOneBadDateTime(jd1_format, datetime_type(51910, -0.001), "Jd1", "a time of the day: -0.001");
-  TestOneBadDateTime(jd1_format, datetime_type(51910, SecPerDay() + 0.001), "Jd1", "a time of the day: 86400.001");
+  testOneBadDateTime(mjd_format, datetime_type(51910, -0.001), "Mjd", "a time of the day: -0.001");
+  testOneBadDateTime(mjd_format, datetime_type(51910, SecPerDay() + 0.001), "Mjd", "a time of the day: 86400.001");
+  testOneBadDateTime(mjd1_format, datetime_type(51910, -0.001), "Mjd1", "a time of the day: -0.001");
+  testOneBadDateTime(mjd1_format, datetime_type(51910, SecPerDay() + 0.001), "Mjd1", "a time of the day: 86400.001");
+  testOneBadDateTime(jd_format, datetime_type(51910, -0.001), "Jd", "a time of the day: -0.001");
+  testOneBadDateTime(jd_format, datetime_type(51910, SecPerDay() + 0.001), "Jd", "a time of the day: 86400.001");
+  testOneBadDateTime(jd1_format, datetime_type(51910, -0.001), "Jd1", "a time of the day: -0.001");
+  testOneBadDateTime(jd1_format, datetime_type(51910, SecPerDay() + 0.001), "Jd1", "a time of the day: 86400.001");
 
   // Test detections of bad MJD numbers.
-  TestOneBadTimeRep(mjd_format, Mjd(+1, -.001), "Mjd", "Mjd(+1, -0.001)");
-  TestOneBadTimeRep(mjd_format, Mjd(+1, +1.), "Mjd", "Mjd(+1, +1.)");
-  TestOneBadTimeRep(mjd_format, Mjd(0, +1.), "Mjd", "Mjd(0, +1.)");
-  TestOneBadTimeRep(mjd_format, Mjd(0, -1.), "Mjd", "Mjd(0, -1.)");
-  TestOneBadTimeRep(mjd_format, Mjd(-1, +.001), "Mjd", "Mjd(-1, +0.001)");
-  TestOneBadTimeRep(mjd_format, Mjd(-1, -1.), "Mjd", "Mjd(-1, -1.)");
+  testOneBadTimeRep(mjd_format, Mjd(+1, -.001), "Mjd", "Mjd(+1, -0.001)");
+  testOneBadTimeRep(mjd_format, Mjd(+1, +1.), "Mjd", "Mjd(+1, +1.)");
+  testOneBadTimeRep(mjd_format, Mjd(0, +1.), "Mjd", "Mjd(0, +1.)");
+  testOneBadTimeRep(mjd_format, Mjd(0, -1.), "Mjd", "Mjd(0, -1.)");
+  testOneBadTimeRep(mjd_format, Mjd(-1, +.001), "Mjd", "Mjd(-1, +0.001)");
+  testOneBadTimeRep(mjd_format, Mjd(-1, -1.), "Mjd", "Mjd(-1, -1.)");
 
   // Test detections of bad JD numbers.
-  TestOneBadTimeRep(jd_format, Jd(+1, -.001), "Jd", "Jd(+1, -0.001)");
-  TestOneBadTimeRep(jd_format, Jd(+1, +1.), "Jd", "Jd(+1, +1.)");
-  TestOneBadTimeRep(jd_format, Jd(0, +1.), "Jd", "Jd(0, +1.)");
-  TestOneBadTimeRep(jd_format, Jd(0, -1.), "Jd", "Jd(0, -1.)");
-  TestOneBadTimeRep(jd_format, Jd(-1, +.001), "Jd", "Jd(-1, +0.001)");
-  TestOneBadTimeRep(jd_format, Jd(-1, -1.), "Jd", "Jd(-1, -1.)");
+  testOneBadTimeRep(jd_format, Jd(+1, -.001), "Jd", "Jd(+1, -0.001)");
+  testOneBadTimeRep(jd_format, Jd(+1, +1.), "Jd", "Jd(+1, +1.)");
+  testOneBadTimeRep(jd_format, Jd(0, +1.), "Jd", "Jd(0, +1.)");
+  testOneBadTimeRep(jd_format, Jd(0, -1.), "Jd", "Jd(0, -1.)");
+  testOneBadTimeRep(jd_format, Jd(-1, +.001), "Jd", "Jd(-1, +0.001)");
+  testOneBadTimeRep(jd_format, Jd(-1, -1.), "Jd", "Jd(-1, -1.)");
 
   // Test detections of bad MJD/JD strings.
-  TestOneBadTimeString(mjd_format, "Not A Number", "Mjd");
-  TestOneBadTimeString(mjd1_format, "Not A Number", "Mjd1");
-  TestOneBadTimeString(jd_format, "Not A Number", "Jd");
-  TestOneBadTimeString(jd1_format, "Not A Number", "Jd1");
+  testOneBadTimeString(mjd_format, "Not A Number", "Mjd");
+  testOneBadTimeString(mjd1_format, "Not A Number", "Mjd1");
+  testOneBadTimeString(jd_format, "Not A Number", "Jd");
+  testOneBadTimeString(jd1_format, "Not A Number", "Jd1");
 
   // Prepare test parameters for Calendar, IsoWeek, and Ordinal classes.
   const TimeFormat<Calendar> & calendar_format(TimeFormatFactory<Calendar>::getFormat());
@@ -2282,189 +2289,189 @@ void TimeSystemTestApp::TestTimeFormat() {
   }
 
   // Test detections of bad times of the day.
-  TestOneBadDateTime(calendar_format, datetime_type(51910, -0.001), "Calendar", "a time of the day: -0.001");
-  TestOneBadDateTime(iso_week_format, datetime_type(51910, -0.001), "IsoWeek", "a time of the day: -0.001");
-  TestOneBadDateTime(ordinal_format, datetime_type(51910, -0.001), "Ordinal", "a time of the day: -0.001");
+  testOneBadDateTime(calendar_format, datetime_type(51910, -0.001), "Calendar", "a time of the day: -0.001");
+  testOneBadDateTime(iso_week_format, datetime_type(51910, -0.001), "IsoWeek", "a time of the day: -0.001");
+  testOneBadDateTime(ordinal_format, datetime_type(51910, -0.001), "Ordinal", "a time of the day: -0.001");
 
   // Test detections of non-existing month.
-  TestOneBadTimeRep(calendar_format, Calendar(2008,  0, 1, 0, 0, 0.), "Calendar", "a bad calendar month: 0.");
-  TestOneBadTimeRep(calendar_format, Calendar(2008, 13, 1, 0, 0, 0.), "Calendar", "a bad calendar month: 13.");
+  testOneBadTimeRep(calendar_format, Calendar(2008,  0, 1, 0, 0, 0.), "Calendar", "a bad calendar month: 0.");
+  testOneBadTimeRep(calendar_format, Calendar(2008, 13, 1, 0, 0, 0.), "Calendar", "a bad calendar month: 13.");
 
-  TestOneBadTimeString(calendar_format, "2008-00-01T00:00:00.0", "Calendar");
-  TestOneBadTimeString(calendar_format, "2008-13-01T00:00:00.0", "Calendar");
+  testOneBadTimeString(calendar_format, "2008-00-01T00:00:00.0", "Calendar");
+  testOneBadTimeString(calendar_format, "2008-13-01T00:00:00.0", "Calendar");
 
   // Test detections of non-existing day of month.
-  TestOneBadTimeRep(calendar_format, Calendar(2008, 1,  0, 0, 0, 0.), "Calendar", "a non-existing calendar date: 2008-01-00.");
-  TestOneBadTimeRep(calendar_format, Calendar(2008, 1, 32, 0, 0, 0.), "Calendar", "a non-existing calendar date: 2008-01-32.");
-  TestOneBadTimeRep(calendar_format, Calendar(2008, 1, 31, 0, 0, 0.), "Calendar", "an existing calendar date: 2008-01-31.", false);
-  TestOneBadTimeRep(calendar_format, Calendar(2008, 4, 31, 0, 0, 0.), "Calendar", "a non-existing calendar date: 2008-04-31.");
+  testOneBadTimeRep(calendar_format, Calendar(2008, 1,  0, 0, 0, 0.), "Calendar", "a non-existing calendar date: 2008-01-00.");
+  testOneBadTimeRep(calendar_format, Calendar(2008, 1, 32, 0, 0, 0.), "Calendar", "a non-existing calendar date: 2008-01-32.");
+  testOneBadTimeRep(calendar_format, Calendar(2008, 1, 31, 0, 0, 0.), "Calendar", "an existing calendar date: 2008-01-31.", false);
+  testOneBadTimeRep(calendar_format, Calendar(2008, 4, 31, 0, 0, 0.), "Calendar", "a non-existing calendar date: 2008-04-31.");
 
-  TestOneBadTimeString(calendar_format, "2008-01-00T00:00:00.0", "Calendar");
-  TestOneBadTimeString(calendar_format, "2008-01-32T00:00:00.0", "Calendar");
-  TestOneBadTimeString(calendar_format, "2008-01-31T00:00:00.0", "Calendar", false);
-  TestOneBadTimeString(calendar_format, "2008-04-31T00:00:00.0", "Calendar");
+  testOneBadTimeString(calendar_format, "2008-01-00T00:00:00.0", "Calendar");
+  testOneBadTimeString(calendar_format, "2008-01-32T00:00:00.0", "Calendar");
+  testOneBadTimeString(calendar_format, "2008-01-31T00:00:00.0", "Calendar", false);
+  testOneBadTimeString(calendar_format, "2008-04-31T00:00:00.0", "Calendar");
 
   // Test detections of non-existing day near the end of February.
-  TestOneBadTimeRep(calendar_format, Calendar(2008, 2, 30, 0, 0, 0.), "Calendar", "a non-existing calendar date: 2008-02-30.");
-  TestOneBadTimeRep(calendar_format, Calendar(2008, 2, 29, 0, 0, 0.), "Calendar", "an existing calendar date: 2008-02-29.", false);
-  TestOneBadTimeRep(calendar_format, Calendar(2009, 2, 29, 0, 0, 0.), "Calendar", "a non-existing calendar date: 2009-02-29.");
-  TestOneBadTimeRep(calendar_format, Calendar(2100, 2, 29, 0, 0, 0.), "Calendar", "a non-existing calendar date: 2100-02-29.");
-  TestOneBadTimeRep(calendar_format, Calendar(2000, 2, 29, 0, 0, 0.), "Calendar", "an existing calendar date: 2000-02-29.", false);
+  testOneBadTimeRep(calendar_format, Calendar(2008, 2, 30, 0, 0, 0.), "Calendar", "a non-existing calendar date: 2008-02-30.");
+  testOneBadTimeRep(calendar_format, Calendar(2008, 2, 29, 0, 0, 0.), "Calendar", "an existing calendar date: 2008-02-29.", false);
+  testOneBadTimeRep(calendar_format, Calendar(2009, 2, 29, 0, 0, 0.), "Calendar", "a non-existing calendar date: 2009-02-29.");
+  testOneBadTimeRep(calendar_format, Calendar(2100, 2, 29, 0, 0, 0.), "Calendar", "a non-existing calendar date: 2100-02-29.");
+  testOneBadTimeRep(calendar_format, Calendar(2000, 2, 29, 0, 0, 0.), "Calendar", "an existing calendar date: 2000-02-29.", false);
 
-  TestOneBadTimeString(calendar_format, "2008-02-30T00:00:00.0", "Calendar");
-  TestOneBadTimeString(calendar_format, "2008-02-29T00:00:00.0", "Calendar", false);
-  TestOneBadTimeString(calendar_format, "2009-02-29T00:00:00.0", "Calendar");
-  TestOneBadTimeString(calendar_format, "2100-02-29T00:00:00.0", "Calendar");
-  TestOneBadTimeString(calendar_format, "2000-02-29T00:00:00.0", "Calendar", false);
+  testOneBadTimeString(calendar_format, "2008-02-30T00:00:00.0", "Calendar");
+  testOneBadTimeString(calendar_format, "2008-02-29T00:00:00.0", "Calendar", false);
+  testOneBadTimeString(calendar_format, "2009-02-29T00:00:00.0", "Calendar");
+  testOneBadTimeString(calendar_format, "2100-02-29T00:00:00.0", "Calendar");
+  testOneBadTimeString(calendar_format, "2000-02-29T00:00:00.0", "Calendar", false);
 
   // Test detections of non-existing time.
-  TestOneBadTimeRep(calendar_format, Calendar(2008, 6, 17, -1,  0,  0.), "Calendar", "a non-existing hour: -1.");
-  TestOneBadTimeRep(calendar_format, Calendar(2008, 6, 17, 24,  0,  0.), "Calendar", "a non-existing hour: 24.");
-  TestOneBadTimeRep(calendar_format, Calendar(2008, 6, 17,  0, -1,  0.), "Calendar", "a non-existing minute: -1.");
-  TestOneBadTimeRep(calendar_format, Calendar(2008, 6, 17,  0, 60,  0.), "Calendar", "a non-existing minute: 60.");
-  TestOneBadTimeRep(calendar_format, Calendar(2008, 6, 17,  0,  0, -1.), "Calendar", "a non-existing second: -1.");
+  testOneBadTimeRep(calendar_format, Calendar(2008, 6, 17, -1,  0,  0.), "Calendar", "a non-existing hour: -1.");
+  testOneBadTimeRep(calendar_format, Calendar(2008, 6, 17, 24,  0,  0.), "Calendar", "a non-existing hour: 24.");
+  testOneBadTimeRep(calendar_format, Calendar(2008, 6, 17,  0, -1,  0.), "Calendar", "a non-existing minute: -1.");
+  testOneBadTimeRep(calendar_format, Calendar(2008, 6, 17,  0, 60,  0.), "Calendar", "a non-existing minute: 60.");
+  testOneBadTimeRep(calendar_format, Calendar(2008, 6, 17,  0,  0, -1.), "Calendar", "a non-existing second: -1.");
 
-  TestOneBadTimeString(calendar_format, "2008-06-17T-1:00:00.0", "Calendar");
-  TestOneBadTimeString(calendar_format, "2008-06-17T24:00:00.0", "Calendar");
-  TestOneBadTimeString(calendar_format, "2008-06-17T00:-1:00.0", "Calendar");
-  TestOneBadTimeString(calendar_format, "2008-06-17T00:60:00.0", "Calendar");
-  TestOneBadTimeString(calendar_format, "2008-06-17T00:00:-1.0", "Calendar");
+  testOneBadTimeString(calendar_format, "2008-06-17T-1:00:00.0", "Calendar");
+  testOneBadTimeString(calendar_format, "2008-06-17T24:00:00.0", "Calendar");
+  testOneBadTimeString(calendar_format, "2008-06-17T00:-1:00.0", "Calendar");
+  testOneBadTimeString(calendar_format, "2008-06-17T00:60:00.0", "Calendar");
+  testOneBadTimeString(calendar_format, "2008-06-17T00:00:-1.0", "Calendar");
   // Note: TimeFormat<Calendar> cannot detect the second part exceeding its maximum because of a possible leap second insertion,
   //       and TimeSystem class should test it instead.
 
   // Test detections of non-existing week number.
-  TestOneBadTimeRep(iso_week_format, IsoWeek(2008,  0, 1, 0,  0,  0.), "IsoWeek", "a non-existing week number: 0.");
-  TestOneBadTimeRep(iso_week_format, IsoWeek(2008, 53, 1, 0,  0,  0.), "IsoWeek", "a non-existing week number: 53.");
-  TestOneBadTimeRep(iso_week_format, IsoWeek(2009, 53, 1, 0,  0,  0.), "IsoWeek", "an existing week number: 53.", false);
-  TestOneBadTimeRep(iso_week_format, IsoWeek(2009, 54, 1, 0,  0,  0.), "IsoWeek", "a non-existing week number: 54.");
+  testOneBadTimeRep(iso_week_format, IsoWeek(2008,  0, 1, 0,  0,  0.), "IsoWeek", "a non-existing week number: 0.");
+  testOneBadTimeRep(iso_week_format, IsoWeek(2008, 53, 1, 0,  0,  0.), "IsoWeek", "a non-existing week number: 53.");
+  testOneBadTimeRep(iso_week_format, IsoWeek(2009, 53, 1, 0,  0,  0.), "IsoWeek", "an existing week number: 53.", false);
+  testOneBadTimeRep(iso_week_format, IsoWeek(2009, 54, 1, 0,  0,  0.), "IsoWeek", "a non-existing week number: 54.");
 
-  TestOneBadTimeString(iso_week_format, "2008-W00-1T00:00:00.0", "IsoWeek");
-  TestOneBadTimeString(iso_week_format, "2008-W53-1T00:00:00.0", "IsoWeek");
-  TestOneBadTimeString(iso_week_format, "2009-W53-1T00:00:00.0", "IsoWeek", false);
-  TestOneBadTimeString(iso_week_format, "2009-W54-1T00:00:00.0", "IsoWeek");
+  testOneBadTimeString(iso_week_format, "2008-W00-1T00:00:00.0", "IsoWeek");
+  testOneBadTimeString(iso_week_format, "2008-W53-1T00:00:00.0", "IsoWeek");
+  testOneBadTimeString(iso_week_format, "2009-W53-1T00:00:00.0", "IsoWeek", false);
+  testOneBadTimeString(iso_week_format, "2009-W54-1T00:00:00.0", "IsoWeek");
 
   // Test detections of non-existing day of week.
-  TestOneBadTimeRep(iso_week_format, IsoWeek(2008, 25, 0, 0,  0,  0.), "IsoWeek", "a non-existing day of the week: 0.");
-  TestOneBadTimeRep(iso_week_format, IsoWeek(2008, 25, 8, 0,  0,  0.), "IsoWeek", "a non-existing day of the week: 8.");
+  testOneBadTimeRep(iso_week_format, IsoWeek(2008, 25, 0, 0,  0,  0.), "IsoWeek", "a non-existing day of the week: 0.");
+  testOneBadTimeRep(iso_week_format, IsoWeek(2008, 25, 8, 0,  0,  0.), "IsoWeek", "a non-existing day of the week: 8.");
 
-  TestOneBadTimeString(iso_week_format, "2008-W25-0T00:00:00.0", "IsoWeek");
-  TestOneBadTimeString(iso_week_format, "2008-W25-8T00:00:00.0", "IsoWeek");
+  testOneBadTimeString(iso_week_format, "2008-W25-0T00:00:00.0", "IsoWeek");
+  testOneBadTimeString(iso_week_format, "2008-W25-8T00:00:00.0", "IsoWeek");
 
   // Test detections of non-existing time.
-  TestOneBadTimeRep(iso_week_format, IsoWeek(2008, 25, 2, -1,  0,  0.), "IsoWeek", "a non-existing hour: -1.");
-  TestOneBadTimeRep(iso_week_format, IsoWeek(2008, 25, 2, 24,  0,  0.), "IsoWeek", "a non-existing hour: 24.");
-  TestOneBadTimeRep(iso_week_format, IsoWeek(2008, 25, 2,  0, -1,  0.), "IsoWeek", "a non-existing minute: -1.");
-  TestOneBadTimeRep(iso_week_format, IsoWeek(2008, 25, 2,  0, 60,  0.), "IsoWeek", "a non-existing minute: 60.");
-  TestOneBadTimeRep(iso_week_format, IsoWeek(2008, 25, 2,  0,  0, -1.), "IsoWeek", "a non-existing second: -1.");
+  testOneBadTimeRep(iso_week_format, IsoWeek(2008, 25, 2, -1,  0,  0.), "IsoWeek", "a non-existing hour: -1.");
+  testOneBadTimeRep(iso_week_format, IsoWeek(2008, 25, 2, 24,  0,  0.), "IsoWeek", "a non-existing hour: 24.");
+  testOneBadTimeRep(iso_week_format, IsoWeek(2008, 25, 2,  0, -1,  0.), "IsoWeek", "a non-existing minute: -1.");
+  testOneBadTimeRep(iso_week_format, IsoWeek(2008, 25, 2,  0, 60,  0.), "IsoWeek", "a non-existing minute: 60.");
+  testOneBadTimeRep(iso_week_format, IsoWeek(2008, 25, 2,  0,  0, -1.), "IsoWeek", "a non-existing second: -1.");
 
-  TestOneBadTimeString(iso_week_format, "2008-W25-2T-1:00:00.0", "IsoWeek");
-  TestOneBadTimeString(iso_week_format, "2008-W25-2T24:00:00.0", "IsoWeek");
-  TestOneBadTimeString(iso_week_format, "2008-W25-2T00:-1:00.0", "IsoWeek");
-  TestOneBadTimeString(iso_week_format, "2008-W25-2T00:60:00.0", "IsoWeek");
-  TestOneBadTimeString(iso_week_format, "2008-W25-2T00:00:-1.0", "IsoWeek");
+  testOneBadTimeString(iso_week_format, "2008-W25-2T-1:00:00.0", "IsoWeek");
+  testOneBadTimeString(iso_week_format, "2008-W25-2T24:00:00.0", "IsoWeek");
+  testOneBadTimeString(iso_week_format, "2008-W25-2T00:-1:00.0", "IsoWeek");
+  testOneBadTimeString(iso_week_format, "2008-W25-2T00:60:00.0", "IsoWeek");
+  testOneBadTimeString(iso_week_format, "2008-W25-2T00:00:-1.0", "IsoWeek");
   // Note: TimeFormat<IsoWeek> cannot detect the second part exceeding its maximum because of a possible leap second insertion,
   //       and TimeSystem class should test it instead.
 
   // Test detections of non-existing ordinal day.
-  TestOneBadTimeRep(ordinal_format, Ordinal(2008, 367, 0, 0, 0.), "Ordinal", "a non-existing ordinal date: 2008-367.");
-  TestOneBadTimeRep(ordinal_format, Ordinal(2008, 366, 0, 0, 0.), "Ordinal", "an existing ordinal date: 2008-366.", false);
-  TestOneBadTimeRep(ordinal_format, Ordinal(2009, 366, 0, 0, 0.), "Ordinal", "a non-existing ordinal date: 2009-366.");
-  TestOneBadTimeRep(ordinal_format, Ordinal(2100, 366, 0, 0, 0.), "Ordinal", "a non-existing ordinal date: 2100-366.");
-  TestOneBadTimeRep(ordinal_format, Ordinal(2000, 366, 0, 0, 0.), "Ordinal", "an existing ordinal date: 2000-366.", false);
+  testOneBadTimeRep(ordinal_format, Ordinal(2008, 367, 0, 0, 0.), "Ordinal", "a non-existing ordinal date: 2008-367.");
+  testOneBadTimeRep(ordinal_format, Ordinal(2008, 366, 0, 0, 0.), "Ordinal", "an existing ordinal date: 2008-366.", false);
+  testOneBadTimeRep(ordinal_format, Ordinal(2009, 366, 0, 0, 0.), "Ordinal", "a non-existing ordinal date: 2009-366.");
+  testOneBadTimeRep(ordinal_format, Ordinal(2100, 366, 0, 0, 0.), "Ordinal", "a non-existing ordinal date: 2100-366.");
+  testOneBadTimeRep(ordinal_format, Ordinal(2000, 366, 0, 0, 0.), "Ordinal", "an existing ordinal date: 2000-366.", false);
 
-  TestOneBadTimeString(ordinal_format, "2008-367T00:00:00.0", "Ordinal");
-  TestOneBadTimeString(ordinal_format, "2008-366T00:00:00.0", "Ordinal", false);
-  TestOneBadTimeString(ordinal_format, "2009-366T00:00:00.0", "Ordinal");
-  TestOneBadTimeString(ordinal_format, "2100-366T00:00:00.0", "Ordinal");
-  TestOneBadTimeString(ordinal_format, "2000-366T00:00:00.0", "Ordinal", false);
+  testOneBadTimeString(ordinal_format, "2008-367T00:00:00.0", "Ordinal");
+  testOneBadTimeString(ordinal_format, "2008-366T00:00:00.0", "Ordinal", false);
+  testOneBadTimeString(ordinal_format, "2009-366T00:00:00.0", "Ordinal");
+  testOneBadTimeString(ordinal_format, "2100-366T00:00:00.0", "Ordinal");
+  testOneBadTimeString(ordinal_format, "2000-366T00:00:00.0", "Ordinal", false);
 
   // Test detections of non-existing time.
-  TestOneBadTimeRep(ordinal_format, Ordinal(2008, 169, -1,  0,  0.), "Ordinal", "a non-existing hour: -1.");
-  TestOneBadTimeRep(ordinal_format, Ordinal(2008, 169, 24,  0,  0.), "Ordinal", "a non-existing hour: 24.");
-  TestOneBadTimeRep(ordinal_format, Ordinal(2008, 169,  0, -1,  0.), "Ordinal", "a non-existing minute: -1.");
-  TestOneBadTimeRep(ordinal_format, Ordinal(2008, 169,  0, 60,  0.), "Ordinal", "a non-existing minute: 60.");
-  TestOneBadTimeRep(ordinal_format, Ordinal(2008, 169,  0,  0, -1.), "Ordinal", "a non-existing second: -1.");
+  testOneBadTimeRep(ordinal_format, Ordinal(2008, 169, -1,  0,  0.), "Ordinal", "a non-existing hour: -1.");
+  testOneBadTimeRep(ordinal_format, Ordinal(2008, 169, 24,  0,  0.), "Ordinal", "a non-existing hour: 24.");
+  testOneBadTimeRep(ordinal_format, Ordinal(2008, 169,  0, -1,  0.), "Ordinal", "a non-existing minute: -1.");
+  testOneBadTimeRep(ordinal_format, Ordinal(2008, 169,  0, 60,  0.), "Ordinal", "a non-existing minute: 60.");
+  testOneBadTimeRep(ordinal_format, Ordinal(2008, 169,  0,  0, -1.), "Ordinal", "a non-existing second: -1.");
 
-  TestOneBadTimeString(ordinal_format, "2008-169T-1:00:00.0", "Ordinal");
-  TestOneBadTimeString(ordinal_format, "2008-169T24:00:00.0", "Ordinal");
-  TestOneBadTimeString(ordinal_format, "2008-169T00:-1:00.0", "Ordinal");
-  TestOneBadTimeString(ordinal_format, "2008-169T00:60:00.0", "Ordinal");
-  TestOneBadTimeString(ordinal_format, "2008-169T00:00:-1.0", "Ordinal");
+  testOneBadTimeString(ordinal_format, "2008-169T-1:00:00.0", "Ordinal");
+  testOneBadTimeString(ordinal_format, "2008-169T24:00:00.0", "Ordinal");
+  testOneBadTimeString(ordinal_format, "2008-169T00:-1:00.0", "Ordinal");
+  testOneBadTimeString(ordinal_format, "2008-169T00:60:00.0", "Ordinal");
+  testOneBadTimeString(ordinal_format, "2008-169T00:00:-1.0", "Ordinal");
   // Note: TimeFormat<Ordinal> cannot detect the second part exceeding its maximum because of a possible leap second insertion,
   //       and TimeSystem class should test it instead.
 
   // Test detections of bad Calendar, IsoWeek, and Ordinal strings.
-  TestOneBadTimeString(calendar_format, "Not A Number", "Calendar");
-  TestOneBadTimeString(iso_week_format, "Not A Number", "IsoWeek");
-  TestOneBadTimeString(ordinal_format, "Not A Number", "Ordinal");
+  testOneBadTimeString(calendar_format, "Not A Number", "Calendar");
+  testOneBadTimeString(iso_week_format, "Not A Number", "IsoWeek");
+  testOneBadTimeString(ordinal_format, "Not A Number", "Ordinal");
 
   // Test detections of wrong kinds of calendar-like strings to parse.
-  TestOneBadTimeString(calendar_format, expected_iso_week_string, "Calendar");
-  TestOneBadTimeString(calendar_format, expected_ordinal_string, "Calendar");
-  TestOneBadTimeString(iso_week_format, expected_calendar_string, "IsoWeek");
-  TestOneBadTimeString(iso_week_format, expected_ordinal_string, "IsoWeek");
-  TestOneBadTimeString(ordinal_format, expected_calendar_string, "Ordinal");
-  TestOneBadTimeString(ordinal_format, expected_iso_week_string, "Ordinal");
+  testOneBadTimeString(calendar_format, expected_iso_week_string, "Calendar");
+  testOneBadTimeString(calendar_format, expected_ordinal_string, "Calendar");
+  testOneBadTimeString(iso_week_format, expected_calendar_string, "IsoWeek");
+  testOneBadTimeString(iso_week_format, expected_ordinal_string, "IsoWeek");
+  testOneBadTimeString(ordinal_format, expected_calendar_string, "Ordinal");
+  testOneBadTimeString(ordinal_format, expected_iso_week_string, "Ordinal");
 
   // Test date conversions in year 1995, where the calendar year is not divisible by 4, 100, nor 400.
-  TestOneCalendarDate(49776, 1995,  2, 28, 1995,  9, 2,  59);
-  TestOneCalendarDate(49777, 1995,  3,  1, 1995,  9, 3,  60);
-  TestOneCalendarDate(50082, 1995, 12, 31, 1995, 52, 7, 365);
-  TestOneCalendarDate(50083, 1996,  1,  1, 1996,  1, 1,   1);
+  testOneCalendarDate(49776, 1995,  2, 28, 1995,  9, 2,  59);
+  testOneCalendarDate(49777, 1995,  3,  1, 1995,  9, 3,  60);
+  testOneCalendarDate(50082, 1995, 12, 31, 1995, 52, 7, 365);
+  testOneCalendarDate(50083, 1996,  1,  1, 1996,  1, 1,   1);
 
   // Test date conversions in year 1996, where the calendar year is divisible by 4, but not by 100.
-  TestOneCalendarDate(50141, 1996,  2, 28, 1996,  9, 3,  59);
-  TestOneCalendarDate(50142, 1996,  2, 29, 1996,  9, 4,  60);
-  TestOneCalendarDate(50143, 1996,  3,  1, 1996,  9, 5,  61);
-  TestOneCalendarDate(50448, 1996, 12, 31, 1997,  1, 2, 366);
-  TestOneCalendarDate(50449, 1997,  1,  1, 1997,  1, 3,   1);
+  testOneCalendarDate(50141, 1996,  2, 28, 1996,  9, 3,  59);
+  testOneCalendarDate(50142, 1996,  2, 29, 1996,  9, 4,  60);
+  testOneCalendarDate(50143, 1996,  3,  1, 1996,  9, 5,  61);
+  testOneCalendarDate(50448, 1996, 12, 31, 1997,  1, 2, 366);
+  testOneCalendarDate(50449, 1997,  1,  1, 1997,  1, 3,   1);
 
   // Test date conversions in year 2100, where the calendar year is divisible by 100, but not by 400.
-  TestOneCalendarDate(88127, 2100,  2, 28, 2100,  8, 7,  59);
-  TestOneCalendarDate(88128, 2100,  3,  1, 2100,  9, 1,  60);
-  TestOneCalendarDate(88433, 2100, 12, 31, 2100, 52, 5, 365);
-  TestOneCalendarDate(88434, 2101,  1,  1, 2100, 52, 6,   1);
+  testOneCalendarDate(88127, 2100,  2, 28, 2100,  8, 7,  59);
+  testOneCalendarDate(88128, 2100,  3,  1, 2100,  9, 1,  60);
+  testOneCalendarDate(88433, 2100, 12, 31, 2100, 52, 5, 365);
+  testOneCalendarDate(88434, 2101,  1,  1, 2100, 52, 6,   1);
 
   // Test date conversions in year 2000, where the calendar year is divisible by 400.
-  TestOneCalendarDate(51602, 2000,  2, 28, 2000,  9, 1,  59);
-  TestOneCalendarDate(51603, 2000,  2, 29, 2000,  9, 2,  60);
-  TestOneCalendarDate(51604, 2000,  3,  1, 2000,  9, 3,  61);
-  TestOneCalendarDate(51909, 2000, 12, 31, 2000, 52, 7, 366);
-  TestOneCalendarDate(51910, 2001,  1,  1, 2001,  1, 1,   1);
+  testOneCalendarDate(51602, 2000,  2, 28, 2000,  9, 1,  59);
+  testOneCalendarDate(51603, 2000,  2, 29, 2000,  9, 2,  60);
+  testOneCalendarDate(51604, 2000,  3,  1, 2000,  9, 3,  61);
+  testOneCalendarDate(51909, 2000, 12, 31, 2000, 52, 7, 366);
+  testOneCalendarDate(51910, 2001,  1,  1, 2001,  1, 1,   1);
 
   // Test date conversions near the beginning of 2005, when an ISO year starts after a calendar year.
-  TestOneCalendarDate(53370, 2004, 12, 31, 2004, 53, 5, 366);
-  TestOneCalendarDate(53371, 2005,  1,  1, 2004, 53, 6,   1);
-  TestOneCalendarDate(53372, 2005,  1,  2, 2004, 53, 7,   2);
-  TestOneCalendarDate(53373, 2005,  1,  3, 2005,  1, 1,   3);
+  testOneCalendarDate(53370, 2004, 12, 31, 2004, 53, 5, 366);
+  testOneCalendarDate(53371, 2005,  1,  1, 2004, 53, 6,   1);
+  testOneCalendarDate(53372, 2005,  1,  2, 2004, 53, 7,   2);
+  testOneCalendarDate(53373, 2005,  1,  3, 2005,  1, 1,   3);
 
   // Test date conversions near the beginning of 2007, when an ISO year starts with a calendar year.
-  TestOneCalendarDate(54100, 2006, 12, 31, 2006, 52, 7, 365);
-  TestOneCalendarDate(54101, 2007,  1,  1, 2007,  1, 1,   1);
-  TestOneCalendarDate(54102, 2007,  1,  2, 2007,  1, 2,   2);
+  testOneCalendarDate(54100, 2006, 12, 31, 2006, 52, 7, 365);
+  testOneCalendarDate(54101, 2007,  1,  1, 2007,  1, 1,   1);
+  testOneCalendarDate(54102, 2007,  1,  2, 2007,  1, 2,   2);
 
   // Test date conversions near the beginning of 2008, when an ISO year starts before a calendar year.
-  TestOneCalendarDate(54464, 2007, 12, 30, 2007, 52, 7, 364);
-  TestOneCalendarDate(54465, 2007, 12, 31, 2008,  1, 1, 365);
-  TestOneCalendarDate(54466, 2008,  1,  1, 2008,  1, 2,   1);
+  testOneCalendarDate(54464, 2007, 12, 30, 2007, 52, 7, 364);
+  testOneCalendarDate(54465, 2007, 12, 31, 2008,  1, 1, 365);
+  testOneCalendarDate(54466, 2008,  1,  1, 2008,  1, 2,   1);
 
   // Test date conversions near the beginning of 2009, when the ISO year is three days into the previous Gregorian year.
-  TestOneCalendarDate(54828, 2008, 12, 28, 2008, 52, 7, 363);
-  TestOneCalendarDate(54829, 2008, 12, 29, 2009,  1, 1, 364);
-  TestOneCalendarDate(54830, 2008, 12, 30, 2009,  1, 2, 365);
-  TestOneCalendarDate(54831, 2008, 12, 31, 2009,  1, 3, 366);
-  TestOneCalendarDate(54832, 2009,  1,  1, 2009,  1, 4,   1);
+  testOneCalendarDate(54828, 2008, 12, 28, 2008, 52, 7, 363);
+  testOneCalendarDate(54829, 2008, 12, 29, 2009,  1, 1, 364);
+  testOneCalendarDate(54830, 2008, 12, 30, 2009,  1, 2, 365);
+  testOneCalendarDate(54831, 2008, 12, 31, 2009,  1, 3, 366);
+  testOneCalendarDate(54832, 2009,  1,  1, 2009,  1, 4,   1);
 
   // Test date conversions near the beginning of 2010, when the ISO year is three days into the next Gregorian year.
-  TestOneCalendarDate(55196, 2009, 12, 31, 2009, 53, 4, 365);
-  TestOneCalendarDate(55197, 2010,  1,  1, 2009, 53, 5,   1);
-  TestOneCalendarDate(55198, 2010,  1,  2, 2009, 53, 6,   2);
-  TestOneCalendarDate(55199, 2010,  1,  3, 2009, 53, 7,   3);
-  TestOneCalendarDate(55200, 2010,  1,  4, 2010,  1, 1,   4);
+  testOneCalendarDate(55196, 2009, 12, 31, 2009, 53, 4, 365);
+  testOneCalendarDate(55197, 2010,  1,  1, 2009, 53, 5,   1);
+  testOneCalendarDate(55198, 2010,  1,  2, 2009, 53, 6,   2);
+  testOneCalendarDate(55199, 2010,  1,  3, 2009, 53, 7,   3);
+  testOneCalendarDate(55200, 2010,  1,  4, 2010,  1, 1,   4);
 }
 
-void TimeSystemTestApp::TestBaryTimeComputer() {
-  setMethod("TestBaryTimeComputer");
+void TimeSystemTestApp::testBaryTimeComputer() {
+  setMethod("testBaryTimeComputer");
 
   // Prepare a time to be geo/barycentered and an expected result after geo/barycentered.
   AbsoluteTime glast_tt_origin("TT", 51910, 64.184);
@@ -2598,8 +2605,8 @@ class BogusTimeHandler3: public BogusTimeHandlerBase {
     BogusTimeHandlerBase(file_name, extension_name, read_only) {}
 };
 
-void TimeSystemTestApp::TestEventTimeHandlerFactory() {
-  setMethod("TestEventtTimeHandler");
+void TimeSystemTestApp::testEventTimeHandlerFactory() {
+  setMethod("testEventtTimeHandler");
   using namespace facilities;
 
   // Prepare test parameters in this method.
@@ -2688,8 +2695,8 @@ void TimeSystemTestApp::TestEventTimeHandlerFactory() {
   }
 }
 
-void TimeSystemTestApp::TestGlastTimeHandler() {
-  setMethod("TestGlastTimeHandler");
+void TimeSystemTestApp::testGlastTimeHandler() {
+  setMethod("testGlastTimeHandler");
   using namespace facilities;
 
   // Set tolerance for AbsoluteTime comparison.
@@ -3193,7 +3200,7 @@ void TimeSystemTestApp::TestGlastTimeHandler() {
 
   // Test reading header keyword value, requesting geocentering.
   result = handler->getGeoTime("TSTART", from_header);
-  glast_time = 2.123393677090199E+08; // TSTART in my_pulsar_events_geo_v3.fits.
+  glast_time = 2.12339367706036E+08; // TSTART in my_pulsar_events_geo_v3.fits.
   expected = glast_tt_origin + ElapsedTime("TT", Duration(0, glast_time));
   if (!result.equivalentTo(expected, time_tolerance)) {
     err() << "GlastGeoTimeHandler::getGeoTime(\"TSTART\", " << from_header << ") returned AbsoluteTime(" << result <<
@@ -3205,7 +3212,7 @@ void TimeSystemTestApp::TestGlastTimeHandler() {
   handler->setNextRecord();  // Points to the second event.
   handler->setNextRecord();  // Points to the third event.
   result = handler->getGeoTime("TIME", from_column);
-  glast_time = 2.123393750454886E+08; // TIME of the third row in my_pulsar_events_geo_v3.fits.
+  glast_time = 2.123393750425875E+08; // TIME of the third row in my_pulsar_events_geo_v3.fits.
   expected = glast_tt_origin + ElapsedTime("TT", Duration(0, glast_time));
   if (!result.equivalentTo(expected, time_tolerance)) {
     err() << "GlastGeoTimeHandler::getGeoTime(\"TIME\", " << from_column << ") returned AbsoluteTime(" << result <<
@@ -3242,6 +3249,113 @@ void TimeSystemTestApp::TestGlastTimeHandler() {
   } catch (const std::exception &) {
     err() << "GlastGeoTimeHandler::setSourcePosition(" << ra_close << ", " << dec_close << 
       ") threw an exception when it should not." << std::endl;
+  }
+}
+
+void TimeSystemTestApp::testTimeCorrectorApp() {
+  setMethod("testTimeCorrectorApp");
+
+  // Prepare variables to create application objects.
+  std::auto_ptr<st_app::StApp> app_ptr(0);
+  std::list<std::string> test_name_cont;
+  test_name_cont.push_back("par1");
+  test_name_cont.push_back("par2");
+  test_name_cont.push_back("par3");
+  test_name_cont.push_back("par4");
+
+  // Prepare settings to be used in the tests.
+  std::string evfile_0540 = facilities::commonUtilities::joinPath(getDataPath(), "my_pulsar_events_v3.fits");
+  std::string scfile_0540 = facilities::commonUtilities::joinPath(getDataPath(), "my_pulsar_spacecraft_data_v3r1.fits");
+  double ra_0540 = 85.0482;
+  double dec_0540 = -69.3319;
+  std::string evfile_crab = facilities::commonUtilities::joinPath(getDataPath(), "ft1_beta2.fits");
+  std::string scfile_crab = facilities::commonUtilities::joinPath(getDataPath(), "ft2_beta2.fits");
+  double ra_crab = 83.633208;
+  double dec_crab = 22.014472;
+  std::string evfile_bary = facilities::commonUtilities::joinPath(getDataPath(), "my_pulsar_events_bary_v3.fits");
+  std::string evfile_geo = facilities::commonUtilities::joinPath(getDataPath(), "my_pulsar_events_geo_v3.fits");
+
+  // Loop over parameter sets.
+  for (std::list<std::string>::const_iterator test_itor = test_name_cont.begin(); test_itor != test_name_cont.end(); ++test_itor) {
+    const std::string & test_name = *test_itor;
+    std::string out_file(getMethod() + "_" + test_name + ".fits");
+
+    // Create and setup an application object.
+    app_ptr.reset(new TimeCorrectorApp());
+    app_ptr->setName("gtbary");
+    st_app::AppParGroup & pars(app_ptr->getParGroup());
+    pars.setPromptMode(false);
+
+    // Set default parameters.
+    pars["evfile"] = "";
+    pars["scfile"] = "";
+    pars["outfile"] = "";
+    pars["ra"] = 0.;
+    pars["dec"] = 0.;
+    pars["tcorrect"] = "BARY";
+    pars["solareph"] = "JPL DE405";
+    pars["angtol"] = 1.e-8;
+    pars["timefield"] = "TIME";
+    pars["sctable"] = "SC_DATA";
+    pars["leapsecfile"] = "DEFAULT";
+    pars["chatter"] = 2;
+    pars["clobber"] = "yes";
+    pars["debug"] = "no";
+    pars["gui"] = "no";
+    pars["mode"] = "ql";
+
+    // Set test-specific parameters.
+    bool expected_to_fail = false;
+    if ("par1" == test_name) {
+      // Test barycentric corrections.
+      pars["evfile"] = evfile_0540;
+      pars["scfile"] = scfile_0540;
+      pars["outfile"] = out_file;
+      pars["ra"] = ra_0540;
+      pars["dec"] = dec_0540;
+      pars["tcorrect"] = "BARY";
+
+    } else if ("par2" == test_name) {
+      // Test geocentric corrections.
+      pars["evfile"] = evfile_0540;
+      pars["scfile"] = scfile_0540;
+      pars["outfile"] = out_file;
+      pars["ra"] = ra_0540;
+      pars["dec"] = dec_0540;
+      pars["tcorrect"] = "GEO";
+
+    } else if ("par3" == test_name) {
+      // Test refusal of barycentric corrections on a barycentered file.
+      pars["evfile"] = evfile_bary;
+      pars["scfile"] = scfile_crab;
+      pars["outfile"] = out_file;
+      pars["ra"] = ra_crab;
+      pars["dec"] = dec_crab;
+      pars["tcorrect"] = "BARY";
+      expected_to_fail = true;
+
+    } else if ("par4" == test_name) {
+      // Test refusal of geocentric corrections on a geocentered file.
+      pars["evfile"] = evfile_geo;
+      pars["scfile"] = scfile_crab;
+      pars["outfile"] = out_file;
+      pars["ra"] = ra_crab;
+      pars["dec"] = dec_crab;
+      pars["tcorrect"] = "GEO";
+      expected_to_fail = true;
+
+    } else {
+      // Skip this iteration.
+      continue;
+    }
+
+    // Test the application.
+    if (expected_to_fail) {
+      std::string log_file(getMethod() + "_" + test_name + ".log");
+      testApplication(*app_ptr, log_file, "", true);
+    } else {
+      testApplication(*app_ptr, "", out_file);
+    }
   }
 }
 
