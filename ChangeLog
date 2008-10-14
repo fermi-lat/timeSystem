@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: hirayama  Mon Oct 13 20:53:07 PDT 2008
+timeSystem/data/outref
+
+Added Files:
+	testTimeCorrectorApp_par1.fits testTimeCorrectorApp_par2.fits 
+	testTimeCorrectorApp_par3.log testTimeCorrectorApp_par4.log 
+Log Message:
+Add reference files for added tests.
+    *
+------------------------------------------------------------
 User: hirayama  Mon Oct 13 20:52:40 PDT 2008
 timeSystem/src/test
 
