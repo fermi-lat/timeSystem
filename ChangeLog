@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Mon Oct 13 18:13:00 PDT 2008
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Change unit test application class (cosmetic).
+    *
+------------------------------------------------------------
 User: hirayama  Mon Oct 13 18:11:33 PDT 2008
 timeSystem/src
 
