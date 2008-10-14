@@ -40,9 +40,9 @@ using namespace st_app;
 using namespace st_stream;
 using namespace timeSystem;
 
-class TestTimeSystemApp : public PulsarTestApp {
+class TimeSystemTestApp : public PulsarTestApp {
   public:
-    TestTimeSystemApp();
+    TimeSystemTestApp();
 
     virtual void run();
 
@@ -103,12 +103,12 @@ class TestTimeSystemApp : public PulsarTestApp {
 
 };
 
-TestTimeSystemApp::TestTimeSystemApp(): PulsarTestApp("timeSystem") {
+TimeSystemTestApp::TimeSystemTestApp(): PulsarTestApp("timeSystem") {
   setName("test_timeSystem");
   setVersion(s_cvs_id);
 }
 
-void TestTimeSystemApp::run() {
+void TimeSystemTestApp::run() {
   // Set precision high enough to show numbers in error messages accurately.
   setPrecision(std::numeric_limits<double>::digits10);
 
@@ -143,7 +143,7 @@ void TestTimeSystemApp::run() {
   reportStatus();
 }
 
-void TestTimeSystemApp::TestDurationGetter(long day, double sec, const std::string & time_unit_name, long int_part, double frac_part,
+void TimeSystemTestApp::TestDurationGetter(long day, double sec, const std::string & time_unit_name, long int_part, double frac_part,
   double tolerance_high, double tolerance_low) {
   // Test the getter that takes a long variable, a double variable, and a time unit name.
   long result_int = 0;
@@ -173,7 +173,7 @@ void TestTimeSystemApp::TestDurationGetter(long day, double sec, const std::stri
   }
 }
 
-void TestTimeSystemApp::TestDurationConstructor(const std::string & time_unit_name, long int_part, double frac_part,
+void TimeSystemTestApp::TestDurationConstructor(const std::string & time_unit_name, long int_part, double frac_part,
   const Duration & expected_result, const Duration & tolerance_high, const Duration & tolerance_low) {
   // Test the constructor that takes a pair of long and double variables.
   Duration result(int_part, frac_part, time_unit_name);
@@ -192,7 +192,7 @@ void TestTimeSystemApp::TestDurationConstructor(const std::string & time_unit_na
   }
 }
 
-void TestTimeSystemApp::TestOneComparison(const std::string & comparator, const Duration & dur1, const Duration & dur2,
+void TimeSystemTestApp::TestOneComparison(const std::string & comparator, const Duration & dur1, const Duration & dur2,
   bool expected_result) {
   bool result;
   if      ("!=" == comparator) result = (dur1 != dur2);
@@ -210,7 +210,7 @@ void TestTimeSystemApp::TestOneComparison(const std::string & comparator, const 
   }
 }
 
-void TestTimeSystemApp::TestOneComputation(const std::string & computation, const Duration & dur1, const Duration & dur2,
+void TimeSystemTestApp::TestOneComputation(const std::string & computation, const Duration & dur1, const Duration & dur2,
   const Duration & expected_result, const Duration & tolerance) {
   Duration result;
   if      ("+"  == computation) { result = dur1 + dur2; }
@@ -232,7 +232,7 @@ void TestTimeSystemApp::TestOneComputation(const std::string & computation, cons
   }
 }
 
-void TestTimeSystemApp::TestDuration() {
+void TimeSystemTestApp::TestDuration() {
   setMethod("TestDuration");
 
   // Set the smallest number of seconds that can be correctly expressed by a Duration object.
@@ -700,7 +700,7 @@ void TestTimeSystemApp::TestDuration() {
   }
 }
 
-void TestTimeSystemApp::TestOneConversion(const std::string & src_system_name, const moment_type & src_moment,
+void TimeSystemTestApp::TestOneConversion(const std::string & src_system_name, const moment_type & src_moment,
   const std::string & dest_system_name, const moment_type & expected_moment, double tolerance) {
   const TimeSystem & src_sys(TimeSystem::getSystem(src_system_name));
   const TimeSystem & dest_sys(TimeSystem::getSystem(dest_system_name));
@@ -714,7 +714,7 @@ void TestTimeSystemApp::TestOneConversion(const std::string & src_system_name, c
   }
 }
 
-void TestTimeSystemApp::TestOneSubtraction(const moment_type & moment1, const moment_type & moment2, double difference,
+void TimeSystemTestApp::TestOneSubtraction(const moment_type & moment1, const moment_type & moment2, double difference,
   double difference_utc) {
   std::map<std::string, Duration> expected_diff;
   expected_diff["TAI"] = Duration(0, difference);
@@ -737,7 +737,7 @@ void TestTimeSystemApp::TestOneSubtraction(const moment_type & moment1, const mo
   }
 }
 
-void TestTimeSystemApp::TestOneDateTimeComputation(const moment_type & moment, const datetime_type & datetime,
+void TimeSystemTestApp::TestOneDateTimeComputation(const moment_type & moment, const datetime_type & datetime,
   const datetime_type & datetime_utc) {
   std::list<std::string> time_system_name_list;
   time_system_name_list.push_back("TAI");
@@ -763,7 +763,7 @@ void TestTimeSystemApp::TestOneDateTimeComputation(const moment_type & moment, c
   }
 }
 
-void TestTimeSystemApp::TestTimeSystem() {
+void TimeSystemTestApp::TestTimeSystem() {
   setMethod("TestTimeSystem");
   using namespace facilities;
 
@@ -1222,7 +1222,7 @@ void TestTimeSystemApp::TestTimeSystem() {
   }
 }
 
-void TestTimeSystemApp::CompareAbsoluteTime(const AbsoluteTime & abs_time, const AbsoluteTime & later_time) {
+void TimeSystemTestApp::CompareAbsoluteTime(const AbsoluteTime & abs_time, const AbsoluteTime & later_time) {
   // Test operator >.
   if (abs_time > later_time) err() << "AbsoluteTime::operator > returned true for \"" << abs_time << "\" > \"" <<
     later_time << "\"" << std::endl;
@@ -1256,7 +1256,7 @@ void TestTimeSystemApp::CompareAbsoluteTime(const AbsoluteTime & abs_time, const
     abs_time << "\"" << std::endl;
 }
 
-void TestTimeSystemApp::TestAbsoluteTime() {
+void TimeSystemTestApp::TestAbsoluteTime() {
   setMethod("TestAbsoluteTime");
 
   // Use the bogus leap second table for this unit test.
@@ -1577,7 +1577,7 @@ void TestTimeSystemApp::TestAbsoluteTime() {
       ", not " << expected_diff << " as expected." << std::endl;
 }
 
-void TestTimeSystemApp::TestElapsedTime() {
+void TimeSystemTestApp::TestElapsedTime() {
   setMethod("TestElapsedTime");
 
   // Test of the getter that returns a Duration object.
@@ -1653,7 +1653,7 @@ void TestTimeSystemApp::TestElapsedTime() {
   }
 }
 
-void TestTimeSystemApp::TestTimeInterval() {
+void TimeSystemTestApp::TestTimeInterval() {
   setMethod("TestTimeInterval");
 
   // Create some test inputs.
@@ -1728,7 +1728,7 @@ void TestTimeSystemApp::TestTimeInterval() {
   }
 }
 
-void TestTimeSystemApp::TestOneCalendarDate(long mjd, long calendar_year, long month, long month_day, long iso_year, long week_number,
+void TimeSystemTestApp::TestOneCalendarDate(long mjd, long calendar_year, long month, long month_day, long iso_year, long week_number,
   long weekday_number, long ordinal_date) {
   // Test conversion from a calendar date to an MJD.
   const TimeFormat<Calendar> & calendar_format(TimeFormatFactory<Calendar>::getFormat());
@@ -1780,7 +1780,7 @@ void TestTimeSystemApp::TestOneCalendarDate(long mjd, long calendar_year, long m
 }
 
 template <typename TimeRepType>
-void TestTimeSystemApp::TestOneBadDateTime(const TimeFormat<TimeRepType> & time_format, const datetime_type & datetime,
+void TimeSystemTestApp::TestOneBadDateTime(const TimeFormat<TimeRepType> & time_format, const datetime_type & datetime,
   const std::string & time_rep_name, const std::string & data_description, bool exception_expected) {
   // Call TimeFormat<TimeRepType>::convert method.
   bool exception_thrown = false;
@@ -1801,7 +1801,7 @@ void TestTimeSystemApp::TestOneBadDateTime(const TimeFormat<TimeRepType> & time_
 }
 
 template <typename TimeRepType>
-void TestTimeSystemApp::TestOneBadTimeRep(const TimeFormat<TimeRepType> & time_format, const TimeRepType & time_rep,
+void TimeSystemTestApp::TestOneBadTimeRep(const TimeFormat<TimeRepType> & time_format, const TimeRepType & time_rep,
   const std::string & time_rep_name, const std::string & data_description, bool exception_expected) {
   // Call TimeFormat<TimeRepType>::convert method.
   bool exception_thrown = false;
@@ -1839,7 +1839,7 @@ void TestTimeSystemApp::TestOneBadTimeRep(const TimeFormat<TimeRepType> & time_f
 }
 
 template <typename TimeRepType>
-void TestTimeSystemApp::TestOneBadTimeString(const TimeFormat<TimeRepType> & time_format, const std::string & time_string,
+void TimeSystemTestApp::TestOneBadTimeString(const TimeFormat<TimeRepType> & time_format, const std::string & time_string,
   const std::string & time_rep_name, bool exception_expected) {
   // Call TimeFormat<TimeRepType>::parse method.
   bool exception_thrown = false;
@@ -1861,7 +1861,7 @@ void TestTimeSystemApp::TestOneBadTimeString(const TimeFormat<TimeRepType> & tim
 
 struct NoSuchTimeRep {};
 
-void TestTimeSystemApp::TestTimeFormat() {
+void TimeSystemTestApp::TestTimeFormat() {
   setMethod("TestTimeFormat");
 
   // Test detecting unsupported time representations.
@@ -2463,7 +2463,7 @@ void TestTimeSystemApp::TestTimeFormat() {
   TestOneCalendarDate(55200, 2010,  1,  4, 2010,  1, 1,   4);
 }
 
-void TestTimeSystemApp::TestBaryTimeComputer() {
+void TimeSystemTestApp::TestBaryTimeComputer() {
   setMethod("TestBaryTimeComputer");
 
   // Prepare a time to be geo/barycentered and an expected result after geo/barycentered.
@@ -2598,7 +2598,7 @@ class BogusTimeHandler3: public BogusTimeHandlerBase {
     BogusTimeHandlerBase(file_name, extension_name, read_only) {}
 };
 
-void TestTimeSystemApp::TestEventTimeHandlerFactory() {
+void TimeSystemTestApp::TestEventTimeHandlerFactory() {
   setMethod("TestEventtTimeHandler");
   using namespace facilities;
 
@@ -2688,7 +2688,7 @@ void TestTimeSystemApp::TestEventTimeHandlerFactory() {
   }
 }
 
-void TestTimeSystemApp::TestGlastTimeHandler() {
+void TimeSystemTestApp::TestGlastTimeHandler() {
   setMethod("TestGlastTimeHandler");
   using namespace facilities;
 
@@ -3245,4 +3245,4 @@ void TestTimeSystemApp::TestGlastTimeHandler() {
   }
 }
 
-StAppFactory<TestTimeSystemApp> g_factory("test_timeSystem");
+StAppFactory<TimeSystemTestApp> g_factory("test_timeSystem");
