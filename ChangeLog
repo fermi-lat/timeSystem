@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Mon Oct 13 20:52:40 PDT 2008
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Add tests of gtbary. Rename test methods (cosmetic).
+    *
+------------------------------------------------------------
 User: hirayama  Mon Oct 13 20:51:03 PDT 2008
 timeSystem/data/outref
 
