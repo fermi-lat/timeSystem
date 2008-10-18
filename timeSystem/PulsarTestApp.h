@@ -72,13 +72,20 @@ namespace timeSystem {
 
       /** \brief Helper method to run an application, capture text output, compare the log and an output FITS file
                  with their reference files in data/outref/ directory.
-          \param application Application object to test. Set parameters before calling this method.
+          \param app_name Name of application to test.
+          \param par_group Parameters to give to the application to test.
           \param log_file Log file name. An empty string disables logging.
           \param out_fits Output FITS file name. An empty string disables comparison of the output FITS file.
           \param ignore_exception Set true if an application is expected to throw an exception in this test.
       */
-      void testApplication(st_app::StApp & application, const std::string & log_file, const std::string & out_fits,
-        bool ignore_exception = false);
+      void testApplication(const std::string & app_name, const st_app::AppParGroup & par_group, const std::string & log_file,
+        const std::string & out_fits, bool ignore_exception = false);
+
+      /** \brief Returns a named application object. Return 0 (zero) if no such application exists.
+          \param app_name Name of application to create. The value of app_name parameter of testApplication method will be
+                 passed to this method as this argument in order to create an application object. 
+      */
+      virtual st_app::StApp * createApplication(const std::string & app_name) const = 0;
 
     private:
       bool m_failed;
