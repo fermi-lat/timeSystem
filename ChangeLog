@@ -1,5 +1,14 @@
 ------------------------------------------------------------
 User: hirayama  Fri Oct 17 18:56:09 PDT 2008
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Make testApplication method more robust.
+    *
+------------------------------------------------------------
+User: hirayama  Fri Oct 17 18:56:09 PDT 2008
 timeSystem/src
 
 Modified Files:
