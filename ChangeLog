@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Fri Oct 17 18:56:09 PDT 2008
+timeSystem/timeSystem
+
+Modified Files:
+	PulsarTestApp.h 
+Log Message:
+Make testApplication method more robust.
+    *
+------------------------------------------------------------
 User: hirayama  Mon Oct 13 20:53:07 PDT 2008
 timeSystem/data/outref
 
