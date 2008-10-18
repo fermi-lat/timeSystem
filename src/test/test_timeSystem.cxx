@@ -68,6 +68,9 @@ class TimeSystemTestApp : public PulsarTestApp {
 
     void testTimeCorrectorApp();
 
+  protected:
+    virtual st_app::StApp * createApplication(const std::string & app_name) const;
+
   private:
     void testDurationGetter(long day, double sec, const std::string & time_unit_name, long int_part, double frac_part,
       double tolerance_high, double tolerance_low);
@@ -3256,7 +3259,6 @@ void TimeSystemTestApp::testTimeCorrectorApp() {
   setMethod("testTimeCorrectorApp");
 
   // Prepare variables to create application objects.
-  std::auto_ptr<st_app::StApp> app_ptr(0);
   std::list<std::string> test_name_cont;
   test_name_cont.push_back("par1");
   test_name_cont.push_back("par2");
@@ -3280,13 +3282,9 @@ void TimeSystemTestApp::testTimeCorrectorApp() {
     const std::string & test_name = *test_itor;
     std::string out_file(getMethod() + "_" + test_name + ".fits");
 
-    // Create and setup an application object.
-    app_ptr.reset(new TimeCorrectorApp());
-    app_ptr->setName("gtbary");
-    st_app::AppParGroup & pars(app_ptr->getParGroup());
-    pars.setPromptMode(false);
-
     // Set default parameters.
+    std::string app_name("gtbary");
+    st_app::AppParGroup pars(app_name);
     pars["evfile"] = "";
     pars["scfile"] = "";
     pars["outfile"] = "";
@@ -3349,13 +3347,24 @@ void TimeSystemTestApp::testTimeCorrectorApp() {
       continue;
     }
 
+    // Remove output FITS file.
+    remove(out_file.c_str());
+
     // Test the application.
     if (expected_to_fail) {
       std::string log_file(getMethod() + "_" + test_name + ".log");
-      testApplication(*app_ptr, log_file, "", true);
+      testApplication(app_name, pars, log_file, "", true);
     } else {
-      testApplication(*app_ptr, "", out_file);
+      testApplication(app_name, pars, "", out_file);
     }
+  }
+}
+
+st_app::StApp * TimeSystemTestApp::createApplication(const std::string & app_name) const {
+  if ("gtbary" == app_name) {
+    return new TimeCorrectorApp();
+  } else {
+    return 0;
   }
 }
 

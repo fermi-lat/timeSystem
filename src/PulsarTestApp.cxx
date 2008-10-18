@@ -14,6 +14,8 @@
 #include "facilities/commonUtilities.h"
 
 #include "hoops/hoops.h"
+#include "hoops/hoops_exception.h"
+#include "hoops/hoops_par.h"
 
 #include "st_app/AppParGroup.h"
 
@@ -70,9 +72,11 @@ namespace timeSystem {
     // Check file existence.
     if (!tip::IFileSvc::instance().fileExists(out_file)) {
       err() << "File to check does not exist: " << out_file << std::endl;
+      return;
     }
     if (!tip::IFileSvc::instance().fileExists(ref_file)) {
       err() << "Reference file for " << out_file << " does not exist: " << ref_file << std::endl;
+      return;
     }
 
     // Get fille summaries for FITS files to compare.
@@ -161,9 +165,11 @@ namespace timeSystem {
     // Check file existence.
     if (!tip::IFileSvc::instance().fileExists(out_file)) {
       err() << "File to check does not exist: " << out_file << std::endl;
+      return;
     }
     if (!tip::IFileSvc::instance().fileExists(ref_file)) {
       err() << "Reference file for " << out_file << " does not exist: " << ref_file << std::endl;
+      return;
     }
 
     // Open the files to compare.
@@ -211,11 +217,39 @@ namespace timeSystem {
     }
   }
 
-  void PulsarTestApp::testApplication(st_app::StApp & application, const std::string & log_file, const std::string & out_fits,
-    bool ignore_exception) {
+  void PulsarTestApp::testApplication(const std::string & app_name, const st_app::AppParGroup & par_group, const std::string & log_file,
+    const std::string & out_fits, bool ignore_exception) {
     // Fake the application name for logging.
     const std::string app_name_save(st_stream::GetExecName());
-    st_stream::SetExecName(application.getName());
+    st_stream::SetExecName(app_name);
+
+    // Set chatter.
+    const int chat_save = st_stream::GetMaximumChatter();
+    int chat = par_group["chatter"];
+    st_stream::SetMaximumChatter(chat);
+
+    // Set debug mode.
+    const bool debug_mode_save = st_stream::GetDebugMode();
+    bool debug_mode = par_group["debug"];
+    st_stream::SetDebugMode(debug_mode);
+
+    // Create and setup an application object.
+    std::auto_ptr<st_app::StApp> app_ptr(createApplication(app_name));
+    if (0 == app_ptr.get()) {
+      err() << "Cannot create an application object: \"" << app_name << "\"" << std::endl;
+      return;
+    }
+    app_ptr->setName(app_name);
+    st_app::AppParGroup & pars(app_ptr->getParGroup());
+    pars.setPromptMode(false);
+
+    // Copy parameter values.
+    for (hoops::GenParItor par_itor = pars.begin(); par_itor != pars.end(); ++par_itor) {
+      const std::string & par_name((*par_itor)->Name());
+      try {
+        pars[par_name] = *(par_group[par_name].PrimValue());
+      } catch (hoops::Hexception &) {}
+    }
 
     // Determine logging and checking output.
     bool record_log(!log_file.empty());
@@ -232,19 +266,12 @@ namespace timeSystem {
       st_stream::sterr.connect(ofs_log);
       st_stream::stlog.connect(ofs_log);
       st_stream::stout.connect(ofs_log);
-
-      // Set chatter.
-      int chat = application.getParGroup()["chatter"];
-      st_stream::SetMaximumChatter(chat);
     }
-
-    // Remove output FITS file if it already exists.
-    if (check_output) remove(out_fits.c_str());
 
     // Run the application.
     bool exception_caught = false;
     try {
-      application.run();
+      app_ptr->run();
 
     } catch (const std::exception & x) {
       // Simulate the behavior of balistic_main.cxx in st_app package.
@@ -262,7 +289,7 @@ namespace timeSystem {
     } catch (...) {
       // Catch everything else and report it.
       exception_caught = true;
-      err() << "Unknown exception thrown by application \"" << application.getName() << "\"" << std::endl;
+      err() << "Unknown exception thrown by application \"" << app_ptr->getName() << "\"" << std::endl;
     }
 
     if (record_log) {
@@ -278,8 +305,8 @@ namespace timeSystem {
 
     // Output an error message if the application threw an exception, or check the output file against a reference file.
     if (exception_caught && !ignore_exception) {
-      err() << "Application \"" << application.getName() << "\" threw an exception for the following parameter values:" << std::endl;
-      const st_app::AppParGroup & pars(application.getParGroup());
+      err() << "Application \"" << app_ptr->getName() << "\" threw an exception for the following parameter values:" << std::endl;
+      const st_app::AppParGroup & pars(app_ptr->getParGroup());
       for (hoops::ConstGenParItor par_itor = pars.begin(); par_itor != pars.end(); ++par_itor) {
         err() << (*par_itor)->Name() << " = " << (*par_itor)->Value() << std::endl;
       }
@@ -291,8 +318,10 @@ namespace timeSystem {
       if (check_output) checkOutputFits(out_fits);
     }
 
-    // Restore the application name.
+    // Restore the application name, chatter, and debug mode.
     st_stream::SetExecName(app_name_save);
+    st_stream::SetMaximumChatter(chat_save);
+    st_stream::SetDebugMode(debug_mode_save);
   }
 
 }
