@@ -46,7 +46,7 @@ class TimeSystemTestApp : public PulsarTestApp {
   public:
     TimeSystemTestApp();
 
-    virtual void run();
+    virtual void runTest();
 
     void testDuration();
 
@@ -115,7 +115,7 @@ TimeSystemTestApp::TimeSystemTestApp(): PulsarTestApp("timeSystem") {
   setVersion(s_cvs_id);
 }
 
-void TimeSystemTestApp::run() {
+void TimeSystemTestApp::runTest() {
   // Set precision high enough to show numbers in error messages accurately.
   setPrecision(std::numeric_limits<double>::digits10);
 
@@ -148,9 +148,6 @@ void TimeSystemTestApp::run() {
 
   // Test TimeCorrectorApp class.
   testTimeCorrectorApp();
-
-  // Interpret failure flag to report error.
-  reportStatus();
 }
 
 void TimeSystemTestApp::testDurationGetter(long day, double sec, const std::string & time_unit_name, long int_part, double frac_part,

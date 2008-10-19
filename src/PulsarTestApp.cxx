@@ -29,7 +29,7 @@
 
 namespace timeSystem {
 
-  PulsarTestApp::PulsarTestApp(const std::string & package_name): m_failed(false), m_method_name(), m_outref_dir() {
+  PulsarTestApp::PulsarTestApp(const std::string & package_name): m_failed(false), m_method_name(), m_data_dir(), m_outref_dir() {
     // Find data directory for this app.
     m_data_dir = facilities::commonUtilities::getDataPath(package_name);
 
@@ -38,6 +38,18 @@ namespace timeSystem {
   }
 
   PulsarTestApp::~PulsarTestApp() throw() {}
+
+  void PulsarTestApp::run() {
+    // Initialize the internal variables that need to be refreshed everytime this method is called.
+    m_failed = false;
+    m_method_name.clear();
+
+    // Run the test.
+    runTest();
+
+    // Report overall test status.
+    if (m_failed) throw std::runtime_error(getName() + ": unit test failed.");
+  }
 
   std::string PulsarTestApp::getDataPath() const {
     return m_data_dir;
@@ -58,10 +70,6 @@ namespace timeSystem {
   std::ostream & PulsarTestApp::err() {
     m_failed = true;
     return std::cerr << getName() << ": " << m_method_name << ": ";
-  }
-
-  void PulsarTestApp::reportStatus() const {
-    if (m_failed) throw std::runtime_error(getName() + ": unit test failed.");
   }
 
   void PulsarTestApp::checkOutputFits(const std::string & file_name, bool compare_comment) {
