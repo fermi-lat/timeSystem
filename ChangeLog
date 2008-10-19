@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Sun Oct 19 14:20:28 PDT 2008
+timeSystem/timeSystem
+
+Modified Files:
+	PulsarTestApp.h 
+Log Message:
+Enforce initialization of a unit test and its error reporting at the end.
+    *
+------------------------------------------------------------
 User: hirayama  Fri Oct 17 18:56:09 PDT 2008
 timeSystem/src/test
 
