@@ -28,9 +28,14 @@ namespace timeSystem {
       */
       virtual ~PulsarTestApp() throw();
 
+      /** \brief Main method to run a unit test. This method calls runTest method after initializing this class,
+                 then throws an exception if and only if at least one test failed.
+      */
+      virtual void run();
+
       /** \brief Main method to run a unit test.
       */
-      virtual void run() = 0;
+      virtual void runTest() = 0;
 
       /** \brief Returns a path name of the "data/" directory of this pulsar tool package.
       */
@@ -52,11 +57,6 @@ namespace timeSystem {
       /** \brief Returns an output stream to which error messages should be shifted.
       */
       std::ostream & err();
-
-      /** \brief Reports overall test status. If at least one test failed, throws an exception.
-                 Otherwise, does nothing.
-      */
-      void reportStatus() const;
 
     protected:
       /** \brief Helper method to compare an output FITS file with its reference file in data/outref/ directory.
