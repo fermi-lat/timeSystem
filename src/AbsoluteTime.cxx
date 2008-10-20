@@ -5,6 +5,8 @@
 */
 #include "st_stream/Stream.h"
 
+#include <sstream>
+
 #include "timeSystem/AbsoluteTime.h"
 #include "timeSystem/Duration.h"
 #include "timeSystem/ElapsedTime.h"
@@ -56,6 +58,18 @@ namespace timeSystem {
     return (*this > other ? (*this <= other + tolerance) : (other <= *this + tolerance));
   }
 
+  AbsoluteTime AbsoluteTime::computeAbsoluteTime(const std::string & time_system_name, const Duration & delta_t) const {
+    // Convert this time to a corresponding time in time_system
+    const TimeSystem & time_system(TimeSystem::getSystem(time_system_name));
+    moment_type moment = time_system.convertFrom(*m_time_system, m_moment);
+
+    // Add delta_t in time_system.
+    moment.second += delta_t;
+
+    // Return this time expressed as a new absolute time in the input time system.
+    return AbsoluteTime(time_system_name, moment.first, moment.second);
+  }
+
   ElapsedTime AbsoluteTime::computeElapsedTime(const std::string & time_system_name, const AbsoluteTime & since) const {
     const TimeSystem & time_system(TimeSystem::getSystem(time_system_name));
     // Convert both times into the given time system.
@@ -67,16 +81,10 @@ namespace timeSystem {
     return ElapsedTime(time_system_name, time_diff);
   }
 
-  AbsoluteTime AbsoluteTime::computeAbsoluteTime(const std::string & time_system_name, const Duration & delta_t) const {
-    // Convert this time to a corresponding time in time_system
-    const TimeSystem & time_system(TimeSystem::getSystem(time_system_name));
-    moment_type moment = time_system.convertFrom(*m_time_system, m_moment);
-
-    // Add delta_t in time_system.
-    moment.second += delta_t;
-
-    // Return this time expressed as a new absolute time in the input time system.
-    return AbsoluteTime(time_system_name, moment.first, moment.second);
+  std::string AbsoluteTime::describe() const {
+    std::ostringstream os;
+    os << "AbsoluteTime(" << m_time_system->getName() << ", " << m_moment.first << ", " << m_moment.second.describe() << ")";
+    return os.str();
   }
 
   std::ostream & operator <<(std::ostream & os, const AbsoluteTime & time) {

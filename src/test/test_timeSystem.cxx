@@ -1458,7 +1458,7 @@ void TimeSystemTestApp::testAbsoluteTime() {
   mjd_sec = 1000.;
   abs_time = AbsoluteTime("TDB", mjd_day, mjd_sec);
 
-  // Test printing the absolute time.
+  // Test printing the absolute time, with the shift operator.
   {
     std::ostringstream os;
     os << abs_time;
@@ -1470,20 +1470,37 @@ void TimeSystemTestApp::testAbsoluteTime() {
     "\" as expected." << std::endl;
   }
 
-  // Test printing the absolute time, with a negative elapsed time.
+  // Test printing the absolute time, with AbsoluteTime::describe method.
+  result_string = abs_time.describe();
+  expected_string = "AbsoluteTime(TDB, 51910, Duration(0, 1000))";
+  if (expected_string != result_string) {
+    err() << "AbsoluteTime object wrote \"" << result_string << "\", not \"" << expected_string <<
+    "\" as expected." << std::endl;
+  }
+
+  // Test printing the absolute time, with a negative elapsed time, with the shift operator.
   abs_time = AbsoluteTime("TDB", mjd_day, -mjd_sec);
   {
     std::ostringstream os;
     os << abs_time;
     result_string = os.str();
   }
-  expected_string = "1000 seconds before 51910.0 MJD (TDB)";
+  expected_string = "85400 seconds after 51909.0 MJD (TDB)";
   if (expected_string != result_string) {
     err() << "AbsoluteTime object wrote \"" << result_string << "\", not \"" << expected_string <<
     "\" as expected." << std::endl;
   }
 
-  // Test printing the absolute time, with a zero elapsed time.
+  // Test printing the absolute time, with a negative elapsed time, with AbsoluteTime::describe method.
+  abs_time = AbsoluteTime("TDB", mjd_day, -mjd_sec);
+  result_string = abs_time.describe();
+  expected_string = "AbsoluteTime(TDB, 51910, Duration(-1, 85400))";
+  if (expected_string != result_string) {
+    err() << "AbsoluteTime object wrote \"" << result_string << "\", not \"" << expected_string <<
+    "\" as expected." << std::endl;
+  }
+
+  // Test printing the absolute time, with a zero elapsed time, with the shift operator.
   abs_time = AbsoluteTime("TDB", mjd_day, 0.);
   {
     std::ostringstream os;
@@ -1491,6 +1508,15 @@ void TimeSystemTestApp::testAbsoluteTime() {
     result_string = os.str();
   }
   expected_string = "51910.0 MJD (TDB)";
+  if (expected_string != result_string) {
+    err() << "AbsoluteTime object wrote \"" << result_string << "\", not \"" << expected_string <<
+    "\" as expected." << std::endl;
+  }
+
+  // Test printing the absolute time, with a zero elapsed time, with AbsoluteTime::describe method.
+  abs_time = AbsoluteTime("TDB", mjd_day, 0.);
+  result_string = abs_time.describe();
+  expected_string = "AbsoluteTime(TDB, 51910, Duration(0, 0))";
   if (expected_string != result_string) {
     err() << "AbsoluteTime object wrote \"" << result_string << "\", not \"" << expected_string <<
     "\" as expected." << std::endl;
