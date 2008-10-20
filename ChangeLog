@@ -1,5 +1,14 @@
 ------------------------------------------------------------
 User: hirayama  Mon Oct 20 11:19:38 PDT 2008
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Improve printing format of write method. Add describe method.
+    *
+------------------------------------------------------------
+User: hirayama  Mon Oct 20 11:19:38 PDT 2008
 timeSystem/src
 
 Modified Files:
