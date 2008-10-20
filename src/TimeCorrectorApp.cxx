@@ -143,8 +143,13 @@ namespace timeSystem {
       throw std::runtime_error("Unsupported arrival time correction: " + t_correct);
     }
 
-    // Get file summary of the input FITS file.
+    // Check existence of the input FITS file.
     std::string inFile_s = pars["evfile"];
+    if (!tip::IFileSvc::instance().fileExists(inFile_s)) {
+      throw std::runtime_error("File not found: " + inFile_s);
+    }
+
+    // Get file summary of the input FITS file.
     tip::FileSummary file_summary;
     tip::IFileSvc::instance().getFileSummary(inFile_s, file_summary);
 
