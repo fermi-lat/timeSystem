@@ -1,5 +1,14 @@
 ------------------------------------------------------------
 User: hirayama  Sun Oct 19 22:32:55 PDT 2008
+timeSystem/timeSystem
+
+Modified Files:
+	GlastTimeHandler.h TimeFormat.h 
+Log Message:
+Improve error messages.
+    *
+------------------------------------------------------------
+User: hirayama  Sun Oct 19 22:32:55 PDT 2008
 timeSystem/src
 
 Modified Files:
