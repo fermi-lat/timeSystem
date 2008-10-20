@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Mon Oct 20 12:47:39 PDT 2008
+timeSystem/src
+
+Modified Files:
+	TimeCorrectorApp.cxx 
+Log Message:
+Fix a bug (JIRA PULS-49).
+    *
+------------------------------------------------------------
 User: hirayama  Mon Oct 20 12:46:19 PDT 2008
 timeSystem/src
 
