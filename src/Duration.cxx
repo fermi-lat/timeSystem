@@ -258,6 +258,7 @@ namespace timeSystem {
 
   std::string Duration::describe() const {
     std::ostringstream os;
+    os.precision(std::numeric_limits<double>::digits10);
     os << "Duration(" << m_duration.first << ", " << m_duration.second << ")";
     return os.str();
   }
