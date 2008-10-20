@@ -340,16 +340,15 @@ namespace timeSystem {
       input_handler->setSourcePosition(ra, dec);
 
       // Apply arrival time correction to header keyword values.
+      tip::Header & input_header = input_handler->getHeader();
       for (std::list<std::string>::const_iterator name_itor = keyword_list.begin(); name_itor != keyword_list.end(); ++name_itor) {
         const std::string & keyword_name = *name_itor;
-        try {
+        if (input_header.find(keyword_name) != input_header.end()) {
           if ("BARY" == t_correct_uc) {
             output_handler->writeTime(keyword_name, input_handler->getBaryTime(keyword_name, true), true);
           } else if ("GEO" == t_correct_uc) {
             output_handler->writeTime(keyword_name, input_handler->getGeoTime(keyword_name, true), true);
           }
-        } catch (const tip::TipException &) {
-          // Skip if this keyword does not exist.
         }
       }
 
@@ -364,14 +363,10 @@ namespace timeSystem {
         // Apply arrival time correction to the specified columns.
         for (std::list<std::string>::const_iterator name_itor = column_list.begin(); name_itor != column_list.end(); ++name_itor) {
           const std::string & column_name = *name_itor;
-          try {
-            if ("BARY" == t_correct_uc) {
-              output_handler->writeTime(column_name, input_handler->getBaryTime(column_name));
-            } else if ("GEO" == t_correct_uc) {
-              output_handler->writeTime(column_name, input_handler->getGeoTime(column_name));
-            }
-          } catch (const tip::TipException &) {
-            // Skip if this column does not exist.
+          if ("BARY" == t_correct_uc) {
+            output_handler->writeTime(column_name, input_handler->getBaryTime(column_name));
+          } else if ("GEO" == t_correct_uc) {
+            output_handler->writeTime(column_name, input_handler->getGeoTime(column_name));
           }
         }
       }
