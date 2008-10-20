@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Sun Oct 19 17:17:41 PDT 2008
+timeSystem/src
+
+Modified Files:
+	EventTimeHandler.cxx 
+Log Message:
+Check size of factory container and existence of input file before finding an event file handler.
+    *
+------------------------------------------------------------
 User: hirayama  Sun Oct 19 17:17:00 PDT 2008
 timeSystem/src
 
