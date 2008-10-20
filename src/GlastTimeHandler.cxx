@@ -297,9 +297,13 @@ namespace timeSystem {
       std::ostringstream os;
       os << "Cannot get GLAST spacecraft position for " << std::setprecision(std::numeric_limits<double>::digits10) <<
         glast_time << " GLAST MET (TT):";
-      if (error > 0) os << " FITSIO error (status code = " << error << ") occurred while reading spacecraft file " << m_sc_file;
-      else os << " the time is not covered by spacecraft file " << m_sc_file;
-      throw std::runtime_error(os.str());
+      if (error > 0) {
+        os << " error occurred while reading spacecraft file " << m_sc_file;
+        throw tip::TipException(error, os.str());
+      } else {
+        os << " the time is not covered by spacecraft file " << m_sc_file;
+        throw std::runtime_error(os.str());
+      }
     }
     std::vector<double> sc_position(sc_position_array, sc_position_array + 3);
 
