@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Sun Oct 19 17:17:00 PDT 2008
+timeSystem/src
+
+Modified Files:
+	TimeCorrectorApp.cxx 
+Log Message:
+Check existence of input file.
+    *
+------------------------------------------------------------
 User: hirayama  Sun Oct 19 14:20:28 PDT 2008
 timeSystem/src/test
 
