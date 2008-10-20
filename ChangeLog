@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Mon Oct 20 12:46:19 PDT 2008
+timeSystem/src
+
+Modified Files:
+	GlastTimeHandler.cxx 
+Log Message:
+Improve error messages.
+    *
+------------------------------------------------------------
 User: hirayama  Mon Oct 20 11:20:01 PDT 2008
 timeSystem/src
 
