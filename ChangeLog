@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Mon Oct 20 11:20:01 PDT 2008
+timeSystem/src
+
+Modified Files:
+	Duration.cxx 
+Log Message:
+Add precision control to Duration::describe method.
+    *
+------------------------------------------------------------
 User: hirayama  Mon Oct 20 11:19:38 PDT 2008
 timeSystem/src/test
 
