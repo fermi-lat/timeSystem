@@ -68,7 +68,7 @@ namespace {
         // TODO: Allow JPL DE200 and DE405 to coexist.
         std::ostringstream os;
         os << "Requested planetary ephemeris \"" << getPlanetaryEphemerisName() << "\" cannot coexist with \"" <<
-          m_initialized_computer->getPlanetaryEphemerisName() << "\" that is already in use.";
+          m_initialized_computer->getPlanetaryEphemerisName() << "\" that is already in use";
         throw std::runtime_error(os.str());
       }
 
@@ -81,7 +81,7 @@ namespace {
       // Check initialization status.
       if (status) {
         std::ostringstream os;
-        os << "Error while initializing ephemeris (status = " << status << ").";
+        os << "Error while initializing ephemeris (status = " << status << ")";
         throw std::runtime_error(os.str());
       }
         
@@ -94,7 +94,7 @@ namespace {
     AbsoluteTime & abs_time) const {
     // Check the size of sc_position.
     if (sc_position.size() < 3) {
-      throw std::runtime_error("Space craft position was given in a wrong format.");
+      throw std::runtime_error("Space craft position was given in a wrong format");
     }
 
     // Set given time to a variable to pass to dpleph C-function.
@@ -109,7 +109,7 @@ namespace {
     eposn = dpleph(jdt, iearth, isun);
     if (NULL == eposn) {
       std::ostringstream os;
-      os << "Could not find solar system ephemeris for " << abs_time.represent("TT", MjdFmt) << ".";
+      os << "Could not find solar system ephemeris for " << abs_time.represent("TT", MjdFmt);
       throw std::runtime_error(os.str());
     }
 
@@ -154,7 +154,7 @@ namespace {
     AbsoluteTime & abs_time) const {
     // Check the size of sc_position.
     if (sc_position.size() < 3) {
-      throw std::runtime_error("Space craft position was given in a wrong format.");
+      throw std::runtime_error("Space craft position was given in a wrong format");
     }
 
     // Convert source direction from (RA, Dec) to a three-vector.

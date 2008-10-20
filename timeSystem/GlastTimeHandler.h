@@ -122,6 +122,9 @@ namespace timeSystem {
       virtual AbsoluteTime getBaryTime(const std::string & field_name, bool from_header = false) const;
 
     private:
+      std::string m_file_name;
+      std::string m_ext_name;
+
       GlastGeoTimeHandler(const std::string & file_name, const std::string & extension_name, bool read_only = true);
   };
 

@@ -290,7 +290,7 @@ namespace {
     // Check the date and time.
     if (datetime.second < 0. || datetime.second >= max_second) {
       std::ostringstream os;
-      os << "Time part of the given date and time out of bounds: " << datetime.second << " seconds of " << datetime.first << " MJD.";
+      os << "Time part of the given date and time out of bounds: " << datetime.second << " seconds of " << datetime.first << " MJD";
       throw std::runtime_error(os.str());
     }
 
@@ -308,14 +308,14 @@ namespace {
       // The origin is out of bounds.
       std::ostringstream os;
       os << "The given moment has the origin, " << moment.first << ".0 MJD (UTC), which is earlier than the earliest" <<
-        " covered by the leap second table in " << leap_sec_table.getFileName() << ", " << earliest_mjd << ".0 MJD (UTC).";
+        " covered by the leap second table in " << leap_sec_table.getFileName() << ", " << earliest_mjd << ".0 MJD (UTC)";
       throw std::runtime_error(os.str());
 
     } else if (Duration::zero() > computeTimeDifference(moment, moment_type(earliest_mjd, Duration::zero()))) {
       // The represented moment of time is out of bounds.
       std::ostringstream os;
       os << "The given moment, " << moment.second << " since " << moment.first << " MJD (UTC), is earlier than the earliest" <<
-        " covered by the leap second table in " << leap_sec_table.getFileName() << ", " << earliest_mjd << ".0 MJD (UTC).";
+        " covered by the leap second table in " << leap_sec_table.getFileName() << ", " << earliest_mjd << ".0 MJD (UTC)";
       throw std::runtime_error(os.str());
     }
   }
@@ -349,11 +349,13 @@ namespace {
 
       // Make sure the MJD for the leap second is a whole number of days.
       long mjd = long(mjd_dbl + .5);
-      if (mjd != mjd_dbl) throw std::logic_error("UtcSystem: leapsec.fits unexpectedly contained a non-integral MJD value");
+      if (mjd != mjd_dbl) throw std::logic_error("Leap second file contains a non-integral MJD value: " + leap_sec_file_name);
 
       // Make sure the leap second is a whole number of seconds.
       long leap_sec = long(leap_sec_dbl + (leap_sec_dbl > 0 ? .5 : -.5));
-      if (leap_sec != leap_sec_dbl) throw std::logic_error("UtcSystem: leapsec.fits unexpectedly contained a non-integral LEAPSECS value");
+      if (leap_sec != leap_sec_dbl) {
+        throw std::logic_error("Leap second file contains a non-integral LEAPSECS value: " + leap_sec_file_name);
+      }
       cumulative_leap_sec += leap_sec;
 
       // Add an entry to conversion tables.
@@ -368,7 +370,7 @@ namespace {
       // The given MJD time is too early for UTC.
       std::ostringstream os;
       os << "The leap-second table is looked up for " << mjd << ".0 MJD (UTC), which is before its first entry " <<
-        m_table.begin()->first << ".0 MJD (UTC).";
+        m_table.begin()->first << ".0 MJD (UTC)";
       throw std::runtime_error(os.str());
     }
     --itor;
@@ -380,7 +382,7 @@ namespace {
   long LeapSecTable::getEarliestMjd() const {
     // Look for the first entry.
     table_type::const_iterator itor = m_table.begin();
-    if (itor == m_table.end()) throw std::runtime_error("The leap-second table is empty.");
+    if (itor == m_table.end()) throw std::runtime_error("The leap-second table is empty");
 
     // Return the MJD value of the first entry.
     return itor->first;
@@ -404,7 +406,7 @@ namespace timeSystem {
     // Find a requested TimeSystem object.
     container_type & container(getContainer());
     container_type::iterator cont_itor = container.find(uc_system_name);
-    if (container.end() == cont_itor) throw std::runtime_error("TimeSystem::getSystem could not find time system " + system_name);
+    if (container.end() == cont_itor) throw std::runtime_error("No such time system implemented: " + system_name);
     const TimeSystem & system(*cont_itor->second);
 
     // Load a leap-second table if UTC system is requested.
@@ -479,7 +481,7 @@ namespace timeSystem {
     // Check the date and time.
     if (datetime.second < 0. || datetime.second >= SecPerDay()) {
       std::ostringstream os;
-      os << "Time part of the given date and time out of bounds: " << datetime.second << " seconds of " << datetime.first << " MJD.";
+      os << "Time part of the given date and time out of bounds: " << datetime.second << " seconds of " << datetime.first << " MJD";
       throw std::runtime_error(os.str());
     }
 

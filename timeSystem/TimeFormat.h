@@ -41,7 +41,7 @@ namespace timeSystem {
   class TimeFormatFactory {
     public:
       static const TimeFormat<TimeRepType> & getFormat() {
-        throw std::runtime_error("Time format not supported for the requested time representation");
+        throw std::runtime_error("Requested time representation not supported");
       }
   };
 }
