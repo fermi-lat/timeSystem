@@ -9,6 +9,7 @@
 #include "timeSystem/TimeFormat.h"
 #include "timeSystem/TimeSystem.h"
 
+#include <iostream>
 #include <limits>
 #include <string>
 
@@ -81,6 +82,8 @@ namespace timeSystem {
       template <typename StreamType>
       void write(StreamType & os) const;
 
+      std::string describe() const;
+
     private:
       // Prohibited operations:
       // These are not physical because TimeInterval is "anchored" to its endpoints, which are absolute moments in time.
@@ -140,16 +143,28 @@ namespace timeSystem {
 
   template <typename StreamType>
   inline void AbsoluteTime::write(StreamType & os) const {
-    if (m_moment.second > Duration::zero()) {
+    // Convert the time to a unique representation.
+    datetime_type datetime = m_time_system->computeDateTime(m_moment);
+
+    // Change precision, saving the current value.
+    std::streamsize prec = os.precision(std::numeric_limits<double>::digits10);
+
+    // Write the time.
+    if (datetime.second > 0.) {
       // Write the time in the format of "123.456789 seconds after 54321.0 MJD (TDB)".
-      os << m_moment.second << " after " << m_moment.first << ".0 MJD (" << *m_time_system << ")";
-    } else if (m_moment.second < Duration::zero()) {
+      os << datetime.second << " seconds after " << datetime.first << ".0 MJD (" << *m_time_system << ")";
+    } else if (datetime.second > 0.) {
       // Write the time in the format of "123.456789 seconds before 54321.0 MJD (TDB)".
-      os << -m_moment.second << " before " << m_moment.first << ".0 MJD (" << *m_time_system << ")";
+      // Note: This branch should never be reached because datetime_type.second is non-negative by definition.
+      //       Keep this section just in case datetime_type changes its design.
+      os << -datetime.second << " seconds before " << datetime.first << ".0 MJD (" << *m_time_system << ")";
     } else {
       // Write the time in the format of "54321.0 MJD (TDB)".
-      os << m_moment.first << ".0 MJD (" << *m_time_system << ")";
+      os << datetime.first << ".0 MJD (" << *m_time_system << ")";
     }
+
+    // Restore the precision.
+    os.precision(prec);
   }
 
   std::ostream & operator <<(std::ostream & os, const AbsoluteTime & time);
