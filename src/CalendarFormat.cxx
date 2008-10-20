@@ -7,6 +7,7 @@
 
 #include <cmath>
 #include <iomanip>
+#include <limits>
 #include <sstream>
 #include <vector>
 
@@ -625,7 +626,7 @@ namespace {
     // Check the time part of the given date and time.
     if (datetime.second < 0.) {
       std::ostringstream os;
-      os << "Negative number is given for a time of the day: " << datetime.second << " seconds of " << datetime.first << " MJD.";
+      os << "Negative number is given for a time of the day: " << datetime.second << " seconds of " << datetime.first << " MJD";
       throw std::runtime_error(os.str());
     }
 

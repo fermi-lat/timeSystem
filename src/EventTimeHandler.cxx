@@ -43,7 +43,7 @@ namespace timeSystem {
 
     // Confirm the container is not empty.
     if (factory_cont.empty()) {
-      throw std::runtime_error("IEventTimeHandlerFactory::createHandler: List of event-time handling classes is empty.");
+      throw std::runtime_error("IEventTimeHandlerFactory::createHandler: List of event-time handling classes is empty");
     }
 
     // Check existence of the file.
@@ -129,7 +129,7 @@ namespace timeSystem {
 
   tip::Table & EventTimeHandler::getTable() const {
     if (m_table) return *m_table;
-    else throw std::runtime_error("EventTimeHandler::getTable was called for a FITS extension that contains no data table.");
+    else throw std::runtime_error("EventTimeHandler::getTable: given extension contains no data table");
   }
 
   tip::Header & EventTimeHandler::getHeader() const {
@@ -138,7 +138,7 @@ namespace timeSystem {
 
   tip::TableRecord & EventTimeHandler::getCurrentRecord() const {
     if (m_table) return *m_record_itor;
-    else throw std::runtime_error("EventTimeHandler::getCurrentRecord was called for a FITS extension that contains no data table.");
+    else throw std::runtime_error("EventTimeHandler::getCurrentRecord: given extension contains no data table");
   }
 
   Mjd EventTimeHandler::readMjdRef(const tip::Header & header) const {
@@ -172,7 +172,7 @@ namespace timeSystem {
 
     // Throw an exception if none of above succeeds.
     if (!found_mjd_ref) {
-      throw std::runtime_error("EventTimeHandler::readMjdRef could not find MJDREFI/MJDREFF or MJDREF.");
+      throw std::runtime_error("Could not find MJDREFI/MJDREFF keyword pair or MJDREF keyword");
     }
 
     return mjd_ref;

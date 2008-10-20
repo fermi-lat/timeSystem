@@ -117,7 +117,7 @@ namespace {
     // Find a requested TimeUnit object and return it.
     TimeUnit::container_type & container(getContainer());
     container_type::iterator cont_itor = container.find(time_unit_name_uc);
-    if (container.end() == cont_itor) throw std::runtime_error("TimeUnit::getUnit could not find time unit " + time_unit_name);
+    if (container.end() == cont_itor) throw std::runtime_error("No such time unit implemented: " + time_unit_name);
     return *cont_itor->second;
   }
 
@@ -142,7 +142,7 @@ namespace timeSystem {
         (time_value_int <  0 && (time_value_frac <= -1. || time_value_frac >   0.))) {
       std::ostringstream os;
       os.precision(std::numeric_limits<double>::digits10);
-      os << "Fractional part out of bounds: " << time_value_frac << ".";
+      os << "Fractional part out of bounds: " << time_value_frac;
       throw std::runtime_error(os.str());
     }
 
@@ -312,14 +312,14 @@ namespace timeSystem {
       // Throw an exception for a value too large.
       std::ostringstream os;
       os.precision(std::numeric_limits<double>::digits10);
-      os << "Integer overflow in computing time duration of " << value << " " << time_unit << ".";
+      os << "Integer overflow in computing time duration of " << value << " " << time_unit;
       throw std::runtime_error(os.str());
 
     } else if (value <= std::numeric_limits<long>::min() - 1.) {
       // Throw an exception for a value too small (i.e., large negative).
       std::ostringstream os;
       os.precision(std::numeric_limits<double>::digits10);
-      os << "Integer underflow in computing time duration of " << value << " " << time_unit << ".";
+      os << "Integer underflow in computing time duration of " << value << " " << time_unit;
       throw std::runtime_error(os.str());
     }
 

@@ -282,7 +282,7 @@ namespace timeSystem {
 
   AbsoluteTime GlastScTimeHandler::getCorrectedTime(const std::string & field_name, bool from_header, bool compute_bary) const {
     // Check initialization status.
-    if (!m_computer) throw std::runtime_error("Arrival time corrections not initialized.");
+    if (!m_computer) throw std::runtime_error("Arrival time corrections not initialized");
 
     // Read the field value as a GLAST time.
     double glast_time = readGlastTime(field_name, from_header);
@@ -312,7 +312,7 @@ namespace timeSystem {
   }
 
   GlastGeoTimeHandler::GlastGeoTimeHandler(const std::string & file_name, const std::string & extension_name, bool read_only):
-    GlastTimeHandler(file_name, extension_name, read_only) {}
+    GlastTimeHandler(file_name, extension_name, read_only), m_file_name(file_name), m_ext_name(extension_name) {}
 
   GlastGeoTimeHandler::~GlastGeoTimeHandler() {}
 
@@ -340,7 +340,8 @@ namespace timeSystem {
   }
 
   AbsoluteTime GlastGeoTimeHandler::getBaryTime(const std::string & /*field_name*/, bool /*from_header*/) const {
-    throw std::runtime_error("GlastGeoTimeHandler does not support computations of barycentic times");
+    throw std::runtime_error("Computation of barycentic times is not supported for extension \"" + m_ext_name + "\" of file \"" +
+      m_file_name);
   }
 
   GlastBaryTimeHandler::GlastBaryTimeHandler(const std::string & file_name, const std::string & extension_name, bool read_only):
@@ -375,7 +376,7 @@ namespace timeSystem {
       header["RA_NOM"].get(ra_file);
       header["DEC_NOM"].get(dec_file);
     } catch (const std::exception &) {
-      throw std::runtime_error("Could not find RA_NOM or DEC_NOM header keyword in a barycentered event file.");
+      throw std::runtime_error("Could not find RA_NOM or DEC_NOM header keyword in a barycentered event file");
     }
     m_ra_nom = ra_file;
     m_dec_nom = dec_file;
@@ -392,7 +393,7 @@ namespace timeSystem {
     try {
       header["PLEPHEM"].get(pl_ephem);
     } catch (const std::exception &) {
-      throw std::runtime_error("Could not find PLEPHEM header keyword in a barycentered event file.");
+      throw std::runtime_error("Could not find PLEPHEM header keyword in a barycentered event file");
     }
     m_pl_ephem = pl_ephem;
 
@@ -412,7 +413,7 @@ namespace timeSystem {
       // Throw an exception the names do not match.
       if (!solar_eph_match) {
         throw std::runtime_error("Solar system ephemeris in extension \"" + m_ext_name + "\" of file \"" + m_file_name +
-          "\" (PLEPHEM=\"" + m_pl_ephem + "\") does not match the requested \"" + solar_eph + "\".");
+          "\" (PLEPHEM=\"" + m_pl_ephem + "\") does not match the requested \"" + solar_eph + "\"");
       }
     }
   }
@@ -428,13 +429,14 @@ namespace timeSystem {
     if (m_max_vect_diff < r_diff) {
       std::ostringstream os;
       os << "Sky position for barycentric corrections (RA=" << ra << ", Dec=" << dec << 
-        ") does not match RA_NOM (" << m_ra_nom << ") and DEC_NOM (" << m_dec_nom << ") in Event file.";
+        ") does not match RA_NOM (" << m_ra_nom << ") and DEC_NOM (" << m_dec_nom << ") in Event file";
       throw std::runtime_error(os.str());
     }
   }
 
   AbsoluteTime GlastBaryTimeHandler::getGeoTime(const std::string & /*field_name*/, bool /*from_header*/) const {
-    throw std::runtime_error("GlastBaryTimeHandler does not support computations of geocentic times");
+    throw std::runtime_error("Computation of geocentic times is not supported for extension \"" + m_ext_name + "\" of file \"" +
+      m_file_name);
   }
 
   AbsoluteTime GlastBaryTimeHandler::getBaryTime(const std::string & field_name, bool from_header) const {

@@ -8,6 +8,7 @@
 #include <cctype>
 #include <cmath>
 #include <iomanip>
+#include <limits>
 #include <sstream>
 #include <stdexcept>
 
@@ -109,7 +110,7 @@ namespace {
         (int_part <  0 && (frac_part <= -1. || frac_part >   0.))) {
       std::ostringstream os;
       os.precision(std::numeric_limits<double>::digits10);
-      os << "Fractional part out of bounds: " << frac_part << ".";
+      os << "Fractional part out of bounds: " << frac_part;
       throw std::runtime_error(os.str());
     }
   }
@@ -218,7 +219,7 @@ namespace {
     if (datetime.second < 0. || datetime.second >= SecPerDay()) {
       // During an inserted leap-second.
       std::ostringstream os;
-      os << "Unable to compute an MJD number for the given time: " << datetime.second << " seconds of " << datetime.first << " MJD.";
+      os << "Unable to compute an MJD number for the given time: " << datetime.second << " seconds of " << datetime.first << " MJD";
       throw std::runtime_error(os.str());
     }
 
