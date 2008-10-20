@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Mon Oct 20 11:19:38 PDT 2008
+timeSystem/src
+
+Modified Files:
+	AbsoluteTime.cxx 
+Log Message:
+Improve printing format of write method. Add describe method.
+    *
+------------------------------------------------------------
 User: hirayama  Mon Oct 20 11:19:37 PDT 2008
 timeSystem/timeSystem
 
