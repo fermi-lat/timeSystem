@@ -41,6 +41,16 @@ namespace timeSystem {
     // Get the factory container.
     cont_type factory_cont(getFactoryContainer());
 
+    // Confirm the container is not empty.
+    if (factory_cont.empty()) {
+      throw std::runtime_error("IEventTimeHandlerFactory::createHandler: List of event-time handling classes is empty.");
+    }
+
+    // Check existence of the file.
+    if (!tip::IFileSvc::instance().fileExists(file_name)) {
+      throw std::runtime_error("File not found: " + file_name);
+    }
+
     // Look for an EventTimeHandler that can handle given files.
     EventTimeHandler * handler(0);
     for (cont_type::iterator itor = factory_cont.begin(); itor != factory_cont.end(); ++itor) {
