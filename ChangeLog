@@ -1,4 +1,15 @@
 ------------------------------------------------------------
+User: hirayama  Sun Oct 19 22:32:55 PDT 2008
+timeSystem/src
+
+Modified Files:
+	BaryTimeComputer.cxx CalendarFormat.cxx Duration.cxx 
+	EventTimeHandler.cxx GlastTimeHandler.cxx MjdFormat.cxx 
+	TimeSystem.cxx 
+Log Message:
+Improve error messages.
+    *
+------------------------------------------------------------
 User: hirayama  Sun Oct 19 17:17:41 PDT 2008
 timeSystem/src
 
