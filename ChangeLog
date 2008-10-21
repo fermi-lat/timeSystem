@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Tue Oct 21 15:08:56 PDT 2008
+timeSystem/src
+
+Modified Files:
+	TimeCorrectorApp.cxx 
+Log Message:
+Add an else-block to be pedantic.
+    *
+------------------------------------------------------------
 User: hirayama  Mon Oct 20 12:47:39 PDT 2008
 timeSystem/src
 
