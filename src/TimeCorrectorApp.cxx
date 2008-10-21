@@ -348,6 +348,8 @@ namespace timeSystem {
             output_handler->writeTime(keyword_name, input_handler->getBaryTime(keyword_name, true), true);
           } else if ("GEO" == t_correct_uc) {
             output_handler->writeTime(keyword_name, input_handler->getGeoTime(keyword_name, true), true);
+          } else {
+            throw std::runtime_error("Unsupported arrival time correction: " + t_correct);
           }
         }
       }
@@ -367,6 +369,8 @@ namespace timeSystem {
             output_handler->writeTime(column_name, input_handler->getBaryTime(column_name));
           } else if ("GEO" == t_correct_uc) {
             output_handler->writeTime(column_name, input_handler->getGeoTime(column_name));
+          } else {
+            throw std::runtime_error("Unsupported arrival time correction: " + t_correct);
           }
         }
       }
