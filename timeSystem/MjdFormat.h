@@ -15,6 +15,7 @@ namespace timeSystem {
              in order to hold it in a precision required by GLAST.
   */
   struct Mjd {
+    /// \brief Construct an Mjd object.
     Mjd(long int_part, double frac_part): m_int(int_part), m_frac(frac_part) {}
     long m_int;
     double m_frac;
@@ -24,6 +25,7 @@ namespace timeSystem {
       \brief Class to hold an MJD number in one double-precision variable.
   */
   struct Mjd1 {
+    /// \brief Construct an Mjd1 object.
     explicit Mjd1(double day): m_day(day) {}
     double m_day;
   };
@@ -33,6 +35,7 @@ namespace timeSystem {
              hold it in a precision required by GLAST.
   */
   struct Jd {
+    /// \brief Construct a Jd object.
     Jd(long int_part, double frac_part): m_int(int_part), m_frac(frac_part) {}
     long m_int;
     double m_frac;
@@ -42,31 +45,48 @@ namespace timeSystem {
       \brief Class to hold an JD number in one double-precision variable.
   */
   struct Jd1 {
+    /// \brief Construct a Jd1 object.
     explicit Jd1(double day): m_day(day) {}
     double m_day;
   };
 
+  /** \class TimeFormatFactory<Mjd>
+      \brief Specialized TimeFormatFactory class for Mjd class.
+  */
   template <>
   class TimeFormatFactory<Mjd> {
     public:
+      /// \brief Return TimeFormat class for MJD representation.
       static const TimeFormat<Mjd> & getFormat();
   };
 
+  /** \class TimeFormatFactory<Mjd1>
+      \brief Specialized TimeFormatFactory class for Mjd1 class.
+  */
   template <>
   class TimeFormatFactory<Mjd1> {
     public:
+      /// \brief Return TimeFormat class for MJD representation.
       static const TimeFormat<Mjd1> & getFormat();
   };
 
+  /** \class TimeFormatFactory<Jd>
+      \brief Specialized TimeFormatFactory class for Jd class.
+  */
   template <>
   class TimeFormatFactory<Jd> {
     public:
+      /// \brief Return TimeFormat class for JD representation.
       static const TimeFormat<Jd> & getFormat();
   };
 
+  /** \class TimeFormatFactory<Jd1>
+      \brief Specialized TimeFormatFactory class for Jd1 class.
+  */
   template <>
   class TimeFormatFactory<Jd1> {
     public:
+      /// \brief Return TimeFormat class for JD representation.
       static const TimeFormat<Jd1> & getFormat();
   };
 

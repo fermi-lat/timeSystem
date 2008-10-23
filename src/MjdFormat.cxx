@@ -16,7 +16,7 @@ namespace {
 
   using namespace timeSystem;
 
-  // Conversion constants between MJD and JD.
+  /// \brief Conversion constants between MJD and JD.
   const long JdMinusMjdInt() { static const long s_value = 2400000; return s_value; }
   const double JdMinusMjdFrac() { static const double s_value = .5; return s_value; }
   const double JdMinusMjdDouble() { static const double s_value = JdMinusMjdInt() + JdMinusMjdFrac(); return s_value; }
@@ -27,17 +27,40 @@ namespace {
   */
   class IntFracUtility {
     public:
+      /// \brief Return an IntFracUtility object.
       static IntFracUtility & getUtility();
 
+      /** \brief Check consistency and validity of a given pair of integer and fractional parts, and throw an exception
+                 if the pair has a problem.
+          \param int_part Integer part to be tested.
+          \param frac_part Fractional part to be tested.
+      */
       void check(long int_part, double frac_part) const;
 
+      /** \brief Convert a character string representing a floating-point number into a pair of the integer part of the number
+                 and the fractional part of it.
+          \param value_string Character string to parse.
+          \param int_part Integer part of the parsed number.
+          \param frac_part Fractional part of the parsed number.
+      */
       void parse(const std::string & value_string, long & int_part, double & frac_part) const;
 
+      /** \brief Convert a pair of an integer part and a fractional part representing a floating-point number into a character
+                 string, and return it.
+          \param int_part Integer part of a floating-point number to convert.
+          \param frac_part Fractional part of a floating-point number to convert.
+          \param precision Number of digits after a decimal point in a resultant character string.
+      */
       std::string format(long int_part, double frac_part, std::streamsize precision = std::numeric_limits<double>::digits10) const;
 
+      /** \brief Convert a double-precision floating-point number into an integer number, checking an expressible range
+                 by an integer variable, etc.
+          \param value_double Double-precision floating-point number to be converted.
+      */
       long convert(double value_double) const;
 
     private:
+      /// \brief Construct a IntFracUtility object.
       IntFracUtility();
   };
 
@@ -46,12 +69,25 @@ namespace {
   */
   class MjdFormat : public TimeFormat<Mjd> {
     public:
+      /** \brief Convert date and time into an MJD number, and return it.
+          \param datetime Date and time to convert.
+      */
       virtual Mjd convert(const datetime_type & datetime) const;
 
+      /** \brief Convert an MJD number into date and time, and return it.
+          \param time_rep MJD number to convert.
+      */
       virtual datetime_type convert(const Mjd & time_rep) const;
 
+      /** \brief Interpret a given character string as an MJD number, and return the MJD number.
+          \param time_string Character string to interpret as an MJD number.
+      */
       virtual Mjd parse(const std::string & time_string) const;
 
+      /** \brief Create a character string that represents a given MJD number, and return it.
+          \param time_rep MJD number to format into a character string.
+          \param precision Number of digits after a decimal point in a resultant character string.
+      */
       virtual std::string format(const Mjd & time_rep, std::streamsize precision = std::numeric_limits<double>::digits10) const;
   };
 
@@ -60,12 +96,25 @@ namespace {
   */
   class Mjd1Format : public TimeFormat<Mjd1> {
     public:
+      /** \brief Convert date and time into an MJD number, and return it.
+          \param datetime Date and time to convert.
+      */
       virtual Mjd1 convert(const datetime_type & datetime) const;
 
+      /** \brief Convert an MJD number into date and time, and return it.
+          \param time_rep MJD number to convert.
+      */
       virtual datetime_type convert(const Mjd1 & time_rep) const;
 
+      /** \brief Interpret a given character string as an MJD number, and return the MJD number.
+          \param time_string Character string to interpret as an MJD number.
+      */
       virtual Mjd1 parse(const std::string & time_string) const;
 
+      /** \brief Create a character string that represents a given MJD number, and return it.
+          \param time_rep MJD number to format into a character string.
+          \param precision Number of digits after a decimal point in a resultant character string.
+      */
       virtual std::string format(const Mjd1 & time_rep, std::streamsize precision = std::numeric_limits<double>::digits10) const;
   };
 
@@ -74,12 +123,25 @@ namespace {
   */
   class JdFormat : public TimeFormat<Jd> {
     public:
+      /** \brief Convert date and time into a JD number, and return it.
+          \param datetime Date and time to convert.
+      */
       virtual Jd convert(const datetime_type & datetime) const;
 
+      /** \brief Convert a JD number into date and time, and return it.
+          \param time_rep JD number to convert.
+      */
       virtual datetime_type convert(const Jd & time_rep) const;
 
+      /** \brief Interpret a given character string as a JD number, and return the JD number.
+          \param time_string Character string to interpret as a JD number.
+      */
       virtual Jd parse(const std::string & time_string) const;
 
+      /** \brief Create a character string that represents a given JD number, and return it.
+          \param time_rep JD number to format into a character string.
+          \param precision Number of digits after a decimal point in a resultant character string.
+      */
       virtual std::string format(const Jd & time_rep, std::streamsize precision = std::numeric_limits<double>::digits10) const;
   };
 
@@ -88,12 +150,25 @@ namespace {
   */
   class Jd1Format : public TimeFormat<Jd1> {
     public:
+      /** \brief Convert date and time into a JD number, and return it.
+          \param datetime Date and time to convert.
+      */
       virtual Jd1 convert(const datetime_type & datetime) const;
 
+      /** \brief Convert a JD number into date and time, and return it.
+          \param time_rep JD number to convert.
+      */
       virtual datetime_type convert(const Jd1 & time_rep) const;
 
+      /** \brief Interpret a given character string as a JD number, and return the JD number.
+          \param time_string Character string to interpret as a JD number.
+      */
       virtual Jd1 parse(const std::string & time_string) const;
 
+      /** \brief Create a character string that represents a given JD number, and return it.
+          \param time_rep JD number to format into a character string.
+          \param precision Number of digits after a decimal point in a resultant character string.
+      */
       virtual std::string format(const Jd1 & time_rep, std::streamsize precision = std::numeric_limits<double>::digits10) const;
   };
 
