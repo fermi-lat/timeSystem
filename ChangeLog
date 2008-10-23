@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Thu Oct 23 01:11:58 PDT 2008
+timeSystem/timeSystem
+
+Modified Files:
+	AbsoluteTime.h 
+Log Message:
+Rename argument of subtraction operator from time to abs_time for clarity. Add/improve Doxygen comments.
+    *
+------------------------------------------------------------
 User: hirayama  Thu Oct 23 01:10:57 PDT 2008
 timeSystem/timeSystem
 
