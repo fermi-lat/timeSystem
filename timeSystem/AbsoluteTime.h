@@ -30,58 +30,142 @@ namespace timeSystem {
   */
   class AbsoluteTime {
     public:
+      /** \brief Construct a AbsoluteTime object from a pair of a time origin and an elapsed time.
+          \param time_system_name Name of time system in which this object is defined.
+          \param origin_mjd MJD number of the time origin of this object in the given time system.
+          \param elapsed_time Duration object that represents an elapsed time from the time origin (above) in the given time system.
+      */
       AbsoluteTime(const std::string & time_system_name, long origin_mjd, const Duration & elapsed_time);
 
+      /** \brief Construct a AbsoluteTime object from a fractional MJD number.
+          \param time_system_name Name of time system in which this object is defined.
+          \param mjd_day Day part of an MJD number.
+          \param mjd_sec Second part of an MJD number.
+      */
       AbsoluteTime(const std::string & time_system_name, long mjd_day, double mjd_sec);
 
+      /** \brief Construct a AbsoluteTime object from a time representation.
+          \param time_system_name Name of time system in which this object is defined.
+          \param time_rep Time representation that points to an absolute moment in time.
+      */
       template <typename TimeRepType>
       AbsoluteTime(const std::string & time_system_name, const TimeRepType & time_rep) { set(time_system_name, time_rep); }
 
+      /** \brief Construct a AbsoluteTime object from a character string in a given time format.
+          \param time_system_name Name of time system in which this object is defined.
+          \param time_format Time format in which a given character string is interpreted.
+          \param time_string Character string that represents an absolute moment in time.
+      */
       template <typename TimeRepType>
       AbsoluteTime(const std::string & time_system_name, const TimeFormat<TimeRepType> & time_format, const std::string & time_string) {
         set(time_system_name, time_format, time_string);
       }
 
+      /** \brief Compute a specified time representation of the stored absolute time, and set it to the argument of this method.
+          \param time_system_name Name of time system in which this object is defined.
+          \param time_rep Time representation of the stored absolute time is to be set to this argument.
+      */
       template <typename TimeRepType>
       void get(const std::string & time_system_name, TimeRepType & time_rep) const;
 
+      /** \brief Set an absolute moment in time to this object, specified by a time representation.
+          \param time_system_name Name of time system in which this object is defined.
+          \param time_rep Time representation that points to an absolute moment in time to be set to this object.
+      */
       template <typename TimeRepType>
       void set(const std::string & time_system_name, const TimeRepType & time_rep);
 
+      /** \brief Set an absolute moment in time to this object, specified by a character string in a given time format.
+          \param time_system_name Name of time system in which this object is defined.
+          \param time_format Time format in which a given character string is interpreted.
+          \param time_string Character string that represents an absolute moment in time to be set to this object.
+      */
       template <typename TimeRepType>
       void set(const std::string & time_system_name, const TimeFormat<TimeRepType> & time_format, const std::string & time_string);
 
+      /** \brief Create a character string that represents the stored absolute time in a specified format.
+          \param time_system_name Name of time system in which the stored absolute time is evaluated.
+          \param time_format Time format in which the stored time is formatted into a character string.
+          \param precision Number of digits after a decimal point in a numerical part of the output character string.
+      */
       template <typename TimeRepType>
       std::string represent(const std::string & time_system_name, const TimeFormat<TimeRepType> & time_format,
         std::streamsize precision = std::numeric_limits<double>::digits10) const;
 
+      /** \brief Create an AbsoluteTime object that represents a sum of the stored absolute time to a given elapsed time.
+          \param elapsed_time Elapsed time to be added.
+      */
       AbsoluteTime operator +(const ElapsedTime & elapsed_time) const;
 
+      /** \brief Create an AbsoluteTime object that represents the stored absolute time subtracted by a given elapsed time.
+          \param elapsed_time Elapsed time to subtract.
+      */
       AbsoluteTime operator -(const ElapsedTime & elapsed_time) const;
 
+      /** \brief Add an elapsed time to the stored absolute time and set it to this object.
+          \param elapsed_time Elapsed time to be added.
+      */
       AbsoluteTime & operator +=(const ElapsedTime & elapsed_time);
 
+      /** \brief Subtract an elapsed time from the stored absolute time and set it to this object.
+          \param elapsed_time Elapsed time to subtract.
+      */
       AbsoluteTime & operator -=(const ElapsedTime & elapsed_time);
 
-      TimeInterval operator -(const AbsoluteTime & time) const;
+      /** \brief Create an TimeInterval object that represents a time interval between the stored absolute time and a given
+                 absolute time.
+          \param abs_time Absolute time to subtract.
+      */
+      TimeInterval operator -(const AbsoluteTime & abs_time) const;
 
+      /** \brief Return true if the stored absolute time is later than a given absolute time, and return false otherwise.
+          \param other Absolute time to compare.
+      */
       bool operator >(const AbsoluteTime & other) const;
 
+      /** \brief Return true if the stored absolute time is later than or equal to a given absolute time,
+                 and return false otherwise.
+          \param other Absolute time to compare.
+      */
       bool operator >=(const AbsoluteTime & other) const;
 
+      /** \brief Return true if the stored absolute time is earlier than a given absolute time, and return false otherwise.
+          \param other Absolute time to compare.
+      */
       bool operator <(const AbsoluteTime & other) const;
 
+      /** \brief Return true if the stored absolute time is earlier than or equal to a given absolute time,
+                 and return false otherwise.
+          \param other Absolute time to compare.
+      */
       bool operator <=(const AbsoluteTime & other) const;
 
+      /** \brief Return true if time difference between the stored absolute time and a given absolute time is smaller than
+                 or equal to a given elapsed time, and return false otherwise.
+          \param tolerance Maximum allowed elapsed time in comparison.
+      */
       bool equivalentTo(const AbsoluteTime & other, const ElapsedTime & tolerance) const;
 
+      /** \brief Create an AbsoluteTime object that represents a sum of the stored absolute time and a specified elapsed time.
+          \param time_system_name Name of time system in which an elapsed time to be added is defined.
+          \param delta_t Time duration of an elapsed time to be added.
+      */
       AbsoluteTime computeAbsoluteTime(const std::string & time_system_name, const Duration & delta_t) const;
 
+      /** \brief Create an ElapsedTime object that represents an elapsed time between the stored absolute time and a given
+                 absolute time in a given time system.
+          \param time_system_name Name of time system in which an elapsed time is to be computed.
+          \param since Absolute time to be subtracted from the stored absolute time.
+      */
       ElapsedTime computeElapsedTime(const std::string & time_system_name, const AbsoluteTime & since) const;
 
+      /** \brief Write a text representation of the stored absolute time to an output stream.
+          \param os Output stream to write a text representation of the stored absolute time to.
+      */
       template <typename StreamType>
       void write(StreamType & os) const;
 
+      /// \brief Create a character string that contains a text description of this object.
       std::string describe() const;
 
     private:
