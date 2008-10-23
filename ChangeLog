@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: hirayama  Wed Oct 22 21:47:59 PDT 2008
+timeSystem/src
+
+Modified Files:
+	BaryTimeComputer.cxx CalendarFormat.cxx Duration.cxx 
+	MjdFormat.cxx TimeCorrectorApp.cxx TimeSystem.cxx 
+Log Message:
+Add/improve Doxygen comments.
+    *
+------------------------------------------------------------
 User: hirayama  Wed Oct 22 18:09:20 PDT 2008
 timeSystem/timeSystem
 
