@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Thu Oct 23 01:12:11 PDT 2008
+timeSystem/src
+
+Modified Files:
+	AbsoluteTime.cxx 
+Log Message:
+Rename argument of subtraction operator from time to abs_time for clarity.
+    *
+------------------------------------------------------------
 User: hirayama  Thu Oct 23 01:11:58 PDT 2008
 timeSystem/timeSystem
 
