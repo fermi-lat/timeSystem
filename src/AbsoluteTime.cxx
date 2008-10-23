@@ -32,7 +32,7 @@ namespace timeSystem {
 
   AbsoluteTime & AbsoluteTime::operator -=(const ElapsedTime & elapsed_time) { *this = -elapsed_time + *this; return *this; }
 
-  TimeInterval AbsoluteTime::operator -(const AbsoluteTime & time) const { return TimeInterval(time, *this); }
+  TimeInterval AbsoluteTime::operator -(const AbsoluteTime & abs_time) const { return TimeInterval(abs_time, *this); }
 
   bool AbsoluteTime::operator >(const AbsoluteTime & other) const {
     moment_type other_moment = m_time_system->convertFrom(*other.m_time_system, other.m_moment);
