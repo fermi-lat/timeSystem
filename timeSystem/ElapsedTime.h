@@ -27,26 +27,59 @@ namespace timeSystem {
   */
   class ElapsedTime {
     public:
+      /** \brief Construct an ElapsedTime object.
+          \param time_system_name Name of time system in which an elapsed time is defined.
+          \param time_duration Time duration of an elapsed time to be created.
+      */
       ElapsedTime(const std::string & time_system_name, const Duration & time_duration);
 
+      /** \brief Add this elapsed time to a given absolute time, and return the result.
+          \param absolute_time Absolute time to add this elapsed time to.
+      */
       AbsoluteTime operator +(const AbsoluteTime & absolute_time) const;
 
+      /** \brief Create a new ElapsedTime object which represents the same elapsed time as this object, but with an opposite sign,
+                 and return it.
+      */
       ElapsedTime operator -() const;
 
+      /// \brief Return the name of the time system in which this object is defined.
       const timeSystem::TimeSystem & getSystem() const;
 
+      /** \brief Compute time duration of this object in a specified time unit, and set the result to the arguments of this method.
+          \param time_unit_name Name of time unit to be used to compute time duration.
+          \param time_value_int Integer part of the result (i.e., time duration in a specified time unit) is set to this argument
+                 as a return value.
+          \param time_value_frac Fractional part of the result (i.e., time duration in a specified time unit) is set to this
+                 argument as a return value.
+      */
       void getDuration(const std::string & time_unit_name, long & time_value_int, double & time_value_frac) const;
 
+      /** \brief Compute time duration of this object in a specified time unit, and set the result to the argument of this method.
+          \param time_unit_name Name of time unit to be used to compute time duration.
+          \param time_value The result (i.e., time duration in a specified time unit) is set to this argument as a return value.
+      */
       void getDuration(const std::string & time_unit_name, double & time_value) const;
 
+      /** \brief Compute time duration of this object in a specified time unit, and return the result.
+          \param time_unit_name Name of time unit to be used to compute time duration.
+      */
       double getDuration(const std::string & time_unit_name) const;
 
+      /// \brief Return a Duration object that represents time duration stored in this object.
       Duration getDuration() const;
 
+      /** \brief Write a text representation of this object to a given output stream.
+          \parm os Output stream to write a text representation of this object to.
+      */
       template <typename StreamType>
       void write(StreamType & os) const;
 
     protected:
+      /** \brief Construct an ElapsedTime object.
+          \param time_system Pointer to a TimeSystem object to specify a time system in which an elapsed time is defined.
+          \param time_duration Time duration of an elapsed time to be created.
+      */
       ElapsedTime(const TimeSystem * time_system, const Duration & time_duration);
 
     private:

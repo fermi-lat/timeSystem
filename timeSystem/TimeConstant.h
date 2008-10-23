@@ -8,7 +8,15 @@
 
 namespace timeSystem {
 
-  // Unit conversion constants.
+  /** \brief Functions to return unit conversion constants (declaration).
+             Note that only one direction of conversions is implemented for each pair of time units.
+             The conversion constant implemented here is the one expressible as an integer number.
+             This is to prevent a loss of precision by pre-computing a conversion constant as a floating-point number.
+             If a reverse conversion is needed, the caller of these functions should pay attention to precision issues.
+             Also, they are returned as a value of an integral type, not a floating-point type such as double, because
+             integral computations like modulo is necessary in some cases, and conversions from a floating-point number
+             to an integral number is more complicated than the reverse of it in computation.
+  */
   long SecPerMin();
   long MinPerHour();
   long HourPerDay();
@@ -16,9 +24,7 @@ namespace timeSystem {
   long MinPerDay();
   long SecPerDay();
 
-  // Definitions.
-
-  // Unit conversion constants.
+  // Definitions of the above functions.
   inline long SecPerMin() { static long r = 60l; return r; }
   inline long MinPerHour() { static long r = 60l; return r; }
   inline long HourPerDay() { static long r = 24l; return r; }

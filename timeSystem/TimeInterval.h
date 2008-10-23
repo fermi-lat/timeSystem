@@ -23,17 +23,42 @@ namespace timeSystem {
   */
   class TimeInterval {
     public:
+      /** \brief Construct a TimeInterval object.
+          \param  abs_time1 Start time of a time interval to create.
+          \param  abs_time2 Stop time of a time interval to create.
+      */
       TimeInterval(const AbsoluteTime & abs_time1, const AbsoluteTime & abs_time2);
 
+      /** \brief Compute an elapsed time of this time interval in a given time system, and return an ElapsedTime object.
+          \param time_system_name Name of the time system in which an elapsed time is computed.
+      */
       ElapsedTime computeElapsedTime(const std::string & time_system_name) const;
 
+      /** \brief Compute time duration of this time interval in a given time system and a given time unit.
+          \param time_system_name Name of the time system in which time duration is computed.
+          \param time_unit_name Name of the time unit in which time duration is computed.
+          \param time_value_int Integer part of the computed time duration is set to this argument as a return value.
+          \param time_value_frac Fractional part of the computed time duration is set to this argument as a return value.
+      */
       void computeDuration(const std::string & time_system_name, const std::string & time_unit_name, long & time_value_int,
         double & time_value_frac) const;
 
+      /** \brief Compute time duration of this time interval in a given time system and a given time unit.
+          \param time_system_name Name of the time system in which time duration is computed.
+          \param time_unit_name Name of the time unit in which time duration is computed.
+          \param time_value The computed time duration is set to this argument as a return value.
+      */
       void computeDuration(const std::string & time_system_name, const std::string & time_unit_name, double & time_value) const;
 
+      /** \brief Compute time duration of this time interval in a given time system and a given time unit, and return it.
+          \param time_system_name Name of the time system in which time duration is computed.
+          \param time_unit_name Name of the time unit in which time duration is computed.
+      */
       double computeDuration(const std::string & time_system_name, const std::string & time_unit_name) const;
 
+      /** \brief Compute time duration of this time interval in a given time system, and return it.
+          \param time_system_name Name of the time system in which time duration is computed.
+      */
       Duration computeDuration(const std::string & time_system_name) const;
 
     private:
