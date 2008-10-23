@@ -42,72 +42,177 @@ using namespace st_app;
 using namespace st_stream;
 using namespace timeSystem;
 
+/** \class TimeSystemTestApp
+    \brief Test timeSystem package and applications in it.
+*/
 class TimeSystemTestApp : public PulsarTestApp {
   public:
+    /// \brief Construct a TimeSystemTestApp object.
     TimeSystemTestApp();
 
+    /// \brief Destruct this TimeSystemTestApp object.
+    virtual ~TimeSystemTestApp() throw() {}
+
+    /// \brief Do all tests.
     virtual void runTest();
 
+    /// \brief Test Duration class.
     void testDuration();
 
+    /// \brief Test TimeSystem class.
     void testTimeSystem();
 
+    /// \brief Test AbsoluteTime class.
     void testAbsoluteTime();
 
+    /// \brief Test ElapsedTime class.
     void testElapsedTime();
 
+    /// \brief Test TimeInterval class.
     void testTimeInterval();
 
+    /// \brief Test TimeFormat class.
     void testTimeFormat();
 
+    /// \brief Test BaryTimeComputer class.
     void testBaryTimeComputer();
 
+    /// \brief Test EventTimeHandler class.
     void testEventTimeHandlerFactory();
 
+    /// \brief Test GlastTimeHandler class.
     void testGlastTimeHandler();
 
+    /// \brief Test TimeCorrectorApp class.
     void testTimeCorrectorApp();
 
   protected:
+    /** \brief Create an application object to be tested.
+        \param app_name Name of application to be tested.
+    */
     virtual st_app::StApp * createApplication(const std::string & app_name) const;
 
   private:
+    /** \brief Helper method for testDuration, to test getter methods of Duration class.
+        \param day Day part of time duration to be tested.
+        \param sec Second part of time duration to be tested.
+        \param time_unit_name Character string to represent a time unit to be tested.
+        \param int_part Interger part of reference value for a test result to be compared with.
+        \param frac_part Fractional part of reference value for a test result to be compared with.
+        \param tolerance_high Difference allowed in comparing fractional part of a test result.
+        \param tolerance_low Difference allowed in comparing the sum of integral and fractional parts of a test result.
+    */
     void testDurationGetter(long day, double sec, const std::string & time_unit_name, long int_part, double frac_part,
       double tolerance_high, double tolerance_low);
 
+    /** \brief Helper method for testDuration, to test constructors of Duration class.
+        \param time_unit_name Character string to represent a time unit to be tested.
+        \param int_part Interger part of a time duration to be created, in the unit of time_unit_name.
+        \param frac_part Fractoinal part of a time duration to be created, in the unit of time_unit_name.
+        \param expected_result Reference object of Duration type for a test result to be compared with.
+        \param tolerance_high Difference allowed in comparing a Duration object created from integer and fractional parts
+               with a reference object given as expected_result.
+        \param tolerance_high Difference allowed in comparing a Duration object created from a single floating-point value
+               with a reference object given as expected_result.
+    */
     void testDurationConstructor(const std::string & time_unit_name, long int_part, double frac_part, const Duration & expected_result,
     const Duration & tolerance_high, const Duration & tolerance_low);
 
+    /** \brief Helper method for testDuration, to test comparison operators of Duration class.
+        \param comparator Character string representing a comparison operator.
+        \param dur1 Duration object to be placed on the left side of a comparison operator to be tested.
+        \param dur2 Duration object to be placed on the right side of a comparison operator to be tested.
+        \param expected_result Reference boolean value that is expected to be a result of a comparison under test.
+    */
     void testOneComparison(const std::string & comparator, const Duration & dur1, const Duration & dur2,
       bool expected_result);
 
+    /** \brief Helper method for testDuration, to test computing operators of Duration class.
+        \param computation Character string representing a computing operator.
+        \param dur1 Duration object to be placed on the left side of a computing operator to be tested.
+        \param dur2 Duration object to be placed on the right side of a computing operator to be tested.
+        \param expected_result Reference Duration object that is expected to be a result of a computation under test.
+        \param tolerance Difference allowed in comparison of a test result with a reference Duration object.
+    */
     void testOneComputation(const std::string & computation, const Duration & dur1, const Duration & dur2,
       const Duration & expected_result, const Duration & tolerance);
 
+    /** \brief Helper method for testTimeSystem, to test conversions between time systems.
+        \param src_system_name Name of time system from which a time moment is converted.
+        \param src_moment Time moment to be converted.
+        \param dest_system_name Name of time system to which a time moment is converted.
+        \param expected_moment Reference time moment for a test result to be compared with.
+        \param tolerance Time difference in seconds allowed in comparison of a test result with a reference time moment.
+    */
     void testOneConversion(const std::string & src_system_name, const moment_type & src_moment,
       const std::string & dest_system_name, const moment_type & expected_moment, double tolerance = 1.e-9);
 
+    /** \brief Helper method for testTimeSystem, to test time subtractions.
+        \param moment1 Time moment from which a time moment is subtracted.
+        \param moment2 Time moment to be subtracted from a time moment.
+        \param difference Reference time difference between moment1 and moment2.
+        \param difference_utc Reference time difference between moment1 and moment2, when computed in UTC system.
+    */
     void testOneSubtraction(const moment_type & moment1, const moment_type & moment2, double difference, double difference_utc);
 
+    /** \brief Helper method for testTimeSystem, to test computations of date and time.
+        \param moment Time moment to be converted to date and time.
+        \param datetime Reference date and time for a test result to be compared with.
+        \param datetime_utc Reference date and time for a test result to be compared with, when computed in UTC system.
+    */
     void testOneDateTimeComputation(const moment_type & moment, const datetime_type & datetime, const datetime_type & datetime_utc);
 
+    /** \brief Helper method for testAbsoluteTime, to test comparison operators of AbsoluteTime class.
+        \param abs_time Absolute time which points to an earliear time than later_time.
+        \param later_time Absolute time which points to a later time than abs_time.
+    */
     void compareAbsoluteTime(const AbsoluteTime & abs_time, const AbsoluteTime & later_time);
 
+    /** \brief Helper method for testTimeFormat, to test converting an MJD number to a calendar date, a week date, and an ordinal date.
+        \param mjd MJD number to be converted into a calendar date, a week day, and an ordinal date.
+        \param calendar_year Reference calendar year to be compared with a test result.
+        \param calendar_year Reference month to be compared with a test result.
+        \param calendar_year Reference day of month to be compared with a test result.
+        \param calendar_year Reference ISO year to be compared with a test result.
+        \param calendar_year Reference ISO week number to be compared with a test result.
+        \param calendar_year Reference ISO week day number to be compared with a test result.
+        \param calendar_year Reference ordinal date of the calendar year to be compared with a test result.
+    */
     void testOneCalendarDate(long mjd, long calendar_year, long month, long month_day, long iso_year, long week_number,
       long weekday_number, long ordinal_date);
 
+    /** \brief Helper method for testTimeFormat, to test detection of invalid date and time.
+        \param time_format Time format to be tested.
+        \param datetime Date and time to be tested.
+        \param time_rep_name Name of time representation under test, to be used in an error message.
+        \param data_description Character string to represent this test, to be used in an error message.
+        \param exception_expected Set to true if an exception is expected to be thrown. Set to false otherwise.
+    */
     template <typename TimeRepType>
     void testOneBadDateTime(const TimeFormat<TimeRepType> & time_format, const datetime_type & datetime,
       const std::string & time_rep_name, const std::string & data_description, bool exception_expected = true);
 
+    /** \brief Helper method for testTimeFormat, to test detection of invalid time representation.
+        \param time_format Time format to be tested.
+        \param time_rep Time representation to be tested.
+        \param time_rep_name Name of time representation under test, to be used in an error message.
+        \param data_description Character string to represent this test, to be used in an error message.
+        \param exception_expected Set to true if an exception is expected to be thrown. Set to false otherwise.
+    */
     template <typename TimeRepType>
     void testOneBadTimeRep(const TimeFormat<TimeRepType> & time_format, const TimeRepType & time_rep, const std::string & time_rep_name,
       const std::string & data_description, bool exception_expected = true);
 
+    /** \brief Helper method for testTimeFormat, to test detection of invalid time string.
+        \param time_format Time format to be tested.
+        \param time_string Character string representing time to be tested.
+        \param time_rep_name Name of time representation under test, to be used in an error message.
+        \param data_description Character string to represent this test, to be used in an error message.
+        \param exception_expected Set to true if an exception is expected to be thrown. Set to false otherwise.
+    */
     template <typename TimeRepType>
     void testOneBadTimeString(const TimeFormat<TimeRepType> & time_format, const std::string & time_string,
       const std::string & time_rep_name, bool exception_expected = true);
-
 };
 
 TimeSystemTestApp::TimeSystemTestApp(): PulsarTestApp("timeSystem") {

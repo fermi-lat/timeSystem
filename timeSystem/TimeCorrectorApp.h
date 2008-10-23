@@ -12,13 +12,24 @@
 
 namespace timeSystem {
 
+  /** \class TimeCorrectorApp
+      \brief Main application class for photon arrival time corrections.
+  */
   class TimeCorrectorApp : public st_app::StApp {
     public:
+      /// \brief Construct a TimeCorrectorApp object.
       TimeCorrectorApp();
+
+      /// \brief Destruct this TimeCorrectorApp object.
       virtual ~TimeCorrectorApp() throw();
+
+      /// \brief Run the application.
       virtual void run();
 
     private:
+      /** \brief Create a temporary file name.
+          \param file_name Name of file based on which a temorary file name is created.
+      */
       std::string tmpFileName(const std::string & file_name) const;
   };
 
