@@ -1,5 +1,14 @@
 ------------------------------------------------------------
 User: hirayama  Wed Oct 22 18:09:20 PDT 2008
+timeSystem/timeSystem
+
+Modified Files:
+	TimeCorrectorApp.h 
+Log Message:
+Add Doxygen comments.
+    *
+------------------------------------------------------------
+User: hirayama  Wed Oct 22 18:09:20 PDT 2008
 timeSystem/src/test
 
 Modified Files:
