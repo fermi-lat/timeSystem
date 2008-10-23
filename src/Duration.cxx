@@ -34,21 +34,33 @@ namespace {
   */
   class TimeUnit {
     public:
+      /** \brief Return a TimeUnit object.
+          \param time_unit_name Name of a desired time unit.
+      */
       static const TimeUnit & getUnit(const std::string & time_unit_name);
 
+      /// \brief Return a ratio of this time unit over a day.
       long getUnitPerDay() const { return m_unit_per_day; }
 
+      /// \brief Return a ratio of a second over this time unit.
       long getSecPerUnit() const { return m_sec_per_unit; }
 
+      /// \brief Return a character string that represents this time unit.
       std::string getUnitString() const { return m_unit_string; }
 
     protected:
+      /** \brief Construct a TimeUnit object.
+          \param unit_per_day Ratio of this time unit over a day.
+          \param sec_per_unit Ratio of a second over this time unit.
+          \param unit_string Character string that represents this time unit.
+      */
       TimeUnit(long unit_per_day, long sec_per_unit, const std::string & unit_string):
         m_unit_per_day(unit_per_day), m_sec_per_unit(sec_per_unit), m_unit_string(unit_string) {}
 
     protected:
       typedef std::map<std::string, const TimeUnit *> container_type;
 
+      /// \brief Return a container of registered time units.
       static container_type & getContainer();
 
     private:
@@ -57,23 +69,39 @@ namespace {
       std::string m_unit_string;
   };
 
+  /** \class TimeUnitDay
+      \brief Class to represent a time unit of day.
+  */
   class TimeUnitDay: public TimeUnit {
     public:
+      /// \brief Construct a TimeUnitDay object.
       TimeUnitDay();
   };
 
+  /** \class TimeUnitDay
+      \brief Class to represent a time unit of hour.
+  */
   class TimeUnitHour: public TimeUnit {
     public:
+      /// \brief Construct a TimeUnitHour object.
       TimeUnitHour();
   };
 
+  /** \class TimeUnitDay
+      \brief Class to represent a time unit of minute.
+  */
   class TimeUnitMin: public TimeUnit {
     public:
+      /// \brief Construct a TimeUnitMin object.
       TimeUnitMin();
   };
 
+  /** \class TimeUnitDay
+      \brief Class to represent a time unit of secon.
+  */
   class TimeUnitSec: public TimeUnit {
     public:
+      /// \brief Construct a TimeUnitSec object.
       TimeUnitSec();
   };
 

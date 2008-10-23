@@ -29,52 +29,111 @@ std::string timeSystem::TimeSystem::s_default_leap_sec_file;
 
 namespace {
 
+  /** \class TaiSystem
+      \brief Class that represents TAI time system.
+  */
   class TaiSystem : public TimeSystem {
     public:
+      /// \brief Construct a TaiSystem object.
       TaiSystem(): TimeSystem("TAI") {}
 
+      /** \brief Convert a time moment expressed in a different time system to the one in this time system, and return it.
+          \param time_system Time system to conver a time moment from.
+          \param moment Time moment to convert.
+      */
       virtual moment_type convertFrom(const TimeSystem & time_system, const moment_type & moment) const;
   };
 
+  /** \class TaiSystem
+      \brief Class that represents TDB time system.
+  */
   class TdbSystem : public TimeSystem {
     public:
+      /// \brief Construct a TdbSystem object.
       TdbSystem(): TimeSystem("TDB") {}
 
+      /** \brief Convert a time moment expressed in a different time system to the one in this time system, and return it.
+          \param time_system Time system to conver a time moment from.
+          \param moment Time moment to convert.
+      */
       virtual moment_type convertFrom(const TimeSystem & time_system, const moment_type & moment) const;
   };
 
+  /** \class TaiSystem
+      \brief Class that represents TT time system.
+  */
   class TtSystem : public TimeSystem {
     public:
+      /// \brief Construct a TtSystem object.
       TtSystem(): TimeSystem("TT") {}
 
+      /** \brief Convert a time moment expressed in a different time system to the one in this time system, and return it.
+          \param time_system Time system to conver a time moment from.
+          \param moment Time moment to convert.
+      */
       virtual moment_type convertFrom(const TimeSystem & time_system, const moment_type & moment) const;
   };
 
+  /** \class TaiSystem
+      \brief Class that represents UTC time system.
+  */
   class UtcSystem : public TimeSystem {
     public:
+      /// \brief Construct a UtcSystem object.
       UtcSystem(): TimeSystem("UTC") {}
 
+      /** \brief Convert a time moment expressed in a different time system to the one in this time system, and return it.
+          \param time_system Time system to conver a time moment from.
+          \param moment Time moment to convert.
+      */
       virtual moment_type convertFrom(const TimeSystem & time_system, const moment_type & moment) const;
 
+      /** \brief Compute time difference between two moments of time, and return it.
+          \param moment1 Time moment for a starting point of a time difference to compute.
+          \param moment2 Time moment for a stopping point of a time difference to compute.
+      */
       virtual Duration computeTimeDifference(const moment_type & moment1, const moment_type & moment2) const;
 
+      /** \brief Compute date and time of a given time moment, and return it.
+          \param moment Time moment to compute date and time for.
+      */
       virtual datetime_type computeDateTime(const moment_type & moment) const;
 
+      /** \brief Compute a time moment of a given date and time, and return it.
+          \param datetime Date and time to compute a time moment for.
+      */
       virtual moment_type computeMoment(const datetime_type & datetime) const;
 
+      /** \brief Check validity of a given time moment.
+          \param moment Time moment to be tested.
+      */
       void checkMoment(const moment_type & moment) const;
   };
 
+  /** \class LeapSecTable
+      \brief Class that represents a leap second table.
+  */
   class LeapSecTable {
     public:
+      /// \brief Return a leap second table.
       static LeapSecTable & getTable();
 
+      /// \brief Return the file name from which this leap second data is loaded.
       std::string getFileName() const;
 
+      /** \brief Load leap second data from a given FITS file.
+          \param leap_sec_file_name Name of a leap-second file in the FITS format.
+          \param force_load Set to true to load new leap-second data even if already loaded.
+                            Set to false not to load them in case leap-second data have already been loaded.
+      */
       void load(const std::string & leap_sec_file_name, bool force_load);
 
+      /** \brief Return the sum of all leap seconds that are inserted or removed before the beginning of a given MJD.
+          \param mjd MJD number upto when leap seconds are summed up.
+      */
       long getCumulativeLeapSec(long mjd) const;
 
+      /// \brief Return the earliest MJD that the loaded leap-second table covers.
       long getEarliestMjd() const;
 
     private:
@@ -85,9 +144,11 @@ namespace {
 
       std::string m_file_name;
 
+      /// \brief Construct a LeapSecTable object.
       LeapSecTable() {}
   };
 
+  /// \brief Return the time difference between TT and TAI.
   Duration computeTtMinusTai() {
     static const Duration s_tt_minus_tai(32.184, "Sec");
     return s_tt_minus_tai;

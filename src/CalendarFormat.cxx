@@ -15,41 +15,83 @@ namespace {
 
   using namespace timeSystem;
 
+  /** \class GregorianCalendar
+      \brief Class to perform various computations related to Gregorian calendar.
+  */
   class GregorianCalendar {
     public:
+      /// \brief Return a GregorianCalendar object.
       static GregorianCalendar & getCalendar();
 
+      /** \brief Find what year a give MJD is, and return it. Also compute an ordinal date for a give MJD, and set it
+                 to the second argument of the method.
+          \param mjd MJD for which Gregorian year is to be determined.
+          \param ordinal_date Ordinal date of a given MJD is set to this argument as a return value.
+      */
       long findYear(long mjd, long & ordinal_date) const;
 
+      /** \brief Compute an MJD number for a given combination of a year and an ordinal date, and return it.
+          \param year Gregorian year to compute an MJD for.
+          \param ordinal_date Ordinal date to compute an MJD for.
+      */
       long computeMjd(long year, long ordinal_date) const;
 
+      /** \brief Find which month a given date is in, and return it (1 for January).
+          \param year Gregorian year to find a month for.
+          \param ordinal_date Ordinal date to find a month for.
+          \param day_of_month Day of the month of a given date is set to this argument as a return value.
+      */
       long findMonth(long year, long ordinal_date, long & day_of_month) const;
 
+      /** \brief Compute an ordinal date of a given calendar year, month, and day, and return it.
+          \param year Calendar year to compute an ordinal date for.
+          \param month Month of the year to compute an ordinal date for.
+          \param day Day of the month to compute an ordinal date for.
+      */
       long computeOrdinalDate(long year, long month, long day) const;
 
+      /** \brief Find a Monday closest to a give date, and return it.
+          \param mjd MJD of a date to find the closest Monday to.
+      */
       long findNearestMonday(long mjd) const;
 
+      /** \brief Check validity of Gregorian year, month, and day, and throw an exception if any problem is found.
+          \param year Gregorian year to check.
+          \param month Month of the year to check.
+          \param day Day of the month to check.
+      */
       void checkCalendarDate(long year, long month, long day) const;
 
+      /** \brief Check validity of Gregorian year and an ordinal date, and throw an exception if any problem is found.
+          \param year Gregorian year to check.
+          \param day Ordinal date of the year to check.
+      */
       void checkOrdinalDate(long year, long day) const;
 
     private:
       typedef std::vector<long> table_type;
 
+      /// \brief Construct a GregorianCalendar object.
       GregorianCalendar();
 
+      /// \brief Return the number of days in 400 years.
       long DayPer400Year() const;
 
+      /// \brief Return the number of days in 100 years starting at the beginning of a century.
       long DayPer100Year() const;
 
+      /// \brief Return the number of days in 4 years not including the beginning of a century.
       long DayPer4Year() const;
 
+      /// \brief Return the number of days in a non-leap year.
       long DayPerYear() const;
 
       const table_type & DayPerMonth(long year) const;
 
+      /// \brief Return the number of days in a week.
       long DayPerWeek() const;
 
+      /// \brief Return the MJD number of January 1st, 2001.
       long MjdYear2001() const;
 
       table_type m_day_per_month_regular_year;
@@ -288,12 +330,25 @@ namespace {
   */
   class CalendarFormat : public TimeFormat<Calendar> {
     public:
+      /** \brief Convert date and time to a calendar date, and return it.
+          \param datetime Date and time to convert.
+      */
       virtual Calendar convert(const datetime_type & datetime) const;
 
+      /** \brief Convert a calendar date to date and time.
+          \param time_rep Calendar date to convert.
+      */
       virtual datetime_type convert(const Calendar & time_rep) const;
 
+      /** \brief Interpret a given time string as a calendar date, and return the calendar date.
+          \param time_string Character string to interpret as a calendar date.
+      */
       virtual Calendar parse(const std::string & time_string) const;
 
+      /** \brief Create a character string representing a given time in a calendar date format.
+          \param time_rep Calendar date to format into a character string.
+          \param precision Number of digits after a decimal point in the time part of a given time.
+      */
       virtual std::string format(const Calendar & time_rep, std::streamsize precision = std::numeric_limits<double>::digits10) const;
   };
 
@@ -302,15 +357,34 @@ namespace {
   */
   class IsoWeekFormat : public TimeFormat<IsoWeek> {
     public:
+      /** \brief Convert date and time to an ISO week date, and return it.
+          \param datetime Date and time to convert.
+      */
       virtual IsoWeek convert(const datetime_type & datetime) const;
 
+      /** \brief Convert an ISO week date to date and time.
+          \param time_rep ISO week date to convert.
+      */
       virtual datetime_type convert(const IsoWeek & time_rep) const;
 
+      /** \brief Interpret a given time string as an ISO week date, and return the ISO week date.
+          \param time_string Character string to interpret as an ISO week date.
+      */
       virtual IsoWeek parse(const std::string & time_string) const;
 
+      /** \brief Create a character string representing a given time in an ISO week date format.
+          \param time_rep ISO week date to format into a character string.
+          \param precision Number of digits after a decimal point in the time part of a given time.
+      */
       virtual std::string format(const IsoWeek & time_rep, std::streamsize precision = std::numeric_limits<double>::digits10) const;
 
     private:
+      /** \brief Check validity of an ISO year, an ISO week number, and an ISO weekday number, and throw an exception
+                 if any problem exists.
+          \param iso_year ISO year to be tested.
+          \param week_number ISO week number to be tested.
+          \param weekday_number ISO weekday number to be tested.
+      */
       void checkWeekDate(long iso_year, long week_number, long weekday_number) const;
   };
 
@@ -319,12 +393,25 @@ namespace {
   */
   class OrdinalFormat : public TimeFormat<Ordinal> {
     public:
+      /** \brief Convert date and time to an ordinal date, and return it.
+          \param datetime Date and time to convert.
+      */
       virtual Ordinal convert(const datetime_type & datetime) const;
 
+      /** \brief Convert an ordinal date to date and time.
+          \param time_rep Ordinal date to convert.
+      */
       virtual datetime_type convert(const Ordinal & time_rep) const;
 
+      /** \brief Interpret a given time string as an ordinal date, and return the calendar date.
+          \param time_string Character string to interpret as an ordinal date.
+      */
       virtual Ordinal parse(const std::string & time_string) const;
 
+      /** \brief Create a character string representing a given time in an ordinal date format.
+          \param time_rep Ordinal date to format into a character string.
+          \param precision Number of digits after a decimal point in the time part of a given time.
+      */
       virtual std::string format(const Ordinal & time_rep, std::streamsize precision = std::numeric_limits<double>::digits10) const;
   };
 

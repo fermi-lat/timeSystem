@@ -25,15 +25,37 @@ namespace {
 
   using namespace timeSystem;
 
+  /** \class JplComputer
+      \brief Base class to read JPL solar system ephemeris data and compute geocentric and barycentric times.
+             Actual tasks to read JPL solar system ephemeris data is deligated to the C functions
+             written by Arnold Rots.
+  */
   class JplComputer: public BaryTimeComputer {
     public:
+      /** \brief Compute a barycentric time for a given time, and update the time with a computed time.
+          \param ra Right Ascension of a sky position for which a barycentric time is computed.
+          \param dec Declination of a sky position for which a barycentric time is computed.
+          \param sc_position Spacecraft position at the time for which a barycentric time is computed.
+          \param abs_time Photon arrival time at the spacecraft. This argument is updated to a barycentric time for it.
+      */
       virtual void computeBaryTime(double ra, double dec, const std::vector<double> & sc_position, AbsoluteTime & abs_time) const;
 
+      /** \brief Compute a geocentric time for a given time, and update the time with a computed time.
+          \param ra Right Ascension of a sky position for which a geocentric time is computed.
+          \param dec Declination of a sky position for which a geocentric time is computed.
+          \param sc_position Spacecraft position at the time for which a geocentric time is computed.
+          \param abs_time Photon arrival time at the spacecraft. This argument is updated to a geocentric time for it.
+      */
       virtual void computeGeoTime(double ra, double dec, const std::vector<double> & sc_position, AbsoluteTime & abs_time) const;
 
     protected:
+      /** \brief Construct a JplComputer object.
+          \param pl_ephem Name of the JPL planetary ephemeris, such as "JPL DE405".
+          \param eph_num Integer number of JPL ephemeris (i.e., 405 for "JPL DE405").
+      */
       JplComputer(const std::string & pl_ephem, int eph_num);
 
+      /// \brief Initialize this JplComputer object.
       virtual void initializeComputer();
 
     private:
@@ -42,16 +64,28 @@ namespace {
       double m_solar_mass;
       static const JplComputer * m_initialized_computer;
 
+      /** \brief Helper method to compute an inner product of a pair of three-vectors.
+          \param vect_x One of the three vector to compute an inner product for.
+          \param vect_y The other of the three vector to compute an inner product for.
+      */
       double computeInnerProduct(const std::vector<double> & vect_x, const std::vector<double> & vect_y) const;
   };
 
+  /** \class JplDe200Computer
+      \brief Class to read JPL DE200 ephemeris and compute geocentric and barycentric times.
+  */
   class JplDe200Computer: public JplComputer {
     public:
+      /// \brief Construct a JplDe200Computer object.
       JplDe200Computer(): JplComputer("JPL DE200", 200) {}
   };
 
+  /** \class JplDe405Computer
+      \brief Class to read JPL DE405 ephemeris and compute geocentric and barycentric times.
+  */
   class JplDe405Computer: public JplComputer {
     public:
+      /// \brief Construct a JplDe405Computer object.
       JplDe405Computer(): JplComputer("JPL DE405", 405) {}
   };
 

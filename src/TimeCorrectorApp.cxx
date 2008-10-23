@@ -36,26 +36,55 @@ namespace {
 
   using namespace timeSystem;
 
+  /** \class IHandlerPairFactory
+      \brief Type-neutral base class for creation of a pair of EventTimeHandler objects.
+  */
   class IHandlerPairFactory {
     public:
+      /// \brief Destruct this IHandlerPairFactory object.
       virtual ~IHandlerPairFactory() {}
 
+      /** \brief Create a pair of EventTimeHandler objects.
+          \param first_file_name Name of a file to be opened by the first EventTimeHandler class.
+          \param second_file_name Name of a file to be opened by the second EventTimeHandler class.
+          \param extension_number Extension number to be opened, with 0 (zero) for a primary HDU.
+                 Both the first and the second files are opened with this extension number.
+      */
       std::pair<EventTimeHandler *, EventTimeHandler *> create(const std::string & first_file_name,
         const std::string & second_file_name, int extension_number) const;
 
+      /** \brief Create one EventTimeHandler object. Actual creation must be done in a derived class.
+                 This method is called to create a pair of EventTimeHandler objects.
+          \param file_name Name of a file to be opened.
+          \param extension_number Extension number to be opened, with 0 (zero) for a primary HDU.
+          \param as_first_file Set to true if file should be opened with the first EventTimeHandler class.
+                               Set to false otherwise.
+      */
       virtual EventTimeHandler * create(const std::string & file_name, int extension_number, bool as_first_file = true) const = 0;
 
     protected:
+      /// \brief Construct an IHandlerPairFactory object.
       IHandlerPairFactory() {}
   };
 
+  /** \class HandlerPairFactory
+      \brief Concrete class for creation of a pair of EventTimeHandler objects.
+  */
   template <typename FirstHandlerType, typename SecondHandlerType>
   class HandlerPairFactory : public IHandlerPairFactory {
     public:
+      /// \brief Construct a HandlerPairFactory object.
       HandlerPairFactory(): IHandlerPairFactory() {}
 
+      /// \brief Destruct this HandlerPairFactory object.
       virtual ~HandlerPairFactory() {}
 
+      /** \brief Create one EventTimeHandler object of a given type.
+          \param file_name Name of a file to be opened.
+          \param extension_number Extension number to be opened, with 0 (zero) for a primary HDU.
+          \param as_first_file Set to true if file should be opened with the first EventTimeHandler class.
+                               Set to false otherwise.
+      */
       virtual EventTimeHandler * create(const std::string & file_name, int extension_number, bool as_first_file = true) const;
   };
 
