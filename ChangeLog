@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Thu Oct 23 18:16:30 PDT 2008
+timeSystem/src
+
+Modified Files:
+	TimeSystem.cxx 
+Log Message:
+Correct Doxygen comments.
+    *
+------------------------------------------------------------
 User: hirayama  Thu Oct 23 01:12:11 PDT 2008
 timeSystem/src
 
