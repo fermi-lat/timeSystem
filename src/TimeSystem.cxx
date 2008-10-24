@@ -89,8 +89,8 @@ namespace {
       virtual moment_type convertFrom(const TimeSystem & time_system, const moment_type & moment) const;
 
       /** \brief Compute time difference between two moments of time, and return it.
-          \param moment1 Time moment for a starting point of a time difference to compute.
-          \param moment2 Time moment for a stopping point of a time difference to compute.
+          \param moment1 Time moment from which the other time moment is to be subtracted.
+          \param moment2 Time moment which is subtracted from the other time moment.
       */
       virtual Duration computeTimeDifference(const moment_type & moment1, const moment_type & moment2) const;
 
