@@ -5,6 +5,9 @@
 
 \verbatim
 --------------------------------------------------------------------------------
+24-oct-2008      v6r1 MH  Add tests of the application class to the unit test.
+                          Fix a bug reported as JIRA PULS-49. Revise mainpage.h.
+                          Improve application output messages and Doxygen comments.
 09-oct-2008        v6 MH  Add geocentric option to gtbary. Fix the bug reported
                           as JIRA PULS-47. Separate StApp subclass from gtbary.cxx.
 30-sep-2008      v5r1 JP  Write parameters into history keywords in output file.
