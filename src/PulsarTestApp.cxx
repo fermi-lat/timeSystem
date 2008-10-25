@@ -134,11 +134,9 @@ namespace timeSystem {
                 " is header keyword " << out_name << ", not " << ref_name << " as in reference file " << ref_file << std::endl;
             }
 
-            // Compare keyword value.
+            // Compare keyword value, except for CHECKSUM, CREATOR, DATE, HISTORY, COMMENT, and a blank name.
             std::string out_value;
             std::string ref_value;
-            // Note: Do not compare CHECKSUM, CREATOR, DATE, HISTORY, COMMENT, a blank name.
-
             if (!ref_name.empty() && "CHECKSUM" != ref_name && "CREATOR" != ref_name && "DATE" != ref_name && "HISTORY" != ref_name &&
                 "COMMENT" != ref_name) {
               std::string out_value = out_itor->getValue();
