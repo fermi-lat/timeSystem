@@ -73,20 +73,48 @@ scfile [file name]
     Name of input spacecraft data file, FT2 format or equivalent.
 
 outfile [file name]
-    Name of output file. If the same as evfile, the
-    barycentric correction will be performed in situ in the input
-    file (which must therefore be writable).
+    Name of output file. If the same as evfile, the arrival time
+    correction will be performed in situ in the input file (which must
+    therefore be writable).
 
 ra [double]
     Right Ascension of point source in degrees for which to perform
-    the barycentric correction.
+    the arrival time correction.
 
 dec [double]
     Declination of point source in degrees for which to perform the
-    barycentric correction.
+    arrival time correction.
+
+(tcorrect = BARY) [enumerated string (GEO|BARY)]
+    Arrival time correction to apply. Choose BARY to apply the
+    barycentric correction, and GEO the geocentric correction.
 
 (solareph = JPL DE405) [enumerated string (JPL DE200|JPL DE405)]
     Solar system ephemeris for the barycentric correction.
+
+(angtol = 1.e-8) [double]
+    Angular tolerance in degrees in comparison of two source
+    positions, one for which the barycentric correction is performed,
+    and another given by RA_NOM and DEC_NOM header keyword of an event
+    file to which the barycentric correction has already been applied.
+    This parameter only has effect if the barycentric correction has
+    been applied to an input event data file.  If the two source
+    positions are separate from each other by this amount or less,
+    then they will be considered to be the same position.  Otherwise
+    an error will be generated.
+
+(timefield = TIME) [string]
+    Name of the field containing the time values for temporal
+    analysis.
+
+(sctable = SC_DATA) [string]
+    Name of the FITS table containing the spacecraft data.
+
+(leapsecfile = DEFAULT) [file name]
+    Name of the file containing the name of the leap second table, in
+    OGIP-compliant leap second table format. If leapsecfile is the
+    string DEFAULT, the default leap-second file (leapsec.fits), which
+    is distributed with the extFiles package, will be used.
 \endverbatim
 
 */
