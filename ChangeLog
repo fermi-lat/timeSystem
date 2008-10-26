@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Sun Oct 26 16:37:09 PDT 2008
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Dinamically create a reference of a log file that contains a path name.
+    *
+------------------------------------------------------------
 User: hirayama  Sun Oct 26 16:36:13 PDT 2008
 timeSystem/timeSystem
 
