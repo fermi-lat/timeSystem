@@ -60,26 +60,34 @@ namespace timeSystem {
 
     protected:
       /** \brief Helper method to compare an output FITS file with its reference file in data/outref/ directory.
-          \param file_name Name of a FITS file to be compared with its reference.
+          \param out_file Name of an output FITS file to be compared with its reference.
           \param compare_comment Set true if COMMENT keyword values should be compared.
       */
-      void checkOutputFits(const std::string & file_name, bool compare_comment = false);
+      void checkOutputFits(const std::string & out_file, bool compare_comment = false);
 
       /** \brief Helper method to compare an output text file with its reference file in data/outref/ directory.
-          \param file_name Name of a text file to be compared with its reference.
+          \param out_file Name of an output text file to be compared with its reference in data/outref/ directory.
       */
-      void checkOutputText(const std::string & file_name);
+      void checkOutputText(const std::string & out_file);
+
+      /** \brief Helper method to compare an output text file with a given reference file.
+          \param out_file Name of an output text file to be compared with a given reference.
+          \param ref_file Name of a reference file to check a given output text file against.
+      */
+      void checkOutputText(const std::string & out_file, const std::string & ref_file);
 
       /** \brief Helper method to run an application, capture text output, compare the log and an output FITS file
                  with their reference files in data/outref/ directory.
           \param app_name Name of application to test.
           \param par_group Parameters to give to the application to test.
           \param log_file Log file name. An empty string disables logging.
+          \param ref_file Name of a reference file to check a log file against. If an empty string is given,
+                 the method uses a reference file in data/outref that has the same name as log_file.
           \param out_fits Output FITS file name. An empty string disables comparison of the output FITS file.
           \param ignore_exception Set true if an application is expected to throw an exception in this test.
       */
       void testApplication(const std::string & app_name, const st_app::AppParGroup & par_group, const std::string & log_file,
-        const std::string & out_fits, bool ignore_exception = false);
+        const std::string & ref_file, const std::string & out_fits, bool ignore_exception = false);
 
       /** \brief Returns a named application object. Return 0 (zero) if no such application exists.
           \param app_name Name of application to create. The value of app_name parameter of testApplication method will be
