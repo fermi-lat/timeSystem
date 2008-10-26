@@ -1,5 +1,14 @@
 ------------------------------------------------------------
 User: hirayama  Sun Oct 26 16:36:13 PDT 2008
+timeSystem/timeSystem
+
+Modified Files:
+	PulsarTestApp.h 
+Log Message:
+Accept a reference file name for checking of a log file.
+    *
+------------------------------------------------------------
+User: hirayama  Sun Oct 26 16:36:13 PDT 2008
 timeSystem/src
 
 Modified Files:
