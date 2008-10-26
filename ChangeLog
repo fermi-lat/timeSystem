@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Sun Oct 26 16:38:33 PDT 2008
+timeSystem/data/outref
+
+Removed Files:
+	testTimeCorrectorApp_par3.log testTimeCorrectorApp_par4.log 
+Log Message:
+Remove unnecessary reference file (they are dinamically created by the test code).
+    *
+------------------------------------------------------------
 User: hirayama  Sun Oct 26 16:37:09 PDT 2008
 timeSystem/src/test
 
