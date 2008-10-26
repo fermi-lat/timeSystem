@@ -72,9 +72,8 @@ namespace timeSystem {
     return std::cerr << getName() << ": " << m_method_name << ": ";
   }
 
-  void PulsarTestApp::checkOutputFits(const std::string & file_name, bool compare_comment) {
+  void PulsarTestApp::checkOutputFits(const std::string & out_file, bool compare_comment) {
     // Set reference file name.
-    const std::string out_file(file_name);
     const std::string ref_file = facilities::commonUtilities::joinPath(m_outref_dir, out_file);
 
     // Check file existence.
@@ -163,11 +162,15 @@ namespace timeSystem {
     }
   }
 
-  void PulsarTestApp::checkOutputText(const std::string & file_name) {
+  void PulsarTestApp::checkOutputText(const std::string & out_file) {
     // Set reference file name.
-    const std::string out_file(file_name);
     const std::string ref_file = facilities::commonUtilities::joinPath(m_outref_dir, out_file);
 
+    // Delegate file comparison to the following method.
+    checkOutputText(out_file, ref_file);
+  }
+
+  void PulsarTestApp::checkOutputText(const std::string & out_file, const std::string & ref_file) {
     // Check file existence.
     if (!tip::IFileSvc::instance().fileExists(out_file)) {
       err() << "File to check does not exist: " << out_file << std::endl;
@@ -224,7 +227,7 @@ namespace timeSystem {
   }
 
   void PulsarTestApp::testApplication(const std::string & app_name, const st_app::AppParGroup & par_group, const std::string & log_file,
-    const std::string & out_fits, bool ignore_exception) {
+    const std::string & ref_file, const std::string & out_fits, bool ignore_exception) {
     // Fake the application name for logging.
     const std::string app_name_save(st_stream::GetExecName());
     st_stream::SetExecName(app_name);
@@ -318,7 +321,10 @@ namespace timeSystem {
       }
     } else {
       // Compare the log with its reference.
-      if (record_log) checkOutputText(log_file);
+      if (record_log) {
+        if (ref_file.empty()) checkOutputText(log_file);
+        else checkOutputText(log_file, ref_file);
+      }
 
       // Compare the output FITS file with its reference.
       if (check_output) checkOutputFits(out_fits);
