@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Sun Oct 26 16:36:13 PDT 2008
+timeSystem/src
+
+Modified Files:
+	PulsarTestApp.cxx 
+Log Message:
+Accept a reference file name for checking of a log file.
+    *
+------------------------------------------------------------
 TAG
 Tag name: timeSystem-06-01-00, operation: add
 Package: timeSystem
