@@ -2,6 +2,15 @@
     \brief Unit test for timeSystem package.
     \author Masa Hirayama, James Peachey
 */
+#include <cmath>
+#include <exception>
+#include <fstream>
+#include <iomanip>
+#include <iostream>
+#include <limits>
+#include <list>
+#include <memory>
+#include <stdexcept>
 
 #include "facilities/commonUtilities.h"
 
@@ -27,14 +36,6 @@
 
 #include "tip/IFileSvc.h"
 #include "tip/TipFile.h"
-
-#include <cmath>
-#include <exception>
-#include <iomanip>
-#include <limits>
-#include <list>
-#include <memory>
-#include <stdexcept>
 
 static const std::string s_cvs_id("$Name:  $");
 
@@ -3409,6 +3410,7 @@ void TimeSystemTestApp::testTimeCorrectorApp() {
   for (std::list<std::string>::const_iterator test_itor = test_name_cont.begin(); test_itor != test_name_cont.end(); ++test_itor) {
     const std::string & test_name = *test_itor;
     std::string out_file(getMethod() + "_" + test_name + ".fits");
+    std::string ref_file(getMethod() + "_" + test_name + ".ref");
 
     // Set default parameters.
     std::string app_name("gtbary");
@@ -3452,6 +3454,12 @@ void TimeSystemTestApp::testTimeCorrectorApp() {
 
     } else if ("par3" == test_name) {
       // Test refusal of barycentric corrections on a barycentered file.
+      remove(ref_file.c_str());
+      std::ofstream ofs(ref_file.c_str());
+      const std::string data_dir(getDataPath());
+      ofs << "Caught St13runtime_error at the top level: Unsupported timing extension: HDU 1 (EXTNAME=EVENTS) of input file \"" <<
+        evfile_bary << "\"" << std::endl;
+      ofs.close();
       pars["evfile"] = evfile_bary;
       pars["scfile"] = scfile_crab;
       pars["outfile"] = out_file;
@@ -3462,6 +3470,12 @@ void TimeSystemTestApp::testTimeCorrectorApp() {
 
     } else if ("par4" == test_name) {
       // Test refusal of geocentric corrections on a geocentered file.
+      remove(ref_file.c_str());
+      std::ofstream ofs(ref_file.c_str());
+      const std::string data_dir(getDataPath());
+      ofs << "Caught St13runtime_error at the top level: Unsupported timing extension: HDU 0 (primary HDU) of input file \"" <<
+        evfile_geo << "\"" << std::endl;
+      ofs.close();
       pars["evfile"] = evfile_geo;
       pars["scfile"] = scfile_crab;
       pars["outfile"] = out_file;
@@ -3481,9 +3495,9 @@ void TimeSystemTestApp::testTimeCorrectorApp() {
     // Test the application.
     if (expected_to_fail) {
       std::string log_file(getMethod() + "_" + test_name + ".log");
-      testApplication(app_name, pars, log_file, "", true);
+      testApplication(app_name, pars, log_file, ref_file, "", true);
     } else {
-      testApplication(app_name, pars, "", out_file);
+      testApplication(app_name, pars, "", "", out_file);
     }
   }
 }
