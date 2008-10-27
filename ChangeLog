@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Sun Oct 26 22:54:49 PDT 2008
+timeSystem/src
+
+Modified Files:
+	PulsarTestApp.cxx 
+Log Message:
+Change checkOutputFits to always compare COMMENT keywords. Switch to read-only access in opening FITS files.
+    *
+------------------------------------------------------------
 User: hirayama  Sun Oct 26 22:53:51 PDT 2008
 timeSystem/timeSystem
 
