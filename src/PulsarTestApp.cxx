@@ -112,49 +112,72 @@ namespace timeSystem {
         std::auto_ptr<tip::Extension> ref_ext(tip::IFileSvc::instance().editExtension(ref_file, ext_name));
         tip::Header & ref_header(ref_ext->getHeader());
 
+        // List header keywords to ignore in comparison.
+        std::set<std::string> ignored_keyword;
+        ignored_keyword.insert("CHECKSUM");
+        ignored_keyword.insert("CREATOR");
+        ignored_keyword.insert("DATE");
+        ignored_keyword.insert("HISTORY");
+        if (!compare_comment) ignored_keyword.insert("COMMENT");
+
+        // Collect header keywords to compare.
+        typedef std::list<std::pair<int, tip::KeyRecord> > key_record_cont;
+        key_record_cont out_key_record;
+        key_record_cont ref_key_record;
+        for (int ii = 0; ii < 2; ++ii) {
+          bool is_out(ii%2 == 0);
+          key_record_cont & this_key_record = (is_out ? out_key_record : ref_key_record);
+          const tip::Header & this_header = (is_out ? out_header : ref_header);
+
+          int card_number = 1;
+          for (tip::Header::ConstIterator key_itor = this_header.begin(); key_itor != this_header.end(); ++key_itor, ++card_number) {
+            std::string key_name = key_itor->getName();
+            if (!key_name.empty() && ignored_keyword.find(key_name) == ignored_keyword.end()) {
+              this_key_record.push_back(std::make_pair(card_number, *key_itor));
+            }
+          }
+        }
+
         // Compare the sizes of header.
-        tip::Header::KeySeq_t::size_type out_num_key = out_header.getNumKeywords();
-        tip::Header::KeySeq_t::size_type ref_num_key = ref_header.getNumKeywords();
+        tip::Header::KeySeq_t::size_type out_num_key = out_key_record.size();
+        tip::Header::KeySeq_t::size_type ref_num_key = ref_key_record.size();
         if (out_num_key != ref_num_key) {
-          err() << "HDU " << ext_name << " of file " << out_file << " has " << out_num_key <<
-            " header keyword(s), not " << ref_num_key << " as in reference file " << ref_file << std::endl;
+          err() << "HDU " << ext_name << " of file " << out_file << " contains " << out_num_key <<
+            " header keyword(s) to compare, not " << ref_num_key << " as in reference file " << ref_file << std::endl;
 
         } else {
           // Compare each header keyword.
-          int card_number = 1;
-          tip::Header::Iterator out_itor = out_header.begin();
-          tip::Header::Iterator ref_itor = ref_header.begin();
-          for (; out_itor != out_header.end() && ref_itor != ref_header.end(); ++out_itor, ++ref_itor, ++card_number) {
+          key_record_cont::const_iterator out_itor = out_key_record.begin();
+          key_record_cont::const_iterator ref_itor = ref_key_record.begin();
+          for (; out_itor != out_key_record.end() && ref_itor != ref_key_record.end(); ++out_itor, ++ref_itor) {
+            // Get card numbers.
+            const int out_card_number = out_itor->first;
+            const int ref_card_number = ref_itor->first;
+
             // Compare keyword name.
-            std::string out_name = out_itor->getName();
-            std::string ref_name = ref_itor->getName();
+            std::string out_name = out_itor->second.getName();
+            std::string ref_name = ref_itor->second.getName();
             if (out_name != ref_name) {
-              err() << "Card " << card_number << " of HDU " << ext_name << " in file " << out_file <<
-                " is header keyword " << out_name << ", not " << ref_name << " as in reference file " << ref_file << std::endl;
+              err() << "Card " << out_card_number << " of HDU " << ext_name << " in file " << out_file <<
+                " is header keyword " << out_name << ", not " << ref_name << " as on card " << ref_card_number <<
+                " in reference file " << ref_file << std::endl;
             }
 
-            // Compare keyword value, except for CHECKSUM, CREATOR, DATE, HISTORY, COMMENT, and a blank name.
+            // Compare keyword values.
             std::string out_value;
             std::string ref_value;
-            if (!ref_name.empty() && "CHECKSUM" != ref_name && "CREATOR" != ref_name && "DATE" != ref_name && "HISTORY" != ref_name &&
-                "COMMENT" != ref_name) {
-              std::string out_value = out_itor->getValue();
-              std::string ref_value = ref_itor->getValue();
-              if (out_value != ref_value) {
-                err() << "Header keyword " << out_name << " on card " << card_number << " of HDU " << ext_name <<
-                  " in file " << out_file << " has value " << out_value << ", not " << ref_value << " as in reference file " <<
-                  ref_file << std::endl;
-              }
+            if ("COMMENT" != ref_name && "HISTORY" != ref_name) {
+              out_value = out_itor->second.getValue();
+              ref_value = ref_itor->second.getValue();
+            } else {
+              out_value = out_itor->second.getComment();
+              ref_value = ref_itor->second.getComment();
             }
 
-            // Compare COMMENT if requested.
-            if (compare_comment && "COMMENT" == ref_name) {
-              std::string out_value = out_itor->getComment();
-              std::string ref_value = ref_itor->getComment();
-              if (out_value != ref_value) {
-                err() << "COMMENT keyword on card " << card_number << " of HDU " << ext_name << " in file " << out_file <<
-                  " has comment \"" << out_value << "\", not \"" << ref_value << "\" as in reference file " << ref_file << std::endl;
-              }
+            if (out_value != ref_value) {
+              err() << "Header keyword " << out_name << " on card " << out_card_number << " of HDU " << ext_name <<
+                " in file " << out_file << " has value \"" << out_value << "\", not \"" << ref_value << "\" as on card " <<
+                ref_card_number << " in reference file " << ref_file << std::endl;
             }
           }
         }
