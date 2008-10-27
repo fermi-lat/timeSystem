@@ -5,8 +5,11 @@
 */
 #include "timeSystem/PulsarTestApp.h"
 
+#include <cerrno>
+#include <cmath>
 #include <fstream>
 #include <iostream>
+#include <limits>
 #include <list>
 #include <stdexcept>
 #include <typeinfo>
@@ -71,6 +74,55 @@ namespace timeSystem {
     m_failed = true;
     return std::cerr << getName() << ": " << m_method_name << ": ";
   }
+
+  bool PulsarTestApp::compareNumericString(const std::string & string_value, const std::string & string_reference) {
+    // Prepare variables for comparison.
+    const char * ptr_val_cur(string_value.c_str());
+    char * ptr_val_next(0);
+    const char * ptr_ref_cur(string_reference.c_str());
+    char * ptr_ref_next(0);
+    double tolerance = std::numeric_limits<double>::epsilon() * 1000.;
+
+    // Loop over reference string.
+    bool mismatch_found = false;
+    while (!mismatch_found && *ptr_ref_cur != '\0') {
+
+      // Try to read it as a number.
+      errno = 0;
+      double double_ref = std::strtod(ptr_ref_cur, &ptr_ref_next);
+
+      // Handle each case.
+      if (errno) {
+        // Compare the same number of characters if failed to read a number.
+        std::size_t num_char(ptr_ref_next - ptr_ref_cur);
+        if (std::string(ptr_val_cur, num_char) != std::string(ptr_ref_cur, num_char)) mismatch_found = true;
+        ptr_ref_cur += num_char;
+        ptr_val_cur += num_char;
+
+      } else if (ptr_ref_next == ptr_ref_cur) {
+        // Compare one character if it is not a number.
+        if (*ptr_val_cur != *ptr_ref_cur) mismatch_found = true;
+        ++ptr_ref_cur;
+        ++ptr_val_cur;
+
+      } else {
+        // Compare as a double value if it is a number.
+        errno = 0;
+        double double_val = std::strtod(ptr_val_cur, &ptr_val_next);
+        if (errno) mismatch_found = true;
+        else if (double_val != double_ref) {
+          if (double_ref == 0.0) mismatch_found = true;
+          else if (std::fabs(double_val/double_ref - 1.) > tolerance) mismatch_found = true;
+        }
+        ptr_ref_cur = ptr_ref_next;
+        ptr_val_cur = ptr_val_next;
+      }
+    }
+
+    // Report the result.
+    return mismatch_found;
+  }
+
 
   void PulsarTestApp::checkOutputFits(const std::string & out_file, bool compare_comment) {
     // Set reference file name.
@@ -174,7 +226,7 @@ namespace timeSystem {
               ref_value = ref_itor->second.getComment();
             }
 
-            if (out_value != ref_value) {
+            if (compareNumericString(out_value, ref_value)) {
               err() << "Header keyword " << out_name << " on card " << out_card_number << " of HDU " << ext_name <<
                 " in file " << out_file << " has value \"" << out_value << "\", not \"" << ref_value << "\" as on card " <<
                 ref_card_number << " in reference file " << ref_file << std::endl;
@@ -237,10 +289,12 @@ namespace timeSystem {
       std::list<std::string>::const_iterator out_itor = out_line_list.begin();
       std::list<std::string>::const_iterator ref_itor = ref_line_list.begin();
       bool files_differ = false;
-      for (; out_itor != out_line_list.end() && ref_itor != ref_line_list.end(); ++out_itor, ++ref_itor) {
-        if (*out_itor != *ref_itor) {
+      int line_number = 1;
+      for (; out_itor != out_line_list.end() && ref_itor != ref_line_list.end(); ++out_itor, ++ref_itor, ++line_number) {
+        if (compareNumericString(*out_itor, *ref_itor)) {
           files_differ = true;
-          break;
+          err() << "Line " << line_number << " of file " << out_file << " is \"" << *out_itor << "\", not \"" << *ref_itor <<
+            "\" as in reference file " << ref_file << std::endl;
         }
       }
       if (files_differ) {
