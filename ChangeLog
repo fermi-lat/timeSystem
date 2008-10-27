@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Sun Oct 26 22:53:51 PDT 2008
+timeSystem/timeSystem
+
+Modified Files:
+	PulsarTestApp.h 
+Log Message:
+Change checkOutputFits to always compare COMMENT keywords.
+    *
+------------------------------------------------------------
 User: hirayama  Sun Oct 26 22:16:37 PDT 2008
 timeSystem/src
 
