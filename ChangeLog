@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Mon Oct 27 16:54:38 PDT 2008
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Changes for detailed comparison of FITS outputs.
+    *
+------------------------------------------------------------
 User: hirayama  Mon Oct 27 16:54:13 PDT 2008
 timeSystem/src
 
