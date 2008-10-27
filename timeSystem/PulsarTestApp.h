@@ -7,6 +7,7 @@
 #define pulsarDb_PulsarTestApp_h
 
 #include <iostream>
+#include <set>
 #include <string>
 
 #include "st_app/StApp.h"
@@ -70,8 +71,12 @@ namespace timeSystem {
 
       /** \brief Helper method to compare an output FITS file with its reference file in data/outref/ directory.
           \param out_file Name of an output FITS file to be compared with its reference.
+          \param column_to_compare Container of column names used in comparison of output FITS files. If the name of a column
+                 in a reference file is found in this container, the contents of the column will be compared. Otherwise,
+                 the contents of the column are ignored in comparison. If the container is empty, all columns in a reference
+                 file will be compared.
       */
-      void checkOutputFits(const std::string & out_file);
+      void checkOutputFits(const std::string & out_file, const std::set<std::string> & column_to_compare = std::set<std::string>());
 
       /** \brief Helper method to compare an output text file with its reference file in data/outref/ directory.
           \param out_file Name of an output text file to be compared with its reference in data/outref/ directory.
@@ -92,10 +97,15 @@ namespace timeSystem {
           \param ref_file Name of a reference file to check a log file against. If an empty string is given,
                  the method uses a reference file in data/outref that has the same name as log_file.
           \param out_fits Output FITS file name. An empty string disables comparison of the output FITS file.
+          \param column_to_compare Container of column names used in comparison of output FITS files. If the name of a column
+                 in a reference file is found in this container, the contents of the column will be compared. Otherwise,
+                 the contents of the column are ignored in comparison. If the container is empty, all columns in a reference
+                 file will be compared.
           \param ignore_exception Set true if an application is expected to throw an exception in this test.
       */
       void testApplication(const std::string & app_name, const st_app::AppParGroup & par_group, const std::string & log_file,
-        const std::string & ref_file, const std::string & out_fits, bool ignore_exception = false);
+        const std::string & ref_file, const std::string & out_fits, const std::set<std::string> & column_to_compare,
+        bool ignore_exception = false);
 
       /** \brief Returns a named application object. Return 0 (zero) if no such application exists.
           \param app_name Name of application to create. The value of app_name parameter of testApplication method will be
