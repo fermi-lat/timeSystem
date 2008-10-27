@@ -70,9 +70,8 @@ namespace timeSystem {
 
       /** \brief Helper method to compare an output FITS file with its reference file in data/outref/ directory.
           \param out_file Name of an output FITS file to be compared with its reference.
-          \param compare_comment Set true if COMMENT keyword values should be compared.
       */
-      void checkOutputFits(const std::string & out_file, bool compare_comment = false);
+      void checkOutputFits(const std::string & out_file);
 
       /** \brief Helper method to compare an output text file with its reference file in data/outref/ directory.
           \param out_file Name of an output text file to be compared with its reference in data/outref/ directory.
