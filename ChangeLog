@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Mon Oct 27 16:54:13 PDT 2008
+timeSystem/src
+
+Modified Files:
+	PulsarTestApp.cxx 
+Log Message:
+Elaborate comparison of output FITS files.
+    *
+------------------------------------------------------------
 User: hirayama  Mon Oct 27 16:54:12 PDT 2008
 timeSystem/timeSystem
 
