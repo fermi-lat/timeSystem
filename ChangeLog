@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Sun Oct 26 18:45:00 PDT 2008
+timeSystem/src
+
+Modified Files:
+	PulsarTestApp.cxx 
+Log Message:
+Improve checkOutputFits method to compare the numbers of header keywords that will not be ignored in comparison.
+    *
+------------------------------------------------------------
 User: hirayama  Sun Oct 26 16:38:33 PDT 2008
 timeSystem/data/outref
 
