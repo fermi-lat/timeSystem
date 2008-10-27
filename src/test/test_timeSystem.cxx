@@ -10,7 +10,9 @@
 #include <limits>
 #include <list>
 #include <memory>
+#include <set>
 #include <stdexcept>
+#include <string>
 
 #include "facilities/commonUtilities.h"
 
@@ -3411,6 +3413,7 @@ void TimeSystemTestApp::testTimeCorrectorApp() {
     const std::string & test_name = *test_itor;
     std::string out_file(getMethod() + "_" + test_name + ".fits");
     std::string ref_file(getMethod() + "_" + test_name + ".ref");
+    std::set<std::string> col_name;
 
     // Set default parameters.
     std::string app_name("gtbary");
@@ -3442,6 +3445,9 @@ void TimeSystemTestApp::testTimeCorrectorApp() {
       pars["ra"] = ra_0540;
       pars["dec"] = dec_0540;
       pars["tcorrect"] = "BARY";
+      col_name.insert("TIME");
+      col_name.insert("START");
+      col_name.insert("STOP");
 
     } else if ("par2" == test_name) {
       // Test geocentric corrections.
@@ -3451,6 +3457,9 @@ void TimeSystemTestApp::testTimeCorrectorApp() {
       pars["ra"] = ra_0540;
       pars["dec"] = dec_0540;
       pars["tcorrect"] = "GEO";
+      col_name.insert("TIME");
+      col_name.insert("START");
+      col_name.insert("STOP");
 
     } else if ("par3" == test_name) {
       // Test refusal of barycentric corrections on a barycentered file.
@@ -3495,9 +3504,9 @@ void TimeSystemTestApp::testTimeCorrectorApp() {
     // Test the application.
     if (expected_to_fail) {
       std::string log_file(getMethod() + "_" + test_name + ".log");
-      testApplication(app_name, pars, log_file, ref_file, "", true);
+      testApplication(app_name, pars, log_file, ref_file, "", col_name, true);
     } else {
-      testApplication(app_name, pars, "", "", out_file);
+      testApplication(app_name, pars, "", "", out_file, col_name);
     }
   }
 }
