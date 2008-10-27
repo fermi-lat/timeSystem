@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Sun Oct 26 22:16:37 PDT 2008
+timeSystem/src
+
+Modified Files:
+	PulsarTestApp.cxx 
+Log Message:
+Try string comparison first in compareNumericString method.
+    *
+------------------------------------------------------------
 User: hirayama  Sun Oct 26 19:40:00 PDT 2008
 timeSystem/src
 
