@@ -59,6 +59,15 @@ namespace timeSystem {
       std::ostream & err();
 
     protected:
+      /** \brief Helper method to compare a character string with a reference string, with a tolerance for
+                 numerical expressions in the character strings. For example, string "abc 0.0001 de" is considered
+                 equivalent to "abc 1e-4 de" by this method. The method returns false if the character string of interest
+                 is determined equivalent to the reference string, and true otherwise.
+          \param string_value Character string to be checked against a reference string.
+          \param string_reference Reference string for a character string of interest to be checked against.
+      */
+      bool compareNumericString(const std::string & string_value, const std::string & string_reference);
+
       /** \brief Helper method to compare an output FITS file with its reference file in data/outref/ directory.
           \param out_file Name of an output FITS file to be compared with its reference.
           \param compare_comment Set true if COMMENT keyword values should be compared.
