@@ -127,7 +127,7 @@ namespace timeSystem {
   }
 
 
-  void PulsarTestApp::checkOutputFits(const std::string & out_file, bool compare_comment) {
+  void PulsarTestApp::checkOutputFits(const std::string & out_file) {
     // Set reference file name.
     const std::string ref_file = facilities::commonUtilities::joinPath(m_outref_dir, out_file);
 
@@ -162,18 +162,19 @@ namespace timeSystem {
         std::ostringstream os;
         os << ext_number;
         std::string ext_name = os.str();
-        std::auto_ptr<tip::Extension> out_ext(tip::IFileSvc::instance().editExtension(out_file, ext_name));
-        tip::Header & out_header(out_ext->getHeader());
-        std::auto_ptr<tip::Extension> ref_ext(tip::IFileSvc::instance().editExtension(ref_file, ext_name));
-        tip::Header & ref_header(ref_ext->getHeader());
+        std::auto_ptr<const tip::Extension> out_ext(tip::IFileSvc::instance().readExtension(out_file, ext_name));
+        const tip::Header & out_header(out_ext->getHeader());
+        std::auto_ptr<const tip::Extension> ref_ext(tip::IFileSvc::instance().readExtension(ref_file, ext_name));
+        const tip::Header & ref_header(ref_ext->getHeader());
 
         // List header keywords to ignore in comparison.
+        // Note1: COMMENT should be compared because period search results are written in COMMENT keywords.
+        // Note2: HISTORY should NOT be compared because it contains a file creation time.
         std::set<std::string> ignored_keyword;
         ignored_keyword.insert("CHECKSUM");
         ignored_keyword.insert("CREATOR");
         ignored_keyword.insert("DATE");
         ignored_keyword.insert("HISTORY");
-        if (!compare_comment) ignored_keyword.insert("COMMENT");
 
         // Collect header keywords to compare.
         typedef std::list<std::pair<int, tip::KeyRecord> > key_record_cont;
