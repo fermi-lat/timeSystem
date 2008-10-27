@@ -1,5 +1,14 @@
 ------------------------------------------------------------
 User: hirayama  Sun Oct 26 19:40:00 PDT 2008
+timeSystem/src
+
+Modified Files:
+	PulsarTestApp.cxx 
+Log Message:
+Improve character string comparison by introducing special treatments for numeric expressions.
+    *
+------------------------------------------------------------
+User: hirayama  Sun Oct 26 19:40:00 PDT 2008
 timeSystem/timeSystem
 
 Modified Files:
