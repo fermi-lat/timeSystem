@@ -76,6 +76,9 @@ namespace timeSystem {
   }
 
   bool PulsarTestApp::compareNumericString(const std::string & string_value, const std::string & string_reference) {
+    // Try string comparison first.
+    if (string_value == string_reference) return false;
+
     // Prepare variables for comparison.
     const char * ptr_val_cur(string_value.c_str());
     char * ptr_val_next(0);
