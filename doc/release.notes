@@ -5,6 +5,7 @@
 
 \verbatim
 --------------------------------------------------------------------------------
+27-oct-2008      v6r2 MH  Improve the unit test for robustness. Improve prompts.
 24-oct-2008      v6r1 MH  Add tests of the application class to the unit test.
                           Fix a bug reported as JIRA PULS-49. Revise mainpage.h.
                           Improve application output messages and Doxygen comments.
