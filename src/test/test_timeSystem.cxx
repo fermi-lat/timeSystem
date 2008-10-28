@@ -448,32 +448,32 @@ void TimeSystemTestApp::testDuration() {
   try {
     Duration dur(+1, -0.1, "Day");
     err() << "Duration constructor did not throw an exception for Duration(+1, -0.1, \"Day\")" << std::endl;
-  } catch (const std::exception & x) {
+  } catch (const std::exception &) {
   }
   try {
     Duration dur(+1, +1.0, "Day");
     err() << "Duration constructor did not throw an exception for Duration(+1, +1.0, \"Day\")" << std::endl;
-  } catch (const std::exception & x) {
+  } catch (const std::exception &) {
   }
   try {
     Duration dur(-1, +0.1, "Day");
     err() << "Duration constructor did not throw an exception for Duration(-1, +0.1, \"Day\")" << std::endl;
-  } catch (const std::exception & x) {
+  } catch (const std::exception &) {
   }
   try {
     Duration dur(-1, -1.0, "Day");
     err() << "Duration constructor did not throw an exception for Duration(-1, -1.0, \"Day\")" << std::endl;
-  } catch (const std::exception & x) {
+  } catch (const std::exception &) {
   }
   try {
     Duration dur(0, +1.0, "Day");
     err() << "Duration constructor did not throw an exception for Duration(0, +1.0, \"Day\")" << std::endl;
-  } catch (const std::exception & x) {
+  } catch (const std::exception &) {
   }
   try {
     Duration dur(0, -1.0, "Day");
     err() << "Duration constructor did not throw an exception for Duration(0, -1.0, \"Day\")" << std::endl;
-  } catch (const std::exception & x) {
+  } catch (const std::exception &) {
   }
 
   // Test for detections of overflow/underflow: the basic constructor that takes days and seconds.
@@ -503,14 +503,14 @@ void TimeSystemTestApp::testDuration() {
   try {
     Duration dur(0, sec);
     err() << "Duration constructor did not throw an exception for " << sec << " seconds." << std::endl;
-  } catch (const std::exception & x) {
+  } catch (const std::exception &) {
   }
   // --- Case which should underflow.
   sec = underflow_day * SecPerDay();
   try {
     Duration dur(0, sec);
     err() << "Duration constructor did not throw an exception for " << sec << " seconds." << std::endl;
-  } catch (const std::exception & x) {
+  } catch (const std::exception &) {
   }
 
   // Test for detections of overflow/underflow: the constructors that take a single number and a time unit.
@@ -547,7 +547,7 @@ void TimeSystemTestApp::testDuration() {
       Duration dur(target_time, time_unit_name);
       err() << "Duration constructor did not throw an exception for Duration(" << target_time << ", \"" << time_unit_name <<
         "\")." << std::endl;
-    } catch (const std::exception & x) {
+    } catch (const std::exception &) {
     }
 
     // --- Case which should underflow.
@@ -556,7 +556,7 @@ void TimeSystemTestApp::testDuration() {
       Duration dur(target_time, time_unit_name);
       err() << "Duration constructor did not throw an exception for Duration(" << target_time << ", \"" << time_unit_name <<
         "\")." << std::endl;
-    } catch (const std::exception & x) {
+    } catch (const std::exception &) {
     }
   }
 
@@ -601,7 +601,7 @@ void TimeSystemTestApp::testDuration() {
       dur.get(time_unit_string, int_part, frac_part);
       err() << "Duration getter that computes an integer-fraction pair did not throw an exception for a time duration of " <<
         overflow_number << " " << time_unit_string << "." << std::endl;
-    } catch (const std::exception & x) {
+    } catch (const std::exception &) {
     }
 
     // --- Case which should underflow.
@@ -610,7 +610,7 @@ void TimeSystemTestApp::testDuration() {
       dur.get(time_unit_string, int_part, frac_part);
       err() << "Duration getter that computes an integer-fraction pair did not throw an exception for a time duration of " <<
         underflow_number << " " << time_unit_string << "." << std::endl;
-    } catch (const std::exception & x) {
+    } catch (const std::exception &) {
     }
   }
 
@@ -664,12 +664,12 @@ void TimeSystemTestApp::testDuration() {
   try {
     large_dur + Duration(1, 0.);
     err() << "Adding Duration(1, 0.) to a time duration of " << large_day << " days did not throw an exception." << std::endl;
-  } catch (const std::exception & x) {
+  } catch (const std::exception &) {
   }
   try {
     small_dur - Duration(1, 0.);
     err() << "Subtracting Duration(1, 0.) from a time duration of " << small_day << " days did not throw an exception." << std::endl;
-  } catch (const std::exception & x) {
+  } catch (const std::exception &) {
   }
 
   // Test comparison operators: !=, ==, <, <=, >, and >=.
