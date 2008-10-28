@@ -3445,6 +3445,7 @@ void TimeSystemTestApp::testTimeCorrectorApp() {
       pars["ra"] = ra_0540;
       pars["dec"] = dec_0540;
       pars["tcorrect"] = "BARY";
+
       col_name.insert("TIME");
       col_name.insert("START");
       col_name.insert("STOP");
@@ -3457,18 +3458,13 @@ void TimeSystemTestApp::testTimeCorrectorApp() {
       pars["ra"] = ra_0540;
       pars["dec"] = dec_0540;
       pars["tcorrect"] = "GEO";
+
       col_name.insert("TIME");
       col_name.insert("START");
       col_name.insert("STOP");
 
     } else if ("par3" == test_name) {
       // Test refusal of barycentric corrections on a barycentered file.
-      remove(ref_file.c_str());
-      std::ofstream ofs(ref_file.c_str());
-      const std::string data_dir(getDataPath());
-      ofs << "Caught St13runtime_error at the top level: Unsupported timing extension: HDU 1 (EXTNAME=EVENTS) of input file \"" <<
-        evfile_bary << "\"" << std::endl;
-      ofs.close();
       pars["evfile"] = evfile_bary;
       pars["scfile"] = scfile_crab;
       pars["outfile"] = out_file;
@@ -3477,14 +3473,14 @@ void TimeSystemTestApp::testTimeCorrectorApp() {
       pars["tcorrect"] = "BARY";
       expected_to_fail = true;
 
-    } else if ("par4" == test_name) {
-      // Test refusal of geocentric corrections on a geocentered file.
       remove(ref_file.c_str());
       std::ofstream ofs(ref_file.c_str());
-      const std::string data_dir(getDataPath());
-      ofs << "Caught St13runtime_error at the top level: Unsupported timing extension: HDU 0 (primary HDU) of input file \"" <<
-        evfile_geo << "\"" << std::endl;
+      std::runtime_error error("Unsupported timing extension: HDU 1 (EXTNAME=EVENTS) of input file \"" + evfile_bary + "\"");
+      writeException(ofs, error);
       ofs.close();
+
+    } else if ("par4" == test_name) {
+      // Test refusal of geocentric corrections on a geocentered file.
       pars["evfile"] = evfile_geo;
       pars["scfile"] = scfile_crab;
       pars["outfile"] = out_file;
@@ -3492,6 +3488,12 @@ void TimeSystemTestApp::testTimeCorrectorApp() {
       pars["dec"] = dec_crab;
       pars["tcorrect"] = "GEO";
       expected_to_fail = true;
+
+      remove(ref_file.c_str());
+      std::ofstream ofs(ref_file.c_str());
+      std::runtime_error error("Unsupported timing extension: HDU 0 (primary HDU) of input file \"" + evfile_geo + "\"");
+      writeException(ofs, error);
+      ofs.close();
 
     } else {
       // Skip this iteration.
