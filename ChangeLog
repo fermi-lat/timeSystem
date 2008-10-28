@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Tue Oct 28 16:48:03 PDT 2008
+timeSystem/src
+
+Modified Files:
+	PulsarTestApp.cxx 
+Log Message:
+Add writeException method to write text representation of a standard exception as Science Tools applications do.
+    *
+------------------------------------------------------------
 User: hirayama  Tue Oct 28 14:32:07 PDT 2008
 timeSystem/src
 
