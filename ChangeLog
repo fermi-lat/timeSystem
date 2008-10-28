@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: peachey  Tue Oct 28 13:15:39 PDT 2008
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Remove unused local variables in blocks to silence warnings.
+    *
+------------------------------------------------------------
 TAG
 Tag name: timeSystem-06-02-00, operation: add
 Package: timeSystem
