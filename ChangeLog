@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Tue Oct 28 16:48:26 PDT 2008
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Use writeException method to create a reference text output files.
+    *
+------------------------------------------------------------
 User: hirayama  Tue Oct 28 16:48:03 PDT 2008
 timeSystem/timeSystem
 
