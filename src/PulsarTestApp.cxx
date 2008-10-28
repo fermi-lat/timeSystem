@@ -392,17 +392,12 @@ namespace timeSystem {
       // Compare the file contents.
       std::list<std::string>::const_iterator out_itor = out_line_list.begin();
       std::list<std::string>::const_iterator ref_itor = ref_line_list.begin();
-      bool files_differ = false;
       int line_number = 1;
       for (; out_itor != out_line_list.end() && ref_itor != ref_line_list.end(); ++out_itor, ++ref_itor, ++line_number) {
         if (compareNumericString(*out_itor, *ref_itor)) {
-          files_differ = true;
           err() << "Line " << line_number << " of file " << out_file << " is \"" << *out_itor << "\", not \"" << *ref_itor <<
             "\" as in reference file " << ref_file << std::endl;
         }
-      }
-      if (files_differ) {
-        err() << "File " << out_file << " differs from reference file " << ref_file << std::endl;
       }
     }
   }
