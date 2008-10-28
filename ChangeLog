@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Tue Oct 28 14:32:07 PDT 2008
+timeSystem/src
+
+Modified Files:
+	PulsarTestApp.cxx 
+Log Message:
+Remove unnecessary error message.
+    *
+------------------------------------------------------------
 TAG
 Tag name: timeSystem-06-02-01, operation: add
 Package: timeSystem
