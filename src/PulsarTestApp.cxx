@@ -12,8 +12,6 @@
 #include <iostream>
 #include <limits>
 #include <list>
-#include <stdexcept>
-#include <typeinfo>
 
 #include "facilities/commonUtilities.h"
 
@@ -79,7 +77,7 @@ namespace timeSystem {
     return std::cerr << getName() << ": " << m_method_name << ": ";
   }
 
-  bool PulsarTestApp::compareNumericString(const std::string & string_value, const std::string & string_reference) {
+  bool PulsarTestApp::compareNumericString(const std::string & string_value, const std::string & string_reference) const {
     // Try string comparison first.
     if (string_value == string_reference) return false;
 
@@ -461,18 +459,10 @@ namespace timeSystem {
     } catch (const std::exception & x) {
       // Simulate the behavior of balistic_main.cxx in st_app package.
       exception_caught = true;
-
-      // Report the type of the exception if possible, using typeid; typeid can throw so be careful:
-      const char * type_name = "std::exception";
-      try {
-        type_name = typeid(x).name();
-      } catch (...) {
-        // Ignore problems with typeid.
-      }
-      st_stream::sterr << "Caught " << type_name << " at the top level: " << x.what() << std::endl;
+      writeException(st_stream::sterr, x);
 
     } catch (...) {
-      // Catch everything else and report it.
+      // Catch everything else and report it as an error in this unit test.
       exception_caught = true;
       err() << "Unknown exception thrown by application \"" << app_ptr->getName() << "\"" << std::endl;
     }
