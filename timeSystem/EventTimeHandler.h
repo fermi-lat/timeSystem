@@ -20,7 +20,7 @@ namespace timeSystem {
   class AbsoluteTime;
   class BaryTimeComputer;
   class EventTimeHandler;
-  class Mjd;
+  struct Mjd;
 
   /** \class IEventTimeHandlerFactory
       \brief Abstract base class for EventTimeHandlerFactory.
