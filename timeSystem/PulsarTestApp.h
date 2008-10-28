@@ -8,7 +8,9 @@
 
 #include <iostream>
 #include <set>
+#include <stdexcept>
 #include <string>
+#include <typeinfo>
 
 #include "st_app/StApp.h"
 
@@ -60,6 +62,13 @@ namespace timeSystem {
       std::ostream & err();
 
     protected:
+      /** \brief Write text representation of a standard exception to a given output stream.
+          \param os Output stream to which text representation of a standard exception is to be written.
+          \param exception_object Standard exception object, whose text representation is to be written.
+      */
+      template <typename StreamType>
+      StreamType & writeException(StreamType & os, const std::exception & exception_object) const;
+
       /** \brief Helper method to compare a character string with a reference string, with a tolerance for
                  numerical expressions in the character strings. For example, string "abc 0.0001 de" is considered
                  equivalent to "abc 1e-4 de" by this method. The method returns false if the character string of interest
@@ -67,7 +76,7 @@ namespace timeSystem {
           \param string_value Character string to be checked against a reference string.
           \param string_reference Reference string for a character string of interest to be checked against.
       */
-      bool compareNumericString(const std::string & string_value, const std::string & string_reference);
+      bool compareNumericString(const std::string & string_value, const std::string & string_reference) const;
 
       /** \brief Helper method to compare an output FITS file with its reference file in data/outref/ directory.
           \param out_file Name of an output FITS file to be compared with its reference.
@@ -119,6 +128,21 @@ namespace timeSystem {
       std::string m_data_dir;
       std::string m_outref_dir;
   };
+
+  template <typename StreamType>
+  StreamType & PulsarTestApp::writeException(StreamType & os, const std::exception & exception_object) const {
+    // Report the type of the exception if possible, using typeid; typeid can throw so be careful:
+    const char * type_name = "std::exception";
+    try {
+      type_name = typeid(exception_object).name();
+    } catch (...) {
+      // Ignore problems with typeid.
+    }
+    os << "Caught " << type_name << " at the top level: " << exception_object.what() << std::endl;
+
+    // Return the stream.
+    return os;
+  }
 
 }
 
