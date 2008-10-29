@@ -5,6 +5,9 @@
 
 \verbatim
 --------------------------------------------------------------------------------
+29-oct-2008    v6r2p2 MH  Modify unit test to be tolerate larger rounding errors
+                          and platform-dependent error messages. Silence more
+                          compiler warnings.
 28-oct-2008    v6r2p1 JP  Silence compiler warning.
 27-oct-2008      v6r2 MH  Improve the unit test for robustness. Improve prompts.
 24-oct-2008      v6r1 MH  Add tests of the application class to the unit test.
