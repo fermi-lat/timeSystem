@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Tue Oct 28 19:58:59 PDT 2008
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Remove unnecessary variable names to silence warnings.
+    *
+------------------------------------------------------------
 User: hirayama  Tue Oct 28 16:48:26 PDT 2008
 timeSystem/src/test
 
