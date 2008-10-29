@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Tue Oct 28 23:29:38 PDT 2008
+timeSystem/src
+
+Modified Files:
+	PulsarTestApp.cxx 
+Log Message:
+Loosen comparison criteria. Localize and rename constants (cosmetic).
+    *
+------------------------------------------------------------
 User: hirayama  Tue Oct 28 20:44:34 PDT 2008
 timeSystem/src
 
