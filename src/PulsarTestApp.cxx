@@ -112,9 +112,9 @@ namespace timeSystem {
       } else {
         // Compare as a double value if it is a number.
         static const double tolerance_high = std::numeric_limits<double>::epsilon() * 1000.;
-        static const double tolerance_low = 1.e-2;
-        static const double small_number_boundary = 1.e-6;
-        static const double large_number_boundary = small_number_boundary / tolerance_high;
+        static const double tolerance_low = 1.e-1;
+        static const double tolerance_abs = 1.e-6;
+        static const double large_number_boundary = tolerance_abs / tolerance_high;
 
         // Convert the value of interest.
         errno = 0;
@@ -131,7 +131,7 @@ namespace timeSystem {
           // Apply loose comparison criteria for smaller numbers.
           double diff = std::fabs(double_val - double_ref);
           double ratio = std::fabs(diff / double_ref);
-          if (diff > small_number_boundary || ratio > tolerance_low) mismatch_found = true;
+          if (diff > tolerance_abs || ratio > tolerance_low) mismatch_found = true;
 
         } else {
           // Apply the highest comparison criteria for larger numbers.
