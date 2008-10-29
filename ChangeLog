@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Tue Oct 28 20:44:34 PDT 2008
+timeSystem/src
+
+Modified Files:
+	PulsarTestApp.cxx 
+Log Message:
+Improve numerical comparisons to avoid picking up rounding errors.
+    *
+------------------------------------------------------------
 User: hirayama  Tue Oct 28 19:58:59 PDT 2008
 timeSystem/src/test
 
