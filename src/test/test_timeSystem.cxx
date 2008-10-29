@@ -446,32 +446,32 @@ void TimeSystemTestApp::testDuration() {
 
   // Test of the constructor that takes the integer and the fractional parts for detection of bad fractional parts.
   try {
-    Duration dur(+1, -0.1, "Day");
+    Duration(+1, -0.1, "Day");
     err() << "Duration constructor did not throw an exception for Duration(+1, -0.1, \"Day\")" << std::endl;
   } catch (const std::exception &) {
   }
   try {
-    Duration dur(+1, +1.0, "Day");
+    Duration(+1, +1.0, "Day");
     err() << "Duration constructor did not throw an exception for Duration(+1, +1.0, \"Day\")" << std::endl;
   } catch (const std::exception &) {
   }
   try {
-    Duration dur(-1, +0.1, "Day");
+    Duration(-1, +0.1, "Day");
     err() << "Duration constructor did not throw an exception for Duration(-1, +0.1, \"Day\")" << std::endl;
   } catch (const std::exception &) {
   }
   try {
-    Duration dur(-1, -1.0, "Day");
+    Duration(-1, -1.0, "Day");
     err() << "Duration constructor did not throw an exception for Duration(-1, -1.0, \"Day\")" << std::endl;
   } catch (const std::exception &) {
   }
   try {
-    Duration dur(0, +1.0, "Day");
+    Duration(0, +1.0, "Day");
     err() << "Duration constructor did not throw an exception for Duration(0, +1.0, \"Day\")" << std::endl;
   } catch (const std::exception &) {
   }
   try {
-    Duration dur(0, -1.0, "Day");
+    Duration(0, -1.0, "Day");
     err() << "Duration constructor did not throw an exception for Duration(0, -1.0, \"Day\")" << std::endl;
   } catch (const std::exception &) {
   }
@@ -487,28 +487,28 @@ void TimeSystemTestApp::testDuration() {
   // --- Case which should *not* overflow, but is close to overflowing.
   double sec = large_day * SecPerDay();
   try {
-    Duration dur(0, sec);
+    Duration(0, sec);
   } catch (const std::exception & x) {
     err() << "Duration constructor threw an exception for " << sec << " seconds unexpectedly: " << x.what() << std::endl;
   }
   // --- Case which should *not* underflow, but is close to underflowing.
   sec = small_day * SecPerDay();
   try {
-    Duration dur(0, sec);
+    Duration(0, sec);
   } catch (const std::exception & x) {
     err() << "Duration constructor threw an exception for " << sec << " seconds unexpectedly: " << x.what() << std::endl;
   }
   // --- Case which should overflow.
   sec = overflow_day * SecPerDay();
   try {
-    Duration dur(0, sec);
+    Duration(0, sec);
     err() << "Duration constructor did not throw an exception for " << sec << " seconds." << std::endl;
   } catch (const std::exception &) {
   }
   // --- Case which should underflow.
   sec = underflow_day * SecPerDay();
   try {
-    Duration dur(0, sec);
+    Duration(0, sec);
     err() << "Duration constructor did not throw an exception for " << sec << " seconds." << std::endl;
   } catch (const std::exception &) {
   }
@@ -526,7 +526,7 @@ void TimeSystemTestApp::testDuration() {
     // --- Case which should *not* overflow, but is close to overflowing.
     double target_time = large_day * conversion_factor;
     try {
-      Duration dur(target_time, time_unit_name);
+      Duration(target_time, time_unit_name);
     } catch (const std::exception & x) {
       err() << "Duration constructor threw an exception for Duration(" << target_time << ", \"" << time_unit_name <<
         "\") unexpectedly: " << x.what() << std::endl;
@@ -535,7 +535,7 @@ void TimeSystemTestApp::testDuration() {
     // --- Case which should *not* underflow, but is close to underflowing.
     target_time = small_day * conversion_factor;
     try {
-      Duration dur(target_time, time_unit_name);
+      Duration(target_time, time_unit_name);
     } catch (const std::exception & x) {
       err() << "Duration constructor threw an exception for Duration(" << target_time << ", \"" << time_unit_name <<
         "\") unexpectedly: " << x.what() << std::endl;
@@ -544,7 +544,7 @@ void TimeSystemTestApp::testDuration() {
     // --- Case which should overflow.
     target_time = overflow_day * conversion_factor;
     try {
-      Duration dur(target_time, time_unit_name);
+      Duration(target_time, time_unit_name);
       err() << "Duration constructor did not throw an exception for Duration(" << target_time << ", \"" << time_unit_name <<
         "\")." << std::endl;
     } catch (const std::exception &) {
@@ -553,7 +553,7 @@ void TimeSystemTestApp::testDuration() {
     // --- Case which should underflow.
     target_time = underflow_day * conversion_factor;
     try {
-      Duration dur(target_time, time_unit_name);
+      Duration(target_time, time_unit_name);
       err() << "Duration constructor did not throw an exception for Duration(" << target_time << ", \"" << time_unit_name <<
         "\")." << std::endl;
     } catch (const std::exception &) {
