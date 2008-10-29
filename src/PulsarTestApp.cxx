@@ -86,7 +86,6 @@ namespace timeSystem {
     char * ptr_val_next(0);
     const char * ptr_ref_cur(string_reference.c_str());
     char * ptr_ref_next(0);
-    double tolerance = std::numeric_limits<double>::epsilon() * 1000.;
 
     // Loop over reference string.
     bool mismatch_found = false;
@@ -112,12 +111,31 @@ namespace timeSystem {
 
       } else {
         // Compare as a double value if it is a number.
+        static const double tolerance_high = std::numeric_limits<double>::epsilon() * 1000.;
+        static const double tolerance_low = 1.e-2;
+        static const double small_number_boundary = 1.e-6;
+        static const double large_number_boundary = small_number_boundary / tolerance_high;
+
+        // Convert the value of interest.
         errno = 0;
         double double_val = std::strtod(ptr_val_cur, &ptr_val_next);
-        if (errno) mismatch_found = true;
-        else if (double_val != double_ref) {
-          if (double_ref == 0.0) mismatch_found = true;
-          else if (std::fabs(double_val/double_ref - 1.) > tolerance) mismatch_found = true;
+        if (errno) {
+          // Flag a conversion error as a mismatch.
+          mismatch_found = true;
+
+        } else if (0. == double_ref) {
+          // Require exact match when a reference is 0 (zero).
+          if (double_val != double_ref) mismatch_found = true;
+
+        } else if (double_ref < large_number_boundary) {
+          // Apply loose comparison criteria for smaller numbers.
+          double diff = std::fabs(double_val - double_ref);
+          double ratio = std::fabs(diff / double_ref);
+          if (diff > small_number_boundary || ratio > tolerance_low) mismatch_found = true;
+
+        } else {
+          // Apply the highest comparison criteria for larger numbers.
+          if (std::fabs(double_val/double_ref - 1.) > tolerance_high) mismatch_found = true;
         }
         ptr_ref_cur = ptr_ref_next;
         ptr_val_cur = ptr_val_next;
