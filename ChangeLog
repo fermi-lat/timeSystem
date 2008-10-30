@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Thu Oct 30 13:13:20 PDT 2008
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Use less strict test data for checking tolerance on an opposite sky position.
+    *
+------------------------------------------------------------
 TAG
 Tag name: timeSystem-06-02-03, operation: add
 Package: timeSystem
