@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Thu Oct 30 11:38:20 PDT 2008
+timeSystem/src
+
+Modified Files:
+	PulsarTestApp.cxx 
+Log Message:
+Further loosen comparison criteria to give more tolerance to pulse phase values.
+    *
+------------------------------------------------------------
 TAG
 Tag name: timeSystem-06-02-02, operation: add
 Package: timeSystem
