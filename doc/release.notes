@@ -5,6 +5,7 @@
 
 \verbatim
 --------------------------------------------------------------------------------
+30-oct-2008    v6r2p3 MH  Give larger tolerance for pulse phase comparison.
 29-oct-2008    v6r2p2 MH  Modify unit test to be tolerate larger rounding errors
                           and platform-dependent error messages. Silence more
                           compiler warnings.
