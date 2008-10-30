@@ -113,7 +113,7 @@ namespace timeSystem {
         // Compare as a double value if it is a number.
         static const double tolerance_high = std::numeric_limits<double>::epsilon() * 1000.;
         static const double tolerance_low = 1.e-1;
-        static const double tolerance_abs = 1.e-6;
+        static const double tolerance_abs = 1.e-5;
         static const double large_number_boundary = tolerance_abs / tolerance_high;
 
         // Convert the value of interest.
