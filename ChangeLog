@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+TAG
+Tag name: v6r2p2, operation: mov
+Package: timeSystem
+User: glastrm  Wed Oct 29 20:06:25 2008
+Files:
+  timeSystem/SConscript  1.16
+
+    *
+------------------------------------------------------------
 User: glastrm  Wed Oct 29 20:06:19 PDT 2008
 timeSystem
 
