@@ -2851,7 +2851,7 @@ void TimeSystemTestApp::testGlastTimeHandler() {
   double ra_wrong = ra + 1.e-8;
   double dec_wrong = dec + 1.e-8;
   double ra_opposite = ra + 180.;
-  double dec_opposite = -dec;
+  double dec_opposite = -dec + 1.e-8; // Give a little cushion to avoid picking up rounding errors.
   std::string pl_ephem = "JPL DE405";
   bool from_header = true;
   bool from_column = false;
