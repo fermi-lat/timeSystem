@@ -389,8 +389,14 @@ namespace timeSystem {
     m_vect_nom = computeThreeVector(m_ra_nom, m_dec_nom);
 
     // Pre-compute threshold in sky position comparison.
-    m_max_vect_diff = 2. * std::sin(angular_tolerance / 2. / RADEG);
-    m_max_vect_diff *= m_max_vect_diff;
+    if (angular_tolerance > 180. || angular_tolerance < -180.) {
+      // Accept all sky positions.
+      // Note: The square of the length of difference in two unit vectors cannot be larger than 4.0.
+      m_max_vect_diff = 5.;
+    } else {
+      m_max_vect_diff = 2. * std::sin(angular_tolerance / 2. / RADEG);
+      m_max_vect_diff *= m_max_vect_diff;
+    }
 
     // Get PLEPHEM header keywords, if times in this table are barycentered.
     std::string pl_ephem;

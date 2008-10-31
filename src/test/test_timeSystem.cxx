@@ -2851,7 +2851,7 @@ void TimeSystemTestApp::testGlastTimeHandler() {
   double ra_wrong = ra + 1.e-8;
   double dec_wrong = dec + 1.e-8;
   double ra_opposite = ra + 180.;
-  double dec_opposite = -dec + 1.e-8; // Give a little cushion to avoid picking up rounding errors.
+  double dec_opposite = -dec;
   std::string pl_ephem = "JPL DE405";
   bool from_header = true;
   bool from_column = false;
@@ -3235,14 +3235,14 @@ void TimeSystemTestApp::testGlastTimeHandler() {
       ") threw an exception with angular tolerance of zero (0) degree." << std::endl;
   }
 
-  // Test large angular tolerance of 180 degrees.
-  angular_tolerance = 180.;
+  // Test large angular tolerance over 180 degrees.
+  angular_tolerance = 180.1;
   handler->initTimeCorrection(sc_file, "SC_DATA", pl_ephem, match_solar_eph, angular_tolerance);
   try {
     handler->setSourcePosition(ra_wrong, dec_wrong);
   } catch (const std::exception &) {
     err() << "GlastBaryTimeHandler::setSourcePosition(" << ra_wrong << ", " << dec_wrong << 
-      ") threw an exception with angular tolerance of 180 degrees." << std::endl;
+      ") threw an exception with angular tolerance of 180.1 degrees." << std::endl;
   }
 
   // Test large angular difference, with small angular tolerance.
@@ -3251,18 +3251,18 @@ void TimeSystemTestApp::testGlastTimeHandler() {
   try {
     handler->setSourcePosition(ra_opposite, dec_opposite);
     err() << "GlastBaryTimeHandler::setSourcePosition(\"TSTART\", " << ra_opposite << ", " << dec_opposite << 
-      ") did not throw an exception with angular tolerance of zero (0) degrees." << std::endl;
+      ") did not throw an exception with angular tolerance of 1e-8 degrees." << std::endl;
   } catch (const std::exception &) {
   }
 
-  // Test large angular difference, with large angular tolerance of 180 degrees.
-  angular_tolerance = 180.;
+  // Test large angular difference, with large angular tolerance over 180 degrees.
+  angular_tolerance = 180.1;
   handler->initTimeCorrection(sc_file, "SC_DATA", pl_ephem, match_solar_eph, angular_tolerance);
   try {
     handler->setSourcePosition(ra_opposite, dec_opposite);
   } catch (const std::exception &) {
     err() << "GlastBaryTimeHandler::setSourcePosition(" << ra_opposite << ", " << dec_opposite << 
-      ") threw an exception with angular tolerance of 180 degrees." << std::endl;
+      ") threw an exception with angular tolerance of 180.1 degrees." << std::endl;
   }
 
   // Test checking solar system ephemeris name, with a non-barycentered event extension.
