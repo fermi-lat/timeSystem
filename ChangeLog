@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Fri Oct 31 14:37:43 PDT 2008
+timeSystem/src
+
+Modified Files:
+	GlastTimeHandler.cxx 
+Log Message:
+Improve treatment of angular tolerance for robustness and completeness.
+    *
+------------------------------------------------------------
 TAG
 Tag name: timeSystem-06-02-04, operation: add
 Package: timeSystem
