@@ -1,5 +1,14 @@
 ------------------------------------------------------------
 User: hirayama  Fri Oct 31 14:37:43 PDT 2008
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Improve treatment of angular tolerance for robustness and completeness.
+    *
+------------------------------------------------------------
+User: hirayama  Fri Oct 31 14:37:43 PDT 2008
 timeSystem/src
 
 Modified Files:
