@@ -1,4 +1,4 @@
-/* $Id: axBary.c,v 1.1.1.1 2006/04/21 20:56:15 peachey Exp $ */
+/* $Id: axBary.c,v 1.2 2007/08/10 21:39:42 hirayama Exp $ */
 /*--------------------------------------------------------------------
  *
  *    File:        axBary.c
@@ -86,21 +86,28 @@ int axBary (char *inFile, char *orbitFile, char *outFile,
 	    double ra, double dec, char *refFrame, int debug)
 {
 
-  char *version = "axBary - $Revision: 1.1.1.1 $ $Date: 2006/04/21 20:56:15 $" ;
+  char *version = "axBary - $Revision: 1.2 $ $Date: 2007/08/10 21:39:42 $" ;
   char *toTDB = "TDB" ;  /* could give user option of TCB, but be careful,
 			  * the radio database assumes TDB */
   fitsfile *fits_file = NULL ;
   char instrument[80] = "" ;
-  char timeunit[16], plephem[16], timesys[16], timeref[16], radecsys[16],
+/* Masaharu Hirayama 1 November 2008: Commented out variables 'timeref' in the
+   following line because it is not used in any part of this function. */
+  char timeunit[16], plephem[16], timesys[16], /*timeref[16],*/ radecsys[16],
     missionk[32], extname[32], dateobs[32], dateend[32], crdate[32] ;
   char frame[16] ;
   char line[1025] ;
   double tstart, tstop, ranom, decnom, timezero, time[NTIMBUF], dir[3] ;
+/* Masaharu Hirayama 1 November 2008: Commented out variables 'utcfinit' in the
+   following line because it is not used in any part of this function.
   double utcfinit ;
+*/
   double equinox, met2sec ;
   double clockcorr, t ;
   MJDTime mtstart, mtstop ;
-  int i, j, k, l, m, n ;
+/* Masaharu Hirayama 1 November 2008: Commented out variables 'l' in the
+   following line because it is not used in any part of this function. */
+  int i, j, k, /*l,*/ m, n ;
   int hdu, error=0, htype ;
   int princhdu = 0 ;
   int convdir = 0 ;
@@ -675,7 +682,10 @@ void errexit (int error, fitsfile *fits_file, char *outFile,
 	      int debug)
 {
   int ierr ;
+/* Masaharu Hirayama 1 November 2008: Commented out variables 'line' in the
+   following line because it is not used in any part of this function.
   char line[1024] ;
+*/
 
   if ( fits_file )
     fits_close_file (fits_file, &ierr) ;

@@ -1,4 +1,4 @@
-/* $Id: clock.c,v 1.1.1.1 2005/08/03 20:42:27 peachey Exp $ */
+/* $Id: clock.c,v 1.1.1.1 2006/04/21 20:56:15 peachey Exp $ */
 /*------------------------------------------------------------------
  *
  *  File:        clock.c
@@ -77,7 +77,12 @@ double clockCorr (double time, double timezero, double *timeparms,
     *timeparms = -1.0 ;
     return timezero ;
   }
+/* Masaharu Hirayama 1 November 2008: Commented out the following line
+   because 1) it does not return anything when this function should
+   return a number of 'double' type, and 2) the flow of execution
+   never reaches this statement.
   return ;
+*/
 }
 
 double xteClockCorr (double time, double timezero, double *timeparms,

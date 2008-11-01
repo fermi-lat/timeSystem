@@ -1,4 +1,4 @@
-char *bcrcsid = "RCS: $Id: bary.c,v 1.1.1.1 2005/08/03 20:42:27 peachey Exp $" ;
+char *bcrcsid = "RCS: $Id: bary.c,v 1.1.1.1 2006/04/21 20:56:15 peachey Exp $" ;
 /*-----------------------------------------------------------------------
  *
  *  bary.c
@@ -732,7 +732,9 @@ double barycorr (MJDTime *mjdXT, double *sourcedir, double *scposn)
   const double *rce, *rcs, *vce;
   double rca[3], rsa[3];
   const double *eposn ;
-  double total, sundis, sunsiz, cth ;
+/* Masaharu Hirayama 1 November 2008: Commented out variable 'sunsiz' in the
+   following line because it is not used in any part of this function. */
+  double total, sundis, /*sunsiz,*/ cth ;
   MJDTime mjdXX ;
   MJDTime *mjdTT ;
   int i;
@@ -855,25 +857,41 @@ int timeparms (char *insource, MJDTime *time, double roffset, int bin,
 	       PsrTimPar *ptp, PsrBinPar *pbp, int debug)
 {
   FILE *PD ;
-  int i, j ;
+/* Masaharu Hirayama 1 November 2008: Commented out variable 'j' in the
+   following line because it is not used in any part of this function. */
+  int i/*, j*/ ;
   int error ;
+/* Masaharu Hirayama 1 November 2008: Commented out variable 'filename' in the
+   following line because it is not used in any part of this function.
   char filename[256] ;
+*/
   char line[256] ;
   char line2[256] ;
+/* Masaharu Hirayama 1 November 2008: Commented out variables 'mjd' and 'dt' in the
+   following lines because it is not used in any part of this function.
   double mjd[2] ;
   long dt ;
+*/
   char bsource[32] ;
   char jsource[32] ;
   char *dsource ;
   char *source ;
   char binsource[32] ;
+/* Masaharu Hirayama 1 November 2008: Commented out variables 'rah', 'ram', 'decd', and 'decm' in the
+   following line because it is not used in any part of this function.
   int rah, ram, decd, decm ;
-  double ras, decs, mjdf, fd, dfd, ddfd, dddfd, rms, lastrms, mjdftrun ;
+*/
+/* Masaharu Hirayama 1 November 2008: Commented out variables 'ras' and 'decs' in the
+   following line because it is not used in any part of this function. */
+  double /*ras, decs,*/ mjdf, fd, dfd, ddfd, dddfd, rms, lastrms, mjdftrun ;
   double tr, dtt, dir[3] ;
   MJDTime mtime ;
   double scposn0[3] = {0.0, 0.0, 0.0} ;
   long mjd1, mjd2, mjdi, mjdt, lastmjd2 ;
+/* Masaharu Hirayama 1 November 2008: Commented out variables 'sdec' in the
+   following line because it is not used in any part of this function.
   char sdec[12] ;
+*/
   int nocover = 0 ;
   int tdenum, fbin ;
   double ra, dec ;
@@ -1155,7 +1173,10 @@ timeline (char *line, char *bsource, double *ra, double *dec,
 	  double *fd, double *dfd, double *ddfd, double *dddfd,
 	  double *rms, int *fbin, int *denum, char *jsource) {
 
+/* Masaharu Hirayama 1 November 2008: Commented out variables 'i' in the
+   following line because it is not used in any part of this function.
   int i ;
+*/
   int rah, ram, decd, decm ;
   double ras, decs ;
   char sdec[12], obs[12], bino, dum1[16], dum2[16] ;
@@ -1292,7 +1313,10 @@ double absphase (MJDTime *time, PsrTimPar *ptp, int binary, PsrBinPar *pbp,
   int fi ;
   double ff ;
   double phase=0.0 ;
+/* Masaharu Hirayama 1 November 2008: Commented out variables 'sdec' in the
+   following line because it is not used in any part of this function.
   double binphase ;
+*/
 
   if ( bcorr ) {
     time->MJDfr += barycorr (time, dir, scorbit(oefile,time,error)) / SECDAY ;

@@ -1,4 +1,4 @@
-/*  $Id: ctatv.c,v 1.1.1.1 2005/08/03 20:42:27 peachey Exp $
+/*  $Id: ctatv.c,v 1.1.1.1 2006/04/21 20:56:15 peachey Exp $
  *----------------------------------------------------------------------
  *
  *     Routine name: CTATV
@@ -59,7 +59,9 @@
 double ctatv (long jdno, double fjdno)
 {
 
-  double t, tt, t1, t2, t3, t4, t5, t24, t25, t29, t30, t31 ;
+/* Masaharu Hirayama 1 November 2008: Commented out variable 't31' in the
+   following line because it is not used in any part of this function. */
+  double t, tt, t1, t2, t3, t4, t5, t24, t25, t29, t30/*, t31*/ ;
 
       t = ((jdno-2451545) + fjdno)/(365250.0) ;
       tt = t*t ;
