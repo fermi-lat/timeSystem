@@ -15,7 +15,8 @@
 #include "tip/Table.h"
 
 extern "C" {
-#include "bary.h"
+// Copied from bary.h.
+double ctatv (long, double) ;
 }
 
 #include <cctype>
