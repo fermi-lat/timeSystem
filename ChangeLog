@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Sat Nov  1 13:24:41 PDT 2008
+timeSystem/src
+
+Modified Files:
+	BaryTimeComputer.cxx GlastTimeHandler.cxx TimeSystem.cxx 
+Log Message:
+Copy necessary part of bary.h instead of including it as a whole, in order to silence compiler warning.
+    *
+------------------------------------------------------------
 User: hirayama  Fri Oct 31 14:38:09 PDT 2008
 timeSystem/src
 
