@@ -1,4 +1,4 @@
-char *dplrcsid = "RCS: $Id: dpleph.c,v 1.1.1.1 2005/08/03 20:42:27 peachey Exp $" ;
+char *dplrcsid = "RCS: $Id: dpleph.c,v 1.1.1.1 2006/04/21 20:56:15 peachey Exp $" ;
 /*-----------------------------------------------------------------------
  *
  *  dpleph.c
@@ -99,7 +99,10 @@ const double *dpleph (double *jd, int ntarg, int ncent)
   static double posn[12] ;
   long jdint ;
   double jdtmp ;
+/* Masaharu Hirayama 1 November 2008: Commented out variable 'i' in the
+   following line because it is not used in any part of this function.
   int i ;
+*/
 
 /*
  *     Make sure jd is in proper range
@@ -156,7 +159,10 @@ const double *dpleph (double *jd, int ntarg, int ncent)
 int state (double *jd, int ntarg, int ncent, double *posn)
 {
   double t, t1, t2 ;
+/* Masaharu Hirayama 1 November 2008: Commented out variable 'i' in the
+   following line because it is not used in any part of this function.
   int i ;
+*/
   long recnum ;
 
 /*
@@ -335,7 +341,9 @@ int interp (double *buf, double t1, int ncf, int na, double *pv)
 {
 
   static double pc[18], vc[18] ;
-  int i, j, k, l ;
+/* Masaharu Hirayama 1 November 2008: Commented out variable 'k' in the
+   following line because it is not used in any part of this function. */
+  int i, j, /*k,*/ l ;
   static int np = 2 ;
   static int nv = 3 ;
   static double twot = 0.0 ;
