@@ -23,7 +23,9 @@
 #include <vector>
 
 extern "C" {
-#include "bary.h"
+// Copied from bary.h.
+#define RADEG   57.2957795130823
+double *glastscorbit (char *, double, int *) ;       /* GLAST-specific */
 }
 
 namespace timeSystem {

@@ -18,7 +18,10 @@
 #include <vector>
 
 extern "C" {
-#include "bary.h"
+// Copied from bary.h.
+#define RADEG   57.2957795130823
+int initephem (int, int *, double *, double *, double *) ;
+const double *dpleph (double *, int, int) ;
 }
 
 namespace {
