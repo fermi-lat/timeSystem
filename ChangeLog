@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Sat Nov  1 13:27:19 PDT 2008
+timeSystem/src
+
+Modified Files:
+	axBary.c bary.c clock.c ctatv.c dpleph.c 
+Log Message:
+Comment out unnecessary local variables to silence compiler warning.
+    *
+------------------------------------------------------------
 User: hirayama  Sat Nov  1 13:24:41 PDT 2008
 timeSystem/src
 
