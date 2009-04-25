@@ -15,6 +15,8 @@
 #include <memory>
 #include <stdexcept>
 
+#include "facilities/commonUtilities.h"
+
 #include "hoops/hoops.h"
 
 #include "st_app/AppParGroup.h"
@@ -303,6 +305,15 @@ namespace timeSystem {
       //double tierabso = 0.0;
       //output_header["TIERABSO"].set(tierabso);
       //output_header["TIERABSO"].setComment("absolute precision of clock correction");
+
+      // Update FILENAME header keyword if exists.
+      if (output_header.find("FILENAME") != output_header.end()) {
+        std::string basename = outFile_s;
+        std::string path_delimiter = facilities::commonUtilities::joinPath("", "");
+        std::string::size_type end_of_path = basename.find_last_of(path_delimiter);
+        if (end_of_path != std::string::npos) basename.erase(0, end_of_path+1);
+        output_header["FILENAME"].set(basename);
+      }
     }
 
     // Get spacecraft file name, spacecraft data extension name, and angular tolerance.
