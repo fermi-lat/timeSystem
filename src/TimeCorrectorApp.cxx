@@ -256,6 +256,17 @@ namespace timeSystem {
     double ra = pars["ra"];
     double dec = pars["dec"];
 
+    // Set creator name.
+    std::string creator_name(getName() + " " + getVersion());
+
+    // Construct a character string representing file creation time in UTC.
+    // Note: UTC is the default time system for DATE header keyword in the FITS standard.
+    std::time_t current_time = std::time(0);
+    struct std::tm * gm_time_struct = std::gmtime(&current_time);
+    char gm_time_char[] = "YYYY-MM-DDThh:mm:ss";
+    std::strftime(gm_time_char, sizeof(gm_time_char), "%Y-%m-%dT%H:%M:%S", gm_time_struct);
+    std::string date_keyword_value(gm_time_char);
+
     // Modify the output file so that an appropriate EventTimeHandler object will be created from it.
     for (tip::FileSummary::size_type ext_index = 0; ext_index < file_summary.size(); ++ext_index) {
       // Open the extension of the output file.
@@ -282,9 +293,9 @@ namespace timeSystem {
       output_header["PLEPHEM"].setComment("solar system ephemeris used for arrival time corrections");
       output_header["TIMEZERO"].set(0.);
       output_header["TIMEZERO"].setComment("clock correction");
-      output_header["CREATOR"].set(getName() + " " + getVersion());
+      output_header["CREATOR"].set(creator_name);
       output_header["CREATOR"].setComment("software and version creating file");
-      output_header["DATE"].set(output_header.formatTime(time(0)));
+      output_header["DATE"].set(date_keyword_value);
       output_header["DATE"].setComment("file creation date (YYYY-MM-DDThh:mm:ss UT)");
 
       // Determine TIERRELA value, in the same manner as in axBary.c by Arnold Rots, and set it to the header.
@@ -361,11 +372,7 @@ namespace timeSystem {
 
       // Write out all the parameters into HISTORY keywords.
       tip::Header & output_header = output_handler->getHeader();
-      std::string creator_value;
-      output_header["CREATOR"].get(creator_value);
-      std::string date_value;
-      output_header["DATE"].get(date_value);
-      output_header.addHistory("File created or modified by " + creator_value + " on " + date_value);
+      output_header.addHistory("File created or modified by " + creator_name + " on " + date_keyword_value);
       const st_app::AppParGroup & const_pars(pars);
       for (hoops::ConstGenParItor par_itor = const_pars.begin(); par_itor != const_pars.end(); ++par_itor) {
         std::ostringstream oss_par;
