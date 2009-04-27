@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Sun Apr 26 20:17:29 PDT 2009
+timeSystem/src
+
+Modified Files:
+	TimeCorrectorApp.cxx 
+Log Message:
+Use UTC time for DATE keyword value, instead of local time.
+    *
+------------------------------------------------------------
 User: hirayama  Fri Apr 24 17:47:35 PDT 2009
 timeSystem/data/outref
 
