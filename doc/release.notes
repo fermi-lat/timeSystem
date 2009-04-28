@@ -5,6 +5,8 @@
 
 \verbatim
 --------------------------------------------------------------------------------
+28-apr-2009      v6r3 MH  Report file creation time in UT (JIRA PULS-52).
+                          Clean up C source codes. Fix bugs. Improve Doxygen documents.
 30-oct-2008    v6r2p4 MH  Modify unit test to use less strict test data for
                           checking tolerance on opposite sky position.
 30-oct-2008    v6r2p3 MH  Give larger tolerance for pulse phase comparison.
