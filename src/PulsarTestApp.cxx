@@ -305,13 +305,9 @@ namespace timeSystem {
               // Compare the number of columns.
               tip::Table::FieldCont::size_type out_num_col = out_table->getValidFields().size();
               tip::Table::FieldCont::size_type ref_num_col = ref_table->getValidFields().size();
-              if (out_num_row != ref_num_row) {
+              if (out_num_col != ref_num_col) {
                 err() << "HDU " << ext_name << " of file " << out_file << " contains " << out_num_col <<
                   " column(s), not " << ref_num_col << " as in reference file " << ref_file << std::endl;
-
-              } else if (out_num_row < 0) {
-                err() << "HDU " << ext_name << " of file " << out_file << " contains the negative number of columns: " <<
-                  out_num_col << std::endl;
 
               } else {
                 // Loop over all columns.
