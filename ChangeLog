@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Thu May  7 17:12:39 PDT 2009
+timeSystem/src
+
+Modified Files:
+	PulsarTestApp.cxx 
+Log Message:
+Fix minor bugs in the unit test.
+    *
+------------------------------------------------------------
 TAG
 Tag name: ScienceTools-09-12-00, operation: add
 Package: timeSystem
