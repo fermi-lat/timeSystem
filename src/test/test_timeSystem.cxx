@@ -14,13 +14,9 @@
 #include <stdexcept>
 #include <string>
 
-#include "facilities/commonUtilities.h"
-
 #include "st_app/AppParGroup.h"
 #include "st_app/StApp.h"
 #include "st_app/StAppFactory.h"
-
-#include "st_stream/st_stream.h"
 
 #include "timeSystem/AbsoluteTime.h"
 #include "timeSystem/BaryTimeComputer.h"
@@ -42,8 +38,30 @@
 static const std::string s_cvs_id("$Name:  $");
 
 using namespace st_app;
-using namespace st_stream;
 using namespace timeSystem;
+
+/** \class TimeCorrectorAppTester
+    \brief Test TimeCorrectorApp application (gtbary).
+*/
+class TimeCorrectorAppTester: public PulsarApplicationTester {
+  public:
+  /** \brief Construct a TimeCorrectorAppTester object.
+      \param test_app Unit test appliction of pulsar tool package, under which this application tester is to run.
+  */
+  TimeCorrectorAppTester(PulsarTestApp & test_app);
+
+  /// \brief Destruct this TimeCorrectorAppTester object.
+  virtual ~TimeCorrectorAppTester() throw() {}
+
+  /// \brief Returns an application object to be tested.
+  virtual st_app::StApp * createApplication() const;
+};
+
+TimeCorrectorAppTester::TimeCorrectorAppTester(PulsarTestApp & test_app): PulsarApplicationTester("gtbary", test_app) {}
+
+st_app::StApp * TimeCorrectorAppTester::createApplication() const {
+  return new TimeCorrectorApp();
+}
 
 /** \class TimeSystemTestApp
     \brief Test timeSystem package and applications in it.
@@ -88,12 +106,6 @@ class TimeSystemTestApp : public PulsarTestApp {
 
     /// \brief Test TimeCorrectorApp class.
     void testTimeCorrectorApp();
-
-  protected:
-    /** \brief Create an application object to be tested.
-        \param app_name Name of application to be tested.
-    */
-    virtual st_app::StApp * createApplication(const std::string & app_name) const;
 
   private:
     /** \brief Helper method for testDuration, to test getter methods of Duration class.
@@ -880,10 +892,9 @@ void TimeSystemTestApp::testOneDateTimeComputation(const moment_type & moment, c
 
 void TimeSystemTestApp::testTimeSystem() {
   setMethod("testTimeSystem");
-  using namespace facilities;
 
   // Set the default leap second file to a local copy of an actual leap second table.
-  std::string test_leap = commonUtilities::joinPath(commonUtilities::getDataPath("timeSystem"), "testls.fits");
+  std::string test_leap = prependDataPath("testls.fits");
   TimeSystem::setDefaultLeapSecFileName(test_leap);
 
   // Get access to all time systems which should exist.
@@ -1039,7 +1050,7 @@ void TimeSystemTestApp::testTimeSystem() {
   }
 
   // Set the bogus leap second file name to a local variable. This file contains a removal of a leap second.
-  std::string bogus_leap = commonUtilities::joinPath(commonUtilities::getDataPath("timeSystem"), "bogusls.fits");
+  std::string bogus_leap = prependDataPath("bogusls.fits");
 
   // Test loading specific file for leap second table, by first setting the default file name.
   TimeSystem::setDefaultLeapSecFileName(bogus_leap);
@@ -1375,8 +1386,7 @@ void TimeSystemTestApp::testAbsoluteTime() {
   setMethod("testAbsoluteTime");
 
   // Use the bogus leap second table for this unit test.
-  using namespace facilities;
-  std::string bogus_leap = commonUtilities::joinPath(commonUtilities::getDataPath("timeSystem"), "bogusls.fits");
+  std::string bogus_leap = prependDataPath("bogusls.fits");
   TimeSystem::loadLeapSeconds(bogus_leap);
 
   // Prepare test parameters.
@@ -2741,10 +2751,9 @@ class BogusTimeHandler3: public BogusTimeHandlerBase {
 
 void TimeSystemTestApp::testEventTimeHandlerFactory() {
   setMethod("testEventtTimeHandler");
-  using namespace facilities;
 
   // Prepare test parameters in this method.
-  std::string event_file = commonUtilities::joinPath(commonUtilities::getDataPath("timeSystem"), "my_pulsar_events_v3.fits");
+  std::string event_file = prependDataPath("my_pulsar_events_v3.fits");
 
   // Test creation of BogusTimeHandler1 (an EventTimeHandler sub-class) through its createInstance method.
   std::auto_ptr<EventTimeHandler> handler(0);
@@ -2831,17 +2840,16 @@ void TimeSystemTestApp::testEventTimeHandlerFactory() {
 
 void TimeSystemTestApp::testGlastTimeHandler() {
   setMethod("testGlastTimeHandler");
-  using namespace facilities;
 
   // Set tolerance for AbsoluteTime comparison.
   ElapsedTime time_tolerance("TT", Duration(0, 1.e-7));
 
   // Prepare test parameters in this method.
-  std::string event_file = commonUtilities::joinPath(commonUtilities::getDataPath("timeSystem"), "my_pulsar_events_v3.fits");
-  std::string event_file_geo = commonUtilities::joinPath(commonUtilities::getDataPath("timeSystem"), "my_pulsar_events_geo_v3.fits");
-  std::string event_file_bary = commonUtilities::joinPath(commonUtilities::getDataPath("timeSystem"), "my_pulsar_events_bary_v3.fits");
-  std::string event_file_copy = commonUtilities::joinPath(commonUtilities::getDataPath("timeSystem"), "my_pulsar_events_copy_v3.fits");
-  std::string sc_file = commonUtilities::joinPath(commonUtilities::getDataPath("timeSystem"), "my_pulsar_spacecraft_data_v3r1.fits");
+  std::string event_file = prependDataPath("my_pulsar_events_v3.fits");
+  std::string event_file_geo = prependDataPath("my_pulsar_events_geo_v3.fits");
+  std::string event_file_bary = prependDataPath("my_pulsar_events_bary_v3.fits");
+  std::string event_file_copy = prependDataPath("my_pulsar_events_copy_v3.fits");
+  std::string sc_file = prependDataPath("my_pulsar_spacecraft_data_v3r1.fits");
   double ra = 85.0482;
   double dec = -69.3319;
   double angular_tolerance = 1.e-8; // In degrees.
@@ -3389,6 +3397,9 @@ void TimeSystemTestApp::testGlastTimeHandler() {
 void TimeSystemTestApp::testTimeCorrectorApp() {
   setMethod("testTimeCorrectorApp");
 
+  // Create an application tester object.
+  TimeCorrectorAppTester app_tester(*this);
+
   // Prepare variables to create application objects.
   std::list<std::string> test_name_cont;
   test_name_cont.push_back("par1");
@@ -3397,27 +3408,29 @@ void TimeSystemTestApp::testTimeCorrectorApp() {
   test_name_cont.push_back("par4");
 
   // Prepare settings to be used in the tests.
-  std::string evfile_0540 = facilities::commonUtilities::joinPath(getDataPath(), "my_pulsar_events_v3.fits");
-  std::string scfile_0540 = facilities::commonUtilities::joinPath(getDataPath(), "my_pulsar_spacecraft_data_v3r1.fits");
+  std::string evfile_0540 = prependDataPath("my_pulsar_events_v3.fits");
+  std::string scfile_0540 = prependDataPath("my_pulsar_spacecraft_data_v3r1.fits");
   double ra_0540 = 85.0482;
   double dec_0540 = -69.3319;
-  std::string evfile_crab = facilities::commonUtilities::joinPath(getDataPath(), "ft1_beta2.fits");
-  std::string scfile_crab = facilities::commonUtilities::joinPath(getDataPath(), "ft2_beta2.fits");
+  std::string evfile_crab = prependDataPath("ft1_beta2.fits");
+  std::string scfile_crab = prependDataPath("ft2_beta2.fits");
   double ra_crab = 83.633208;
   double dec_crab = 22.014472;
-  std::string evfile_bary = facilities::commonUtilities::joinPath(getDataPath(), "my_pulsar_events_bary_v3.fits");
-  std::string evfile_geo = facilities::commonUtilities::joinPath(getDataPath(), "my_pulsar_events_geo_v3.fits");
+  std::string evfile_bary = prependDataPath("my_pulsar_events_bary_v3.fits");
+  std::string evfile_geo = prependDataPath("my_pulsar_events_geo_v3.fits");
 
   // Loop over parameter sets.
   for (std::list<std::string>::const_iterator test_itor = test_name_cont.begin(); test_itor != test_name_cont.end(); ++test_itor) {
     const std::string & test_name = *test_itor;
+    std::string log_file(getMethod() + "_" + test_name + ".log");
+    std::string log_file_ref(getMethod() + "_" + test_name + ".ref");
     std::string out_file(getMethod() + "_" + test_name + ".fits");
-    std::string ref_file(getMethod() + "_" + test_name + ".ref");
+    std::string out_file_ref(prependOutrefPath(out_file));
     std::set<std::string> col_name;
+    bool ignore_exception(false);
 
     // Set default parameters.
-    std::string app_name("gtbary");
-    st_app::AppParGroup pars(app_name);
+    st_app::AppParGroup pars(app_tester.getName());
     pars["evfile"] = "";
     pars["scfile"] = "";
     pars["outfile"] = "";
@@ -3436,7 +3449,6 @@ void TimeSystemTestApp::testTimeCorrectorApp() {
     pars["mode"] = "ql";
 
     // Set test-specific parameters.
-    bool expected_to_fail = false;
     if ("par1" == test_name) {
       // Test barycentric corrections.
       pars["evfile"] = evfile_0540;
@@ -3445,6 +3457,9 @@ void TimeSystemTestApp::testTimeCorrectorApp() {
       pars["ra"] = ra_0540;
       pars["dec"] = dec_0540;
       pars["tcorrect"] = "BARY";
+
+      log_file.erase();
+      log_file_ref.erase();
 
       col_name.insert("TIME");
       col_name.insert("START");
@@ -3459,6 +3474,9 @@ void TimeSystemTestApp::testTimeCorrectorApp() {
       pars["dec"] = dec_0540;
       pars["tcorrect"] = "GEO";
 
+      log_file.erase();
+      log_file_ref.erase();
+
       col_name.insert("TIME");
       col_name.insert("START");
       col_name.insert("STOP");
@@ -3471,13 +3489,16 @@ void TimeSystemTestApp::testTimeCorrectorApp() {
       pars["ra"] = ra_crab;
       pars["dec"] = dec_crab;
       pars["tcorrect"] = "BARY";
-      expected_to_fail = true;
 
-      remove(ref_file.c_str());
-      std::ofstream ofs(ref_file.c_str());
+      remove(log_file_ref.c_str());
+      std::ofstream ofs(log_file_ref.c_str());
       std::runtime_error error("Unsupported timing extension: HDU 1 (EXTNAME=EVENTS) of input file \"" + evfile_bary + "\"");
-      writeException(ofs, error);
+      app_tester.writeException(ofs, error);
       ofs.close();
+
+      out_file.erase();
+      out_file_ref.erase();
+      ignore_exception = true;
 
     } else if ("par4" == test_name) {
       // Test refusal of geocentric corrections on a geocentered file.
@@ -3487,13 +3508,16 @@ void TimeSystemTestApp::testTimeCorrectorApp() {
       pars["ra"] = ra_crab;
       pars["dec"] = dec_crab;
       pars["tcorrect"] = "GEO";
-      expected_to_fail = true;
 
-      remove(ref_file.c_str());
-      std::ofstream ofs(ref_file.c_str());
+      remove(log_file_ref.c_str());
+      std::ofstream ofs(log_file_ref.c_str());
       std::runtime_error error("Unsupported timing extension: HDU 0 (primary HDU) of input file \"" + evfile_geo + "\"");
-      writeException(ofs, error);
+      app_tester.writeException(ofs, error);
       ofs.close();
+
+      out_file.erase();
+      out_file_ref.erase();
+      ignore_exception = true;
 
     } else {
       // Skip this iteration.
@@ -3504,20 +3528,7 @@ void TimeSystemTestApp::testTimeCorrectorApp() {
     remove(out_file.c_str());
 
     // Test the application.
-    if (expected_to_fail) {
-      std::string log_file(getMethod() + "_" + test_name + ".log");
-      testApplication(app_name, pars, log_file, ref_file, "", col_name, true);
-    } else {
-      testApplication(app_name, pars, "", "", out_file, col_name);
-    }
-  }
-}
-
-st_app::StApp * TimeSystemTestApp::createApplication(const std::string & app_name) const {
-  if ("gtbary" == app_name) {
-    return new TimeCorrectorApp();
-  } else {
-    return 0;
+    app_tester.test(pars, log_file, log_file_ref, out_file, out_file_ref, col_name, ignore_exception);
   }
 }
 
