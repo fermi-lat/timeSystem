@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Sat May  9 20:50:59 PDT 2009
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Changes for improved PulsarTestApp and PulsarApplicationTester classes.
+    *
+------------------------------------------------------------
 User: hirayama  Sat May  9 20:50:28 PDT 2009
 timeSystem/src
 
