@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Sat May  9 20:50:28 PDT 2009
+timeSystem/timeSystem
+
+Modified Files:
+	PulsarTestApp.h 
+Log Message:
+Separate application test from PulsarTestApp class and create PulsarApplicationTester class. Replace getDataPath method with prependDataPath method. Add prependOutrefPath method.
+    *
+------------------------------------------------------------
 User: hirayama  Thu May  7 17:12:39 PDT 2009
 timeSystem/src
 
