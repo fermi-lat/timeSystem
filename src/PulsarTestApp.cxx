@@ -56,8 +56,12 @@ namespace timeSystem {
     if (m_failed) throw std::runtime_error(getName() + ": unit test failed.");
   }
 
-  std::string PulsarTestApp::getDataPath() const {
-    return m_data_dir;
+  std::string PulsarTestApp::prependDataPath(const std::string & base_name) const {
+    return facilities::commonUtilities::joinPath(m_data_dir, base_name);
+  }
+
+  std::string PulsarTestApp::prependOutrefPath(const std::string & base_name) const {
+    return facilities::commonUtilities::joinPath(m_outref_dir, base_name);
   }
 
   void PulsarTestApp::setMethod(const std::string & method_name) {
@@ -77,7 +81,20 @@ namespace timeSystem {
     return std::cerr << getName() << ": " << m_method_name << ": ";
   }
 
-  bool PulsarTestApp::compareNumericString(const std::string & string_value, const std::string & string_reference) const {
+  PulsarApplicationTester::PulsarApplicationTester(const std::string & app_name, PulsarTestApp & test_app):
+    m_app_name(app_name), m_test_app(&test_app) {}
+
+  PulsarApplicationTester::~PulsarApplicationTester() throw() {}
+
+  std::string PulsarApplicationTester::getName() const {
+    return m_app_name;
+  }
+
+  std::ostream & PulsarApplicationTester::err() {
+    return m_test_app->err();
+  }
+
+  bool PulsarApplicationTester::compareNumericString(const std::string & string_value, const std::string & string_reference) const {
     // Try string comparison first.
     if (string_value == string_reference) return false;
 
@@ -146,11 +163,8 @@ namespace timeSystem {
     return mismatch_found;
   }
 
-
-  void PulsarTestApp::checkOutputFits(const std::string & out_file, const std::set<std::string> & column_to_compare) {
-    // Set reference file name.
-    const std::string ref_file = facilities::commonUtilities::joinPath(m_outref_dir, out_file);
-
+  void PulsarApplicationTester::checkOutputFits(const std::string & out_file, const std::string & ref_file,
+    const std::set<std::string> & column_to_compare) {
     // Check file existence.
     if (!tip::IFileSvc::instance().fileExists(out_file)) {
       err() << "File to check does not exist: " << out_file << std::endl;
@@ -353,15 +367,7 @@ namespace timeSystem {
     }
   }
 
-  void PulsarTestApp::checkOutputText(const std::string & out_file) {
-    // Set reference file name.
-    const std::string ref_file = facilities::commonUtilities::joinPath(m_outref_dir, out_file);
-
-    // Delegate file comparison to the following method.
-    checkOutputText(out_file, ref_file);
-  }
-
-  void PulsarTestApp::checkOutputText(const std::string & out_file, const std::string & ref_file) {
+  void PulsarApplicationTester::checkOutputText(const std::string & out_file, const std::string & ref_file) {
     // Check file existence.
     if (!tip::IFileSvc::instance().fileExists(out_file)) {
       err() << "File to check does not exist: " << out_file << std::endl;
@@ -414,11 +420,12 @@ namespace timeSystem {
     }
   }
 
-  void PulsarTestApp::testApplication(const std::string & app_name, const st_app::AppParGroup & par_group, const std::string & log_file,
-    const std::string & ref_file, const std::string & out_fits, const std::set<std::string> & column_to_compare, bool ignore_exception) {
+  void PulsarApplicationTester::test(const st_app::AppParGroup & par_group, const std::string & log_file,
+    const std::string & log_file_ref, const std::string & out_file, const std::string & out_file_ref,
+    const std::set<std::string> & column_to_compare, bool ignore_exception) {
     // Fake the application name for logging.
     const std::string app_name_save(st_stream::GetExecName());
-    st_stream::SetExecName(app_name);
+    st_stream::SetExecName(m_app_name);
 
     // Set chatter.
     const int chat_save = st_stream::GetMaximumChatter();
@@ -431,12 +438,12 @@ namespace timeSystem {
     st_stream::SetDebugMode(debug_mode);
 
     // Create and setup an application object.
-    std::auto_ptr<st_app::StApp> app_ptr(createApplication(app_name));
+    std::auto_ptr<st_app::StApp> app_ptr(createApplication());
     if (0 == app_ptr.get()) {
-      err() << "Cannot create an application object: \"" << app_name << "\"" << std::endl;
+      err() << "Cannot create an application object: \"" << m_app_name << "\"" << std::endl;
       return;
     }
-    app_ptr->setName(app_name);
+    app_ptr->setName(m_app_name);
     st_app::AppParGroup & pars(app_ptr->getParGroup());
     pars.setPromptMode(false);
 
@@ -450,7 +457,7 @@ namespace timeSystem {
 
     // Determine logging and checking output.
     bool record_log(!log_file.empty());
-    bool check_output(!out_fits.empty());
+    bool check_output(!out_file.empty());
 
     // Capture output in a log file.
     std::ofstream ofs_log;
@@ -501,13 +508,10 @@ namespace timeSystem {
       }
     } else {
       // Compare the log with its reference.
-      if (record_log) {
-        if (ref_file.empty()) checkOutputText(log_file);
-        else checkOutputText(log_file, ref_file);
-      }
+      if (record_log) checkOutputText(log_file, log_file_ref);
 
       // Compare the output FITS file with its reference.
-      if (check_output) checkOutputFits(out_fits, column_to_compare);
+      if (check_output) checkOutputFits(out_file, out_file_ref, column_to_compare);
     }
 
     // Restore the application name, chatter, and debug mode.

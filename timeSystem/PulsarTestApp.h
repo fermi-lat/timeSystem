@@ -27,8 +27,7 @@ namespace timeSystem {
       */
       PulsarTestApp(const std::string & package_name);
 
-      /** \brief Virtual destructor.
-      */
+      /// \brief Virtual destructor.
       virtual ~PulsarTestApp() throw();
 
       /** \brief Main method to run a unit test. This method calls runTest method after initializing this class,
@@ -36,20 +35,23 @@ namespace timeSystem {
       */
       virtual void run();
 
-      /** \brief Main method to run a unit test.
-      */
+      /// \brief Main method to run a unit test.
       virtual void runTest() = 0;
 
-      /** \brief Returns a path name of the "data/" directory of this pulsar tool package.
+      /** \brief Returns a full-path name of a file under the "data/" directory of this pulsar tool package.
+          \param base_name Name of the file without a leading path name.
       */
-      std::string getDataPath() const;
+      std::string prependDataPath(const std::string & base_name) const;
 
-      /** \brief Set a method name to be used in a prefix of an error message.
+      /** \brief Returns a full-path name of a file under the "data/outref/" directory of this pulsar tool package.
+          \param base_name Name of the file without a leading path name.
       */
+      std::string prependOutrefPath(const std::string & base_name) const;
+
+      /// \brief Set a method name to be used in a prefix of an error message.
       void setMethod(const std::string & method_name);
 
-      /** \brief Get a method name to be used in a prefix of an error message.
-      */
+      /// \brief Get a method name to be used in a prefix of an error message.
       std::string getMethod() const;
 
       /** \brief Set precision to be used for test outputs. Returns the previous value of precision.
@@ -57,11 +59,57 @@ namespace timeSystem {
       */
       std::streamsize setPrecision(std::streamsize precision);
 
+      /// \brief Returns an output stream to which error messages should be shifted.
+      std::ostream & err();
+
+    private:
+      bool m_failed;
+      std::string m_method_name;
+      std::string m_data_dir;
+      std::string m_outref_dir;
+  };
+
+  /** \brief Base class for classes to test an application in a pulsar tool package.
+  */
+  class PulsarApplicationTester {
+    public:
+      /** \brief Constructor.
+          \param app_name Name of application to test.
+          \param test_app Unit test appliction of pulsar tool package, under which this application tester is to run.
+      */
+      PulsarApplicationTester(const std::string & app_name, PulsarTestApp & test_app);
+
+      /** \brief Virtual destructor.
+      */
+      virtual ~PulsarApplicationTester() throw();
+
+      /// \brief Returns an application object to be tested.
+      virtual st_app::StApp * createApplication() const = 0;
+
+      /// \brief Get the application name to be tested.
+      std::string getName() const;
+
       /** \brief Returns an output stream to which error messages should be shifted.
       */
       std::ostream & err();
 
-    protected:
+      /** \brief Compare an output FITS file with its reference file in data/outref/ directory.
+          \param out_file Name of an output FITS file to be compared with its reference.
+          \param ref_file Name of a reference file to check a given output FITS file against.
+          \param column_to_compare Container of column names used in comparison of output FITS files. If the name of a column
+                 in a reference file is found in this container, the contents of the column will be compared. Otherwise,
+                 the contents of the column are ignored in comparison. If the container is empty, all columns in a reference
+                 file will be compared.
+      */
+      void checkOutputFits(const std::string & out_file, const std::string & ref_file,
+        const std::set<std::string> & column_to_compare = std::set<std::string>());
+
+      /** \brief Compare an output text file with a given reference file.
+          \param out_file Name of an output text file to be compared with a given reference.
+          \param ref_file Name of a reference file to check a given output text file against.
+      */
+      void checkOutputText(const std::string & out_file, const std::string & ref_file);
+
       /** \brief Write text representation of a standard exception to a given output stream.
           \param os Output stream to which text representation of a standard exception is to be written.
           \param exception_object Standard exception object, whose text representation is to be written.
@@ -69,6 +117,26 @@ namespace timeSystem {
       template <typename StreamType>
       StreamType & writeException(StreamType & os, const std::exception & exception_object) const;
 
+      /** \brief Run an application, capture text output (if any), compare the text output and an output FITS file (if any)
+                 with their reference files in data/outref/ directory.
+          \param par_group Parameters to give to the application to test.
+          \param log_file Log file name. An empty string disables logging.
+          \param log_file_ref Name of a reference file to check a log file against. If an empty string is given,
+                 the method uses a reference file in data/outref that has the same name as log_file.
+          \param out_file Output FITS file name. An empty string disables comparison of the output FITS file.
+          \param out_file_ref Name of a reference file to check an output FITS file against. If an empty string is given,
+                 the method uses a reference file in data/outref that has the same name as out_file.
+          \param column_to_compare Container of column names used in comparison of output FITS files. If the name of a column
+                 in a reference file is found in this container, the contents of the column will be compared. Otherwise,
+                 the contents of the column are ignored in comparison. If the container is empty, all columns in a reference
+                 file will be compared.
+          \param ignore_exception Set true if an application is expected to throw an exception in this test.
+      */
+      void test(const st_app::AppParGroup & par_group, const std::string & log_file, const std::string & log_file_ref,
+        const std::string & out_file, const std::string & out_file_ref, const std::set<std::string> & column_to_compare,
+        bool ignore_exception = false);
+
+    protected:
       /** \brief Helper method to compare a character string with a reference string, with a tolerance for
                  numerical expressions in the character strings. For example, string "abc 0.0001 de" is considered
                  equivalent to "abc 1e-4 de" by this method. The method returns false if the character string of interest
@@ -78,59 +146,13 @@ namespace timeSystem {
       */
       bool compareNumericString(const std::string & string_value, const std::string & string_reference) const;
 
-      /** \brief Helper method to compare an output FITS file with its reference file in data/outref/ directory.
-          \param out_file Name of an output FITS file to be compared with its reference.
-          \param column_to_compare Container of column names used in comparison of output FITS files. If the name of a column
-                 in a reference file is found in this container, the contents of the column will be compared. Otherwise,
-                 the contents of the column are ignored in comparison. If the container is empty, all columns in a reference
-                 file will be compared.
-      */
-      void checkOutputFits(const std::string & out_file, const std::set<std::string> & column_to_compare = std::set<std::string>());
-
-      /** \brief Helper method to compare an output text file with its reference file in data/outref/ directory.
-          \param out_file Name of an output text file to be compared with its reference in data/outref/ directory.
-      */
-      void checkOutputText(const std::string & out_file);
-
-      /** \brief Helper method to compare an output text file with a given reference file.
-          \param out_file Name of an output text file to be compared with a given reference.
-          \param ref_file Name of a reference file to check a given output text file against.
-      */
-      void checkOutputText(const std::string & out_file, const std::string & ref_file);
-
-      /** \brief Helper method to run an application, capture text output, compare the log and an output FITS file
-                 with their reference files in data/outref/ directory.
-          \param app_name Name of application to test.
-          \param par_group Parameters to give to the application to test.
-          \param log_file Log file name. An empty string disables logging.
-          \param ref_file Name of a reference file to check a log file against. If an empty string is given,
-                 the method uses a reference file in data/outref that has the same name as log_file.
-          \param out_fits Output FITS file name. An empty string disables comparison of the output FITS file.
-          \param column_to_compare Container of column names used in comparison of output FITS files. If the name of a column
-                 in a reference file is found in this container, the contents of the column will be compared. Otherwise,
-                 the contents of the column are ignored in comparison. If the container is empty, all columns in a reference
-                 file will be compared.
-          \param ignore_exception Set true if an application is expected to throw an exception in this test.
-      */
-      void testApplication(const std::string & app_name, const st_app::AppParGroup & par_group, const std::string & log_file,
-        const std::string & ref_file, const std::string & out_fits, const std::set<std::string> & column_to_compare,
-        bool ignore_exception = false);
-
-      /** \brief Returns a named application object. Return 0 (zero) if no such application exists.
-          \param app_name Name of application to create. The value of app_name parameter of testApplication method will be
-                 passed to this method as this argument in order to create an application object. 
-      */
-      virtual st_app::StApp * createApplication(const std::string & app_name) const = 0;
-
     private:
-      bool m_failed;
-      std::string m_method_name;
-      std::string m_data_dir;
-      std::string m_outref_dir;
+      std::string m_app_name;
+      PulsarTestApp * m_test_app;
   };
 
   template <typename StreamType>
-  StreamType & PulsarTestApp::writeException(StreamType & os, const std::exception & exception_object) const {
+  StreamType & PulsarApplicationTester::writeException(StreamType & os, const std::exception & exception_object) const {
     // Report the type of the exception if possible, using typeid; typeid can throw so be careful:
     const char * type_name = "std::exception";
     try {
