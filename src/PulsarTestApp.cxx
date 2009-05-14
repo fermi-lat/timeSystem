@@ -163,8 +163,34 @@ namespace timeSystem {
     return mismatch_found;
   }
 
-  void PulsarApplicationTester::checkOutputFits(const std::string & out_file, const std::string & ref_file,
-    const std::set<std::string> & column_to_compare) {
+  bool PulsarApplicationTester::testEquivalence(const std::string & keyword_name, const tip::KeyRecord & out_keyword,
+    const tip::KeyRecord & ref_keyword) const {
+    std::string out_value;
+    std::string ref_value;
+    if ("COMMENT" != keyword_name && "HISTORY" != keyword_name) {
+      out_value = out_keyword.getValue();
+      ref_value = ref_keyword.getValue();
+    } else {
+      out_value = out_keyword.getComment();
+      ref_value = ref_keyword.getComment();
+    }
+    return !compareNumericString(out_value, ref_value);
+  }
+
+  bool PulsarApplicationTester::testEquivalence(const std::string & /*keyword_name*/, const tip::TableCell & out_cell,
+    const tip::TableCell & ref_cell) const {
+    std::string out_value;
+    std::string ref_value;
+    out_cell.get(out_value);
+    ref_cell.get(ref_value);
+    return !compareNumericString(out_value, ref_value);
+  }
+
+  bool PulsarApplicationTester::testEquivalence(const std::string & out_string, const std::string & ref_string) const {
+    return !compareNumericString(out_string, ref_string);
+  }
+
+  void PulsarApplicationTester::checkOutputFits(const std::string & out_file, const std::string & ref_file) {
     // Check file existence.
     if (!tip::IFileSvc::instance().fileExists(out_file)) {
       err() << "File to check does not exist: " << out_file << std::endl;
@@ -173,16 +199,6 @@ namespace timeSystem {
     if (!tip::IFileSvc::instance().fileExists(ref_file)) {
       err() << "Reference file for " << out_file << " does not exist: " << ref_file << std::endl;
       return;
-    }
-
-    // Copy the column names to compare, changing their cases upper cases.
-    std::set<std::string> col_name_set;
-    for (std::set<std::string>::const_iterator set_itor = column_to_compare.begin(); set_itor != column_to_compare.end(); ++set_itor) {
-      std::string col_name(*set_itor);
-      for (std::string::iterator str_itor = col_name.begin(); str_itor != col_name.end(); ++str_itor) {
-        *str_itor = std::toupper(*str_itor);
-      }
-      col_name_set.insert(col_name);
     }
 
     // Get fille summaries for FITS files to compare.
@@ -266,17 +282,16 @@ namespace timeSystem {
 
             } else {
               // Compare keyword values.
-              std::string out_value;
-              std::string ref_value;
-              if ("COMMENT" != ref_name && "HISTORY" != ref_name) {
-                out_value = out_itor->second.getValue();
-                ref_value = ref_itor->second.getValue();
-              } else {
-                out_value = out_itor->second.getComment();
-                ref_value = ref_itor->second.getComment();
-              }
-
-              if (compareNumericString(out_value, ref_value)) {
+              if (!testEquivalence(ref_name, out_itor->second, ref_itor->second)) {
+                std::string out_value;
+                std::string ref_value;
+                if ("COMMENT" != ref_name && "HISTORY" != ref_name) {
+                  out_value = out_itor->second.getValue();
+                  ref_value = ref_itor->second.getValue();
+                } else {
+                  out_value = out_itor->second.getComment();
+                  ref_value = ref_itor->second.getComment();
+                }
                 err() << "Header keyword " << out_name << " on card " << out_card_number << " of HDU " << ext_name <<
                   " in file " << out_file << " has value \"" << out_value << "\", not \"" << ref_value << "\" as on card " <<
                   ref_card_number << " in reference file " << ref_file << std::endl;
@@ -294,14 +309,52 @@ namespace timeSystem {
           std::auto_ptr<const tip::Table> out_table(tip::IFileSvc::instance().readTable(out_file, ext_name));
           std::auto_ptr<const tip::Table> ref_table(tip::IFileSvc::instance().readTable(ref_file, ext_name));
 
-          // Compare the sizes of table.
+          // Compare the number of rows.
           tip::Index_t out_num_row = out_table->getNumRecords();
           tip::Index_t ref_num_row = ref_table->getNumRecords();
           if (out_num_row != ref_num_row) {
             err() << "HDU " << ext_name << " of file " << out_file << " contains " << out_num_row <<
               " row(s), not " << ref_num_row << " as in reference file " << ref_file << std::endl;
+          }
+
+          // Create a list of columns that are in both tables.
+          std::list<std::string> common_column;
+
+          // Compare the number of columns.
+          tip::Table::FieldCont::size_type out_num_col = out_table->getValidFields().size();
+          tip::Table::FieldCont::size_type ref_num_col = ref_table->getValidFields().size();
+          if (out_num_col != ref_num_col) {
+            err() << "HDU " << ext_name << " of file " << out_file << " contains " << out_num_col <<
+              " column(s), not " << ref_num_col << " as in reference file " << ref_file << std::endl;
 
           } else {
+            // Compare the names of all columns.
+            tip::FieldIndex_t num_col = ref_num_col;
+            for (tip::FieldIndex_t col_index = 0; col_index < num_col; ++col_index) {
+              const tip::IColumn * out_column(out_table->getColumn(col_index));
+              const tip::IColumn * ref_column(ref_table->getColumn(col_index));
+
+              // Make all column names upper cases for consistency in error messages.
+              std::string out_col_name(out_column->getId());
+              for (std::string::iterator str_itor = out_col_name.begin(); str_itor != out_col_name.end(); ++str_itor) {
+                *str_itor = std::toupper(*str_itor);
+              }
+              std::string ref_col_name(ref_column->getId());
+              for (std::string::iterator str_itor = ref_col_name.begin(); str_itor != ref_col_name.end(); ++str_itor) {
+                *str_itor = std::toupper(*str_itor);
+              }
+
+              // Compare column names.
+              if (out_col_name == ref_col_name) {
+                common_column.push_back(ref_col_name);
+              } else {
+                err() << "Column #" << col_index + 1 << " of HDU " << ext_name << " in file " << out_file << " is named " <<
+                  out_col_name << ", not " << ref_col_name << " as in reference file " << ref_file << std::endl;
+              }
+            }
+          }
+
+          if (out_num_row == ref_num_row && out_num_col == ref_num_col) {
             // Compare DATASUM keyword values.
             bool datasum_matched = false;
             const tip::Header & out_header(out_table->getHeader());
@@ -314,49 +367,30 @@ namespace timeSystem {
               datasum_matched = (out_datasum == ref_datasum);
             }
 
-            // Compare columns if DATASUM did not match.
+            // Compare tables if DATASUM's do not match.
             if (!datasum_matched) {
-              // Compare the number of columns.
-              tip::Table::FieldCont::size_type out_num_col = out_table->getValidFields().size();
-              tip::Table::FieldCont::size_type ref_num_col = ref_table->getValidFields().size();
-              if (out_num_col != ref_num_col) {
-                err() << "HDU " << ext_name << " of file " << out_file << " contains " << out_num_col <<
-                  " column(s), not " << ref_num_col << " as in reference file " << ref_file << std::endl;
+              // Compare each row.
+              tip::Table::ConstIterator out_itor = out_table->begin();
+              tip::Table::ConstIterator ref_itor = ref_table->begin();
+              tip::Index_t row_index = 1;
+              for (; out_itor != out_table->end() && ref_itor != ref_table->end(); ++out_itor, ++ref_itor, ++row_index) {
+                tip::ConstTableRecord & out_record = *out_itor;
+                tip::ConstTableRecord & ref_record = *ref_itor;
 
-              } else {
-                // Loop over all columns.
-                // Note: ref_num_col is guaranteed to be positive when the flow of execusion reaches this branch.
-                tip::FieldIndex_t num_col = ref_num_col;
-                for (tip::FieldIndex_t col_index = 0; col_index < num_col; ++col_index) {
-                  const tip::IColumn * out_column(out_table->getColumn(col_index));
-                  const tip::IColumn * ref_column(ref_table->getColumn(col_index));
-
-                  // Compare column names, after making them all upper cases for consistency in error messages.
-                  std::string out_col_name(out_column->getId());
-                  for (std::string::iterator str_itor = out_col_name.begin(); str_itor != out_col_name.end(); ++str_itor) {
-                    *str_itor = std::toupper(*str_itor);
-                  }
-                  std::string ref_col_name(ref_column->getId());
-                  for (std::string::iterator str_itor = ref_col_name.begin(); str_itor != ref_col_name.end(); ++str_itor) {
-                    *str_itor = std::toupper(*str_itor);
-                  }
-                  if (out_col_name != ref_col_name) {
-                    err() << "Column #" << col_index + 1 << " of HDU " << ext_name << " in file " << out_file << " is named " <<
-                      out_col_name << ", not " << ref_col_name << " as in reference file " << ref_file << std::endl;
-
-                  } else if (col_name_set.empty() || col_name_set.find(ref_col_name) != col_name_set.end()) {
-                    // Compare column values.
-                    for (tip::Index_t row_index = 0; row_index < ref_num_row; ++row_index) {
-                      std::string out_col_value;
-                      out_column->get(row_index, out_col_value);
-                      std::string ref_col_value;
-                      ref_column->get(row_index, ref_col_value);
-                      if (compareNumericString(out_col_value, ref_col_value)) {
-                        err() << "Row #" << row_index + 1 << " in column #" << col_index + 1 << " (" << ref_col_name << ") of HDU " <<
-                          ext_name << " in file " << out_file << " contains \"" << out_col_value << "\", not \"" << ref_col_value <<
-                          "\" as in reference file " << ref_file << std::endl;
-                      }
-                    }
+                // Compare all columns.
+                for (std::list<std::string>::const_iterator col_itor = common_column.begin(); col_itor != common_column.end();
+                  ++col_itor) {
+                  const std::string & col_name = *col_itor;
+                  const tip::TableCell & out_cell = out_record[col_name];
+                  const tip::TableCell & ref_cell = ref_record[col_name];
+                  if (!testEquivalence(col_name, out_cell, ref_cell)) {
+                    std::string out_col_value;
+                    std::string ref_col_value;
+                    out_cell.get(out_col_value);
+                    ref_cell.get(ref_col_value);
+                    err() << "Row #" << row_index << " of column \"" << col_name << "\" in HDU " <<
+                      ext_name << " in file " << out_file << " contains \"" << out_col_value << "\", not \"" << ref_col_value <<
+                      "\" as in reference file " << ref_file << std::endl;
                   }
                 }
               }
@@ -412,7 +446,7 @@ namespace timeSystem {
       std::list<std::string>::const_iterator ref_itor = ref_line_list.begin();
       int line_number = 1;
       for (; out_itor != out_line_list.end() && ref_itor != ref_line_list.end(); ++out_itor, ++ref_itor, ++line_number) {
-        if (compareNumericString(*out_itor, *ref_itor)) {
+        if (!testEquivalence(*out_itor, *ref_itor)) {
           err() << "Line " << line_number << " of file " << out_file << " is \"" << *out_itor << "\", not \"" << *ref_itor <<
             "\" as in reference file " << ref_file << std::endl;
         }
@@ -421,8 +455,7 @@ namespace timeSystem {
   }
 
   void PulsarApplicationTester::test(const st_app::AppParGroup & par_group, const std::string & log_file,
-    const std::string & log_file_ref, const std::string & out_file, const std::string & out_file_ref,
-    const std::set<std::string> & column_to_compare, bool ignore_exception) {
+    const std::string & log_file_ref, const std::string & out_file, const std::string & out_file_ref, bool ignore_exception) {
     // Fake the application name for logging.
     const std::string app_name_save(st_stream::GetExecName());
     st_stream::SetExecName(m_app_name);
@@ -511,7 +544,7 @@ namespace timeSystem {
       if (record_log) checkOutputText(log_file, log_file_ref);
 
       // Compare the output FITS file with its reference.
-      if (check_output) checkOutputFits(out_file, out_file_ref, column_to_compare);
+      if (check_output) checkOutputFits(out_file, out_file_ref);
     }
 
     // Restore the application name, chatter, and debug mode.
