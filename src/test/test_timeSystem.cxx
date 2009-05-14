@@ -55,12 +55,32 @@ class TimeCorrectorAppTester: public PulsarApplicationTester {
 
   /// \brief Returns an application object to be tested.
   virtual st_app::StApp * createApplication() const;
+
+  /** \brief Return a logical true if the given table cells are considered equivalent to each other.
+      \param keyword_name Name of the header keyword being compared.
+      \param out_cell Table cell taken from the output file being compared.
+      \param ref_cell Table cell taken from the reference file to be checked against.
+  */
+  virtual bool testEquivalence(const std::string & column_name, const tip::TableCell & out_cell, const tip::TableCell & ref_cell) const;
 };
 
 TimeCorrectorAppTester::TimeCorrectorAppTester(PulsarTestApp & test_app): PulsarApplicationTester("gtbary", test_app) {}
 
 st_app::StApp * TimeCorrectorAppTester::createApplication() const {
   return new TimeCorrectorApp();
+}
+
+bool TimeCorrectorAppTester::testEquivalence(const std::string & column_name, const tip::TableCell & out_cell,
+  const tip::TableCell & ref_cell) const {
+  if ("TIME" == column_name || "START" == column_name || "STOP" == column_name) {
+    std::string out_value;
+    std::string ref_value;
+    out_cell.get(out_value);
+    ref_cell.get(ref_value);
+    return !compareNumericString(out_value, ref_value);
+  } else {
+    return true;
+  }
 }
 
 /** \class TimeSystemTestApp
@@ -3426,7 +3446,6 @@ void TimeSystemTestApp::testTimeCorrectorApp() {
     std::string log_file_ref(getMethod() + "_" + test_name + ".ref");
     std::string out_file(getMethod() + "_" + test_name + ".fits");
     std::string out_file_ref(prependOutrefPath(out_file));
-    std::set<std::string> col_name;
     bool ignore_exception(false);
 
     // Set default parameters.
@@ -3461,10 +3480,6 @@ void TimeSystemTestApp::testTimeCorrectorApp() {
       log_file.erase();
       log_file_ref.erase();
 
-      col_name.insert("TIME");
-      col_name.insert("START");
-      col_name.insert("STOP");
-
     } else if ("par2" == test_name) {
       // Test geocentric corrections.
       pars["evfile"] = evfile_0540;
@@ -3476,10 +3491,6 @@ void TimeSystemTestApp::testTimeCorrectorApp() {
 
       log_file.erase();
       log_file_ref.erase();
-
-      col_name.insert("TIME");
-      col_name.insert("START");
-      col_name.insert("STOP");
 
     } else if ("par3" == test_name) {
       // Test refusal of barycentric corrections on a barycentered file.
@@ -3528,7 +3539,7 @@ void TimeSystemTestApp::testTimeCorrectorApp() {
     remove(out_file.c_str());
 
     // Test the application.
-    app_tester.test(pars, log_file, log_file_ref, out_file, out_file_ref, col_name, ignore_exception);
+    app_tester.test(pars, log_file, log_file_ref, out_file, out_file_ref, ignore_exception);
   }
 }
 
