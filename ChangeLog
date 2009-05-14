@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Thu May 14 15:56:46 PDT 2009
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Add PulsarApplicationTester::testEquivalence methods (overloaded).
+    *
+------------------------------------------------------------
 User: hirayama  Thu May 14 15:56:45 PDT 2009
 timeSystem/src
 
