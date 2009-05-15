@@ -164,7 +164,8 @@ namespace timeSystem {
   }
 
   bool PulsarApplicationTester::testEquivalence(const std::string & keyword_name, const tip::KeyRecord & out_keyword,
-    const tip::KeyRecord & ref_keyword) const {
+    const tip::KeyRecord & ref_keyword, std::ostream & error_stream) const {
+    // Extract keyword values.
     std::string out_value;
     std::string ref_value;
     if ("COMMENT" != keyword_name && "HISTORY" != keyword_name) {
@@ -174,20 +175,41 @@ namespace timeSystem {
       out_value = out_keyword.getComment();
       ref_value = ref_keyword.getComment();
     }
-    return !compareNumericString(out_value, ref_value);
+
+    // Compare values and produce error message if any.
+    if (compareNumericString(out_value, ref_value)) {
+      error_stream << "Value \"" << out_value << "\" not equivalent to reference value \"" << ref_value << "\"";
+      return false;
+    } else {
+      return true;
+    }
   }
 
   bool PulsarApplicationTester::testEquivalence(const std::string & /*keyword_name*/, const tip::TableCell & out_cell,
-    const tip::TableCell & ref_cell) const {
+    const tip::TableCell & ref_cell, std::ostream & error_stream) const {
+    // Extract cell values.
     std::string out_value;
     std::string ref_value;
     out_cell.get(out_value);
     ref_cell.get(ref_value);
-    return !compareNumericString(out_value, ref_value);
+
+    // Compare values and produce error message if any.
+    if (compareNumericString(out_value, ref_value)) {
+      error_stream << "Value \"" << out_value << "\" not equivalent to reference value \"" << ref_value << "\"";
+      return false;
+    } else {
+      return true;
+    }
   }
 
-  bool PulsarApplicationTester::testEquivalence(const std::string & out_string, const std::string & ref_string) const {
-    return !compareNumericString(out_string, ref_string);
+  bool PulsarApplicationTester::testEquivalence(const std::string & out_string, const std::string & ref_string,
+    std::ostream & error_stream) const {
+    if (compareNumericString(out_string, ref_string)) {
+      error_stream << "String \"" << out_string << "\" not equivalent to reference string \"" << ref_string << "\"";
+      return false;
+    } else {
+      return true;
+    }
   }
 
   void PulsarApplicationTester::checkOutputFits(const std::string & out_file, const std::string & ref_file) {
@@ -282,19 +304,11 @@ namespace timeSystem {
 
             } else {
               // Compare keyword values.
-              if (!testEquivalence(ref_name, out_itor->second, ref_itor->second)) {
-                std::string out_value;
-                std::string ref_value;
-                if ("COMMENT" != ref_name && "HISTORY" != ref_name) {
-                  out_value = out_itor->second.getValue();
-                  ref_value = ref_itor->second.getValue();
-                } else {
-                  out_value = out_itor->second.getComment();
-                  ref_value = ref_itor->second.getComment();
-                }
+              std::ostringstream os_err;
+              if (!testEquivalence(ref_name, out_itor->second, ref_itor->second, os_err)) {
                 err() << "Header keyword " << out_name << " on card " << out_card_number << " of HDU " << ext_name <<
-                  " in file " << out_file << " has value \"" << out_value << "\", not \"" << ref_value << "\" as on card " <<
-                  ref_card_number << " in reference file " << ref_file << std::endl;
+                  " in file " << out_file << " differs from one on card " << ref_card_number << " in reference file " <<
+                  ref_file << ": " << os_err.str() << std::endl;
               }
             }
           }
@@ -383,14 +397,10 @@ namespace timeSystem {
                   const std::string & col_name = *col_itor;
                   const tip::TableCell & out_cell = out_record[col_name];
                   const tip::TableCell & ref_cell = ref_record[col_name];
-                  if (!testEquivalence(col_name, out_cell, ref_cell)) {
-                    std::string out_col_value;
-                    std::string ref_col_value;
-                    out_cell.get(out_col_value);
-                    ref_cell.get(ref_col_value);
-                    err() << "Row #" << row_index << " of column \"" << col_name << "\" in HDU " <<
-                      ext_name << " in file " << out_file << " contains \"" << out_col_value << "\", not \"" << ref_col_value <<
-                      "\" as in reference file " << ref_file << std::endl;
+                  std::ostringstream os_err;
+                  if (!testEquivalence(col_name, out_cell, ref_cell, os_err)) {
+                    err() << "Row #" << row_index << " of column \"" << col_name << "\" in HDU " << ext_name << " in file " <<
+                      out_file << " differs from reference file " << ref_file << ": " << os_err.str() << std::endl;
                   }
                 }
               }
@@ -446,9 +456,10 @@ namespace timeSystem {
       std::list<std::string>::const_iterator ref_itor = ref_line_list.begin();
       int line_number = 1;
       for (; out_itor != out_line_list.end() && ref_itor != ref_line_list.end(); ++out_itor, ++ref_itor, ++line_number) {
-        if (!testEquivalence(*out_itor, *ref_itor)) {
-          err() << "Line " << line_number << " of file " << out_file << " is \"" << *out_itor << "\", not \"" << *ref_itor <<
-            "\" as in reference file " << ref_file << std::endl;
+        std::ostringstream os_err;
+        if (!testEquivalence(*out_itor, *ref_itor, os_err)) {
+          err() << "Line " << line_number << " of file " << out_file << " differs from reference file " << ref_file <<
+            ": " << os_err.str() << std::endl;
         }
       }
     }

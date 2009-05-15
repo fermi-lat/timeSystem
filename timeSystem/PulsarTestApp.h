@@ -145,23 +145,26 @@ namespace timeSystem {
           \param keyword_name Name of the header keyword being compared.
           \param out_keyword Header keyword taken from the output file being compared.
           \param ref_keyword Header keyword taken from the reference file to be checked against.
+          \param error_stream Output stream for this method to put error messages.
       */
       virtual bool testEquivalence(const std::string & keyword_name, const tip::KeyRecord & out_keyword,
-        const tip::KeyRecord & ref_keyword) const;
+        const tip::KeyRecord & ref_keyword, std::ostream & error_stream) const;
 
       /** \brief Return a logical true if the given table cells are considered equivalent to each other.
           \param keyword_name Name of the header keyword being compared.
           \param out_cell Table cell taken from the output file being compared.
           \param ref_cell Table cell taken from the reference file to be checked against.
+          \param error_stream Output stream for this method to put error messages.
       */
       virtual bool testEquivalence(const std::string & column_name, const tip::TableCell & out_cell,
-        const tip::TableCell & ref_cell) const;
+        const tip::TableCell & ref_cell, std::ostream & error_stream) const;
 
       /** \brief Return a logical true if the given character strings are considered equivalent to each other.
           \param out_string Character string taken from the output file being compared.
           \param ref_string Character string taken from the reference file to be checked against.
+          \param error_stream Output stream for this method to put error messages.
       */
-      virtual bool testEquivalence(const std::string & out_string, const std::string & ref_string) const;
+      virtual bool testEquivalence(const std::string & out_string, const std::string & ref_string, std::ostream & error_stream) const;
 
     private:
       std::string m_app_name;

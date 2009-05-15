@@ -60,8 +60,10 @@ class TimeCorrectorAppTester: public PulsarApplicationTester {
       \param keyword_name Name of the header keyword being compared.
       \param out_cell Table cell taken from the output file being compared.
       \param ref_cell Table cell taken from the reference file to be checked against.
+      \param error_stream Output stream for this method to put error messages.
   */
-  virtual bool testEquivalence(const std::string & column_name, const tip::TableCell & out_cell, const tip::TableCell & ref_cell) const;
+  virtual bool testEquivalence(const std::string & column_name, const tip::TableCell & out_cell, const tip::TableCell & ref_cell,
+    std::ostream & error_stream) const;
 };
 
 TimeCorrectorAppTester::TimeCorrectorAppTester(PulsarTestApp & test_app): PulsarApplicationTester("gtbary", test_app) {}
@@ -71,14 +73,24 @@ st_app::StApp * TimeCorrectorAppTester::createApplication() const {
 }
 
 bool TimeCorrectorAppTester::testEquivalence(const std::string & column_name, const tip::TableCell & out_cell,
-  const tip::TableCell & ref_cell) const {
+  const tip::TableCell & ref_cell, std::ostream & error_stream) const {
   if ("TIME" == column_name || "START" == column_name || "STOP" == column_name) {
+    // Extract cell values.
     std::string out_value;
     std::string ref_value;
     out_cell.get(out_value);
     ref_cell.get(ref_value);
-    return !compareNumericString(out_value, ref_value);
+
+    // Compare values and produce error message if any.
+    if (compareNumericString(out_value, ref_value)) {
+      error_stream << "Value \"" << out_value << "\" not equivalent to reference value \"" << ref_value << "\"";
+      return false;
+    } else {
+      return true;
+    }
+
   } else {
+    // Ignore other columns.
     return true;
   }
 }
