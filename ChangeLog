@@ -1,5 +1,14 @@
 ------------------------------------------------------------
 User: hirayama  Thu May 14 18:29:02 PDT 2009
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Add error reporting mechanism by PulsarApplicationTester::testEquivalence method.
+    *
+------------------------------------------------------------
+User: hirayama  Thu May 14 18:29:02 PDT 2009
 timeSystem/src
 
 Modified Files:
