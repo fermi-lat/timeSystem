@@ -1,5 +1,14 @@
 ------------------------------------------------------------
 User: hirayama  Thu May 21 16:50:13 PDT 2009
+timeSystem/timeSystem
+
+Modified Files:
+	PulsarTestApp.h 
+Log Message:
+Rename compareNumericString method to equivalent, then slightly modify its finctionality. Rename testEquivalence method to verify, and change its default behavior to throw an exception.
+    *
+------------------------------------------------------------
+User: hirayama  Thu May 21 16:50:13 PDT 2009
 timeSystem/src
 
 Modified Files:
