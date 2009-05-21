@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Thu May 21 16:50:44 PDT 2009
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Implement tool-specific verify method. Correct spellings.
+    *
+------------------------------------------------------------
 User: hirayama  Thu May 21 16:50:13 PDT 2009
 timeSystem/timeSystem
 
