@@ -33,6 +33,7 @@
 #include "timeSystem/TimeSystem.h"
 
 #include "tip/IFileSvc.h"
+#include "tip/KeyRecord.h"
 #include "tip/TipFile.h"
 
 static const std::string s_cvs_id("$Name:  $");
@@ -56,14 +57,30 @@ class TimeCorrectorAppTester: public PulsarApplicationTester {
   /// \brief Returns an application object to be tested.
   virtual st_app::StApp * createApplication() const;
 
-  /** \brief Return a logical true if the given table cells are considered equivalent to each other.
-      \param keyword_name Name of the header keyword being compared.
-      \param out_cell Table cell taken from the output file being compared.
-      \param ref_cell Table cell taken from the reference file to be checked against.
-      \param error_stream Output stream for this method to put error messages.
+  /** \brief Return a logical true if the given header keyword is determined correct, and a logical false otherwise.
+      \param keyword_name Name of the header keyword to be verified.
+      \param out_keyword Header keyword taken from the output file to be verified.
+      \param ref_keyword Header keyword taken from the reference file which out_keyword is checked against.
+      \param error_stream Output stream for this method to put an error messages when verification fails.
   */
-  virtual bool testEquivalence(const std::string & column_name, const tip::TableCell & out_cell, const tip::TableCell & ref_cell,
+  virtual bool verify(const std::string & keyword_name, const tip::KeyRecord & out_keyword,
+    const tip::KeyRecord & ref_keyword, std::ostream & error_stream) const;
+
+  /** \brief Return a logical true if the given table cell is considered correct, and a logical false otherwise.
+      \param column_name Name of the FITS column that the given table cell belongs to.
+      \param out_cell Table cell taken from the output file to be verified.
+      \param ref_cell Table cell taken from the reference file which out_cell is checked against.
+      \param error_stream Output stream for this method to put an error message when verification fails.
+  */
+  virtual bool verify(const std::string & column_name, const tip::TableCell & out_cell, const tip::TableCell & ref_cell,
     std::ostream & error_stream) const;
+
+  /** \brief Return a logical true if the given character string is considered correct, and a logical false otherwise.
+      \param out_string Character string taken from the output file to be verified.
+      \param ref_string Character string taken from the reference file which out_string is checked against.
+      \param error_stream Output stream for this method to put an error message when verification fails.
+  */
+  virtual bool verify(const std::string & out_string, const std::string & ref_string, std::ostream & error_stream) const;
 };
 
 TimeCorrectorAppTester::TimeCorrectorAppTester(PulsarTestApp & test_app): PulsarApplicationTester("gtbary", test_app) {}
@@ -72,27 +89,84 @@ st_app::StApp * TimeCorrectorAppTester::createApplication() const {
   return new TimeCorrectorApp();
 }
 
-bool TimeCorrectorAppTester::testEquivalence(const std::string & column_name, const tip::TableCell & out_cell,
+bool TimeCorrectorAppTester::verify(const std::string & keyword_name, const tip::KeyRecord & out_keyword,
+  const tip::KeyRecord & ref_keyword, std::ostream & error_stream) const {
+  // Initialize return value.
+  bool verified = false;
+
+  // Extract keyword values as character strings.
+  std::string out_value = out_keyword.getValue();
+  std::string ref_value = ref_keyword.getValue();
+
+  // Compare values.
+  if ("RA_NOM" == keyword_name || "DEC_NOM" == keyword_name) {
+    // Require the 10th decimal point to match.
+    verified = equivalent(out_value, ref_value, 1.e-10, 0.);
+    if (!verified) {
+      error_stream << "Coordinate " << out_value << " not equivalent to reference " << ref_value <<
+        " with absolute tolerance of 1e-10 degrees.";
+    }
+
+  } else if ("TIMEZERO" == keyword_name || "TSTART" == keyword_name || "TSTOP" == keyword_name || "DATE-OBS" == keyword_name
+    || "DATE-END" == keyword_name || "TIERABSO" == keyword_name) {
+    // Require a match down to 10 microseconds.
+    verified = equivalent(out_value, ref_value, 1.e-5, 0.);
+    if (!verified) {
+      error_stream << "Time value " << out_value << " not equivalent to reference " << ref_value <<
+        " with absolute tolerance of 10 microseconds.";
+    }
+
+  } else if ("TIERRELA" == keyword_name) {
+    // Compare as floating-point numbers.
+    verified = equivalent(out_value, ref_value);
+    if (!verified) error_stream << "Floating-point number " << out_value << " not close enough to reference " << ref_value;
+
+  } else {
+    // Require an exact match as character strings.
+    verified = (out_value == ref_value);
+    if (!verified) error_stream << "Character string \"" << out_value << "\" not identical to \"" << ref_value << "\"";
+  }
+
+  // Return the result.
+  return verified;
+}
+
+bool TimeCorrectorAppTester::verify(const std::string & column_name, const tip::TableCell & out_cell,
   const tip::TableCell & ref_cell, std::ostream & error_stream) const {
+  // Initialize return value.
+  bool verified = false;
+
+  // Compare columns.
   if ("TIME" == column_name || "START" == column_name || "STOP" == column_name) {
-    // Extract cell values.
-    std::string out_value;
-    std::string ref_value;
+    // Extract cell values as floating-point numbers.
+    double out_value;
+    double ref_value;
     out_cell.get(out_value);
     ref_cell.get(ref_value);
 
-    // Compare values and produce error message if any.
-    if (compareNumericString(out_value, ref_value)) {
-      error_stream << "Value \"" << out_value << "\" not equivalent to reference value \"" << ref_value << "\"";
-      return false;
-    } else {
-      return true;
+    // Require a match down to 10 microseconds.
+    verified = (std::fabs(out_value - ref_value) <= 1.e-5);
+    if (!verified) {
+      error_stream << std::setprecision(std::numeric_limits<double>::digits10) << "Time Value " << out_value <<
+        " not equivalent to reference " << ref_value << " with absolute tolerance of 10 microseconds.";
     }
 
   } else {
     // Ignore other columns.
-    return true;
+    verified = true;
   }
+
+  // Return the result.
+  return verified;
+}
+
+bool TimeCorrectorAppTester::verify(const std::string & out_string, const std::string & ref_string, std::ostream & error_stream) const {
+  bool verified = (out_string == ref_string);
+  if (!verified) {
+    error_stream << "Line not identical to reference." <<
+      std::endl << "[OUT] " << out_string << std::endl << "[REF] " << ref_string;
+  }
+  return verified;
 }
 
 /** \class TimeSystemTestApp
@@ -445,8 +519,8 @@ void TimeSystemTestApp::testDuration() {
   // Tests of constructors.
   long int_part = 3456789;
   double frac_part = .56789567895678956789;
-  Duration tol_high(0, 1.e-9); // 1 nano-second.
-  Duration tol_low(0, 1.e-3); // 1 milli-second.
+  Duration tol_high(0, 1.e-9); // 1 nanosecond.
+  Duration tol_low(0, 1.e-3); // 1 millisecond.
   testDurationConstructor("Day", int_part, frac_part, Duration(int_part, frac_part*86400.), tol_high, tol_low);
   testDurationConstructor("Hour", int_part, frac_part, Duration(int_part/24, (int_part%24 + frac_part)*3600.), tol_high, tol_low);
   testDurationConstructor("Min", int_part, frac_part, Duration(int_part/1440, (int_part%1440 + frac_part)*60.), tol_high, tol_low);
@@ -1431,7 +1505,7 @@ void TimeSystemTestApp::testAbsoluteTime() {
   AbsoluteTime abs_time("TT", mjd_day, mjd_sec);
   Mjd result_mjd(0, 0.);
   abs_time.get("TT", result_mjd);
-  double double_tol = 100.e-9 / SecPerDay(); // 100 nano-seconds in days.
+  double double_tol = 100.e-9 / SecPerDay(); // 100 nanoseconds in days.
   if (expected_mjd.m_int != result_mjd.m_int || std::fabs(expected_mjd.m_frac - result_mjd.m_frac) > double_tol) {
     err() << "After abs_time = AbsoluteTime(\"TT\", " << mjd_day << ", " << mjd_sec <<
       "), abs_time.get(\"TT\", result_mjd) gave result_mjd = (" << result_mjd.m_int << ", " << result_mjd.m_frac <<
@@ -1442,7 +1516,7 @@ void TimeSystemTestApp::testAbsoluteTime() {
   abs_time = AbsoluteTime("TT", mjd_day, mjd_sec);
   Mjd1 result_mjd1(0.);
   abs_time.get("TT", result_mjd1);
-  double_tol = 10.e-6 / SecPerDay(); // 10 micro-seconds in days.
+  double_tol = 10.e-6 / SecPerDay(); // 10 microseconds in days.
   if (std::fabs(expected_mjd1.m_day - result_mjd1.m_day) > double_tol) {
     err() << "After abs_time = AbsoluteTime(\"TT\", " << mjd_day << ", " << mjd_sec <<
       "), abs_time.get(\"TT\", result_mjd1) gave result_mjd1.m_day = " << result_mjd1.m_day << ", not " <<
@@ -1455,7 +1529,7 @@ void TimeSystemTestApp::testAbsoluteTime() {
   abs_time.get("TAI", result_mjd);
   const double tai_minus_tt = -32.184;
   Mjd expected_mjd_tai(mjd_day, (mjd_sec + tai_minus_tt) / SecPerDay());
-  double_tol = 100.e-9 / SecPerDay(); // 100 nano-seconds in days.
+  double_tol = 100.e-9 / SecPerDay(); // 100 nanoseconds in days.
   if (expected_mjd_tai.m_int != result_mjd.m_int || std::fabs(expected_mjd_tai.m_frac - result_mjd.m_frac) > double_tol) {
     err() << "After abs_time = AbsoluteTime(\"TT\", " << mjd_day << ", " << mjd_sec <<
       "), abs_time.get(\"TAI\", result_mjd) gave result_mjd = (" << result_mjd.m_int << ", " << result_mjd.m_frac <<
@@ -1480,7 +1554,7 @@ void TimeSystemTestApp::testAbsoluteTime() {
   abs_time.get("TAI", result_mjd);
   double tai_minus_utc = 29.;
   Mjd expected_mjd_leap(mjd_day_leap + 1, (mjd_sec_leap - SecPerDay() + tai_minus_utc) / SecPerDay());
-  double_tol = 100.e-9 / SecPerDay(); // 100 nano-seconds in days.
+  double_tol = 100.e-9 / SecPerDay(); // 100 nanoseconds in days.
   if (expected_mjd_leap.m_int != result_mjd.m_int
       || std::fabs(expected_mjd_leap.m_frac - result_mjd.m_frac) > double_tol) {
     err() << "After abs_time = AbsoluteTime(\"UTC\", " << mjd_day_leap << ", " << mjd_sec_leap <<
@@ -1540,7 +1614,7 @@ void TimeSystemTestApp::testAbsoluteTime() {
   abs_time = AbsoluteTime("TT", Mjd(mjd_day, mjd_sec / SecPerDay()));
   result_mjd = Mjd(0, 0.);
   abs_time.get("TT", result_mjd);
-  double_tol = 100.e-9 / SecPerDay(); // 100 nano-seconds in days.
+  double_tol = 100.e-9 / SecPerDay(); // 100 nanoseconds in days.
   if (expected_mjd.m_int != result_mjd.m_int || std::fabs(expected_mjd.m_frac - result_mjd.m_frac) > double_tol) {
     err() << "After abs_time = AbsoluteTime(\"TT\", Mjd(" << mjd_day << ", " << mjd_sec / SecPerDay() <<
       "))), abs_time.get(\"TT\", result_mjd) gave result_mjd = (" << result_mjd.m_int << ", " << result_mjd.m_frac <<
@@ -1551,7 +1625,7 @@ void TimeSystemTestApp::testAbsoluteTime() {
   abs_time = AbsoluteTime("TT", Mjd1(mjd_day + mjd_sec / SecPerDay()));
   result_mjd1 = Mjd1(0.);
   abs_time.get("TT", result_mjd);
-  double_tol = 10.e-6 / SecPerDay(); // 10 micro-seconds in days.
+  double_tol = 10.e-6 / SecPerDay(); // 10 microseconds in days.
   if (expected_mjd.m_int != result_mjd.m_int || std::fabs(expected_mjd.m_frac - result_mjd.m_frac) > double_tol) {
     err() << "After abs_time = AbsoluteTime(\"TT\", Mjd1(" << mjd_day + mjd_sec / SecPerDay() <<
       "))), abs_time.get(\"TT\", result_mjd) gave result_mjd = (" << result_mjd.m_int << ", " << result_mjd.m_frac <<
@@ -1563,7 +1637,7 @@ void TimeSystemTestApp::testAbsoluteTime() {
   abs_time = AbsoluteTime("TT", MjdFmt, mjd_string);
   result_mjd = Mjd(0, 0.);
   abs_time.get("TT", result_mjd);
-  double_tol = 100.e-9 / SecPerDay(); // 100 nano-seconds in days.
+  double_tol = 100.e-9 / SecPerDay(); // 100 nanoseconds in days.
   if (expected_mjd.m_int != result_mjd.m_int || std::fabs(expected_mjd.m_frac - result_mjd.m_frac) > double_tol) {
     err() << "After abs_time = AbsoluteTime(\"TT\", MjdFmt, \"" << mjd_string <<
       "\"), abs_time.get(\"TT\", result_mjd) gave result_mjd = (" << result_mjd.m_int << ", " << result_mjd.m_frac <<
@@ -1574,7 +1648,7 @@ void TimeSystemTestApp::testAbsoluteTime() {
   abs_time.set("TT", Mjd(mjd_day, mjd_sec / SecPerDay()));
   result_mjd = Mjd(0, 0.);
   abs_time.get("TT", result_mjd);
-  double_tol = 100.e-9 / SecPerDay(); // 100 nano-seconds in days.
+  double_tol = 100.e-9 / SecPerDay(); // 100 nanoseconds in days.
   if (expected_mjd.m_int != result_mjd.m_int || std::fabs(expected_mjd.m_frac - result_mjd.m_frac) > double_tol) {
     err() << "After abs_time.set(\"TT\", Mjd(" << mjd_day << ", " << mjd_sec / SecPerDay() <<
       "))), abs_time.get(\"TT\", result_mjd) gave result_mjd = (" << result_mjd.m_int << ", " << result_mjd.m_frac <<
@@ -1585,7 +1659,7 @@ void TimeSystemTestApp::testAbsoluteTime() {
   abs_time.set("TT", Mjd1(mjd_day + mjd_sec / SecPerDay()));
   result_mjd1 = Mjd1(0.);
   abs_time.get("TT", result_mjd);
-  double_tol = 10.e-6 / SecPerDay(); // 10 micro-seconds in days.
+  double_tol = 10.e-6 / SecPerDay(); // 10 microseconds in days.
   if (expected_mjd.m_int != result_mjd.m_int || std::fabs(expected_mjd.m_frac - result_mjd.m_frac) > double_tol) {
     err() << "After abs_time.set(\"TT\", Mjd1(" << mjd_day + mjd_sec / SecPerDay() <<
       "))), abs_time.get(\"TT\", result_mjd) gave result_mjd = (" << result_mjd.m_int << ", " << result_mjd.m_frac <<
@@ -1596,7 +1670,7 @@ void TimeSystemTestApp::testAbsoluteTime() {
   abs_time.set("TT", MjdFmt, mjd_string);
   result_mjd = Mjd(0, 0.);
   abs_time.get("TT", result_mjd);
-  double_tol = 100.e-9 / SecPerDay(); // 100 nano-seconds in days.
+  double_tol = 100.e-9 / SecPerDay(); // 100 nanoseconds in days.
   if (expected_mjd.m_int != result_mjd.m_int || std::fabs(expected_mjd.m_frac - result_mjd.m_frac) > double_tol) {
     err() << "After abs_time.set(\"TT\", MjdFmt, \"" << mjd_string <<
       "\"), abs_time.get(\"TT\", result_mjd) gave result_mjd = (" << result_mjd.m_int << ", " << result_mjd.m_frac <<
@@ -2067,7 +2141,7 @@ void TimeSystemTestApp::testTimeFormat() {
 
   // Test conversion from an Mjd object (that holds integer part and fractional part of MJD) to a datetime_type object.
   datetime_type datetime = mjd_format.convert(expected_mjd);
-  double tolerance = 100.e-9; // 100 nano-seconds.
+  double tolerance = 100.e-9; // 100 nanoseconds.
   if (expected_datetime.first != datetime.first || tolerance < std::fabs(expected_datetime.second - datetime.second)) {
     err() << "TimeFormat<Mjd>::convert method converted (" << expected_mjd.m_int << " + " << expected_mjd.m_frac <<
       ") MJD into datetime_type pair (" << datetime.first << ", " << datetime.second << "), not (" <<
@@ -2076,7 +2150,7 @@ void TimeSystemTestApp::testTimeFormat() {
 
   // Test conversion from an Mjd1 object (that holds a single MJD number of double type) to a datetime_type object.
   datetime = mjd_format.convert(expected_mjd);
-  tolerance = 10.e-6; // 10 micro-seconds.
+  tolerance = 10.e-6; // 10 microseconds.
   if (expected_datetime.first != datetime.first || tolerance < std::fabs(expected_datetime.second - datetime.second)) {
     err() << "TimeFormat<Mjd>::convert method converted " << expected_mjd1.m_day << " MJD into datetime_type pair (" <<
       datetime.first << ", " << datetime.second << "), not (" << expected_datetime.first << ", " << expected_datetime.second <<
@@ -2085,7 +2159,7 @@ void TimeSystemTestApp::testTimeFormat() {
 
   // Test conversion from an Jd object (that holds integer part and fractional part of JD) to a datetime_type object.
   datetime = jd_format.convert(expected_jd);
-  tolerance = 100.e-9; // 100 nano-seconds.
+  tolerance = 100.e-9; // 100 nanoseconds.
   if (expected_datetime.first != datetime.first || tolerance < std::fabs(expected_datetime.second - datetime.second)) {
     err() << "TimeFormat<Jd>::convert method converted (" << expected_jd.m_int << " + " << expected_jd.m_frac <<
       ") JD into datetime_type pair (" << datetime.first << ", " << datetime.second << "), not (" <<
@@ -2094,7 +2168,7 @@ void TimeSystemTestApp::testTimeFormat() {
 
   // Test conversion from an Jd1 object (that holds a single JD number of double type) to a datetime_type object.
   datetime = jd_format.convert(expected_jd);
-  tolerance = 10.e-6; // 10 micro-seconds.
+  tolerance = 10.e-6; // 10 microseconds.
   if (expected_datetime.first != datetime.first || tolerance < std::fabs(expected_datetime.second - datetime.second)) {
     err() << "TimeFormat<Jd>::convert method converted " << expected_jd1.m_day << " JD into datetime_type pair (" <<
       datetime.first << ", " << datetime.second << "), not (" << expected_datetime.first << ", " << expected_datetime.second <<
@@ -2103,7 +2177,7 @@ void TimeSystemTestApp::testTimeFormat() {
 
   // Test conversion from a datetime_type object to an Mjd object (that holds integer part and fractional part of MJD).
   Mjd result_mjd = mjd_format.convert(expected_datetime);
-  tolerance = 100.e-9 / SecPerDay(); // 100 nano-seconds in units of day.
+  tolerance = 100.e-9 / SecPerDay(); // 100 nanoseconds in units of day.
   if (expected_mjd.m_int != result_mjd.m_int || tolerance < std::fabs(expected_mjd.m_frac - result_mjd.m_frac)) {
     err() << "TimeFormat<Mjd>::convert method converted datetime_type pair (" << expected_datetime.first << ", " <<
       expected_datetime.second << ") into (" << result_mjd.m_int << " + " << result_mjd.m_frac << ") MJD, not (" <<
@@ -2112,7 +2186,7 @@ void TimeSystemTestApp::testTimeFormat() {
 
   // Test conversion from a datetime_type object to an Mjd1 object (that holds a single MJD number of double type).
   Mjd1 result_mjd1 = mjd1_format.convert(expected_datetime);
-  tolerance = 100.e-9 / SecPerDay(); // 100 nano-seconds in units of day.
+  tolerance = 100.e-9 / SecPerDay(); // 100 nanoseconds in units of day.
   if (tolerance < std::fabs(expected_mjd1.m_day - result_mjd1.m_day)) {
     err() << "TimeFormat<Mjd1>::convert method converted datetime_type pair (" << expected_datetime.first << ", " <<
       expected_datetime.second << ") into " << result_mjd1.m_day << " MJD, not " << expected_mjd1.m_day << " MJD as expected." <<
@@ -2121,7 +2195,7 @@ void TimeSystemTestApp::testTimeFormat() {
 
   // Test conversion from a datetime_type object to an Jd object (that holds integer part and fractional part of JD).
   Jd result_jd = jd_format.convert(expected_datetime);
-  tolerance = 100.e-9 / SecPerDay(); // 100 nano-seconds in units of day.
+  tolerance = 100.e-9 / SecPerDay(); // 100 nanoseconds in units of day.
   if (expected_jd.m_int != result_jd.m_int || tolerance < std::fabs(expected_jd.m_frac - result_jd.m_frac)) {
     err() << "TimeFormat<Jd>::convert method converted datetime_type pair (" << expected_datetime.first << ", " <<
       expected_datetime.second << ") into (" << result_jd.m_int << " + " << result_jd.m_frac << ") JD, not (" <<
@@ -2130,7 +2204,7 @@ void TimeSystemTestApp::testTimeFormat() {
 
   // Test conversion from a datetime_type object to an Jd1 object (that holds a single JD number of double type).
   Jd1 result_jd1 = jd1_format.convert(expected_datetime);
-  tolerance = 100.e-9 / SecPerDay(); // 100 nano-seconds in units of day.
+  tolerance = 100.e-9 / SecPerDay(); // 100 nanoseconds in units of day.
   if (tolerance < std::fabs(expected_jd1.m_day - result_jd1.m_day)) {
     err() << "TimeFormat<Jd1>::convert method converted datetime_type pair (" << expected_datetime.first << ", " <<
       expected_datetime.second << ") into " << result_jd1.m_day << " JD, not " << expected_jd1.m_day << " JD as expected." <<
@@ -2156,7 +2230,7 @@ void TimeSystemTestApp::testTimeFormat() {
 
   // Test parsing a string with a TimeFormat<Mjd> object.
   result_mjd = mjd_format.parse(test_mjd_string);
-  tolerance = 100.e-9 / SecPerDay(); // 100 nano-seconds in units of day.
+  tolerance = 100.e-9 / SecPerDay(); // 100 nanoseconds in units of day.
   if (expected_mjd.m_int != result_mjd.m_int || tolerance < std::fabs(expected_mjd.m_frac - result_mjd.m_frac)) {
     err() << "TimeFormat<Mjd>::parse method parsed \"" << test_mjd_string << "\" into (" << result_mjd.m_int << " + " <<
       result_mjd.m_frac << ") MJD, not (" << expected_mjd.m_int << " + " << expected_mjd.m_frac << ") MJD as expected." << std::endl;
@@ -2173,7 +2247,7 @@ void TimeSystemTestApp::testTimeFormat() {
 
   // Test parsing a string with a TimeFormat<Mjd1> object.
   result_mjd1 = mjd1_format.parse(test_mjd_string);
-  tolerance = 10.e-6 / SecPerDay(); // 10 micro-seconds in units of day.
+  tolerance = 10.e-6 / SecPerDay(); // 10 microseconds in units of day.
   if (tolerance < std::fabs(expected_mjd1.m_day - result_mjd1.m_day)) {
     err() << "TimeFormat<Mjd1>::parse method parsed \"" << test_mjd_string << "\" into " << result_mjd1.m_day << " MJD, not " <<
       expected_mjd1.m_day << " MJD as expected." << std::endl;
@@ -2198,7 +2272,7 @@ void TimeSystemTestApp::testTimeFormat() {
 
   // Test parsing a string with a TimeFormat<Jd> object.
   result_jd = jd_format.parse(test_jd_string);
-  tolerance = 100.e-9 / SecPerDay(); // 100 nano-seconds in units of day.
+  tolerance = 100.e-9 / SecPerDay(); // 100 nanoseconds in units of day.
   if (expected_jd.m_int != result_jd.m_int || tolerance < std::fabs(expected_jd.m_frac - result_jd.m_frac)) {
     err() << "TimeFormat<Jd>::parse method parsed \"" << test_jd_string << "\" into (" << result_jd.m_int << " + " <<
       result_jd.m_frac << ") JD, not (" << expected_jd.m_int << " + " << expected_jd.m_frac << ") JD as expected." << std::endl;
@@ -2215,7 +2289,7 @@ void TimeSystemTestApp::testTimeFormat() {
 
   // Test parsing a string with a TimeFormat<Jd1> object.
   result_jd1 = jd1_format.parse(test_jd_string);
-  tolerance = 10.e-6 / SecPerDay(); // 10 micro-seconds in units of day.
+  tolerance = 10.e-6 / SecPerDay(); // 10 microseconds in units of day.
   if (tolerance < std::fabs(expected_jd1.m_day - result_jd1.m_day)) {
     err() << "TimeFormat<Jd1>::parse method parsed \"" << test_jd_string << "\" into " << result_jd1.m_day << " JD, not " <<
       expected_jd1.m_day << " JD as expected." << std::endl;
@@ -2261,7 +2335,7 @@ void TimeSystemTestApp::testTimeFormat() {
   Calendar expected_calendar(2008, 6, 17, 12, 34, 56.789);
   IsoWeek expected_iso_week(2008, 25, 2, 12, 34, 56.789);
   Ordinal expected_ordinal(2008, 169, 12, 34, 56.789);
-  tolerance = 100.e-9; // 100 nano-seconds.
+  tolerance = 100.e-9; // 100 nanoseconds.
 
   // Test conversion from a Calendar object to a datetime_type object.
   datetime = calendar_format.convert(expected_calendar);
@@ -2384,7 +2458,7 @@ void TimeSystemTestApp::testTimeFormat() {
   // Test parsing a string.
   expected_calendar_string = "2008-06-17T12:34:56.789";
   result_calendar = calendar_format.parse(expected_calendar_string);
-  tolerance = 100.e-9; // 100 nano-seconds.
+  tolerance = 100.e-9; // 100 nanoseconds.
   if (expected_calendar.m_year != result_calendar.m_year || expected_calendar.m_mon != result_calendar.m_mon ||
       expected_calendar.m_day != result_calendar.m_day || expected_calendar.m_hour != result_calendar.m_hour ||
       expected_calendar.m_min != result_calendar.m_min || tolerance < std::fabs(expected_calendar.m_sec - result_calendar.m_sec)) {
@@ -2419,7 +2493,7 @@ void TimeSystemTestApp::testTimeFormat() {
   // Test parsing a string.
   expected_iso_week_string = "2008-W25-2T12:34:56.789";
   result_iso_week = iso_week_format.parse(expected_iso_week_string);
-  tolerance = 100.e-9; // 100 nano-seconds.
+  tolerance = 100.e-9; // 100 nanoseconds.
   if (expected_iso_week.m_year != result_iso_week.m_year || expected_iso_week.m_week != result_iso_week.m_week ||
       expected_iso_week.m_day != result_iso_week.m_day || expected_iso_week.m_hour != result_iso_week.m_hour ||
       expected_iso_week.m_min != result_iso_week.m_min || tolerance < std::fabs(expected_iso_week.m_sec - result_iso_week.m_sec)) {
@@ -2453,7 +2527,7 @@ void TimeSystemTestApp::testTimeFormat() {
   // Test parsing a string.
   expected_ordinal_string = "2008-169T12:34:56.789";
   result_ordinal = ordinal_format.parse(expected_ordinal_string);
-  tolerance = 100.e-9; // 100 nano-seconds.
+  tolerance = 100.e-9; // 100 nanoseconds.
   if (expected_ordinal.m_year != result_ordinal.m_year || expected_ordinal.m_day != result_ordinal.m_day ||
       expected_ordinal.m_hour != result_ordinal.m_hour || expected_ordinal.m_min != result_ordinal.m_min ||
       tolerance < std::fabs(expected_ordinal.m_sec - result_ordinal.m_sec)) {
@@ -2998,7 +3072,7 @@ void TimeSystemTestApp::testGlastTimeHandler() {
   double glast_time;
   handler->getCurrentRecord()["TIME"].get(glast_time);
   double expected_glast_time = 2.123393701794728E+08; // TIME in the first row of my_pulsar_events_v3.fits.
-  double epsilon = 1.e-7; // 100 nano-seconds.
+  double epsilon = 1.e-7; // 100 nanoseconds.
   if (std::fabs(glast_time - expected_glast_time) > epsilon) {
     err() << "GlastScTimeHandler::getCurrentRecord() did not return the first record after GlastScTimeHandler::setFirstRecord()." <<
       std::endl;
@@ -3157,7 +3231,7 @@ void TimeSystemTestApp::testGlastTimeHandler() {
   const tip::Header & header = handler->getHeader();
   double result_double = 0.;
   header["TSTART"].get(result_double);
-  double tolerance_double = 1.e-9; // 1 nano-second.
+  double tolerance_double = 1.e-9; // 1 nanosecond.
   if (std::fabs(result_double - expected_double) > tolerance_double) {
     err() << "GlastScTimeHandler::writeTime(\"TSTART\", " << to_header << ") wrote " << result_double <<
       ", not equivalent to " << expected_double << " with tolerance of " << tolerance_double << "." << std::endl;
