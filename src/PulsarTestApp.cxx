@@ -29,6 +29,7 @@
 #include "tip/Header.h"
 #include "tip/IColumn.h"
 #include "tip/IFileSvc.h"
+#include "tip/KeyRecord.h"
 #include "tip/Table.h"
 #include "tip/tip_types.h"
 
@@ -94,10 +95,8 @@ namespace timeSystem {
     return m_test_app->err();
   }
 
-  bool PulsarApplicationTester::compareNumericString(const std::string & string_value, const std::string & string_reference) const {
-    // Try string comparison first.
-    if (string_value == string_reference) return false;
-
+  bool PulsarApplicationTester::equivalent(const std::string & string_value, const std::string & string_reference,
+    double tolerance_abs, double tolerance_rel) const {
     // Prepare variables for comparison.
     const char * ptr_val_cur(string_value.c_str());
     char * ptr_val_next(0);
@@ -127,32 +126,18 @@ namespace timeSystem {
         ++ptr_val_cur;
 
       } else {
-        // Compare as a double value if it is a number.
-        static const double tolerance_high = std::numeric_limits<double>::epsilon() * 1000.;
-        static const double tolerance_low = 1.e-1;
-        static const double tolerance_abs = 1.e-5;
-        static const double large_number_boundary = tolerance_abs / tolerance_high;
-
         // Convert the value of interest.
         errno = 0;
         double double_val = std::strtod(ptr_val_cur, &ptr_val_next);
         if (errno) {
-          // Flag a conversion error as a mismatch.
+          // Take a conversion error as evidence of non-equivalence.
           mismatch_found = true;
 
-        } else if (0. == double_ref) {
-          // Require exact match when a reference is 0 (zero).
-          if (double_val != double_ref) mismatch_found = true;
-
-        } else if (double_ref < large_number_boundary) {
-          // Apply loose comparison criteria for smaller numbers.
-          double diff = std::fabs(double_val - double_ref);
-          double ratio = std::fabs(diff / double_ref);
-          if (diff > tolerance_abs || ratio > tolerance_low) mismatch_found = true;
-
         } else {
-          // Apply the highest comparison criteria for larger numbers.
-          if (std::fabs(double_val/double_ref - 1.) > tolerance_high) mismatch_found = true;
+          // Compare the numbers.
+          double diff = std::fabs(double_val - double_ref);
+          double tolerance = tolerance_abs + tolerance_rel * std::fabs(double_ref);
+          if (diff > tolerance) mismatch_found = true;
         }
         ptr_ref_cur = ptr_ref_next;
         ptr_val_cur = ptr_val_next;
@@ -160,56 +145,22 @@ namespace timeSystem {
     }
 
     // Report the result.
-    return mismatch_found;
+    return !mismatch_found;
   }
 
-  bool PulsarApplicationTester::testEquivalence(const std::string & keyword_name, const tip::KeyRecord & out_keyword,
-    const tip::KeyRecord & ref_keyword, std::ostream & error_stream) const {
-    // Extract keyword values.
-    std::string out_value;
-    std::string ref_value;
-    if ("COMMENT" != keyword_name && "HISTORY" != keyword_name) {
-      out_value = out_keyword.getValue();
-      ref_value = ref_keyword.getValue();
-    } else {
-      out_value = out_keyword.getComment();
-      ref_value = ref_keyword.getComment();
-    }
-
-    // Compare values and produce error message if any.
-    if (compareNumericString(out_value, ref_value)) {
-      error_stream << "Value \"" << out_value << "\" not equivalent to reference value \"" << ref_value << "\"";
-      return false;
-    } else {
-      return true;
-    }
+  bool PulsarApplicationTester::verify(const std::string & /* keyword_name */, const tip::KeyRecord & /* out_keyword */,
+    const tip::KeyRecord & /* ref_keyword */, std::ostream & /* error_stream */) const {
+    throw std::runtime_error("Verification method for header keyword not implemented.");
   }
 
-  bool PulsarApplicationTester::testEquivalence(const std::string & /*keyword_name*/, const tip::TableCell & out_cell,
-    const tip::TableCell & ref_cell, std::ostream & error_stream) const {
-    // Extract cell values.
-    std::string out_value;
-    std::string ref_value;
-    out_cell.get(out_value);
-    ref_cell.get(ref_value);
-
-    // Compare values and produce error message if any.
-    if (compareNumericString(out_value, ref_value)) {
-      error_stream << "Value \"" << out_value << "\" not equivalent to reference value \"" << ref_value << "\"";
-      return false;
-    } else {
-      return true;
-    }
+  bool PulsarApplicationTester::verify(const std::string & /* column_name */, const tip::TableCell & /* out_cell */,
+    const tip::TableCell & /* ref_cell */, std::ostream & /* error_stream */) const {
+    throw std::runtime_error("Verification method for table cell not implemented.");
   }
 
-  bool PulsarApplicationTester::testEquivalence(const std::string & out_string, const std::string & ref_string,
-    std::ostream & error_stream) const {
-    if (compareNumericString(out_string, ref_string)) {
-      error_stream << "String \"" << out_string << "\" not equivalent to reference string \"" << ref_string << "\"";
-      return false;
-    } else {
-      return true;
-    }
+  bool PulsarApplicationTester::verify(const std::string & /* out_string */, const std::string & /* ref_string */,
+    std::ostream & /* error_stream */) const {
+    throw std::runtime_error("Verification method for character string not implemented.");
   }
 
   void PulsarApplicationTester::checkOutputFits(const std::string & out_file, const std::string & ref_file) {
@@ -305,7 +256,8 @@ namespace timeSystem {
             } else {
               // Compare keyword values.
               std::ostringstream os_err;
-              if (!testEquivalence(ref_name, out_itor->second, ref_itor->second, os_err)) {
+              bool verified = verify(ref_name, out_itor->second, ref_itor->second, os_err);
+              if (!verified) {
                 err() << "Header keyword " << out_name << " on card " << out_card_number << " of HDU " << ext_name <<
                   " in file " << out_file << " differs from one on card " << ref_card_number << " in reference file " <<
                   ref_file << ": " << os_err.str() << std::endl;
@@ -398,7 +350,8 @@ namespace timeSystem {
                   const tip::TableCell & out_cell = out_record[col_name];
                   const tip::TableCell & ref_cell = ref_record[col_name];
                   std::ostringstream os_err;
-                  if (!testEquivalence(col_name, out_cell, ref_cell, os_err)) {
+                  bool verified = verify(col_name, out_cell, ref_cell, os_err);
+                  if (!verified) {
                     err() << "Row #" << row_index << " of column \"" << col_name << "\" in HDU " << ext_name << " in file " <<
                       out_file << " differs from reference file " << ref_file << ": " << os_err.str() << std::endl;
                   }
@@ -457,7 +410,8 @@ namespace timeSystem {
       int line_number = 1;
       for (; out_itor != out_line_list.end() && ref_itor != ref_line_list.end(); ++out_itor, ++ref_itor, ++line_number) {
         std::ostringstream os_err;
-        if (!testEquivalence(*out_itor, *ref_itor, os_err)) {
+        bool verified = verify(*out_itor, *ref_itor, os_err);
+        if (!verified) {
           err() << "Line " << line_number << " of file " << out_file << " differs from reference file " << ref_file <<
             ": " << os_err.str() << std::endl;
         }
