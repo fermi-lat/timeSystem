@@ -132,39 +132,45 @@ namespace timeSystem {
         const std::string & out_file, const std::string & out_file_ref, bool ignore_exception = false);
 
     protected:
-      /** \brief Helper method to compare a character string with a reference string, with a tolerance for
-                 numerical expressions in the character strings. For example, string "abc 0.0001 de" is considered
-                 equivalent to "abc 1e-4 de" by this method. The method returns false if the character string of interest
-                 is determined equivalent to the reference string, and true otherwise.
+      /** \brief Return a logical true if the two character strings are determined equivalent to each other,
+                 and a logical false otherwise. This method compares a character string with a reference string,
+                 with a tolerance for numerical expressions in the character strings. For example, string
+                 "abc 0.0001 de" is considered equivalent to "abc 1e-4 de" by this method. The two floating-point
+                 numbers are considered equivalent unless the difference between the two exceeds:
+                   tolerance_abs + tolerance_rel * reference
+                 where reference is the absolute value of the floating-point number taken from string_reference.
           \param string_value Character string to be checked against a reference string.
           \param string_reference Reference string for a character string of interest to be checked against.
+          \param tolerance_abs Absolute tolerance in comparison of floating-point numbers.
+          \param tolerance_rel Relative tolerance in comparison of floating-point numbers.
       */
-      bool compareNumericString(const std::string & string_value, const std::string & string_reference) const;
+      bool equivalent(const std::string & string_value, const std::string & string_reference, double tolerance_abs = 0.,
+        double tolerance_rel = std::numeric_limits<double>::epsilon() * 1000.) const;
 
-      /** \brief Return a logical true if the given header keywords are considered equivalent to each other.
-          \param keyword_name Name of the header keyword being compared.
-          \param out_keyword Header keyword taken from the output file being compared.
-          \param ref_keyword Header keyword taken from the reference file to be checked against.
-          \param error_stream Output stream for this method to put error messages.
+      /** \brief Return a logical true if the given header keyword is determined correct, and a logical false otherwise.
+          \param keyword_name Name of the header keyword to be verified.
+          \param out_keyword Header keyword taken from the output file to be verified.
+          \param ref_keyword Header keyword taken from the reference file which out_keyword is checked against.
+          \param error_stream Output stream for this method to put an error messages when verification fails.
       */
-      virtual bool testEquivalence(const std::string & keyword_name, const tip::KeyRecord & out_keyword,
+      virtual bool verify(const std::string & keyword_name, const tip::KeyRecord & out_keyword,
         const tip::KeyRecord & ref_keyword, std::ostream & error_stream) const;
 
-      /** \brief Return a logical true if the given table cells are considered equivalent to each other.
-          \param keyword_name Name of the header keyword being compared.
-          \param out_cell Table cell taken from the output file being compared.
-          \param ref_cell Table cell taken from the reference file to be checked against.
-          \param error_stream Output stream for this method to put error messages.
+      /** \brief Return a logical true if the given table cell is considered correct, and a logical false otherwise.
+          \param column_name Name of the FITS column that the given table cell belongs to.
+          \param out_cell Table cell taken from the output file to be verified.
+          \param ref_cell Table cell taken from the reference file which out_cell is checked against.
+          \param error_stream Output stream for this method to put an error message when verification fails.
       */
-      virtual bool testEquivalence(const std::string & column_name, const tip::TableCell & out_cell,
-        const tip::TableCell & ref_cell, std::ostream & error_stream) const;
+      virtual bool verify(const std::string & column_name, const tip::TableCell & out_cell, const tip::TableCell & ref_cell,
+        std::ostream & error_stream) const;
 
-      /** \brief Return a logical true if the given character strings are considered equivalent to each other.
-          \param out_string Character string taken from the output file being compared.
-          \param ref_string Character string taken from the reference file to be checked against.
-          \param error_stream Output stream for this method to put error messages.
+      /** \brief Return a logical true if the given character string is considered correct, and a logical false otherwise.
+          \param out_string Character string taken from the output file to be verified.
+          \param ref_string Character string taken from the reference file which out_string is checked against.
+          \param error_stream Output stream for this method to put an error message when verification fails.
       */
-      virtual bool testEquivalence(const std::string & out_string, const std::string & ref_string, std::ostream & error_stream) const;
+      virtual bool verify(const std::string & out_string, const std::string & ref_string, std::ostream & error_stream) const;
 
     private:
       std::string m_app_name;
