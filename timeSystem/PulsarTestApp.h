@@ -7,6 +7,7 @@
 #define pulsarDb_PulsarTestApp_h
 
 #include <iostream>
+#include <limits>
 #include <set>
 #include <stdexcept>
 #include <string>
