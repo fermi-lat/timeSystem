@@ -5,6 +5,7 @@
 
 \verbatim
 --------------------------------------------------------------------------------
+21-may-2009    v6r3p1 MH  Improve the unit test for application classes.
 28-apr-2009      v6r3 MH  Report file creation time in UT (JIRA PULS-52).
                           Clean up C source codes. Fix bugs. Improve Doxygen documents.
 30-oct-2008    v6r2p4 MH  Modify unit test to use less strict test data for
