@@ -1,5 +1,67 @@
 ------------------------------------------------------------
 TAG
+Tag name: ScienceTools-09-13-00, operation: add
+Package: timeSystem
+User: glastrm  Sun May 24 20:59:54 2009
+Files:
+  timeSystem/ChangeLog  1.624
+  timeSystem/timeSystemLib.py  1.2
+  timeSystem/SConscript  1.19
+  timeSystem/cmt/requirements  1.3
+  timeSystem/data/my_pulsar_events_bary_v3.fits  1.1
+  timeSystem/data/testls.fits  1.1
+  timeSystem/data/my_pulsar_spacecraft_data_v3r1.fits  1.1
+  timeSystem/data/my_pulsar_events_geo_v3.fits  1.2
+  timeSystem/data/bogusls.fits  1.1
+  timeSystem/data/my_pulsar_spacecraft_data_v3.fits  1.1
+  timeSystem/data/my_pulsar_events_v3.fits  1.1
+  timeSystem/data/outref/testTimeCorrectorApp_par1.fits  1.2
+  timeSystem/data/outref/testTimeCorrectorApp_par2.fits  1.2
+  timeSystem/doc/release.notes  1.31
+  timeSystem/pfiles/gtbary.par  1.10
+  timeSystem/src/axBary.c  1.3
+  timeSystem/src/AbsoluteTime.cxx  1.25
+  timeSystem/src/scorbit.c  1.1.1.1
+  timeSystem/src/bary.c  1.2
+  timeSystem/src/clock.c  1.2
+  timeSystem/src/ElapsedTime.cxx  1.4
+  timeSystem/src/TimeCorrectorApp.cxx  1.12
+  timeSystem/src/phaseHist.c  1.1.1.1
+  timeSystem/src/mainpage.h  1.7
+  timeSystem/src/Duration.cxx  1.10
+  timeSystem/src/TimeSystem.cxx  1.40
+  timeSystem/src/bary.h  1.1.1.1
+  timeSystem/src/xCC.c  1.1.1.1
+  timeSystem/src/EventTimeHandler.cxx  1.29
+  timeSystem/src/PulsarTestApp.cxx  1.16
+  timeSystem/src/glastscorbit.c  1.3
+  timeSystem/src/BaryTimeComputer.cxx  1.17
+  timeSystem/src/TimeInterval.cxx  1.3
+  timeSystem/src/MjdFormat.cxx  1.14
+  timeSystem/src/ctatv.c  1.2
+  timeSystem/src/CalendarFormat.cxx  1.9
+  timeSystem/src/GlastTimeHandler.cxx  1.28
+  timeSystem/src/dpleph.c  1.2
+  timeSystem/src/gtbary/gtbary.cxx  1.12
+  timeSystem/src/test/test_timeSystem.cxx  1.123
+  timeSystem/timeSystem/TimeInterval.h  1.3
+  timeSystem/timeSystem/TimeCorrectorApp.h  1.2
+  timeSystem/timeSystem/Duration.h  1.21
+  timeSystem/timeSystem/AbsoluteTime.h  1.27
+  timeSystem/timeSystem/TimeConstant.h  1.7
+  timeSystem/timeSystem/TimeFormat.h  1.9
+  timeSystem/timeSystem/MjdFormat.h  1.7
+  timeSystem/timeSystem/ElapsedTime.h  1.4
+  timeSystem/timeSystem/GlastTimeHandler.h  1.18
+  timeSystem/timeSystem/PulsarTestApp.h  1.9
+  timeSystem/timeSystem/CalendarFormat.h  1.4
+  timeSystem/timeSystem/EventTimeHandler.h  1.25
+  timeSystem/timeSystem/BaryTimeComputer.h  1.9
+  timeSystem/timeSystem/TimeSystem.h  1.17
+
+    *
+------------------------------------------------------------
+TAG
 Tag name: timeSystem-06-03-02, operation: add
 Package: timeSystem
 User: glastrm  Fri May 22 17:31:24 2009
