@@ -23,7 +23,7 @@ namespace timeSystem {
   class BaryTimeComputer;
 
   /** \class GlastTimeHandler
-      \brief Class which reads out event times from a GLAST event file, creates AbsoluteTime objects for event times,
+      \brief Class which reads out event times from a Fermi (formerly GLAST) event file, creates AbsoluteTime objects for event times,
              and performs barycentric correction on event times, typically recorded at a space craft.
   */
   class GlastTimeHandler: public EventTimeHandler {
@@ -104,7 +104,7 @@ namespace timeSystem {
       */
       GlastTimeHandler(const std::string & file_name, const std::string & extension_name, bool read_only = true);
 
-      /** \brief Helper method for createInstance method to check the header keyword required for GLAST event files
+      /** \brief Helper method for createInstance method to check the header keyword required for Fermi (formerly GLAST) event files
                  in order to determine a given file can be handled by this class.
           \param file_name Name of FITS file to open.
           \param extension_name Name of FITS extension to open.
@@ -114,36 +114,36 @@ namespace timeSystem {
       static bool checkHeaderKeyword(const std::string & file_name, const std::string & extension_name,
         const std::string & time_ref_value, const std::string & time_sys_value);
 
-      /** \brief Read a GLAST Mission Elapsed Time (MET) from a given field of the opened FITS header or the current record
-                 of the opened FITS table, and return it.
-          \param field_name Name of field from which a GLAST MET is to be read.
-          \param from_header Set to true to read a GLAST MET from the header. Set to false to read a time from the current record
-                 of the table.
+      /** \brief Read a Fermi (formerly GLAST) Mission Elapsed Time (MET) from a given field of the opened FITS header
+                 or the current record of the opened FITS table, and return it.
+          \param field_name Name of field from which a Fermi (formerly GLAST) MET is to be read.
+          \param from_header Set to true to read a Fermi (formerly GLAST) MET from the header. Set to false
+                 to read a time from the current record of the table.
       */
       double readGlastTime(const std::string & field_name, bool from_header) const;
 
-      /** \brief Write a GLAST Mission Elapsed Time (MET) to a specified field of the opened FITS header or the current record
-                 of the opened FITS table, and return it.
+      /** \brief Write a Fermi (formerly GLAST) Mission Elapsed Time (MET) to a specified field of the opened FITS header
+                 or the current record of the opened FITS table, and return it.
           \param field_name Name of field to which a given time is written.
-          \param glast_time GLAST MET to write to the above field.
+          \param glast_time Fermi (formerly GLAST) MET to write to the above field.
           \param to_header Set to true to write the time to the header. Set to false to write it to the current record of the table.
        */
       void writeGlastTime(const std::string & field_name, double glast_time, bool to_header);
 
-      /** \brief Create an AbsoluteTime object that represents a given GLAST Mission Elapsed Time (MET), and return it.
-          \param glast_time GLAST MET to convert to an AbsoluteTime object.
+      /** \brief Create an AbsoluteTime object that represents a given Fermi (formerly GLAST) Mission Elapsed Time (MET), and return it.
+          \param glast_time Fermi (formerly GLAST) MET to convert to an AbsoluteTime object.
       */
       AbsoluteTime computeAbsoluteTime(double glast_time) const;
 
-      /** \brief Create an AbsoluteTime object that represents a given GLAST Mission Elapsed Time (MET) in a specified time system,
-                 and return it.
-          \param glast_time GLAST MET to convert to an AbsoluteTime object.
-          \param time_system_name Name of the time system in which a given GLAST MET is to be interpreted.
+      /** \brief Create an AbsoluteTime object that represents a given Fermi (formerly GLAST) Mission Elapsed Time (MET)
+                 in a specified time system, and return it.
+          \param glast_time Fermi (formerly GLAST) MET to convert to an AbsoluteTime object.
+          \param time_system_name Name of the time system in which a given Fermi (formerly GLAST) MET is to be interpreted.
       */
       AbsoluteTime computeAbsoluteTime(double glast_time, const std::string & time_system_name) const;
 
-      /** \brief Compute a GLAST Mission Elapsed Time (MET) corresponding to a given absolute time.
-          \param abs_time AbsoluteTime object to be converted into a GLAST MET.
+      /** \brief Compute a Fermi (formerly GLAST) Mission Elapsed Time (MET) corresponding to a given absolute time.
+          \param abs_time AbsoluteTime object to be converted into a Fermi (formerly GLAST) MET.
       */
       double computeGlastTime(const AbsoluteTime & abs_time) const;
 
@@ -153,7 +153,7 @@ namespace timeSystem {
   };
 
   /** \class GlastScTimeHandler
-      \brief Class which reads out event times from a GLAST event file that is not applied barycentric corrections,
+      \brief Class which reads out event times from a Fermi (formerly GLAST) event file that is not applied barycentric corrections,
              creates AbsoluteTime objects for event times, and performs geocentric and barycentric correction on
              event times that are typically recorded at a spacecraft.
   */
@@ -228,7 +228,7 @@ namespace timeSystem {
   };
 
   /** \class GlastGeoTimeHandler
-      \brief Class which reads out event times from a GLAST event file that is applied geocentric corrections,
+      \brief Class which reads out event times from a Fermi (formerly GLAST) event file that is applied geocentric corrections,
              creates AbsoluteTime objects for event times, and performs geocentric and barycentric correction on
              event times that are typically recorded at a spacecraft.
              typically recorded at a space craft.
@@ -292,7 +292,7 @@ namespace timeSystem {
   };
 
   /** \class GlastBaryTimeHandler
-      \brief Class which reads out event times from a GLAST event file that is applied barycentric corrections,
+      \brief Class which reads out event times from a Fermi (formerly GLAST) event file that is applied barycentric corrections,
              creates AbsoluteTime objects for event times, and performs geocentric and barycentric correction on
              event times that are typically recorded at a spacecraft.
   */
