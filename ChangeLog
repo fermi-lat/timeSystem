@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Sun May 31 19:51:11 PDT 2009
+timeSystem/timeSystem
+
+Modified Files:
+	GlastTimeHandler.h MjdFormat.h 
+Log Message:
+Change GLAST to Fermi in Doxygen comments.
+    *
+------------------------------------------------------------
 User: hirayama  Sun May 31 19:50:22 PDT 2009
 timeSystem/src
 
