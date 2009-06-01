@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Sun May 31 19:50:22 PDT 2009
+timeSystem/src
+
+Modified Files:
+	GlastTimeHandler.cxx 
+Log Message:
+Accept an event file with TELESCOP=FERMI in addition to GLAST. Change GLAST to Fermi in error messages.
+    *
+------------------------------------------------------------
 TAG
 Tag name: ScienceTools-09-13-00, operation: add
 Package: timeSystem
