@@ -95,7 +95,7 @@ namespace timeSystem {
     std::istringstream iss(time_string);
     double time_double = 0.;
     iss >> time_double;
-    if (iss.fail() || !iss.eof()) throw std::runtime_error("Cannot interpret \"" + time_string + "\" as a GLAST event time");
+    if (iss.fail() || !iss.eof()) throw std::runtime_error("Cannot interpret \"" + time_string + "\" as a Fermi event time");
 
     // Create and return the time.
     return computeAbsoluteTime(time_double, time_system_rat);
@@ -149,7 +149,8 @@ namespace timeSystem {
     for (std::string::iterator itor = time_sys_arg.begin(); itor != time_sys_arg.end(); ++itor) *itor = std::toupper(*itor);
 
     // Return whether this class can handle the file or not.
-    return (telescope == "GLAST" && instrument == "LAT" && time_ref == time_ref_arg && time_sys == time_sys_arg);
+    return ((telescope == "FERMI" || telescope == "GLAST") && instrument == "LAT" && time_ref == time_ref_arg &&
+      time_sys == time_sys_arg);
   }
 
   double GlastTimeHandler::readGlastTime(const std::string & field_name, bool from_header) const {
@@ -297,8 +298,8 @@ namespace timeSystem {
     double * sc_position_array = glastscorbit(m_sc_file_char, glast_time, &error);
     if (error) {
       std::ostringstream os;
-      os << "Cannot get GLAST spacecraft position for " << std::setprecision(std::numeric_limits<double>::digits10) <<
-        glast_time << " GLAST MET (TT):";
+      os << "Cannot get Fermi spacecraft position for " << std::setprecision(std::numeric_limits<double>::digits10) <<
+        glast_time << " Fermi MET (TT):";
       if (error > 0) {
         os << " error occurred while reading spacecraft file " << m_sc_file;
         throw tip::TipException(error, os.str());
