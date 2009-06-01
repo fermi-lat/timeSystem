@@ -12,7 +12,7 @@ namespace timeSystem {
 
   /** \class Mjd
       \brief Class to hold an Modified Julian Day (MJD) number in two parts, the integer part and the fractional part,
-             in order to hold it in a precision required by GLAST.
+             in order to hold it in a precision required by Fermi (formerly GLAST).
   */
   struct Mjd {
     /// \brief Construct an Mjd object.
@@ -32,7 +32,7 @@ namespace timeSystem {
 
   /** \class Jd
       \brief Class to hold an Julian Day (JD) number in two parts, the integer part and the fractional part, in order to
-             hold it in a precision required by GLAST.
+             hold it in a precision required by Fermi (formerly GLAST).
   */
   struct Jd {
     /// \brief Construct a Jd object.

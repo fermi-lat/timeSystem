@@ -10,12 +10,13 @@
     and for transparently converting to/from all time systems on-the-fly
     as needed, while preserving sufficient precision.
 
-    In addition, the timeSystem package has a single executable, gtbary,
-    which performs a barycentering time correction to fits files
-    using GLAST orbit files. The heart of this executable is taken
-    from axBary by Arnold Rots at SAO. Minimal modifications were
-    made to axBary to work with GLAST orbit files. This is also
-    equivalent to the barycorr tool in HEADAS.
+    In addition, the timeSystem package has a single executable,
+    gtbary, which performs a barycentering time correction to fits
+    files using Fermi (formerly GLAST) orbit files. The heart of this
+    executable is taken from axBary by Arnold Rots at SAO. Minimal
+    modifications were made to axBary to work with Fermi (formerly
+    GLAST) orbit files. This is also equivalent to the barycorr tool
+    in HEADAS.
 
     The executable is fairly self-explanatory. Upon startup, the user
     will be prompted for the input file whose times will be corrected,
