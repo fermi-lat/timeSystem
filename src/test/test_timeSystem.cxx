@@ -2955,7 +2955,9 @@ void TimeSystemTestApp::testGlastTimeHandler() {
   std::string event_file_geo = prependDataPath("my_pulsar_events_geo_v3.fits");
   std::string event_file_bary = prependDataPath("my_pulsar_events_bary_v3.fits");
   std::string event_file_copy = prependDataPath("my_pulsar_events_copy_v3.fits");
+  std::string event_file_fermi = prependDataPath("my_pulsar_events_v4.fits");
   std::string sc_file = prependDataPath("my_pulsar_spacecraft_data_v3r1.fits");
+  std::string sc_file_fermi = prependDataPath("my_pulsar_spacecraft_data_v4.fits");
   double ra = 85.0482;
   double dec = -69.3319;
   double angular_tolerance = 1.e-8; // In degrees.
@@ -3497,6 +3499,21 @@ void TimeSystemTestApp::testGlastTimeHandler() {
   } catch (const std::exception &) {
     err() << "GlastGeoTimeHandler::setSourcePosition(" << ra_close << ", " << dec_close << 
       ") threw an exception when it should not." << std::endl;
+  }
+
+  // Test loading of an event file with TELESCOP = FERMI.
+  handler.reset(GlastScTimeHandler::createInstance(event_file_fermi, "EVENTS"));
+  if (0 == handler.get()) {
+    err() << "GlastScTimeHandler::createInstance method returned a null pointer (0)." << std::endl;
+  } else if (0 == dynamic_cast<GlastScTimeHandler *>(handler.get())) {
+    err() << "GlastScTimeHandler::createInstance method did not return a GlastScTimeHandler object." << std::endl;
+  }
+
+  // Test Initialization of handler with spacecraft file with TELESCOP = FERMI.
+  try {
+    handler->initTimeCorrection(sc_file_fermi, "SC_DATA", pl_ephem, match_solar_eph, angular_tolerance);
+  } catch (const std::exception &) {
+    err() << "GlastScTimeHandler::initTimeCorrection method threw an exception for spacecraft file with TELESCOP=FERMI." << std::endl;
   }
 }
 
