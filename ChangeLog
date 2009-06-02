@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Tue Jun  2 15:37:39 PDT 2009
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Add tests of support for event files and spacecraft files with TELESCOP=FERMI.
+    *
+------------------------------------------------------------
 TAG
 Tag name: ScienceTools-09-14-00, operation: add
 Package: timeSystem
