@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Tue Jun  2 15:37:40 PDT 2009
+timeSystem/data
+
+Added Files:
+	my_pulsar_events_v4.fits my_pulsar_spacecraft_data_v4.fits 
+Log Message:
+Add tests of support for event files and spacecraft files with TELESCOP=FERMI.
+    *
+------------------------------------------------------------
 User: hirayama  Tue Jun  2 15:37:39 PDT 2009
 timeSystem/src/test
 
