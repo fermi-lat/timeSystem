@@ -5,6 +5,7 @@
 
 \verbatim
 --------------------------------------------------------------------------------
+02-jun-2009      v6r4 MH  Adopt to the mission name change (GLAST -> FERMI).
 22-may-2009    v6r3p2 MH  Add #include <limits> to PulsarTestApp.h.
 21-may-2009    v6r3p1 MH  Improve the unit test for application classes.
 28-apr-2009      v6r3 MH  Report file creation time in UT (JIRA PULS-52).
