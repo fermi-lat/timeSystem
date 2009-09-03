@@ -1,5 +1,14 @@
 ------------------------------------------------------------
 User: hirayama  Wed Sep  2 17:21:18 PDT 2009
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Restructure Duration class for a 64-bit long implementation of 'long' type variable.
+    *
+------------------------------------------------------------
+User: hirayama  Wed Sep  2 17:21:18 PDT 2009
 timeSystem/timeSystem
 
 Modified Files:
