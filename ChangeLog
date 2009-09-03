@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Wed Sep  2 17:21:18 PDT 2009
+timeSystem/timeSystem
+
+Modified Files:
+	Duration.h 
+Log Message:
+Restructure Duration class for a 64-bit long implementation of 'long' type variable.
+    *
+------------------------------------------------------------
 User: hirayama  Wed Sep  2 17:21:17 PDT 2009
 timeSystem/src
 
