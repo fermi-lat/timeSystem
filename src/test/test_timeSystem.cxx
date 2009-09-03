@@ -595,12 +595,10 @@ void TimeSystemTestApp::testDuration() {
   }
 
   // Test for detections of overflow/underflow: the basic constructor that takes days and seconds.
-  double large_day = std::numeric_limits<long>::max() + .4;
-  double small_day = std::numeric_limits<long>::min() + 1 - .4;
-  // Note: Duration keeps its day part as one less than the integer part of it for computational advantages.
-  double overflow_day = std::numeric_limits<long>::max() + 1.1;
-  double underflow_day = std::numeric_limits<long>::min() + 1 - 1.1;
-  // Note: Duration keeps its day part as one less than the integer part of it for computational advantages.
+  double large_day = std::numeric_limits<long>::max() * 0.9;
+  double small_day = std::numeric_limits<long>::min() * 0.9;
+  double overflow_day = std::numeric_limits<long>::max() * 1.1;
+  double underflow_day = std::numeric_limits<long>::min() * 1.1;
 
   // --- Case which should *not* overflow, but is close to overflowing.
   double sec = large_day * SecPerDay();
@@ -679,10 +677,10 @@ void TimeSystemTestApp::testDuration() {
   }
 
   // Test for detections of overflow/underflow: the getters that computes a pair of integer and fractional parts.
-  double large_number = std::numeric_limits<long>::max() + .4;
-  double small_number = std::numeric_limits<long>::min() - .4;
-  double overflow_number = std::numeric_limits<long>::max() + 1.1;
-  double underflow_number = std::numeric_limits<long>::min() - 1.1;
+  double large_number = std::numeric_limits<long>::max() * 0.9;
+  double small_number = std::numeric_limits<long>::min() * 0.9;
+  double overflow_number = std::numeric_limits<long>::max() * 1.1;
+  double underflow_number = std::numeric_limits<long>::min() * 1.1;
 
   // Note: Impossible to test "Day" because it is impossible to set a value that cannot be read out in units of day.
   std::map<std::string, long> sec_per_unit;
@@ -779,15 +777,45 @@ void TimeSystemTestApp::testDuration() {
   //       overflow/underflow by negation, in a computer system where min_long == -max_long - 1.  The condition happens
   //       to match the current implementation of Duration class that keeps its day part as one less than the integer
   //       part of it for computational advantages.
+  large_dur = Duration(std::numeric_limits<long>::max(), SecPerDay() - 1.);
   try {
-    large_dur + Duration(1, 0.);
-    err() << "Adding Duration(1, 0.) to a time duration of " << large_day << " days did not throw an exception." << std::endl;
+    large_dur + Duration(0, 2.);
+    err() << "Adding Duration(0, 2.) to a time duration of " << large_day << " days did not throw an exception." << std::endl;
   } catch (const std::exception &) {
   }
+  small_dur = Duration(std::numeric_limits<long>::min(), 1.);
   try {
-    small_dur - Duration(1, 0.);
-    err() << "Subtracting Duration(1, 0.) from a time duration of " << small_day << " days did not throw an exception." << std::endl;
+    small_dur - Duration(0, 2.);
+    err() << "Subtracting Duration(0, 2.) from a time duration of " << small_day << " days did not throw an exception." << std::endl;
   } catch (const std::exception &) {
+  }
+
+  // Test for NO detections of overflow/underflow for close cases: addition and subtraction.
+  large_dur = Duration(std::numeric_limits<long>::max(), SecPerDay() - 2.);
+  try {
+    large_dur + Duration(0, 1.);
+  } catch (const std::exception &) {
+    err() << "Adding Duration(0, 1.) to a time duration of " << large_day << " days threw an exception." << std::endl;
+  }
+  small_dur = Duration(std::numeric_limits<long>::min(), 2.);
+  try {
+    small_dur - Duration(0, 1.);
+  } catch (const std::exception &) {
+    err() << "Subtracting Duration(0, 1.) from a time duration of " << small_day << " days threw an exception." << std::endl;
+  }
+
+  // Test for NO detections of overflow/underflow for tricky cases: addition and subtraction.
+  large_dur = Duration(std::numeric_limits<long>::max(), SecPerDay() - 2.);
+  try {
+    large_dur - Duration(-1, SecPerDay() - 1.);
+  } catch (const std::exception &) {
+    err() << "Adding Duration(-1, 86399.) to a time duration of " << large_day << " days did not throw an exception." << std::endl;
+  }
+  small_dur = Duration(std::numeric_limits<long>::min(), 2.);
+  try {
+    small_dur + Duration(-1, SecPerDay() - 1.);
+  } catch (const std::exception &) {
+    err() << "Subtracting Duration(-1, 86399.) from a time duration of " << small_day << " days threw an exception." << std::endl;
   }
 
   // Test comparison operators: !=, ==, <, <=, >, and >=.

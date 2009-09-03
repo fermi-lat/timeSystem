@@ -160,7 +160,7 @@ namespace timeSystem {
   Duration::Duration(): m_duration(0, 0.) {}
 
   Duration::Duration(long day, double sec) {
-    convert(day, sec, m_duration);
+    set(day, sec);
   }
 
   Duration::Duration(long time_value_int, double time_value_frac, const std::string & time_unit_name) {
@@ -174,12 +174,22 @@ namespace timeSystem {
       throw std::runtime_error(os.str());
     }
 
-    // Set the duration to this object.
-    set(time_value_int, time_value_frac, time_unit_name);
+    // Convert units.
+    const TimeUnit & unit(TimeUnit::getUnit(time_unit_name));
+    long day = time_value_int / unit.getUnitPerDay();
+    double sec = (time_value_int % unit.getUnitPerDay() + time_value_frac) * unit.getSecPerUnit();
+
+    // Set the result to the data member.
+    set(day, sec);
   }
 
   Duration::Duration(double time_value, const std::string & time_unit_name) {
-    set(0, time_value, time_unit_name);
+    // Convert units.
+    const TimeUnit & unit(TimeUnit::getUnit(time_unit_name));
+    double sec = time_value * unit.getSecPerUnit();
+
+    // Set the result to the data member.
+    set(0, sec);
   }
 
   const Duration & Duration::zero() {
@@ -191,23 +201,47 @@ namespace timeSystem {
     const TimeUnit & unit(TimeUnit::getUnit(time_unit_name));
 
     // Let the sec part have the same sign as the day part.
-    double signed_day = m_duration.first;
+    long signed_day = m_duration.first;
     double signed_sec = m_duration.second;
-    if (m_duration.first < 0) {
-      signed_day += 1.;
+    if (signed_day < 0) {
+      signed_day++; // Note: this operation never causes integer over/underflow.
       signed_sec -= SecPerDay();
     }
 
-    // Compute time in a given unit.
+    // Convert the seconds portion to a given time unit.
     double signed_time = signed_sec / unit.getSecPerUnit();
 
     // Compute fractional part as a value in range (-1., 1.).
-    double int_part_dbl;
-    time_value_frac = std::modf(signed_time, &int_part_dbl);
+    double int_part_dbl = 0.;
+    double frac_part = std::modf(signed_time, &int_part_dbl);
 
-    // Compute integer part of return value using modf() result.
-    int_part_dbl += signed_day * unit.getUnitPerDay();
-    time_value_int = round(int_part_dbl, unit.getUnitString());
+    // Convert the integer part into an integer type.
+    // Note: the integer part coming from the seconds portion is in range [-SecPerDay(), SecPerDay()) at most,
+    //       and safe to convert into a long variable without an integer over/underflow.
+    int_part_dbl += (int_part_dbl > 0. ? .5 : -.5);
+    long int_part_from_sec = static_cast<long>(int_part_dbl);
+
+    // Compute the integer part coming from the days portion.
+    if (signed_day > std::numeric_limits<long>::max() / unit.getUnitPerDay()) {
+      // Throw an exception for a value too large after multiplication.
+      std::ostringstream os;
+      os << "Integer overflow in expressing time duration of " << *this << " in " << unit.getUnitString();
+      throw std::runtime_error(os.str());
+
+    } else if (signed_day < std::numeric_limits<long>::min() / unit.getUnitPerDay()) {
+      // Throw an exception for a value too small after multiplication.
+      std::ostringstream os;
+      os << "Integer underflow in expressing time duration of " << *this << " in " << unit.getUnitString();
+      throw std::runtime_error(os.str());
+    }
+    long int_part_from_day = signed_day * unit.getUnitPerDay();
+
+    // Add the integer part coming from the days portion.
+    long int_part = add(int_part_from_day, int_part_from_sec);
+
+    // Set the result.
+    time_value_int = int_part;
+    time_value_frac = frac_part;
   }
 
   void Duration::get(const std::string & time_unit_name, double & time_value) const {
@@ -216,7 +250,7 @@ namespace timeSystem {
 
   double Duration::get(const std::string & time_unit_name) const {
     const TimeUnit & unit(TimeUnit::getUnit(time_unit_name));
-    return std::floor(double(m_duration.first) * unit.getUnitPerDay()) + m_duration.second / unit.getSecPerUnit();
+    return std::floor(static_cast<double>(m_duration.first) * unit.getUnitPerDay()) + m_duration.second / unit.getSecPerUnit();
   }
 
   Duration Duration::operator +(const Duration & other) const {
@@ -291,73 +325,152 @@ namespace timeSystem {
     return os.str();
   }
 
-  Duration::duration_type Duration::splitSec(double sec) const {
+  // TODO: Move this method to an official place.
+  double findLargestInteger(long upper_bound) {
+    // Set initial values.
+    double candidate_dval = 0.;
+    long candidate_ival = 0;
+    long lower_bound = 0;
+
+    // Perform a binary search for the largest integer expressible in double.
+    while (upper_bound != lower_bound) {
+      // Take a mid-point as a test point.
+      long test_point = upper_bound - (upper_bound - lower_bound) / 2;
+
+      // Convert types to check numerical correctness in type-conversions.
+      double dval = static_cast<double>(test_point);
+      long ival = static_cast<long>(dval);
+      double dval_back = static_cast<double>(ival);
+
+      // Check sanity in computations, by computing a difference to the current candidate.
+      long diff_ival = ival - candidate_ival;
+      double diff_dval = dval - candidate_dval;
+      if (std::fabs(dval_back - dval) < 0.5 && std::fabs(diff_dval - diff_ival) < 0.5) {
+        // Update candidate.
+        candidate_dval = dval;
+        candidate_ival = ival;
+
+        // Update lower bound.
+        lower_bound = test_point;
+
+      } else {
+        // Update upper bound.
+        if (test_point != upper_bound) upper_bound = test_point;
+        else if (upper_bound > lower_bound) upper_bound--;
+        else if (upper_bound < lower_bound) upper_bound++;
+      }
+    }
+
+    // Return the candidate at the end of search.
+    return candidate_dval;
+  }
+
+  void Duration::set(long day, double sec) {
+    // Split the given number of seconds into days and seconds portions.
     double double_day = std::floor(sec / SecPerDay());
-    long day = round(double_day, "days");
-    return duration_type(day, sec - double_day * SecPerDay());
+    double double_sec = sec - double_day * SecPerDay();
+
+    // Convert the days portion into an integer type.
+    static double largest_integer = findLargestInteger(std::numeric_limits<long>::max());
+    static double smallest_integer = findLargestInteger(std::numeric_limits<long>::min());
+    if (double_day > largest_integer) {
+      // Throw an exception for the seconds argument too large.
+      std::ostringstream os;
+      os.precision(std::numeric_limits<double>::digits10);
+      os << "Integer overflow in converting " << sec << " seconds into days";
+      throw std::runtime_error(os.str());
+
+    } else if (double_day < smallest_integer) {
+      // Throw an exception for the seconds argument too small (i.e., large negative).
+      std::ostringstream os;
+      os.precision(std::numeric_limits<double>::digits10);
+      os << "Integer underflow in converting " << sec << " seconds into days";
+      throw std::runtime_error(os.str());
+    }
+    double_day += (double_day > 0. ? .5 : -.5);
+    long int_day = static_cast<long>(double_day);
+
+    // Add the given number of days to the days portion from the given seconds.
+    int_day = add(day, int_day);
+
+    // Set the result to the internal variable.
+    m_duration.first = int_day;
+    m_duration.second = double_sec;
+  }
+
+  long Duration::add(long int1, long int2) const {
+    // Check for integer over/underflow.
+    if (int1 >=0 && std::numeric_limits<long>::max() - int1 < int2) {
+      // Throw an exception for a value too large after addition.
+      std::ostringstream os;
+      os << "Integer overflow in adding two integer values: " << int1 << " and " << int2;
+      throw std::runtime_error(os.str());
+
+    } else if (int1 <=0 && std::numeric_limits<long>::min() - int1 > int2) {
+      // Throw an exception for a value too small after addition.
+      std::ostringstream os;
+      os << "Integer underflow in adding two integer values: " << int1 << " and " << int2;
+      throw std::runtime_error(os.str());
+    }
+
+    // Return the sum.
+    return int1 + int2;
   }
 
   Duration::duration_type Duration::add(Duration::duration_type t1, Duration::duration_type t2) const {
-    // Day portions are added no matter what.
-    double double_day = double(t1.first) + double(t2.first);
-
     // Sum the two seconds portions.
-    double sec = t1.second + t2.second;
+    double total_sec = t1.second + t2.second;
 
-    // Check for overflow.
-    if (sec >= SecPerDay()) {
-      double_day += 1.;
+    // Check for carry-over, and sum the days portions.
+    long total_day = 0;
+    if (total_sec >= SecPerDay()) {
+      // Add the days portions, with careful attention to the order of addition.
+      if (t1.first != std::numeric_limits<long>::max()) {
+        // Safe to increment the days portion of t1.
+        total_day = add(t1.first+1, t2.first);
+
+      } else if (t2.first != std::numeric_limits<long>::max()) {
+        // Safe to increment the days portion of t2.
+        total_day = add(t1.first, t2.first+1);
+
+      } else {
+        // This case overflows no matter what.
+        total_day = add(add(t1.first, t2.first), 1);
+
+      }
+
+      // Re-compute the seconds portion, noting the following points:
       // 1. Do not reuse sum variable from above, in order to preserve maximum precision.
       // 2. Prevent small negative values, which sometimes occur when performing floating point subtraction.
-      sec = std::max(0., (t1.second - SecPerDay()) + t2.second);
+      total_sec = std::max(0., (t1.second - SecPerDay()) + t2.second);
+
+    } else {
+      // Add the days portions.
+      total_day = add(t1.first, t2.first);
+
     }
 
-    // Round day part and return a new object.
-    long day = round(double_day, "days");
-    return duration_type(day, sec);
+    // Return the sum.
+    return duration_type(total_day, total_sec);
   }
 
   Duration::duration_type Duration::negate(Duration::duration_type t1) const {
-    long day = round(-double(t1.first) - 1., "days");
-    return duration_type(day, SecPerDay() - t1.second);
-  }
-
-  void Duration::set(long time_value_int, double time_value_frac, const std::string & time_unit_name) {
-    // Convert units.
-    const TimeUnit & unit(TimeUnit::getUnit(time_unit_name));
-    long day = time_value_int / unit.getUnitPerDay();
-    double sec = (time_value_int % unit.getUnitPerDay() + time_value_frac) * unit.getSecPerUnit();
-
-    // Set the result to the data member.
-    convert(day, sec, m_duration);
-  }
-
-  long Duration::round(double value, const std::string & time_unit) const {
-    // Add one half for rounding oepartion.
-    value += (value > 0. ? 0.5 : -0.5);
-
-    // Check the value against the boundaries of long type.
-    if (value >= std::numeric_limits<long>::max() + 1.) {
-      // Throw an exception for a value too large.
+    // Check the day part of the value against the boundaries of long type.
+    if (t1.first <= 0 && t1.first + std::numeric_limits<long>::max() < -1) {
+      // Throw an exception for a value too large after negation.
       std::ostringstream os;
-      os.precision(std::numeric_limits<double>::digits10);
-      os << "Integer overflow in computing time duration of " << value << " " << time_unit;
+      os << "Integer overflow in negating time duration of " << *this;
       throw std::runtime_error(os.str());
-
-    } else if (value <= std::numeric_limits<long>::min() - 1.) {
-      // Throw an exception for a value too small (i.e., large negative).
+      
+    } else if (t1.first >= 0 && t1.first + std::numeric_limits<long>::min() > -1) {
+      // Throw an exception for a value too small after negation.
       std::ostringstream os;
-      os.precision(std::numeric_limits<double>::digits10);
-      os << "Integer underflow in computing time duration of " << value << " " << time_unit;
+      os << "Integer underflow in negating time duration of " << *this;
       throw std::runtime_error(os.str());
     }
 
-    // Return the rounded value.
-    return long(value);
-  }
-
-  void Duration::convert(long day, double sec, duration_type & time_duration) const {
-    time_duration = add(duration_type(day, 0.), splitSec(sec));
+    // Compute and return the negative of this object.
+    return duration_type(-t1.first - 1, SecPerDay() - t1.second);
   }
 
   std::ostream & operator <<(std::ostream & os, const Duration & time_duration) {
