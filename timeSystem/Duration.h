@@ -155,10 +155,19 @@ namespace timeSystem {
       */
       Duration(const duration_type & new_duration): m_duration(new_duration) {}
 
-      /** \brief Convert any number of seconds into days & seconds in range [0, 86400).
-          \param sec Input number of seconds.
+      /** \brief Convert a pair of days and seconds into the type of the internal variable, paying attention to
+                 carry-overs and precision preservation, and set the result to the internal variable.
+          \param day The number of days in the pair to be converted.
+          \param day The number of seconds in the pair to be converted.
       */
-      duration_type splitSec(double sec) const;
+      void set(long day, double sec);
+
+      /** \brief Add two integer numbers.  An exception is thrown if the sum is larger than the maximum integer
+                 number for "long int" type, or smaller than the minimum.
+          \param int1 The first integer value being added.
+          \param int2 The second integer value being added.
+      */
+      long add(long t1, long t2) const;
 
       /** \brief Add two time durations which are represented by long day and double second fields. Seconds
                  part of the result is guaranteed to be in the range [0., SecPerDay())
@@ -172,25 +181,6 @@ namespace timeSystem {
           \param t1 The first time duration being negated.
       */
       duration_type negate(duration_type t1) const;
-
-      /** \brief Set time duration to this object.
-          \param time_value_int Integer part of the time duration to set.
-          \param time_value_frac Fractional part of the time duration to set.
-          \param time_unit_name Name of time unit.
-      */
-      void set(long time_value_int, double time_value_frac, const std::string & time_unit_name);
-
-      /** \brief Round a floating-point number into an integer, paying attention to the expressible range of integer values.
-          \param value Floating-point number to be rounded.
-          \param time_unit Character string representing a time unit of the number to be rounded. The value of this argument
-                 is used only in an error message of an exception thrown by this method.
-      */
-      long round(double value, const std::string & time_unit) const;
-
-      /** \brief Convert a pair of days and seconds into the type of the internal variable, paying attention to
-                 carry-overs and precision preservation.
-      */
-      void convert(long day, double sec, duration_type & time_duration) const;
 
       duration_type m_duration;
   };
