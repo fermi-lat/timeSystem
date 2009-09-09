@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Tue Sep  8 18:05:14 PDT 2009
+timeSystem/src
+
+Modified Files:
+	Duration.cxx 
+Log Message:
+Use IntFracUtility class for splitting a double-precision number into an integer and a fractional parts.
+    *
+------------------------------------------------------------
 User: hirayama  Tue Sep  8 18:04:17 PDT 2009
 timeSystem/src/test
 
