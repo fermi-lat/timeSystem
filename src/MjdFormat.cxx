@@ -5,7 +5,8 @@
 */
 #include "timeSystem/MjdFormat.h"
 
-#include <cctype>
+#include "timeSystem/IntFracUtility.h"
+
 #include <cmath>
 #include <iomanip>
 #include <limits>
@@ -20,49 +21,6 @@ namespace {
   const long JdMinusMjdInt() { static const long s_value = 2400000; return s_value; }
   const double JdMinusMjdFrac() { static const double s_value = .5; return s_value; }
   const double JdMinusMjdDouble() { static const double s_value = JdMinusMjdInt() + JdMinusMjdFrac(); return s_value; }
-
-  /** \class IntFracUtility
-      \brief Helper Class to check, parse, and format a pair of an integer part and a fractional part for time representation
-             classess such as MJD format, holding an integer and a fractional part separately.
-  */
-  class IntFracUtility {
-    public:
-      /// \brief Return an IntFracUtility object.
-      static IntFracUtility & getUtility();
-
-      /** \brief Check consistency and validity of a given pair of integer and fractional parts, and throw an exception
-                 if the pair has a problem.
-          \param int_part Integer part to be tested.
-          \param frac_part Fractional part to be tested.
-      */
-      void check(long int_part, double frac_part) const;
-
-      /** \brief Convert a character string representing a floating-point number into a pair of the integer part of the number
-                 and the fractional part of it.
-          \param value_string Character string to parse.
-          \param int_part Integer part of the parsed number.
-          \param frac_part Fractional part of the parsed number.
-      */
-      void parse(const std::string & value_string, long & int_part, double & frac_part) const;
-
-      /** \brief Convert a pair of an integer part and a fractional part representing a floating-point number into a character
-                 string, and return it.
-          \param int_part Integer part of a floating-point number to convert.
-          \param frac_part Fractional part of a floating-point number to convert.
-          \param precision Number of digits after a decimal point in a resultant character string.
-      */
-      std::string format(long int_part, double frac_part, std::streamsize precision = std::numeric_limits<double>::digits10) const;
-
-      /** \brief Convert a double-precision floating-point number into an integer number, checking an expressible range
-                 by an integer variable, etc.
-          \param value_double Double-precision floating-point number to be converted.
-      */
-      long convert(double value_double) const;
-
-    private:
-      /// \brief Construct a IntFracUtility object.
-      IntFracUtility();
-  };
 
   /** \class MjdFormat
       \brief Class to convert time representations in MJD format, holding an integer and a fractional part separately.
@@ -172,123 +130,6 @@ namespace {
       virtual std::string format(const Jd1 & time_rep, std::streamsize precision = std::numeric_limits<double>::digits10) const;
   };
 
-  IntFracUtility::IntFracUtility() {}
-
-  IntFracUtility & IntFracUtility::getUtility() {
-    static IntFracUtility s_utility;
-    return s_utility;
-  }
-
-  void IntFracUtility::check(long int_part, double frac_part) const {
-    if ((int_part == 0 && (frac_part <= -1. || frac_part >= +1.)) ||
-        (int_part >  0 && (frac_part <   0. || frac_part >= +1.)) ||
-        (int_part <  0 && (frac_part <= -1. || frac_part >   0.))) {
-      std::ostringstream os;
-      os.precision(std::numeric_limits<double>::digits10);
-      os << "Fractional part out of bounds: " << frac_part;
-      throw std::runtime_error(os.str());
-    }
-  }
-
-  void IntFracUtility::parse(const std::string & value_string, long & int_part, double & frac_part) const {
-    std::string value;
-    // Read number into temporary double variable.
-    double value_dbl = 0.;
-    {
-      // Remove trailing space to prevent spurious errors.
-      std::string::size_type trail = value_string.find_last_not_of(" \t\v\n");
-      if (std::string::npos != trail) value = value_string.substr(0, trail + 1);
-      std::istringstream iss(value);
-      iss >> value_dbl;
-      if (iss.fail() || !iss.eof())
-        throw std::runtime_error("Error in converting \"" + value_string + "\" into a floating-point number");
-    }
-
-    // Compute integer part.
-    int_part = convert(value_dbl);
-
-    // Compute number of digits of integer part.
-    int num_digit = (int_part == 0 ? 0 : int(std::floor(std::log10(std::fabs(double(int_part)))) + 0.5) + 1);
-
-    // Skip leading zeros, whitespace, and non-digits.
-    std::string::iterator itor = value.begin();
-    for (; itor != value.end() && ('0' == *itor || 0 == std::isdigit(*itor)); ++itor) {}
-
-    // Erase numbers in integer part.
-    for (int ii_digit = 0; itor != value.end() && ii_digit < num_digit; ++itor) {
-      if (0 != std::isdigit(*itor)) {
-        *itor = '0';
-        ++ii_digit;
-      }
-    }
-
-    // Read in fractional part.
-    {
-      std::istringstream iss(value);
-      iss >> frac_part;
-    }
-  }
-
-  std::string IntFracUtility::format(long int_part, double frac_part, std::streamsize precision) const {
-    // Check the fractional part.
-    const IntFracUtility & utility(IntFracUtility::getUtility());
-    utility.check(int_part, frac_part);
-
-    // Prepare a stream to store a string.
-    std::ostringstream os;
-    os.precision(precision);
-    os.setf(std::ios::fixed);
-
-    if (int_part == 0) {
-      // Write fractional part only.
-      os << frac_part;
-    } else {
-      // Write integer part first.
-      os << int_part;
-
-      // Write fractional part into a temporary string.
-      std::ostringstream oss;
-      oss.precision(precision);
-      oss.setf(std::ios::fixed);
-      oss << frac_part;
-      std::string frac_part_string = oss.str();
-
-      // Truncate trailing 0s.
-      std::string::size_type pos = frac_part_string.find_last_not_of("0 \t\v\n");
-      if (std::string::npos != pos) frac_part_string.erase(pos+1);
-
-      // Remove a decimal point ('.') at the end.
-      pos = frac_part_string.size() - 1;
-      if ('.' == frac_part_string[pos]) frac_part_string.erase(pos);
-
-      // Skip until a decimal point ('.') is found, then output the rest.
-      std::string::iterator itor = frac_part_string.begin();
-      for (; (itor != frac_part_string.end()) && (*itor != '.'); ++itor);
-      for (; itor != frac_part_string.end(); ++itor) { os << *itor; }
-    }
-
-    // Return the formatted string.
-    return os.str();
-  }
-
-  long IntFracUtility::convert(double value_double) const {
-    // Check whether the given value can be converted into a long value.
-    if (value_double >= std::numeric_limits<long>::max() + 1.) {
-      std::ostringstream os;
-      os.precision(std::numeric_limits<double>::digits10);
-      os << "Integer part too large: overflow while converting " << value_double << " to a long";
-      throw std::runtime_error(os.str());
-    } else if (value_double <= std::numeric_limits<long>::min() - 1.) {
-      std::ostringstream os;
-      os.precision(std::numeric_limits<double>::digits10);
-      os << "Integer part too small: underflow while converting " << value_double << " to a long";
-      throw std::runtime_error(os.str());
-    }
-
-    // Return a converted value.
-    return long(value_double);
-  }
-
   Mjd MjdFormat::convert(const datetime_type & datetime) const {
     // Check whether the second part is in bounds.
     if (datetime.second < 0. || datetime.second >= SecPerDay()) {
@@ -336,13 +177,10 @@ namespace {
 
   datetime_type Mjd1Format::convert(const Mjd1 & time_rep) const {
     // Split MJD value into integer part and fractional part.
-    double int_part_dbl = 0.;
-    double frac_part = std::modf(time_rep.m_day, &int_part_dbl);
-
-    // Round integer part of the value.
     const IntFracUtility & utility(IntFracUtility::getUtility());
-    int_part_dbl += (int_part_dbl > 0. ? 0.5 : -0.5);
-    long int_part = utility.convert(int_part_dbl);
+    long int_part = 0;
+    double frac_part = 0.;
+    utility.split(time_rep.m_day, int_part, frac_part);
 
     // Return the date and time.
     return datetime_type(int_part, frac_part * SecPerDay());
