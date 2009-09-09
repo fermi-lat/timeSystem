@@ -13,6 +13,7 @@
 #include <stdexcept>
 
 #include "timeSystem/Duration.h"
+#include "timeSystem/IntFracUtility.h"
 #include "timeSystem/TimeConstant.h"
 
 #include "st_stream/Stream.h"
@@ -165,14 +166,8 @@ namespace timeSystem {
 
   Duration::Duration(long time_value_int, double time_value_frac, const std::string & time_unit_name) {
     // Check the fractional part.
-    if ((time_value_int == 0 && (time_value_frac <= -1. || time_value_frac >= +1.)) ||
-        (time_value_int >  0 && (time_value_frac <   0. || time_value_frac >= +1.)) ||
-        (time_value_int <  0 && (time_value_frac <= -1. || time_value_frac >   0.))) {
-      std::ostringstream os;
-      os.precision(std::numeric_limits<double>::digits10);
-      os << "Fractional part out of bounds: " << time_value_frac;
-      throw std::runtime_error(os.str());
-    }
+    const IntFracUtility & utility(IntFracUtility::getUtility());
+    utility.check(time_value_int, time_value_frac);
 
     // Convert units.
     const TimeUnit & unit(TimeUnit::getUnit(time_unit_name));
@@ -211,15 +206,11 @@ namespace timeSystem {
     // Convert the seconds portion to a given time unit.
     double signed_time = signed_sec / unit.getSecPerUnit();
 
-    // Compute fractional part as a value in range (-1., 1.).
-    double int_part_dbl = 0.;
-    double frac_part = std::modf(signed_time, &int_part_dbl);
-
-    // Convert the integer part into an integer type.
-    // Note: the integer part coming from the seconds portion is in range [-SecPerDay(), SecPerDay()) at most,
-    //       and safe to convert into a long variable without an integer over/underflow.
-    int_part_dbl += (int_part_dbl > 0. ? .5 : -.5);
-    long int_part_from_sec = static_cast<long>(int_part_dbl);
+    // Compute the integer and the fractional parts of a time value coming from the seconds portion.
+    const IntFracUtility & utility(IntFracUtility::getUtility());
+    long int_part_from_sec = 0;
+    double frac_part = 0.;
+    utility.split(signed_time, int_part_from_sec, frac_part);
 
     // Compute the integer part coming from the days portion.
     if (signed_day > std::numeric_limits<long>::max() / unit.getUnitPerDay()) {
@@ -325,70 +316,21 @@ namespace timeSystem {
     return os.str();
   }
 
-  // TODO: Move this method to an official place.
-  double findLargestInteger(long upper_bound) {
-    // Set initial values.
-    double candidate_dval = 0.;
-    long candidate_ival = 0;
-    long lower_bound = 0;
-
-    // Perform a binary search for the largest integer expressible in double.
-    while (upper_bound != lower_bound) {
-      // Take a mid-point as a test point.
-      long test_point = upper_bound - (upper_bound - lower_bound) / 2;
-
-      // Convert types to check numerical correctness in type-conversions.
-      double dval = static_cast<double>(test_point);
-      long ival = static_cast<long>(dval);
-      double dval_back = static_cast<double>(ival);
-
-      // Check sanity in computations, by computing a difference to the current candidate.
-      long diff_ival = ival - candidate_ival;
-      double diff_dval = dval - candidate_dval;
-      if (std::fabs(dval_back - dval) < 0.5 && std::fabs(diff_dval - diff_ival) < 0.5) {
-        // Update candidate.
-        candidate_dval = dval;
-        candidate_ival = ival;
-
-        // Update lower bound.
-        lower_bound = test_point;
-
-      } else {
-        // Update upper bound.
-        if (test_point != upper_bound) upper_bound = test_point;
-        else if (upper_bound > lower_bound) upper_bound--;
-        else if (upper_bound < lower_bound) upper_bound++;
-      }
-    }
-
-    // Return the candidate at the end of search.
-    return candidate_dval;
-  }
-
   void Duration::set(long day, double sec) {
     // Split the given number of seconds into days and seconds portions.
     double double_day = std::floor(sec / SecPerDay());
     double double_sec = sec - double_day * SecPerDay();
 
     // Convert the days portion into an integer type.
-    static double largest_integer = findLargestInteger(std::numeric_limits<long>::max());
-    static double smallest_integer = findLargestInteger(std::numeric_limits<long>::min());
-    if (double_day > largest_integer) {
-      // Throw an exception for the seconds argument too large.
-      std::ostringstream os;
-      os.precision(std::numeric_limits<double>::digits10);
-      os << "Integer overflow in converting " << sec << " seconds into days";
-      throw std::runtime_error(os.str());
+    const IntFracUtility & utility(IntFracUtility::getUtility());
+    long int_day = 0;
+    double frac_day = 0.;
+    utility.split(double_day, int_day, frac_day);
 
-    } else if (double_day < smallest_integer) {
-      // Throw an exception for the seconds argument too small (i.e., large negative).
-      std::ostringstream os;
-      os.precision(std::numeric_limits<double>::digits10);
-      os << "Integer underflow in converting " << sec << " seconds into days";
-      throw std::runtime_error(os.str());
-    }
-    double_day += (double_day > 0. ? .5 : -.5);
-    long int_day = static_cast<long>(double_day);
+    // Correct the results for a potential rounding error in a result of std::floor function.
+    if (frac_day > .5) int_day = add(int_day, 1);
+    else if (frac_day < -.5) int_day = add(int_day, -1);
+    frac_day = 0.;
 
     // Add the given number of days to the days portion from the given seconds.
     int_day = add(day, int_day);
