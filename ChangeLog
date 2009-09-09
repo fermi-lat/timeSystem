@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Tue Sep  8 18:04:17 PDT 2009
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Separate IntFracUtility class from MjdFormat class, and fix bugs in IntFracUtility class.
+    *
+------------------------------------------------------------
 User: hirayama  Tue Sep  8 18:04:16 PDT 2009
 timeSystem/src
 
