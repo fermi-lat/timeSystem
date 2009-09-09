@@ -13,6 +13,7 @@
 #include <set>
 #include <stdexcept>
 #include <string>
+#include <utility>
 
 #include "st_app/AppParGroup.h"
 #include "st_app/StApp.h"
@@ -25,6 +26,7 @@
 #include "timeSystem/ElapsedTime.h"
 #include "timeSystem/EventTimeHandler.h"
 #include "timeSystem/GlastTimeHandler.h"
+#include "timeSystem/IntFracUtility.h"
 #include "timeSystem/MjdFormat.h"
 #include "timeSystem/PulsarTestApp.h"
 #include "timeSystem/TimeCorrectorApp.h"
@@ -201,6 +203,9 @@ class TimeSystemTestApp : public PulsarTestApp {
     /// \brief Test TimeFormat class.
     void testTimeFormat();
 
+    /// \brief Test IntFracUtility class.
+    void testIntFracUtility();
+
     /// \brief Test BaryTimeComputer class.
     void testBaryTimeComputer();
 
@@ -362,6 +367,9 @@ void TimeSystemTestApp::runTest() {
 
   // Test TimeFormat class.
   testTimeFormat();
+
+  // Test IntFracUtility class.
+  testIntFracUtility();
 
   // Test BaryTimeComputer class.
   testBaryTimeComputer();
@@ -2746,6 +2754,390 @@ void TimeSystemTestApp::testTimeFormat() {
   testOneCalendarDate(55198, 2010,  1,  2, 2009, 53, 6,   2);
   testOneCalendarDate(55199, 2010,  1,  3, 2009, 53, 7,   3);
   testOneCalendarDate(55200, 2010,  1,  4, 2010,  1, 1,   4);
+}
+
+void TimeSystemTestApp::testIntFracUtility() {
+  setMethod("testIntFracUtility");
+
+  // Get the utility.
+  const IntFracUtility & utility(IntFracUtility::getUtility());
+
+  // Test checking the integer and the fractional parts of a number.
+  try {
+    utility.check(100, .56789567895678956789);
+  } catch (const std::exception &) {
+    err() << "IntFracUtility::check(100, .56789567895678956789) threw an exception." << std::endl;
+  }
+
+  typedef std::pair<long, double> pair_type;
+  std::list<pair_type> pair_list;
+  pair_list.push_back(pair_type(+1, -.1));
+  pair_list.push_back(pair_type(+1, +1.));
+  pair_list.push_back(pair_type(-1, +.1));
+  pair_list.push_back(pair_type(-1, -1.));
+  pair_list.push_back(pair_type( 0, +1.));
+  pair_list.push_back(pair_type( 0, -1.));
+  for (std::list<pair_type>::const_iterator itor = pair_list.begin(); itor != pair_list.end(); ++itor) {
+    try {
+      utility.check(itor->first, itor->second);
+      err() << "IntFracUtility::check(" << itor->first << ", " << itor->second << ") did not throw an exception." << std::endl;
+    } catch (const std::exception &) {
+      // That's good.
+    }
+  }
+
+  // Prepare variables to use in the tests below.
+  std::string sval("");
+  long expected_int_part = 0;
+  double expected_frac_part = 0.;
+  long result_int_part = 0;
+  double result_frac_part = 0.;
+  double tolerance = 0.;
+  int num_nine = 0;
+
+  // Test parsing a character string.
+  sval = "00050089.56789567895678956789";
+  expected_int_part = 50089;
+  expected_frac_part = .56789567895678956789;
+  result_int_part = 0;
+  result_frac_part = 0.;
+  tolerance = std::numeric_limits<double>::epsilon() * 10.;
+  utility.parse(sval, result_int_part, result_frac_part);
+  if (result_int_part != expected_int_part || tolerance < std::fabs(result_frac_part - expected_frac_part)) {
+    err() << "IntFracUtility::parse(\"" << sval << "\", int_part, frac_part) returned (int_part, frac_part) = (" <<
+      result_int_part << ", " << result_frac_part << "), not (" << expected_int_part << ", " << expected_frac_part <<
+      ") as expected." << std::endl;
+  }
+
+  sval = "-00050089.56789567895678956789";
+  expected_int_part = -50089;
+  expected_frac_part = -.56789567895678956789;
+  result_int_part = 0;
+  result_frac_part = 0.;
+  tolerance = std::numeric_limits<double>::epsilon() * 10.;
+  utility.parse(sval, result_int_part, result_frac_part);
+  if (result_int_part != expected_int_part || tolerance < std::fabs(result_frac_part - expected_frac_part)) {
+    err() << "IntFracUtility::parse(\"" << sval << "\", int_part, frac_part) returned (int_part, frac_part) = (" <<
+      result_int_part << ", " << result_frac_part << "), not (" << expected_int_part << ", " << expected_frac_part <<
+      ") as expected." << std::endl;
+  }
+
+  sval = "  +1e+3  ";
+  expected_int_part = 1000;
+  expected_frac_part = 0.;
+  result_int_part = 0;
+  result_frac_part = 0.;
+  utility.parse(sval, result_int_part, result_frac_part);
+  if (result_int_part != expected_int_part || tolerance < std::fabs(result_frac_part - expected_frac_part)) {
+    err() << "IntFracUtility::parse(\"" << sval << "\", int_part, frac_part) returned (int_part, frac_part) = (" <<
+      result_int_part << ", " << result_frac_part << "), not (" << expected_int_part << ", " << expected_frac_part <<
+      ") as expected." << std::endl;
+  }
+
+  sval = "  -2e+3";
+  expected_int_part = -2000;
+  expected_frac_part = 0.;
+  result_int_part = 0;
+  result_frac_part = 0.;
+  utility.parse(sval, result_int_part, result_frac_part);
+  if (result_int_part != expected_int_part || tolerance < std::fabs(result_frac_part - expected_frac_part)) {
+    err() << "IntFracUtility::parse(\"" << sval << "\", int_part, frac_part) returned (int_part, frac_part) = (" <<
+      result_int_part << ", " << result_frac_part << "), not (" << expected_int_part << ", " << expected_frac_part <<
+      ") as expected." << std::endl;
+  }
+
+  sval = "3e+3  ";
+  expected_int_part = 3000;
+  expected_frac_part = 0.;
+  result_int_part = 0;
+  result_frac_part = 0.;
+  utility.parse(sval, result_int_part, result_frac_part);
+  if (result_int_part != expected_int_part || tolerance < std::fabs(result_frac_part - expected_frac_part)) {
+    err() << "IntFracUtility::parse(\"" << sval << "\", int_part, frac_part) returned (int_part, frac_part) = (" <<
+      result_int_part << ", " << result_frac_part << "), not (" << expected_int_part << ", " << expected_frac_part <<
+      ") as expected." << std::endl;
+  }
+
+  sval = ".004e+6  ";
+  expected_int_part = 4000;
+  expected_frac_part = 0.;
+  result_int_part = 0;
+  result_frac_part = 0.;
+  utility.parse(sval, result_int_part, result_frac_part);
+  if (result_int_part != expected_int_part || tolerance < std::fabs(result_frac_part - expected_frac_part)) {
+    err() << "IntFracUtility::parse(\"" << sval << "\", int_part, frac_part) returned (int_part, frac_part) = (" <<
+      result_int_part << ", " << result_frac_part << "), not (" << expected_int_part << ", " << expected_frac_part <<
+      ") as expected." << std::endl;
+  }
+
+  sval = "5678.";
+  num_nine = std::numeric_limits<double>::digits10 + 5;
+  sval += std::string(num_nine, '9');
+  expected_int_part = 5679;
+  expected_frac_part = 0.;
+  result_int_part = 0;
+  result_frac_part = 0.;
+  tolerance = std::numeric_limits<double>::epsilon() * 10.;
+  utility.parse(sval, result_int_part, result_frac_part);
+  if (result_int_part != expected_int_part || tolerance < std::fabs(result_frac_part - expected_frac_part)) {
+    err() << "IntFracUtility::parse(\"" << sval << "\", int_part, frac_part) returned (int_part, frac_part) = (" <<
+      result_int_part << ", " << result_frac_part << "), not (" << expected_int_part << ", " << expected_frac_part <<
+      ") as expected." << std::endl;
+  }
+
+  sval = "-5678.";
+  sval += std::string(num_nine, '9');
+  expected_int_part = -5679;
+  expected_frac_part = 0.;
+  result_int_part = 0;
+  result_frac_part = 0.;
+  tolerance = std::numeric_limits<double>::epsilon() * 10.;
+  utility.parse(sval, result_int_part, result_frac_part);
+  if (result_int_part != expected_int_part || tolerance < std::fabs(result_frac_part - expected_frac_part)) {
+    err() << "IntFracUtility::parse(\"" << sval << "\", int_part, frac_part) returned (int_part, frac_part) = (" <<
+      result_int_part << ", " << result_frac_part << "), not (" << expected_int_part << ", " << expected_frac_part <<
+      ") as expected." << std::endl;
+  }
+
+  sval = "9999999.";
+  num_nine = std::numeric_limits<double>::digits10 - 3;
+  sval += std::string(num_nine, '9');
+  expected_int_part = 9999999;
+  expected_frac_part = 1. - std::pow(0.1, num_nine);
+  result_int_part = 0;
+  result_frac_part = 0.;
+  tolerance = std::numeric_limits<double>::epsilon() * 10.;
+  utility.parse(sval, result_int_part, result_frac_part);
+  if (result_int_part != expected_int_part || tolerance < std::fabs(result_frac_part - expected_frac_part)) {
+    err() << "IntFracUtility::parse(\"" << sval << "\", int_part, frac_part) returned (int_part, frac_part) = (" <<
+      result_int_part << ", " << result_frac_part << "), not (" << expected_int_part << ", " << expected_frac_part <<
+      ") as expected." << std::endl;
+  }
+
+  sval = "-9999999.";
+  sval += std::string(num_nine, '9');
+  expected_int_part = -9999999;
+  expected_frac_part = -1. + std::pow(0.1, num_nine);
+  result_int_part = 0;
+  result_frac_part = 0.;
+  tolerance = std::numeric_limits<double>::epsilon() * 10.;
+  utility.parse(sval, result_int_part, result_frac_part);
+  if (result_int_part != expected_int_part || tolerance < std::fabs(result_frac_part - expected_frac_part)) {
+    err() << "IntFracUtility::parse(\"" << sval << "\", int_part, frac_part) returned (int_part, frac_part) = (" <<
+      result_int_part << ", " << result_frac_part << "), not (" << expected_int_part << ", " << expected_frac_part <<
+      ") as expected." << std::endl;
+  }
+
+  // Test errors resulting from bad string conversions.
+  std::list<std::string> sval_list;
+  sval_list.push_back("! 1.e6");
+  sval_list.push_back("1.e6 0");
+  sval_list.push_back("1..e6");
+  sval_list.push_back("e6");
+  sval_list.push_back("+-1e6");
+  sval_list.push_back("-+1e6");
+  sval_list.push_back("1 + 6");
+  sval_list.push_back("0. 0.");
+  sval_list.push_back(" ");
+  sval_list.push_back("");
+  sval_list.push_back("12,345");
+  sval_list.push_back("0x1234");
+  num_nine = std::numeric_limits<double>::digits10 + 5;
+  {
+    std::ostringstream os;
+    os << std::numeric_limits<long>::max() << ".";
+    sval = os.str();
+  }
+  sval += std::string(num_nine, '9');
+  sval_list.push_back(sval);
+  {
+    std::ostringstream os;
+    os << std::numeric_limits<long>::min() << ".";
+    sval = os.str();
+  }
+  sval += std::string(num_nine, '9');
+  sval_list.push_back(sval);
+  for (std::list<std::string>::const_iterator itor = sval_list.begin(); itor != sval_list.end(); ++itor) {
+    sval = *itor;
+    result_int_part = 0;
+    result_frac_part = 0.;
+    try {
+      utility.parse(sval, result_int_part, result_frac_part);
+      err() << "IntFracUtility::parse(\"" << sval << "\", int_part, frac_part) did not throw an exception." << std::endl;
+    } catch (const std::exception &) {
+      // That's good.
+    }
+  }
+
+  // Test of parsing near integer overflow/underflow.
+  for (long distance = 0; distance < 10; ++distance) {
+    tolerance = std::numeric_limits<double>::epsilon() * 10.;
+    bool exception_thrown = false;
+
+    expected_int_part = std::numeric_limits<long>::max() - distance;
+    expected_frac_part = .56789567895678956789;
+    std::ostringstream os1;
+    os1 << expected_int_part << ".56789567895678956789";
+    sval = os1.str();
+    result_int_part = 0;
+    result_frac_part = 0.;
+    exception_thrown = false;
+    try {
+      utility.parse(sval, result_int_part, result_frac_part);
+    } catch (const std::exception &) {
+      err() << "IntFracUtility::parse(\"" << sval << "\", int_part, frac_part) threw an exception." << std::endl;
+      exception_thrown = true;
+    }
+    if (!exception_thrown) {
+      if (result_int_part != expected_int_part || tolerance < std::fabs(result_frac_part - expected_frac_part)) {
+        err() << "IntFracUtility::parse(\"" << sval << "\", int_part, frac_part) returned (int_part, frac_part) = (" <<
+          result_int_part << ", " << result_frac_part << "), not (" << expected_int_part << ", " << expected_frac_part <<
+          ") as expected." << std::endl;
+      }
+    }
+
+    expected_int_part = std::numeric_limits<long>::min() + distance;
+    expected_frac_part = -.56789567895678956789;
+    std::ostringstream os2;
+    os2 << expected_int_part << ".56789567895678956789";
+    sval = os2.str();
+    result_int_part = 0;
+    result_frac_part = 0.;
+    exception_thrown = false;
+    try {
+      utility.parse(sval, result_int_part, result_frac_part);
+    } catch (const std::exception &) {
+      err() << "IntFracUtility::parse(\"" << sval << "\", int_part, frac_part) threw an exception." << std::endl;
+      exception_thrown = true;
+    }
+    if (!exception_thrown) {
+      if (result_int_part != expected_int_part || tolerance < std::fabs(result_frac_part - expected_frac_part)) {
+        err() << "IntFracUtility::parse(\"" << sval << "\", int_part, frac_part) returned (int_part, frac_part) = (" <<
+          result_int_part << ", " << result_frac_part << "), not (" << expected_int_part << ", " << expected_frac_part <<
+          ") as expected." << std::endl;
+      }
+    }
+  }
+
+  // Test for detections of overflow/underflow in parsing.
+  long large_div_10 = std::numeric_limits<long>::max() / 10;
+  long large_mod_10 = std::numeric_limits<long>::max() - 10*large_div_10 + 1;
+  if (large_mod_10 >= 10) {
+    large_div_10 += 1;
+    large_mod_10 -= 10;
+  }
+  {
+    std::ostringstream os;
+    os << large_div_10 << large_mod_10 << ".56789567895678956789";
+    sval = os.str();
+  }
+  try {
+    utility.parse(sval, result_int_part, result_frac_part);
+    err() << "IntFracUtility::parse(\"" << sval << "\", int_part, frac_part) did not throw an exception." << std::endl;
+  } catch (const std::exception &) {
+    // That's good.
+  }
+
+  long small_div_10 = std::numeric_limits<long>::min() / 10;
+  long small_mod_10 = -(std::numeric_limits<long>::min() - 10*small_div_10) + 1;
+  if (small_mod_10 >= 10) {
+    small_div_10 -= 1;
+    small_mod_10 -= 10;
+  }
+  {
+    std::ostringstream os;
+    os << small_div_10 << small_mod_10 << ".56789567895678956789";
+    sval = os.str();
+  }
+  try {
+    utility.parse(sval, result_int_part, result_frac_part);
+    err() << "IntFracUtility::parse(\"" << sval << "\", int_part, frac_part) did not throw an exception." << std::endl;
+  } catch (const std::exception &) {
+    // That's good.
+  }
+
+  // Prepare variables to use in the tests below.
+  std::string expected_string("");
+  std::string result_string("");
+  std::string::size_type compare_size = 1 + std::numeric_limits<long>::digits10 + 1 + std::numeric_limits<double>::digits10;
+  // Note: 1's are for a sign and a decimal point.
+
+  // Test formatting a pair of the integer and the fractional parts of a number.
+  expected_string = "1234.56789567895678956789;";
+  result_string = utility.format(1234, .56789567895678956789);
+  compare_size = 0 + 4 + 1 + std::numeric_limits<double>::digits10 - 2;
+  // Note: 0 for a sign, 4 for the number of digits in the integer part, 1 for a decimal point, and -2 for tolerance.
+  if (result_string.compare(0, compare_size, expected_string, 0, compare_size)) {
+    err() << "IntFracUtility::format(1234, .56789567895678956789) returned \"" << result_string << "\", not \"" << expected_string <<
+      "\" as expected." << std::endl;
+  }
+
+  expected_string = "-1234.56789567895678956789;";
+  result_string = utility.format(-1234, -.56789567895678956789);
+  compare_size = 1 + 4 + 1 + std::numeric_limits<double>::digits10 - 2;
+  // Note: 1 for a sign, 4 for the number of digits in the integer part, 1 for a decimal point, and -2 for tolerance.
+  if (result_string.compare(0, compare_size, expected_string, 0, compare_size)) {
+    err() << "IntFracUtility::format(-1234, -.56789567895678956789) returned \"" << result_string << "\", not \"" << expected_string <<
+      "\" as expected." << std::endl;
+  }
+
+  // Prepare variables to use in the tests below.
+  double dval = 0.;
+
+  // Test splitting a double into the integer and the fractional parts.
+  dval = 56789.56789567895678956789;
+  expected_int_part = 56789;
+  expected_frac_part = .56789567895678956789;
+  result_int_part = 0;
+  result_frac_part = 0.;
+  utility.split(dval, result_int_part, result_frac_part);
+  tolerance = std::numeric_limits<double>::epsilon() * 1.e+6; // Five digits are taken by the integer part.
+  if (result_int_part != expected_int_part || tolerance < std::fabs(result_frac_part - expected_frac_part)) {
+    err() << "IntFracUtility::split(\"" << dval << "\", int_part, frac_part) returned (int_part, frac_part) = (" <<
+      result_int_part << ", " << result_frac_part << "), not (" << expected_int_part << ", " << expected_frac_part <<
+      ") as expected." << std::endl;
+  }
+
+  // Test for detections of overflow/underflow in splitting.
+  double large_number = std::numeric_limits<long>::max() + .5;
+  double too_large = std::numeric_limits<long>::max() + 1.5;
+  double small_number = std::numeric_limits<long>::min() - .5;
+  double too_small = std::numeric_limits<long>::min() - 1.5;
+  int diff_digits = std::numeric_limits<long>::digits - std::numeric_limits<double>::digits;
+  if (diff_digits > 0) {
+    // Create test numbers by bit-wise operation.
+    // Note: This approach assumes that a number is represented by a sign, a significand, a base, and an exponent as
+    //       number = sign x significand x base ^ exponent, and a bse of 2 is used for arithmatic.  As a result, the
+    //       followign tests may fail because the assumption is not correct, not because of a bug in IntFracUtility class.
+    long minimum_increment = (1 << diff_digits);
+    long bit_mask = ~(minimum_increment - 1);
+    large_number = std::numeric_limits<long>::max() & bit_mask;
+    too_large = large_number + minimum_increment * 1.1;
+    small_number = std::numeric_limits<long>::min() & bit_mask;
+    too_small = small_number - minimum_increment * 1.1;
+  }
+  try {
+    utility.split(large_number, result_int_part, result_frac_part);
+  } catch (const std::exception &) {
+    err() << "IntFracUtility::split(\"" << large_number << "\", int_part, frac_part) threw an exception." << std::endl;
+  }
+  try {
+    utility.split(too_large, result_int_part, result_frac_part);
+    err() << "IntFracUtility::split(\"" << too_large << "\", int_part, frac_part) did not throw an exception." << std::endl;
+  } catch (const std::exception &) {
+    // That's good.
+  }
+  try {
+    utility.split(small_number, result_int_part, result_frac_part);
+  } catch (const std::exception &) {
+    err() << "IntFracUtility::split(\"" << small_number << "\", int_part, frac_part) threw an exception." << std::endl;
+  }
+  try {
+    utility.split(too_small, result_int_part, result_frac_part);
+    err() << "IntFracUtility::split(\"" << too_small << "\", int_part, frac_part) did not throw an exception." << std::endl;
+  } catch (const std::exception &) {
+    // That's good.
+  }
 }
 
 void TimeSystemTestApp::testBaryTimeComputer() {
