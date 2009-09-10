@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Thu Sep 10 16:45:54 PDT 2009
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Use human-friendly Duration constructor at more places.
+    *
+------------------------------------------------------------
 User: hirayama  Wed Sep  9 22:56:23 PDT 2009
 timeSystem/src/test
 
