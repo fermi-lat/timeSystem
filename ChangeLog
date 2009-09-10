@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Wed Sep  9 22:55:11 PDT 2009
+timeSystem/src
+
+Modified Files:
+	IntFracUtility.cxx 
+Log Message:
+Compute the number of digits in a safer manner.
+    *
+------------------------------------------------------------
 User: hirayama  Wed Sep  9 17:11:44 PDT 2009
 timeSystem/src/test
 
