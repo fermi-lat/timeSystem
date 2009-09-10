@@ -1,5 +1,14 @@
 ------------------------------------------------------------
 User: hirayama  Wed Sep  9 17:11:44 PDT 2009
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Fix a bug in handling zeros that was newly introduced in the previous revision.
+    *
+------------------------------------------------------------
+User: hirayama  Wed Sep  9 17:11:44 PDT 2009
 timeSystem/src
 
 Modified Files:
