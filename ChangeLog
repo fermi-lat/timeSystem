@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Wed Sep  9 22:55:17 PDT 2009
+timeSystem/src
+
+Modified Files:
+	CalendarFormat.cxx TimeSystem.cxx 
+Log Message:
+Use static_cast instead of the old-style cast such as long(value).
+    *
+------------------------------------------------------------
 User: hirayama  Wed Sep  9 22:55:11 PDT 2009
 timeSystem/src
 
