@@ -723,12 +723,12 @@ namespace {
     long year = calendar.findYear(datetime.first, day);
 
     // Compute hours.
-    long hour = long(std::floor(datetime.second / SecPerHour()) + 0.5);
+    long hour = static_cast<long>(std::floor(datetime.second / SecPerHour()) + 0.5);
     if (hour > 23) hour = 23;
 
     // Compute minutes.
     double residual_seconds = datetime.second - hour * SecPerHour();
-    long min = long(std::floor(residual_seconds / SecPerMin()) + 0.5);
+    long min = static_cast<long>(std::floor(residual_seconds / SecPerMin()) + 0.5);
     if (min > 59) min = 59;
 
     // Compute seconds.

@@ -410,11 +410,11 @@ namespace {
       double leap_sec_dbl = (*itor)["LEAPSECS"].get();
 
       // Make sure the MJD for the leap second is a whole number of days.
-      long mjd = long(mjd_dbl + .5);
+      long mjd = static_cast<long>(mjd_dbl + .5);
       if (mjd != mjd_dbl) throw std::logic_error("Leap second file contains a non-integral MJD value: " + leap_sec_file_name);
 
       // Make sure the leap second is a whole number of seconds.
-      long leap_sec = long(leap_sec_dbl + (leap_sec_dbl > 0 ? .5 : -.5));
+      long leap_sec = static_cast<long>(leap_sec_dbl + (leap_sec_dbl > 0 ? .5 : -.5));
       if (leap_sec != leap_sec_dbl) {
         throw std::logic_error("Leap second file contains a non-integral LEAPSECS value: " + leap_sec_file_name);
       }
