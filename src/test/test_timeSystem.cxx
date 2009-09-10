@@ -974,7 +974,7 @@ void TimeSystemTestApp::testOneConversion(const std::string & src_system_name, c
   const TimeSystem & src_sys(TimeSystem::getSystem(src_system_name));
   const TimeSystem & dest_sys(TimeSystem::getSystem(dest_system_name));
   moment_type dest_moment = dest_sys.convertFrom(src_sys, src_moment);
-  Duration tol_dur(0, tolerance);
+  Duration tol_dur(tolerance, "Sec");
   if (dest_moment.first != expected_moment.first || !expected_moment.second.equivalentTo(dest_moment.second, tol_dur)) {
     err() << "Converting from " << src_sys << " to " << dest_sys << ", moment_type(" << src_moment.first << ", " <<
       src_moment.second << ") was converted to moment_type(" << dest_moment.first << ", " << dest_moment.second <<
@@ -991,7 +991,7 @@ void TimeSystemTestApp::testOneSubtraction(const moment_type & moment1, const mo
   expected_diff["TT"]  = Duration(difference, "Sec");
   expected_diff["UTC"] = Duration(difference_utc, "Sec");
 
-  Duration tolerance(0, 1.e-9); // 1 nanosecond.
+  Duration tolerance(1.e-9, "Sec"); // 1 nanosecond.
 
   for (std::map<std::string, Duration>::iterator itor_exp = expected_diff.begin(); itor_exp != expected_diff.end(); ++itor_exp) {
     std::string time_system_name = itor_exp->first;
@@ -1114,8 +1114,8 @@ void TimeSystemTestApp::testTimeSystem() {
   // --- Same as above, but with a large elapsed time.
   //     Although the total time (origin + elapsed) is large enough to cross two leap second boundaries, still
   //     the earliest leap second should be used because the choice of leap second is based only on the origin time.
-  testOneConversion("UTC", moment_type(leap1 - 1, Duration(delta_leap + 1, -.001 + 2.002)),
-                    "TAI", moment_type(leap1 - 1, Duration(delta_leap + 1, -.001 + 2.002 + diff0)));
+  testOneConversion("UTC", moment_type(leap1 - 1, Duration(delta_leap + 1, 0., "Day") + Duration(-.001 + 2.002,         "Sec")),
+                    "TAI", moment_type(leap1 - 1, Duration(delta_leap + 1, 0., "Day") + Duration(-.001 + 2.002 + diff0, "Sec")));
 
   // To ensure TAI->UTC is handled correctly, do some tougher conversions, i.e. times which are close to
   // times when leap seconds are inserted.
@@ -1157,17 +1157,17 @@ void TimeSystemTestApp::testTimeSystem() {
   // Test undefined UTC time, with the time origin covered by the current definition.
   long oldest_mjd = 41317;
   try {
-    testOneConversion("UTC", moment_type(oldest_mjd + 1, Duration(-2, 0.)),
-                      "TAI", moment_type(oldest_mjd + 1, Duration(-2, diff_oldest)));
-    err() << "Conversion of moment_type(" << oldest_mjd + 1 << ", " << Duration(-2, 0.) <<
+    testOneConversion("UTC", moment_type(oldest_mjd + 1, Duration(-2, 0., "Day")),
+                      "TAI", moment_type(oldest_mjd + 1, Duration(-2, 0., "Day") + Duration(diff_oldest, "Sec")));
+    err() << "Conversion of moment_type(" << oldest_mjd + 1 << ", " << Duration(-2, 0., "Day") <<
       ") from UTC to TAI did not throw an exception." << std::endl;
   } catch (const std::exception &) {
     // That's OK!
   }
   try {
-    testOneConversion("TAI", moment_type(oldest_mjd + 1, Duration(-2, diff_oldest)),
-                      "UTC", moment_type(oldest_mjd + 1, Duration(-2, 0.)));
-    err() << "Conversion of moment_type(" << oldest_mjd + 1 << ", " << Duration(-2, diff_oldest) <<
+    testOneConversion("TAI", moment_type(oldest_mjd + 1, Duration(-2, 0., "Day") + Duration(diff_oldest, "Sec")),
+                      "UTC", moment_type(oldest_mjd + 1, Duration(-2, 0., "Day")));
+    err() << "Conversion of moment_type(" << oldest_mjd + 1 << ", " << Duration(-2, 0., "Day") + Duration(diff_oldest, "Sec") <<
       ") from TAI to UTC did not throw an exception." << std::endl;
   } catch (const std::exception &) {
     // That's OK!
@@ -1244,8 +1244,8 @@ void TimeSystemTestApp::testTimeSystem() {
   // --- Same as above, but with a large elapsed time.
   //     Although the total time (origin + elapsed) is large enough to cross two leap second boundaries, still
   //     the earliest leap second should be used because the choice of leap second is based only on the origin time.
-  testOneConversion("TAI", moment_type(leap1, Duration(delta_leap, -.001 + .002)),
-                    "UTC", moment_type(leap1, Duration(delta_leap, -.001 + .002 - diff1)));
+  testOneConversion("TAI", moment_type(leap1, Duration(delta_leap, 0., "Day") + Duration(-.001 + .002,         "Sec")),
+                    "UTC", moment_type(leap1, Duration(delta_leap, 0., "Day") + Duration(-.001 + .002 - diff1, "Sec")));
 
   // To ensure UTC->TAI is handled correctly, do some tougher conversions, i.e. times which are close to
   // times when leap seconds are removed.
@@ -1282,10 +1282,10 @@ void TimeSystemTestApp::testTimeSystem() {
   testOneDateTimeComputation(moment_type(51910, Duration(-100., "Sec")),
      datetime_type(51909, SecPerDay() - 100.), datetime_type(51909, SecPerDay() - 100.));
   // Across leap second insertion in UTC
-  testOneDateTimeComputation(moment_type(leap2 - 1, Duration(1, deltat - 10.)),
+  testOneDateTimeComputation(moment_type(leap2 - 1, Duration(1, 0., "Day") + Duration(deltat - 10., "Sec")),
     datetime_type(leap2, deltat - 10.), datetime_type(leap2, deltat - 10. - 1.));
   // Across leap second removal in UTC
-  testOneDateTimeComputation(moment_type(leap1 - 1, Duration(1, deltat - 10.)),
+  testOneDateTimeComputation(moment_type(leap1 - 1, Duration(1, 0., "Day") + Duration(deltat - 10., "Sec")),
     datetime_type(leap1, deltat - 10.), datetime_type(leap1, deltat - 10. + 1.));
   // Non-existing time in UTC
   // Note: As of May 29th, 2008, the design doesn't allow/need this test due to the improved robustness.
@@ -1293,35 +1293,35 @@ void TimeSystemTestApp::testTimeSystem() {
   // Tests at times close to times when leap seconds are inserted (in UTC).
   // Note: As of May 29th, 2008, the design isn't sensitive to those tests due to the improved robustness.
   // --- Before the beginning of a leap second.
-  testOneDateTimeComputation(moment_type(leap2 - 1, Duration(1, deltat - 0.3)),
+  testOneDateTimeComputation(moment_type(leap2 - 1, Duration(1, 0., "Day") + Duration(deltat - 0.3, "Sec")),
     datetime_type(leap2, deltat - 0.3), datetime_type(leap2, deltat - 1.3));
   // --- At the beginning of a leap second.
-  testOneDateTimeComputation(moment_type(leap2 - 1, Duration(1, deltat)),
+  testOneDateTimeComputation(moment_type(leap2 - 1, Duration(1, 0., "Day") + Duration(deltat, "Sec")),
     datetime_type(leap2, deltat), datetime_type(leap2, deltat - 1.0));
   // --- During a leap second.
-  testOneDateTimeComputation(moment_type(leap2 - 1, Duration(1, deltat + 0.3)),
+  testOneDateTimeComputation(moment_type(leap2 - 1, Duration(1, 0., "Day") + Duration(deltat + 0.3, "Sec")),
     datetime_type(leap2, deltat + 0.3), datetime_type(leap2, deltat - 0.7));
   // --- At the end of a leap second.
-  testOneDateTimeComputation(moment_type(leap2 - 1, Duration(1, deltat + 1.0)),
+  testOneDateTimeComputation(moment_type(leap2 - 1, Duration(1, 0., "Day") + Duration(deltat + 1.0, "Sec")),
     datetime_type(leap2, deltat + 1.0), datetime_type(leap2, deltat));
   // --- After the end of a leap second.
-  testOneDateTimeComputation(moment_type(leap2 - 1, Duration(1, deltat + 1.3)),
+  testOneDateTimeComputation(moment_type(leap2 - 1, Duration(1, 0., "Day") + Duration(deltat + 1.3, "Sec")),
     datetime_type(leap2, deltat + 1.3), datetime_type(leap2, deltat + 0.3));
 
   // Tests at times close to times when leap seconds are removed (in UTC).
   // Note: As of May 29th, 2008, the design isn't sensitive to those tests due to the improved robustness.
   // --- Before the beginning of a leap second.
-  testOneDateTimeComputation(moment_type(leap1 - 1, Duration(1, deltat - 1.3)),
+  testOneDateTimeComputation(moment_type(leap1 - 1, Duration(1, 0., "Day") + Duration(deltat - 1.3, "Sec")),
     datetime_type(leap1, deltat - 1.3), datetime_type(leap1, deltat - 0.3));
   // --- At the beginning of a leap second.
-  testOneDateTimeComputation(moment_type(leap1 - 1, Duration(1, deltat - 1.0)),
+  testOneDateTimeComputation(moment_type(leap1 - 1, Duration(1, 0., "Day") + Duration(deltat - 1.0, "Sec")),
     datetime_type(leap1, deltat - 1.0), datetime_type(leap1, deltat));
   // --- During a leap second.
   // Note: As of May 29th, 2008, the design doesn't allow/need this test due to the improved robustness.
   // --- At the end of a leap second.
   // Note: As of May 29th, 2008, the design doesn't allow/need this test due to the improved robustness.
   // --- After the end of a leap second.
-  testOneDateTimeComputation(moment_type(leap1 - 1, Duration(1, deltat - 0.7)),
+  testOneDateTimeComputation(moment_type(leap1 - 1, Duration(1, 0., "Day") + Duration(deltat - 0.7, "Sec")),
     datetime_type(leap1, deltat - 0.7), datetime_type(leap1, deltat + 0.3));
 
   // Test computeMoment method.
@@ -1339,7 +1339,7 @@ void TimeSystemTestApp::testTimeSystem() {
     datetime_type input_datetime(51910, 100.);
     moment_type expected_moment(51910, Duration(100., "Sec"));
     moment_type result_moment = time_system.computeMoment(input_datetime);
-    Duration tolerance(0, 1.e-9);
+    Duration tolerance(1.e-9, "Sec");
     if (result_moment.first != expected_moment.first || !result_moment.second.equivalentTo(expected_moment.second, tolerance)) {
       err() << "computeMoment of " << time_system_name << " returned moment_type(" << result_moment.first <<
         ", " << result_moment.second << ") for datetime_type(" << input_datetime.first << ", " << input_datetime.second <<
@@ -1419,7 +1419,7 @@ void TimeSystemTestApp::testTimeSystem() {
   double tai_sec = 100. + 51910. * SecPerDay();
   try {
     testOneConversion("TAI", moment_type(tai_day, Duration(tai_sec, "Sec")),
-                      "UTC", moment_type(oldest_mjd, Duration(51910 - oldest_mjd, 100. - diff_oldest)));
+                      "UTC", moment_type(oldest_mjd, Duration(51910 - oldest_mjd, 0., "Day") + Duration(100. - diff_oldest, "Sec")));
   } catch (const std::exception &) {
     err() << "Conversion of TAI to UTC for moment_type(" << tai_day << ", " << tai_sec << ") threw an exception." << std::endl;
   }
@@ -1454,7 +1454,7 @@ void TimeSystemTestApp::testTimeSystem() {
   utc_sec = 100. - 51910. * SecPerDay() - diff2;
   try {
     testOneConversion("UTC", moment_type(utc_day, Duration(utc_sec, "Sec")),
-                      "TAI", moment_type(utc_day, Duration(-utc_day, 100.)));
+                      "TAI", moment_type(utc_day, Duration(-utc_day, 0., "Day") + Duration(100., "Sec")));
     err() << "Conversion of UTC to TAI for moment_type(" << utc_day << ", " << utc_sec << ") did not throw an exception." << std::endl;
   } catch (const std::exception &) {
     // That's OK!
@@ -1483,7 +1483,7 @@ void TimeSystemTestApp::testTimeSystem() {
 #endif
 
   // Test of origin for UTC time that must be after MJD 41317.0 (January 1st, 1972) by definition.
-  moment_type tai_moment(oldest_mjd - 1, Duration(1, 1. + diff_oldest));
+  moment_type tai_moment(oldest_mjd - 1, Duration(1, 0., "Day") + Duration(1. + diff_oldest, "Sec"));
   moment_type utc_moment = TimeSystem::getSystem("UTC").convertFrom(TimeSystem::getSystem("TAI"), tai_moment);
   if (oldest_mjd > utc_moment.first) {
     err() << "Conversion from TAI to UTC for input Moment(" << tai_moment.first << ", " << tai_moment.second <<
@@ -1857,8 +1857,8 @@ void TimeSystemTestApp::testAbsoluteTime() {
       "\" with tolerance of " << loose_tol << ", not true as expected." << std::endl;
 
   // Test subtraction of absolute time from absolute time.
-  Duration expected_diff(0, 100.);
-  Duration tolerance(0, 1.e-9); // 1 ns.
+  Duration expected_diff(100., "Sec");
+  Duration tolerance(1.e-9, "Sec"); // 1 ns.
   Duration difference = (later_time - abs_time).computeElapsedTime("TDB").getDuration();
   if (!expected_diff.equivalentTo(difference, tolerance))
     err() << "Absolute time [" << abs_time << "] subtracted from absolute time [" << later_time << "] gave " << difference <<
@@ -1876,9 +1876,9 @@ void TimeSystemTestApp::testElapsedTime() {
   setMethod("testElapsedTime");
 
   // Test of the getter that returns a Duration object.
-  Duration original_dur(1, SecPerDay() * 0.125);
+  Duration original_dur = Duration(1, 0., "Day") + Duration(SecPerDay() * 0.125, "Sec");
   Duration expected_dur = original_dur;
-  Duration tolerance(0, 1.e-9); // 1 ns.
+  Duration tolerance(1.e-9, "Sec"); // 1 ns.
   ElapsedTime elapsed("TDB", expected_dur);
   Duration returned_dur = elapsed.getDuration();
   if (!returned_dur.equivalentTo(expected_dur, tolerance)) {
@@ -1973,7 +1973,7 @@ void TimeSystemTestApp::testTimeInterval() {
   // Test of the getter that returns a Duration object.
   Duration expected_dur = Duration(1000.123456789, "Sec");
   Duration result_dur = interval_a.computeDuration("TDB");
-  Duration tolerance_dur(0, 1.e-9); // 1 ns.
+  Duration tolerance_dur(1.e-9, "Sec"); // 1 ns.
   if (!expected_dur.equivalentTo(result_dur, tolerance_dur)) {
     err() << "TimeInterval(" << time1 << ", " << time2 << ").computeDuration(\"TDB\") returned " << result_dur << ", not " <<
       expected_dur << " with tolerance of " << tolerance_dur << "." << std::endl;
