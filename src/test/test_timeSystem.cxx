@@ -986,10 +986,10 @@ void TimeSystemTestApp::testOneConversion(const std::string & src_system_name, c
 void TimeSystemTestApp::testOneSubtraction(const moment_type & moment1, const moment_type & moment2, double difference,
   double difference_utc) {
   std::map<std::string, Duration> expected_diff;
-  expected_diff["TAI"] = Duration(0, difference);
-  expected_diff["TDB"] = Duration(0, difference);
-  expected_diff["TT"]  = Duration(0, difference);
-  expected_diff["UTC"] = Duration(0, difference_utc);
+  expected_diff["TAI"] = Duration(difference, "Sec");
+  expected_diff["TDB"] = Duration(difference, "Sec");
+  expected_diff["TT"]  = Duration(difference, "Sec");
+  expected_diff["UTC"] = Duration(difference_utc, "Sec");
 
   Duration tolerance(0, 1.e-9); // 1 nanosecond.
 
@@ -1059,10 +1059,10 @@ void TimeSystemTestApp::testTimeSystem() {
   double tdb_ref_sec = 100. + 0.001634096289;
   double utc_ref_sec = 100. - 32. - 32.184;
 
-  moment_type tai_ref_moment(moment_type(ref_day, Duration(0, tai_ref_sec)));
-  moment_type tt_ref_moment(moment_type(ref_day, Duration(0, tt_ref_sec)));
-  moment_type tdb_ref_moment(moment_type(ref_day, Duration(0, tdb_ref_sec)));
-  moment_type utc_ref_moment(moment_type(ref_day, Duration(0, utc_ref_sec)));
+  moment_type tai_ref_moment(moment_type(ref_day, Duration(tai_ref_sec, "Sec")));
+  moment_type tt_ref_moment(moment_type(ref_day, Duration(tt_ref_sec, "Sec")));
+  moment_type tdb_ref_moment(moment_type(ref_day, Duration(tdb_ref_sec, "Sec")));
+  moment_type utc_ref_moment(moment_type(ref_day, Duration(utc_ref_sec, "Sec")));
 
   double tdb_tolerance = 1.e-7; // 100 ns is the accuracy of algorithms involving TDB.
 
@@ -1106,11 +1106,11 @@ void TimeSystemTestApp::testTimeSystem() {
   // To ensure UTC->TAI is handled correctly, do some tougher conversions, i.e. times which are close to
   // times when leap seconds are inserted.
   // --- At an exact time of leap second insertion.
-  testOneConversion("UTC", moment_type(leap1, Duration(0, 0.)),
-                    "TAI", moment_type(leap1, Duration(0, diff1)));
+  testOneConversion("UTC", moment_type(leap1, Duration(0.,    "Sec")),
+                    "TAI", moment_type(leap1, Duration(diff1, "Sec")));
   // --- Slightly before a leap second is inserted.
-  testOneConversion("UTC", moment_type(leap1 - 1, Duration(0, SecPerDay() - .001)),
-                    "TAI", moment_type(leap1 - 1, Duration(0, SecPerDay() - .001 + diff0)));
+  testOneConversion("UTC", moment_type(leap1 - 1, Duration(SecPerDay() - .001,         "Sec")),
+                    "TAI", moment_type(leap1 - 1, Duration(SecPerDay() - .001 + diff0, "Sec")));
   // --- Same as above, but with a large elapsed time.
   //     Although the total time (origin + elapsed) is large enough to cross two leap second boundaries, still
   //     the earliest leap second should be used because the choice of leap second is based only on the origin time.
@@ -1120,35 +1120,35 @@ void TimeSystemTestApp::testTimeSystem() {
   // To ensure TAI->UTC is handled correctly, do some tougher conversions, i.e. times which are close to
   // times when leap seconds are inserted.
   // --- At the end of a leap second.
-  testOneConversion("TAI", moment_type(leap1, Duration(0, diff1)),
-                    "UTC", moment_type(leap1, Duration(0, 0.)));
+  testOneConversion("TAI", moment_type(leap1, Duration(diff1, "Sec")),
+                    "UTC", moment_type(leap1, Duration(0.,    "Sec")));
   // --- During a leap second.
-  testOneConversion("TAI", moment_type(leap1, Duration(0, -0.3 + diff1)),
-                    "UTC", moment_type(leap1, Duration(0, -0.3)));
+  testOneConversion("TAI", moment_type(leap1, Duration(-0.3 + diff1, "Sec")),
+                    "UTC", moment_type(leap1, Duration(-0.3,         "Sec")));
   // --- At the beginning of a leap second.
-  testOneConversion("TAI", moment_type(leap1, Duration(0, -1.0 + diff1)),
-                    "UTC", moment_type(leap1, Duration(0, -1.0)));
+  testOneConversion("TAI", moment_type(leap1, Duration(-1.0 + diff1, "Sec")),
+                    "UTC", moment_type(leap1, Duration(-1.0,         "Sec")));
   // --- After the end of a leap second.
-  testOneConversion("TAI", moment_type(leap1, Duration(0, +0.3 + diff1)),
-                    "UTC", moment_type(leap1, Duration(0, +0.3)));
+  testOneConversion("TAI", moment_type(leap1, Duration(+0.3 + diff1, "Sec")),
+                    "UTC", moment_type(leap1, Duration(+0.3,         "Sec")));
   // --- Before the beginning of a leap second.
-  testOneConversion("TAI", moment_type(leap1, Duration(0, -1.3 + diff1)),
-                    "UTC", moment_type(leap1, Duration(0, -1.3)));
+  testOneConversion("TAI", moment_type(leap1, Duration(-1.3 + diff1, "Sec")),
+                    "UTC", moment_type(leap1, Duration(-1.3,         "Sec")));
 
   // Test that conversion uses table keyed by TAI times, not by UTC.
-  testOneConversion("TAI", moment_type(leap1 - 1, Duration(0, SecPerDay() - 2.)),
-                    "UTC", moment_type(leap1 - 1, Duration(0, SecPerDay() - 2. - diff0)));
+  testOneConversion("TAI", moment_type(leap1 - 1, Duration(SecPerDay() - 2.,         "Sec")),
+                    "UTC", moment_type(leap1 - 1, Duration(SecPerDay() - 2. - diff0, "Sec")));
 
   // Test case before first time covered by the current UTC definition. This is "undefined" in the current scheme.
   long diff_oldest = 10;
   try {
-    testOneConversion("UTC", moment_type(0, Duration(0, 0.)), "TAI", moment_type(0, Duration(0, diff_oldest)));
+    testOneConversion("UTC", moment_type(0, Duration(0., "Sec")), "TAI", moment_type(0, Duration(diff_oldest, "Sec")));
     err() << "Conversion of time 0. MJD UTC to TAI did not throw an exception." << std::endl;
   } catch (const std::exception &) {
     // That's OK!
   }
   try {
-    testOneConversion("TAI", moment_type(0, Duration(0, diff_oldest)), "UTC", moment_type(0, Duration(0, 0.)));
+    testOneConversion("TAI", moment_type(0, Duration(diff_oldest, "Sec")), "UTC", moment_type(0, Duration(0., "Sec")));
     err() << "Conversion of time 0. MJD TAI to UTC did not throw an exception." << std::endl;
   } catch (const std::exception &) {
     // That's OK!
@@ -1206,7 +1206,8 @@ void TimeSystemTestApp::testTimeSystem() {
   // Test case after last time covered by the current UTC definition.
   long leap_last = 53737;
   double diff_last = 31.;
-  testOneConversion("UTC", moment_type(leap_last, Duration(0, 100.)), "TAI", moment_type(leap_last, Duration(0, 100. + diff_last)));
+  testOneConversion("UTC", moment_type(leap_last, Duration(100., "Sec")),
+    "TAI", moment_type(leap_last, Duration(100. + diff_last, "Sec")));
 
   // Reset default leap second file name.
   TimeSystem::setDefaultLeapSecFileName("");
@@ -1217,7 +1218,8 @@ void TimeSystemTestApp::testTimeSystem() {
   // Test case after last time covered by the current UTC definition.
   leap_last = 53737;
   diff_last = 31.;
-  testOneConversion("UTC", moment_type(leap_last, Duration(0, 100.)), "TAI", moment_type(leap_last, Duration(0, 100. + diff_last)));
+  testOneConversion("UTC", moment_type(leap_last, Duration(100., "Sec")),
+    "TAI", moment_type(leap_last, Duration(100. + diff_last, "Sec")));
 
   // Use three leap seconds for generating tests.
   diff0 = 30.;
@@ -1234,11 +1236,11 @@ void TimeSystemTestApp::testTimeSystem() {
   // To ensure TAI->UTC is handled correctly, do some tougher conversions, i.e. times which are close to
   // times when leap seconds are removed.
   // --- At an exact time of leap second removal.
-  testOneConversion("TAI", moment_type(leap1, Duration(0, diff1)),
-                    "UTC", moment_type(leap1, Duration(0, 0.)));
+  testOneConversion("TAI", moment_type(leap1, Duration(diff1, "Sec")),
+                    "UTC", moment_type(leap1, Duration(0.,    "Sec")));
   // --- Slightly before a leap second is removed.
-  testOneConversion("TAI", moment_type(leap1, Duration(0, -.001 + diff1)),
-                    "UTC", moment_type(leap1, Duration(0, -.001)));
+  testOneConversion("TAI", moment_type(leap1, Duration(-.001 + diff1, "Sec")),
+                    "UTC", moment_type(leap1, Duration(-.001,         "Sec")));
   // --- Same as above, but with a large elapsed time.
   //     Although the total time (origin + elapsed) is large enough to cross two leap second boundaries, still
   //     the earliest leap second should be used because the choice of leap second is based only on the origin time.
@@ -1248,36 +1250,36 @@ void TimeSystemTestApp::testTimeSystem() {
   // To ensure UTC->TAI is handled correctly, do some tougher conversions, i.e. times which are close to
   // times when leap seconds are removed.
   // --- At the end of a leap second.
-  testOneConversion("UTC", moment_type(leap1, Duration(0, 0.)),
-                    "TAI", moment_type(leap1, Duration(0, diff1)));
+  testOneConversion("UTC", moment_type(leap1, Duration(0.,    "Sec")),
+                    "TAI", moment_type(leap1, Duration(diff1, "Sec")));
   // --- During a leap second
   // Note: As of May 29th, 2008, the design doesn't allow/need this test due to the improved robustness.
   // --- At the beginning of a leap second.
-  testOneConversion("UTC", moment_type(leap1 - 1, Duration(0, SecPerDay() - 1.0)),
-                    "TAI", moment_type(leap1 - 1, Duration(0, SecPerDay() - 1.0 + diff0)));
+  testOneConversion("UTC", moment_type(leap1 - 1, Duration(SecPerDay() - 1.0,         "Sec")),
+                    "TAI", moment_type(leap1 - 1, Duration(SecPerDay() - 1.0 + diff0, "Sec")));
   // --- After the end of a leap second.
-  testOneConversion("UTC", moment_type(leap1, Duration(0, 0.3)),
-                    "TAI", moment_type(leap1, Duration(0, diff1 + 0.3)));
+  testOneConversion("UTC", moment_type(leap1, Duration(0.3,         "Sec")),
+                    "TAI", moment_type(leap1, Duration(diff1 + 0.3, "Sec")));
   // --- Before the beginning of a leap second.
-  testOneConversion("UTC", moment_type(leap1 - 1, Duration(0, SecPerDay() - 1.3)),
-                    "TAI", moment_type(leap1 - 1, Duration(0, SecPerDay() - 1.3 + diff0)));
+  testOneConversion("UTC", moment_type(leap1 - 1, Duration(SecPerDay() - 1.3,         "Sec")),
+                    "TAI", moment_type(leap1 - 1, Duration(SecPerDay() - 1.3 + diff0, "Sec")));
 
   // Test computeTimeDifference method.
   // Middle of nowhere
-  testOneSubtraction(moment_type(51910, Duration(0, 120.)), moment_type(51910, Duration(0, 100.)),  20., 20.);
+  testOneSubtraction(moment_type(51910, Duration(120., "Sec")), moment_type(51910, Duration(100., "Sec")),  20., 20.);
   // Leap second insertion
-  testOneSubtraction(moment_type(leap2, Duration(0, +10.)), moment_type(leap2 - 1, Duration(0, SecPerDay() - 10.)), 20., 21.);
+  testOneSubtraction(moment_type(leap2, Duration(+10., "Sec")), moment_type(leap2 - 1, Duration(SecPerDay() - 10., "Sec")), 20., 21.);
   // leap second removal
-  testOneSubtraction(moment_type(leap1, Duration(0, +10.)), moment_type(leap1 - 1, Duration(0, SecPerDay() - 10.)), 20., 19.);
+  testOneSubtraction(moment_type(leap1, Duration(+10., "Sec")), moment_type(leap1 - 1, Duration(SecPerDay() - 10., "Sec")), 20., 19.);
   // Non-existing time in UTC
   // Note: As of May 29th, 2008, the design doesn't allow/need this test due to the improved robustness.
 
   // Test computeDateTime method.
   double deltat = 20.;
   // Middle of nowhere
-  testOneDateTimeComputation(moment_type(51910, Duration(0, 100.)), datetime_type(51910, 100.), datetime_type(51910, 100.));
+  testOneDateTimeComputation(moment_type(51910, Duration(100., "Sec")), datetime_type(51910, 100.), datetime_type(51910, 100.));
   // Middle of nowhere, with a negative elapsed time
-  testOneDateTimeComputation(moment_type(51910, Duration(0, -100.)),
+  testOneDateTimeComputation(moment_type(51910, Duration(-100., "Sec")),
      datetime_type(51909, SecPerDay() - 100.), datetime_type(51909, SecPerDay() - 100.));
   // Across leap second insertion in UTC
   testOneDateTimeComputation(moment_type(leap2 - 1, Duration(1, deltat - 10.)),
@@ -1335,7 +1337,7 @@ void TimeSystemTestApp::testTimeSystem() {
 
     // Test conversions in the middle of nowhere.
     datetime_type input_datetime(51910, 100.);
-    moment_type expected_moment(51910, Duration(0, 100.));
+    moment_type expected_moment(51910, Duration(100., "Sec"));
     moment_type result_moment = time_system.computeMoment(input_datetime);
     Duration tolerance(0, 1.e-9);
     if (result_moment.first != expected_moment.first || !result_moment.second.equivalentTo(expected_moment.second, tolerance)) {
@@ -1416,7 +1418,7 @@ void TimeSystemTestApp::testTimeSystem() {
   long tai_day = 0;
   double tai_sec = 100. + 51910. * SecPerDay();
   try {
-    testOneConversion("TAI", moment_type(tai_day, Duration(0, tai_sec)),
+    testOneConversion("TAI", moment_type(tai_day, Duration(tai_sec, "Sec")),
                       "UTC", moment_type(oldest_mjd, Duration(51910 - oldest_mjd, 100. - diff_oldest)));
   } catch (const std::exception &) {
     err() << "Conversion of TAI to UTC for moment_type(" << tai_day << ", " << tai_sec << ") threw an exception." << std::endl;
@@ -1427,8 +1429,8 @@ void TimeSystemTestApp::testTimeSystem() {
   tai_day = 51910;
   tai_sec = 100. - 51910. * SecPerDay();
   try {
-    testOneConversion("TAI", moment_type(tai_day, Duration(0, tai_sec)),
-                      "UTC", moment_type(0, Duration(0, 100. - diff2)));
+    testOneConversion("TAI", moment_type(tai_day, Duration(tai_sec, "Sec")),
+                      "UTC", moment_type(0, Duration(100. - diff2, "Sec")));
     err() << "Conversion of TAI to UTC for moment_type(" << tai_day << ", " << tai_sec << ") did not throw an exception." << std::endl;
   } catch (const std::exception &) {
     // That's OK!
@@ -1439,8 +1441,8 @@ void TimeSystemTestApp::testTimeSystem() {
   long utc_day = 0;
   double utc_sec = 100. + 51910. * SecPerDay() - diff2;
   try {
-    testOneConversion("UTC", moment_type(utc_day, Duration(0, utc_sec)),
-                      "TAI", moment_type(51910, Duration(0, 100.)));
+    testOneConversion("UTC", moment_type(utc_day, Duration(utc_sec, "Sec")),
+                      "TAI", moment_type(51910, Duration(100., "Sec")));
     err() << "Conversion of UTC to TAI for moment_type(" << utc_day << ", " << utc_sec << ") did not throw an exception." << std::endl;
   } catch (const std::exception &) {
     // That's OK!
@@ -1451,7 +1453,7 @@ void TimeSystemTestApp::testTimeSystem() {
   utc_day = 51910;
   utc_sec = 100. - 51910. * SecPerDay() - diff2;
   try {
-    testOneConversion("UTC", moment_type(utc_day, Duration(0, utc_sec)),
+    testOneConversion("UTC", moment_type(utc_day, Duration(utc_sec, "Sec")),
                       "TAI", moment_type(utc_day, Duration(-utc_day, 100.)));
     err() << "Conversion of UTC to TAI for moment_type(" << utc_day << ", " << utc_sec << ") did not throw an exception." << std::endl;
   } catch (const std::exception &) {
@@ -1786,10 +1788,10 @@ void TimeSystemTestApp::testAbsoluteTime() {
   // Create an absolute time corresponding to 100. s MET TDB to verify adding an elapsed time.
   abs_time = AbsoluteTime("TDB", mjd_day, mjd_sec);
   double delta_t = 100.;
-  ElapsedTime elapsed_time("TDB", Duration(0, delta_t));
+  ElapsedTime elapsed_time("TDB", Duration(delta_t, "Sec"));
   AbsoluteTime result = abs_time + elapsed_time;
   AbsoluteTime expected_result("TDB", mjd_day, mjd_sec + delta_t);
-  ElapsedTime epsilon("TDB", Duration(0, 1.e-9)); // 1 nanosecond.
+  ElapsedTime epsilon("TDB", Duration(1.e-9, "Sec")); // 1 nanosecond.
   if (!result.equivalentTo(expected_result, epsilon))
     err() << "Sum of absolute time and elapsed time using operator + was " << result << ", not " <<
       expected_result << " as expected." << std::endl;
@@ -1837,7 +1839,7 @@ void TimeSystemTestApp::testAbsoluteTime() {
 
   // Test equivalentTo.
   // Test situations where they are not equivalent.
-  ElapsedTime tight_tol("TDB", Duration(0, 99.9999));
+  ElapsedTime tight_tol("TDB", Duration(99.9999, "Sec"));
   if (abs_time.equivalentTo(later_time, tight_tol))
     err() << "After AbsoluteTime abs_time(TDB, 51910, 1000.), abs_time.equivalentTo returned true for \"" << later_time <<
       "\" with tolerance of " << tight_tol << ", not false as expected." << std::endl;
@@ -1846,7 +1848,7 @@ void TimeSystemTestApp::testAbsoluteTime() {
       "\" with tolerance of " << tight_tol << ", not false as expected." << std::endl;
 
   // Test situations where they are equivalent.
-  ElapsedTime loose_tol("TDB", Duration(0, 100.));
+  ElapsedTime loose_tol("TDB", Duration(100., "Sec"));
   if (!(abs_time.equivalentTo(later_time, loose_tol)))
     err() << "After AbsoluteTime abs_time(TDB, 51910, 1000.), abs_time.equivalentTo returned false for \"" << later_time <<
       "\" with tolerance of " << loose_tol << ", not true as expected." << std::endl;
@@ -1863,7 +1865,7 @@ void TimeSystemTestApp::testAbsoluteTime() {
       ", not " << expected_diff << " as expected." << std::endl;
 
   // Test subtraction of absolute time from absolute time in UTC system
-  expected_diff = Duration(0, .4);
+  expected_diff = Duration(.4, "Sec");
   difference = (later_time_utc - abs_time_utc).computeElapsedTime("UTC").getDuration();
   if (!expected_diff.equivalentTo(difference, tolerance))
     err() << "Absolute time [" << abs_time_utc << "] subtracted from absolute time [" << later_time_utc << "] gave " << difference <<
@@ -1969,7 +1971,7 @@ void TimeSystemTestApp::testTimeInterval() {
   }
 
   // Test of the getter that returns a Duration object.
-  Duration expected_dur = Duration(0, 1000.123456789);
+  Duration expected_dur = Duration(1000.123456789, "Sec");
   Duration result_dur = interval_a.computeDuration("TDB");
   Duration tolerance_dur(0, 1.e-9); // 1 ns.
   if (!expected_dur.equivalentTo(result_dur, tolerance_dur)) {
@@ -3055,12 +3057,12 @@ void TimeSystemTestApp::testBaryTimeComputer() {
   // Prepare a time to be geo/barycentered and an expected result after geo/barycentered.
   AbsoluteTime glast_tt_origin("TT", 51910, 64.184);
   double glast_time = 2.123393677090199E+08; // TSTART in my_pulsar_events_v3.fits.
-  AbsoluteTime original = glast_tt_origin + ElapsedTime("TT", Duration(0, glast_time));
+  AbsoluteTime original = glast_tt_origin + ElapsedTime("TT", Duration(glast_time, "Sec"));
   AbsoluteTime glast_tdb_origin("TDB", 51910, 64.184);
   glast_time = 2.123393824137859E+08; // TSTART in my_pulsar_events_bary_v3.fits.
-  AbsoluteTime expected_bary = glast_tdb_origin + ElapsedTime("TDB", Duration(0, glast_time));
+  AbsoluteTime expected_bary = glast_tdb_origin + ElapsedTime("TDB", Duration(glast_time, "Sec"));
   glast_time = 212339367.70603555441; // Once computed by BaryTimeComputer::computeGeoTime method.
-  AbsoluteTime expected_geo = glast_tt_origin + ElapsedTime("TT", Duration(0, glast_time));
+  AbsoluteTime expected_geo = glast_tt_origin + ElapsedTime("TT", Duration(glast_time, "Sec"));
 
   // Set parameters for barycentering.
   double ra = 85.0482;
@@ -3087,7 +3089,7 @@ void TimeSystemTestApp::testBaryTimeComputer() {
   // Test barycentric correction.
   AbsoluteTime result = original;
   computer405.computeBaryTime(ra, dec, sc_pos, result);
-  ElapsedTime tolerance("TDB", Duration(0, 1.e-7));
+  ElapsedTime tolerance("TDB", Duration(1.e-7, "Sec"));
   if (!result.equivalentTo(expected_bary, tolerance)) {
     err() << "BaryTimeComputer::computeBaryTime(" << ra << ", " << dec << ", " << original << ")" <<
       " returned AbsoluteTime(" << result << "), not equivalent to AbsoluteTime(" << expected_bary <<
@@ -3097,7 +3099,7 @@ void TimeSystemTestApp::testBaryTimeComputer() {
   // Test geocentric correction.
   result = original;
   computer405.computeGeoTime(ra, dec, sc_pos, result);
-  tolerance = ElapsedTime("TT", Duration(0, 1.e-7));
+  tolerance = ElapsedTime("TT", Duration(1.e-7, "Sec"));
   if (!result.equivalentTo(expected_geo, tolerance)) {
     err() << "BaryTimeComputer::computeGeoTime(" << ra << ", " << dec << ", " << original << ")" <<
       " returned AbsoluteTime(" << result << "), not equivalent to AbsoluteTime(" << expected_geo <<
@@ -3277,7 +3279,7 @@ void TimeSystemTestApp::testGlastTimeHandler() {
   setMethod("testGlastTimeHandler");
 
   // Set tolerance for AbsoluteTime comparison.
-  ElapsedTime time_tolerance("TT", Duration(0, 1.e-7));
+  ElapsedTime time_tolerance("TT", Duration(1.e-7, "Sec"));
 
   // Prepare test parameters in this method.
   std::string event_file = prependDataPath("my_pulsar_events_v3.fits");
@@ -3444,7 +3446,7 @@ void TimeSystemTestApp::testGlastTimeHandler() {
   std::string time_string = "12345.6789012345";
   AbsoluteTime result = handler->parseTimeString(time_string);
   AbsoluteTime glast_tt_origin("TT", 51910, 64.184);
-  AbsoluteTime expected = glast_tt_origin + ElapsedTime("TT", Duration(0, 12345.6789012345));
+  AbsoluteTime expected = glast_tt_origin + ElapsedTime("TT", Duration(12345.6789012345, "Sec"));
   if (!result.equivalentTo(expected, time_tolerance)) {
     err() << "GlastScTimeHandler::parseTimeString(\"" << time_string << "\") returned AbsoluteTime(" << result <<
       "), not equivalent to AbsoluteTime(" << expected << ") with tolerance of " << time_tolerance << "." << std::endl;
@@ -3454,7 +3456,7 @@ void TimeSystemTestApp::testGlastTimeHandler() {
   time_string = "12345.6789012345";
   result = handler->parseTimeString(time_string, "TDB");
   AbsoluteTime glast_tdb_origin("TDB", 51910, 64.184);
-  expected = glast_tdb_origin + ElapsedTime("TDB", Duration(0, 12345.6789012345));
+  expected = glast_tdb_origin + ElapsedTime("TDB", Duration(12345.6789012345, "Sec"));
   if (!result.equivalentTo(expected, time_tolerance)) {
     err() << "GlastScTimeHandler::parseTimeString(\"" << time_string << "\", \"TDB\") returned AbsoluteTime(" << result <<
       "), not equivalent to AbsoluteTime(" << expected << ") with tolerance of " << time_tolerance << "." << std::endl;
@@ -3463,7 +3465,7 @@ void TimeSystemTestApp::testGlastTimeHandler() {
   // Test reading header keyword value.
   result = handler->readTime("TSTART", from_header);
   glast_time = 2.123393677090199E+08; // TSTART in my_pulsar_events_v3.fits.
-  expected = glast_tt_origin + ElapsedTime("TT", Duration(0, glast_time));
+  expected = glast_tt_origin + ElapsedTime("TT", Duration(glast_time, "Sec"));
   if (!result.equivalentTo(expected, time_tolerance)) {
     err() << "GlastScTimeHandler::readTime(\"TSTART\", " << from_header << ") returned AbsoluteTime(" << result <<
       "), not equivalent to AbsoluteTime(" << expected << ") with tolerance of " << time_tolerance << "." << std::endl;
@@ -3501,7 +3503,7 @@ void TimeSystemTestApp::testGlastTimeHandler() {
   // Test reading header keyword value, requesting geocentering.
   result = handler->getGeoTime("TSTART", from_header);
   glast_time = 212339367.70603555441; // Once computed by BaryTimeComputer::computeGeoTime method.
-  expected = glast_tt_origin + ElapsedTime("TT", Duration(0, glast_time));
+  expected = glast_tt_origin + ElapsedTime("TT", Duration(glast_time, "Sec"));
   if (!result.equivalentTo(expected, time_tolerance)) {
     err() << "GlastScTimeHandler::getGeoTime(\"TSTART\", " << from_header << ") returned AbsoluteTime(" << result <<
       "), not equivalent to AbsoluteTime(" << expected << ") with tolerance of " << time_tolerance << "." << std::endl;
@@ -3510,7 +3512,7 @@ void TimeSystemTestApp::testGlastTimeHandler() {
   // Test reading header keyword value, requesting barycentering.
   result = handler->getBaryTime("TSTART", from_header);
   glast_time = 2.123393824137859E+08; // TSTART in my_pulsar_events_bary_v3.fits.
-  expected = glast_tdb_origin + ElapsedTime("TDB", Duration(0, glast_time));
+  expected = glast_tdb_origin + ElapsedTime("TDB", Duration(glast_time, "Sec"));
   if (!result.equivalentTo(expected, time_tolerance)) {
     err() << "GlastScTimeHandler::getBaryTime(\"TSTART\", " << from_header << ") returned AbsoluteTime(" << result <<
       "), not equivalent to AbsoluteTime(" << expected << ") with tolerance of " << time_tolerance << "." << std::endl;
@@ -3522,7 +3524,7 @@ void TimeSystemTestApp::testGlastTimeHandler() {
   handler->setNextRecord();  // Points to the third event.
   result = handler->readTime("TIME", from_column);
   glast_time = 2.123393750454886E+08; // TIME of the third row in my_pulsar_events_v3.fits.
-  expected = glast_tt_origin + ElapsedTime("TT", Duration(0, glast_time));
+  expected = glast_tt_origin + ElapsedTime("TT", Duration(glast_time, "Sec"));
   if (!result.equivalentTo(expected, time_tolerance)) {
     err() << "GlastScTimeHandler::readTime(\"TIME\", " << from_column << ") returned AbsoluteTime(" << result <<
       "), not equivalent to AbsoluteTime(" << expected << ") with tolerance of " << time_tolerance << "." << std::endl;
@@ -3534,7 +3536,7 @@ void TimeSystemTestApp::testGlastTimeHandler() {
   handler->setNextRecord();  // Points to the third event.
   result = handler->getGeoTime("TIME", from_column);
   glast_time = 212339375.04258754849; // Once computed by BaryTimeComputer::computeGeoTime method.
-  expected = glast_tt_origin + ElapsedTime("TT", Duration(0, glast_time));
+  expected = glast_tt_origin + ElapsedTime("TT", Duration(glast_time, "Sec"));
   if (!result.equivalentTo(expected, time_tolerance)) {
     err() << "GlastScTimeHandler::getGeoTime(\"TIME\", " << from_column << ") returned AbsoluteTime(" << result <<
       "), not equivalent to AbsoluteTime(" << expected << ") with tolerance of " << time_tolerance << "." << std::endl;
@@ -3546,7 +3548,7 @@ void TimeSystemTestApp::testGlastTimeHandler() {
   handler->setNextRecord();  // Points to the third event.
   result = handler->getBaryTime("TIME", from_column);
   glast_time = 2.123393897503012E+08; // TIME of the third row in my_pulsar_events_bary_v3.fits.
-  expected = glast_tdb_origin + ElapsedTime("TDB", Duration(0, glast_time));
+  expected = glast_tdb_origin + ElapsedTime("TDB", Duration(glast_time, "Sec"));
   if (!result.equivalentTo(expected, time_tolerance)) {
     err() << "GlastScTimeHandler::getBaryTime(\"TIME\", " << from_column << ") returned AbsoluteTime(" << result <<
       "), not equivalent to AbsoluteTime(" << expected << ") with tolerance of " << time_tolerance << "." << std::endl;
@@ -3557,7 +3559,7 @@ void TimeSystemTestApp::testGlastTimeHandler() {
 
   // Test writing header keyword value.
   double expected_double = 12345678.1234567;
-  AbsoluteTime abs_time = glast_tt_origin + ElapsedTime("TT", Duration(0, expected_double));
+  AbsoluteTime abs_time = glast_tt_origin + ElapsedTime("TT", Duration(expected_double, "Sec"));
   handler->writeTime("TSTART", abs_time, to_header);
   const tip::Header & header = handler->getHeader();
   double result_double = 0.;
@@ -3581,7 +3583,7 @@ void TimeSystemTestApp::testGlastTimeHandler() {
 
   // Test writing TIME column value.
   expected_double = 12345678.1234567;
-  abs_time = glast_tt_origin + ElapsedTime("TT", Duration(0, expected_double));
+  abs_time = glast_tt_origin + ElapsedTime("TT", Duration(expected_double, "Sec"));
   handler->setFirstRecord(); // Points to the first event.
   handler->setNextRecord();  // Points to the second event.
   handler->setNextRecord();  // Points to the third event.
@@ -3602,7 +3604,7 @@ void TimeSystemTestApp::testGlastTimeHandler() {
   // Test parsing a time string.
   time_string = "12345.6789012345";
   result = handler->parseTimeString(time_string);
-  expected = glast_tdb_origin + ElapsedTime("TDB", Duration(0, 12345.6789012345));
+  expected = glast_tdb_origin + ElapsedTime("TDB", Duration(12345.6789012345, "Sec"));
   if (!result.equivalentTo(expected, time_tolerance)) {
     err() << "GlastBaryTimeHandler::parseTimeString(\"" << time_string << "\") returned AbsoluteTime(" << result <<
       "), not equivalent to AbsoluteTime(" << expected << ") with tolerance of " << time_tolerance << "." << std::endl;
@@ -3611,7 +3613,7 @@ void TimeSystemTestApp::testGlastTimeHandler() {
   // Test parsing a time string, with a different time system.
   time_string = "12345.6789012345";
   result = handler->parseTimeString(time_string, "TT");
-  expected = glast_tt_origin + ElapsedTime("TT", Duration(0, 12345.6789012345));
+  expected = glast_tt_origin + ElapsedTime("TT", Duration(12345.6789012345, "Sec"));
   if (!result.equivalentTo(expected, time_tolerance)) {
     err() << "GlastBaryTimeHandler::parseTimeString(\"" << time_string << "\", \"TT\") returned AbsoluteTime(" << result <<
       "), not equivalent to AbsoluteTime(" << expected << ") with tolerance of " << time_tolerance << "." << std::endl;
@@ -3628,7 +3630,7 @@ void TimeSystemTestApp::testGlastTimeHandler() {
   // Test reading header keyword value, requesting barycentering.
   result = handler->getBaryTime("TSTART", from_header);
   glast_time = 2.123393824137859E+08; // TSTART in my_pulsar_events_bary_v3.fits.
-  expected = glast_tdb_origin + ElapsedTime("TDB", Duration(0, glast_time));
+  expected = glast_tdb_origin + ElapsedTime("TDB", Duration(glast_time, "Sec"));
   if (!result.equivalentTo(expected, time_tolerance)) {
     err() << "GlastBaryTimeHandler::getBaryTime(\"TSTART\", " << from_header << ") returned AbsoluteTime(" << result <<
       "), not equivalent to AbsoluteTime(" << expected << ") with tolerance of " << time_tolerance << "." << std::endl;
@@ -3648,7 +3650,7 @@ void TimeSystemTestApp::testGlastTimeHandler() {
   handler->setNextRecord();  // Points to the third event.
   result = handler->getBaryTime("TIME", from_column);
   glast_time = 2.123393897503012E+08; // TIME of the third row in my_pulsar_events_bary_v3.fits.
-  expected = glast_tdb_origin + ElapsedTime("TDB", Duration(0, glast_time));
+  expected = glast_tdb_origin + ElapsedTime("TDB", Duration(glast_time, "Sec"));
   if (!result.equivalentTo(expected, time_tolerance)) {
     err() << "GlastBaryTimeHandler::getBaryTime(\"TIME\", " << from_column << ") returned AbsoluteTime(" << result <<
       "), not equivalent to AbsoluteTime(" << expected << ") with tolerance of " << time_tolerance << "." << std::endl;
@@ -3762,7 +3764,7 @@ void TimeSystemTestApp::testGlastTimeHandler() {
   // Test parsing a time string.
   time_string = "12345.6789012345";
   result = handler->parseTimeString(time_string);
-  expected = glast_tt_origin + ElapsedTime("TT", Duration(0, 12345.6789012345));
+  expected = glast_tt_origin + ElapsedTime("TT", Duration(12345.6789012345, "Sec"));
   if (!result.equivalentTo(expected, time_tolerance)) {
     err() << "GlastGeoTimeHandler::parseTimeString(\"" << time_string << "\") returned AbsoluteTime(" << result <<
       "), not equivalent to AbsoluteTime(" << expected << ") with tolerance of " << time_tolerance << "." << std::endl;
@@ -3771,7 +3773,7 @@ void TimeSystemTestApp::testGlastTimeHandler() {
   // Test parsing a time string, with a different time system.
   time_string = "12345.6789012345";
   result = handler->parseTimeString(time_string, "TDB");
-  expected = glast_tdb_origin + ElapsedTime("TDB", Duration(0, 12345.6789012345));
+  expected = glast_tdb_origin + ElapsedTime("TDB", Duration(12345.6789012345, "Sec"));
   if (!result.equivalentTo(expected, time_tolerance)) {
     err() << "GlastGeoTimeHandler::parseTimeString(\"" << time_string << "\", \"TDB\") returned AbsoluteTime(" << result <<
       "), not equivalent to AbsoluteTime(" << expected << ") with tolerance of " << time_tolerance << "." << std::endl;
@@ -3780,7 +3782,7 @@ void TimeSystemTestApp::testGlastTimeHandler() {
   // Test reading header keyword value, requesting geocentering.
   result = handler->getGeoTime("TSTART", from_header);
   glast_time = 2.12339367706036E+08; // TSTART in my_pulsar_events_geo_v3.fits.
-  expected = glast_tt_origin + ElapsedTime("TT", Duration(0, glast_time));
+  expected = glast_tt_origin + ElapsedTime("TT", Duration(glast_time, "Sec"));
   if (!result.equivalentTo(expected, time_tolerance)) {
     err() << "GlastGeoTimeHandler::getGeoTime(\"TSTART\", " << from_header << ") returned AbsoluteTime(" << result <<
       "), not equivalent to AbsoluteTime(" << expected << ") with tolerance of " << time_tolerance << "." << std::endl;
@@ -3792,7 +3794,7 @@ void TimeSystemTestApp::testGlastTimeHandler() {
   handler->setNextRecord();  // Points to the third event.
   result = handler->getGeoTime("TIME", from_column);
   glast_time = 2.123393750425875E+08; // TIME of the third row in my_pulsar_events_geo_v3.fits.
-  expected = glast_tt_origin + ElapsedTime("TT", Duration(0, glast_time));
+  expected = glast_tt_origin + ElapsedTime("TT", Duration(glast_time, "Sec"));
   if (!result.equivalentTo(expected, time_tolerance)) {
     err() << "GlastGeoTimeHandler::getGeoTime(\"TIME\", " << from_column << ") returned AbsoluteTime(" << result <<
       "), not equivalent to AbsoluteTime(" << expected << ") with tolerance of " << time_tolerance << "." << std::endl;
