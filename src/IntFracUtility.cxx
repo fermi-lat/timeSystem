@@ -8,6 +8,7 @@
 #include <cctype>
 #include <cmath>
 #include <iomanip>
+#include <iostream>
 #include <limits>
 #include <sstream>
 #include <stdexcept>
@@ -23,14 +24,9 @@ namespace {
   */
   template<typename NumericType>
   void convertStringToNumber(const std::string & value_string, NumericType & value, const std::exception & except) {
-    // Make a copy of input string, removing trailing space to prevent spurious errors.
-    std::string value_string_copy("");
-    std::string::size_type trail = value_string.find_last_not_of(" \t\v\n");
-    if (std::string::npos != trail) value_string_copy = value_string.substr(0, trail + 1);
-
-    // Convert the copied string to a value of a numberic type.
-    std::istringstream iss(value_string_copy);
-    iss >> value;
+    // Convert the copied string to a value of a numberic type, removing trailing space to prevent spurious errors.
+    std::istringstream iss(value_string);
+    iss >> value >> std::ws;
 
     // Throws an exception if an error occurs.
     if (iss.fail() || !iss.eof()) throw except;
@@ -61,61 +57,89 @@ namespace timeSystem {
   void IntFracUtility::parse(const std::string & value_string, long & int_part, double & frac_part) const {
     // Read the number into a temporary double variable for three purposes:
     // 1) To check the format as a floating-point number expression
-    // 2) To check that nothing but a literal number is in the given string
+    // 2) To check that nothing but a literal number is in the given string (except for white spaces)
     // 3) To obtain an approximate number that the given string represents
     double value_dbl = 0.;
     std::exception except = std::runtime_error("Error in interpreting \"" + value_string + "\" as a floating-point number");
     convertStringToNumber(value_string, value_dbl, except);
 
-    // Skip leading zeros and non-digits.
-    std::string::const_iterator itor = value_string.begin();
-    for (; itor != value_string.end() && ('0' == *itor || 0 == std::isdigit(*itor)); ++itor) {}
-
-    // Collect numeric digits in the significand.
-    std::string all_digits("");
-    for (; itor != value_string.end() && ('.' == *itor || 0 != std::isdigit(*itor)); ++itor) {
-      if (0 != std::isdigit(*itor)) all_digits += *itor;
-    }
-
-    // Get the significand as a number in range [0, 1.)
-    double significand_dbl = 0.;
-    except = std::runtime_error("Error in converting the significand of \"" + value_string + "\" into a floating-point number");
-    convertStringToNumber("0." + all_digits, significand_dbl, except);
-
-    // Determine the sign.
-    std::string sign_string("+");
-    std::string::size_type pos_sign = value_string.find_first_of("+-.0123456789");
-    if (value_string[pos_sign] == '-') sign_string = "-";
-
-    // Compute the number of digits of the integer part.
-    double value_abs = std::fabs(value_dbl);
-    double num_digit_dbl = std::log10(value_abs / significand_dbl);
-    num_digit_dbl += (num_digit_dbl > 0. ? .5 : -.5);
-    int num_digit_int = static_cast<int>(num_digit_dbl);
-
-    // Compute the integer and the fractional parts of the number that the given string represents.
+    // Compute the integer part and the fractional part, and store them in temporary variables.
     long int_part_tmp = 0;
     double frac_part_tmp = 0.;
-    std::exception except_int = std::runtime_error("Error in computing the integer part of \"" + value_string + "\"");
-    std::exception except_frac = std::runtime_error("Error in computing the fractional part of \"" + value_string + "\"");
-    if (num_digit_int <= 0) {
+    double value_abs = std::fabs(value_dbl);
+    if (value_abs < 0.5) {
       // No integer part in the significand.
+      // Note: the condition for this if-branch must be somewhat loose (i.e., not "value_abs < 1."), because
+      //       the variable under test (value_abs) holds only an approximate value that the given character
+      //       string represents, and the conditional statement may be evaluated incorrectly due to rounding errors.
       int_part_tmp = 0;
       frac_part_tmp = value_dbl;
 
-    } else if (num_digit_int < static_cast<int>(all_digits.size())) {
-      // Significand contains both parts.
-      std::string int_part_string = sign_string + all_digits.substr(0, num_digit_int);
-      convertStringToNumber(int_part_string, int_part_tmp, except_int);
-
-      std::string frac_part_string = sign_string + "0." + all_digits.substr(num_digit_int);
-      convertStringToNumber(frac_part_string, frac_part_tmp, except_frac);
-
     } else {
-      // No fractional part in the significand.
-      std::string int_part_string = sign_string + all_digits + std::string(num_digit_int - all_digits.size(), '0');
-      convertStringToNumber(int_part_string, int_part_tmp, except_int);
-      frac_part_tmp = 0.;
+      // Collect the sign and all the decimal digits in the significand, skipping white spaces.
+      std::string all_signs("");
+      std::string all_digits("");
+      for (std::string::const_iterator itor = value_string.begin(); itor != value_string.end() &&
+        ('+' == *itor || '-' == *itor || '.' == *itor || 0 != std::isdigit(*itor) || 0 != std::isspace(*itor)); ++itor) {
+        if ('+' == *itor || '-' == *itor) all_signs += *itor;
+        if (0 != std::isdigit(*itor)) all_digits += *itor;
+      }
+
+      // Determine the sign.
+      std::string sign_string("");
+      if (0 == all_signs.size()) sign_string = "+";
+      else if (1 == all_signs.size()) sign_string = all_signs;
+      else throw std::runtime_error("Multiple signs found in interpreting \"" + value_string + "\"");
+
+      // Check whether at least one decimal digit is in the significand.
+      if (0 == all_digits.size())
+        throw std::runtime_error("No decimal digit character found in the significand of \"" + value_string + "\"");
+
+      // Remove leading zeros from the significand.
+      all_digits.erase(0, all_digits.find_first_not_of("0"));
+
+      // Analyze the remaining digits.
+      if (0 == all_digits.size()) {
+        // All decimal digits in the significand are zeros.
+        int_part_tmp = 0;
+        frac_part_tmp = 0.;
+
+      } else {
+        // Get the significand as a number in range [0.1, 1.)
+        // Note: the first digit in the digit list (all_digits) is guaranteed to be non-zero at this point.
+        double significand_dbl = 0.;
+        except = std::runtime_error("Error in converting the significand of \"" + value_string + "\" into a floating-point number");
+        convertStringToNumber("0." + all_digits, significand_dbl, except);
+
+        // Compute the number of digits of the integer part.
+        // Note: the following division produces a positive number because the denominator is in range [0.1, 1.) and
+        //       the numerator is larger than or equal to 0.5.  See the steps above for the value ranges.
+        double num_digit_dbl = std::log10(value_abs / significand_dbl);
+        num_digit_dbl += (num_digit_dbl > 0. ? .5 : -.5);
+        int num_digit_int = static_cast<int>(num_digit_dbl);
+
+        // Compute the integer and the fractional parts of the number that the given string represents.
+        std::exception except_int = std::runtime_error("Error in computing the integer part of \"" + value_string + "\"");
+        std::exception except_frac = std::runtime_error("Error in computing the fractional part of \"" + value_string + "\"");
+        if (num_digit_int <= 0) {
+          // No integer part in the significand.
+          int_part_tmp = 0;
+          frac_part_tmp = value_dbl;
+
+        } else if (num_digit_int < static_cast<int>(all_digits.size())) {
+          // Significand contains both parts.
+          std::string int_part_string = sign_string + all_digits.substr(0, num_digit_int);
+          convertStringToNumber(int_part_string, int_part_tmp, except_int);
+          std::string frac_part_string = sign_string + "0." + all_digits.substr(num_digit_int);
+          convertStringToNumber(frac_part_string, frac_part_tmp, except_frac);
+
+        } else {
+          // No fractional part in the significand.
+          std::string int_part_string = sign_string + all_digits + std::string(num_digit_int - all_digits.size(), '0');
+          convertStringToNumber(int_part_string, int_part_tmp, except_int);
+          frac_part_tmp = 0.;
+        }
+      }
     }
 
     // Check the fractional part for the boundary, and trim the results.

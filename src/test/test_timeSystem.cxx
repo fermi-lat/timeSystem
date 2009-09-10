@@ -2796,136 +2796,45 @@ void TimeSystemTestApp::testIntFracUtility() {
   int num_nine = 0;
 
   // Test parsing a character string.
-  sval = "00050089.56789567895678956789";
-  expected_int_part = 50089;
-  expected_frac_part = .56789567895678956789;
-  result_int_part = 0;
-  result_frac_part = 0.;
-  tolerance = std::numeric_limits<double>::epsilon() * 10.;
-  utility.parse(sval, result_int_part, result_frac_part);
-  if (result_int_part != expected_int_part || tolerance < std::fabs(result_frac_part - expected_frac_part)) {
-    err() << "IntFracUtility::parse(\"" << sval << "\", int_part, frac_part) returned (int_part, frac_part) = (" <<
-      result_int_part << ", " << result_frac_part << "), not (" << expected_int_part << ", " << expected_frac_part <<
-      ") as expected." << std::endl;
-  }
-
-  sval = "-00050089.56789567895678956789";
-  expected_int_part = -50089;
-  expected_frac_part = -.56789567895678956789;
-  result_int_part = 0;
-  result_frac_part = 0.;
-  tolerance = std::numeric_limits<double>::epsilon() * 10.;
-  utility.parse(sval, result_int_part, result_frac_part);
-  if (result_int_part != expected_int_part || tolerance < std::fabs(result_frac_part - expected_frac_part)) {
-    err() << "IntFracUtility::parse(\"" << sval << "\", int_part, frac_part) returned (int_part, frac_part) = (" <<
-      result_int_part << ", " << result_frac_part << "), not (" << expected_int_part << ", " << expected_frac_part <<
-      ") as expected." << std::endl;
-  }
-
-  sval = "  +1e+3  ";
-  expected_int_part = 1000;
-  expected_frac_part = 0.;
-  result_int_part = 0;
-  result_frac_part = 0.;
-  utility.parse(sval, result_int_part, result_frac_part);
-  if (result_int_part != expected_int_part || tolerance < std::fabs(result_frac_part - expected_frac_part)) {
-    err() << "IntFracUtility::parse(\"" << sval << "\", int_part, frac_part) returned (int_part, frac_part) = (" <<
-      result_int_part << ", " << result_frac_part << "), not (" << expected_int_part << ", " << expected_frac_part <<
-      ") as expected." << std::endl;
-  }
-
-  sval = "  -2e+3";
-  expected_int_part = -2000;
-  expected_frac_part = 0.;
-  result_int_part = 0;
-  result_frac_part = 0.;
-  utility.parse(sval, result_int_part, result_frac_part);
-  if (result_int_part != expected_int_part || tolerance < std::fabs(result_frac_part - expected_frac_part)) {
-    err() << "IntFracUtility::parse(\"" << sval << "\", int_part, frac_part) returned (int_part, frac_part) = (" <<
-      result_int_part << ", " << result_frac_part << "), not (" << expected_int_part << ", " << expected_frac_part <<
-      ") as expected." << std::endl;
-  }
-
-  sval = "3e+3  ";
-  expected_int_part = 3000;
-  expected_frac_part = 0.;
-  result_int_part = 0;
-  result_frac_part = 0.;
-  utility.parse(sval, result_int_part, result_frac_part);
-  if (result_int_part != expected_int_part || tolerance < std::fabs(result_frac_part - expected_frac_part)) {
-    err() << "IntFracUtility::parse(\"" << sval << "\", int_part, frac_part) returned (int_part, frac_part) = (" <<
-      result_int_part << ", " << result_frac_part << "), not (" << expected_int_part << ", " << expected_frac_part <<
-      ") as expected." << std::endl;
-  }
-
-  sval = ".004e+6  ";
-  expected_int_part = 4000;
-  expected_frac_part = 0.;
-  result_int_part = 0;
-  result_frac_part = 0.;
-  utility.parse(sval, result_int_part, result_frac_part);
-  if (result_int_part != expected_int_part || tolerance < std::fabs(result_frac_part - expected_frac_part)) {
-    err() << "IntFracUtility::parse(\"" << sval << "\", int_part, frac_part) returned (int_part, frac_part) = (" <<
-      result_int_part << ", " << result_frac_part << "), not (" << expected_int_part << ", " << expected_frac_part <<
-      ") as expected." << std::endl;
-  }
-
-  sval = "5678.";
+  typedef std::map<std::string, std::pair<long, double> > map_type;
+  map_type expected_pair;
+  expected_pair["00050089.56789567895678956789"] = map_type::mapped_type(50089, .56789567895678956789);
+  expected_pair["-00050089.56789567895678956789"] = map_type::mapped_type(-50089, -.56789567895678956789);
+  expected_pair["  +1e+3  "] = map_type::mapped_type(1000, 0.);
+  expected_pair["  -2e+3"] = map_type::mapped_type(-2000, 0.);
+  expected_pair["3e-2  "] = map_type::mapped_type(0, 0.03);
+  expected_pair["\t.004e+05\f"] = map_type::mapped_type(400, 0.);
+  expected_pair["\v50000e-006\r\n"] = map_type::mapped_type(0, 0.05);
+  expected_pair["6e+00"] = map_type::mapped_type(6, 0.);
+  expected_pair["7e-000"] = map_type::mapped_type(7, 0.);
+  expected_pair["+0e-1"] = map_type::mapped_type(0, 0.);
+  expected_pair["-0.e+2"] = map_type::mapped_type(0, 0.);
+  expected_pair["+.0e-03"] = map_type::mapped_type(0, 0.);
+  expected_pair["0.e+004"] = map_type::mapped_type(0, 0.);
+  expected_pair["-0.0e-0005"] = map_type::mapped_type(0, 0.);
+  expected_pair["000e00000"] = map_type::mapped_type(0, 0.);
+  expected_pair["+00000e-0000000"] = map_type::mapped_type(0, 0.);
+  expected_pair["-00.000e+0000000"] = map_type::mapped_type(0, 0.);
   num_nine = std::numeric_limits<double>::digits10 + 5;
-  sval += std::string(num_nine, '9');
-  expected_int_part = 5679;
-  expected_frac_part = 0.;
-  result_int_part = 0;
-  result_frac_part = 0.;
-  tolerance = std::numeric_limits<double>::epsilon() * 10.;
-  utility.parse(sval, result_int_part, result_frac_part);
-  if (result_int_part != expected_int_part || tolerance < std::fabs(result_frac_part - expected_frac_part)) {
-    err() << "IntFracUtility::parse(\"" << sval << "\", int_part, frac_part) returned (int_part, frac_part) = (" <<
-      result_int_part << ", " << result_frac_part << "), not (" << expected_int_part << ", " << expected_frac_part <<
-      ") as expected." << std::endl;
-  }
-
-  sval = "-5678.";
-  sval += std::string(num_nine, '9');
-  expected_int_part = -5679;
-  expected_frac_part = 0.;
-  result_int_part = 0;
-  result_frac_part = 0.;
-  tolerance = std::numeric_limits<double>::epsilon() * 10.;
-  utility.parse(sval, result_int_part, result_frac_part);
-  if (result_int_part != expected_int_part || tolerance < std::fabs(result_frac_part - expected_frac_part)) {
-    err() << "IntFracUtility::parse(\"" << sval << "\", int_part, frac_part) returned (int_part, frac_part) = (" <<
-      result_int_part << ", " << result_frac_part << "), not (" << expected_int_part << ", " << expected_frac_part <<
-      ") as expected." << std::endl;
-  }
-
-  sval = "9999999.";
+  expected_pair["5678." + std::string(num_nine, '9')] = map_type::mapped_type(5679, 0.);
+  expected_pair["-5678." + std::string(num_nine, '9')] = map_type::mapped_type(-5679, 0.);
   num_nine = std::numeric_limits<double>::digits10 - 3;
-  sval += std::string(num_nine, '9');
-  expected_int_part = 9999999;
-  expected_frac_part = 1. - std::pow(0.1, num_nine);
-  result_int_part = 0;
-  result_frac_part = 0.;
-  tolerance = std::numeric_limits<double>::epsilon() * 10.;
-  utility.parse(sval, result_int_part, result_frac_part);
-  if (result_int_part != expected_int_part || tolerance < std::fabs(result_frac_part - expected_frac_part)) {
-    err() << "IntFracUtility::parse(\"" << sval << "\", int_part, frac_part) returned (int_part, frac_part) = (" <<
-      result_int_part << ", " << result_frac_part << "), not (" << expected_int_part << ", " << expected_frac_part <<
-      ") as expected." << std::endl;
-  }
+  expected_pair["9999999." + std::string(num_nine, '9')] = map_type::mapped_type(9999999, 1. - std::pow(0.1, num_nine));
+  expected_pair["-9999999." + std::string(num_nine, '9')] = map_type::mapped_type(-9999999, -1. + std::pow(0.1, num_nine));
 
-  sval = "-9999999.";
-  sval += std::string(num_nine, '9');
-  expected_int_part = -9999999;
-  expected_frac_part = -1. + std::pow(0.1, num_nine);
-  result_int_part = 0;
-  result_frac_part = 0.;
   tolerance = std::numeric_limits<double>::epsilon() * 10.;
-  utility.parse(sval, result_int_part, result_frac_part);
-  if (result_int_part != expected_int_part || tolerance < std::fabs(result_frac_part - expected_frac_part)) {
-    err() << "IntFracUtility::parse(\"" << sval << "\", int_part, frac_part) returned (int_part, frac_part) = (" <<
-      result_int_part << ", " << result_frac_part << "), not (" << expected_int_part << ", " << expected_frac_part <<
-      ") as expected." << std::endl;
+  for (map_type::const_iterator itor = expected_pair.begin(); itor != expected_pair.end(); ++itor) {
+    sval = itor->first;
+    expected_int_part = (itor->second).first;
+    expected_frac_part = (itor->second).second;
+    result_int_part = 0;
+    result_frac_part = 0.;
+    utility.parse(sval, result_int_part, result_frac_part);
+    if (result_int_part != expected_int_part || tolerance < std::fabs(result_frac_part - expected_frac_part)) {
+      err() << "IntFracUtility::parse(\"" << sval << "\", int_part, frac_part) returned (int_part, frac_part) = (" <<
+        result_int_part << ", " << result_frac_part << "), not (" << expected_int_part << ", " << expected_frac_part <<
+        ") as expected." << std::endl;
+    }
   }
 
   // Test errors resulting from bad string conversions.
