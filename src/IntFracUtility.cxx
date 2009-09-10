@@ -112,9 +112,9 @@ namespace timeSystem {
         convertStringToNumber("0." + all_digits, significand_dbl, except);
 
         // Compute the number of digits of the integer part.
-        // Note: the following division produces a positive number because the denominator is in range [0.1, 1.) and
-        //       the numerator is larger than or equal to 0.5.  See the steps above for the value ranges.
-        double num_digit_dbl = std::log10(value_abs / significand_dbl);
+        // Note: the following computations (log10) is safe because the operand of the first term is larger than or equal to 0.5,
+        //       and that of the second term is in range [0.1, 1.).  See the steps above for the value ranges.
+        double num_digit_dbl = std::log10(value_abs) - std::log10(significand_dbl);
         num_digit_dbl += (num_digit_dbl > 0. ? .5 : -.5);
         int num_digit_int = static_cast<int>(num_digit_dbl);
 
