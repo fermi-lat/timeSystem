@@ -7,6 +7,7 @@
 --------------------------------------------------------------------------------
        * EOH *
 
+ timeSystem-06-04-02 18-Sep-2009 hirayama Fix the bug in long-to-double conversion for the precision conversions on 64-bit machines. Use static_cast instead of old-style cast. Use human-friendly Duration class constructor.
 15-jul-2009    v6r4p1 jrb Update SConscript; add EOH line to release.notes
 02-jun-2009      v6r4 MH  Adopt to the mission name change (GLAST -> FERMI).
 22-may-2009    v6r3p2 MH  Add #include <limits> to PulsarTestApp.h.
