@@ -7,8 +7,11 @@
 --------------------------------------------------------------------------------
        * EOH *
 
+ timeSystem-06-04-03 21-Sep-2009 hirayama Add #include <limits> to IntFracUtility.h.
  timeSystem-06-04-02 18-Sep-2009 hirayama Fix the bug in long-to-double conversion for the precision conversions on 64-bit machines. Use static_cast instead of old-style cast. Use human-friendly Duration class constructor.
 15-jul-2009    v6r4p1 jrb Update SConscript; add EOH line to release.notes
+
+ timeSystem-06-04-03 21-Sep-2009 hirayama Add #include <limits> to IntFracUtility.h.
 02-jun-2009      v6r4 MH  Adopt to the mission name change (GLAST -> FERMI).
 22-may-2009    v6r3p2 MH  Add #include <limits> to PulsarTestApp.h.
 21-may-2009    v6r3p1 MH  Improve the unit test for application classes.
