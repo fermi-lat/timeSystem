@@ -6,6 +6,7 @@
 #ifndef timeSystem_IntFracUtility_h
 #define timeSystem_IntFracUtility_h
 
+#include <limits>
 #include <string>
 
 namespace timeSystem {
