@@ -3,6 +3,31 @@
 
 /* tolerance of 1 millisecond in checking time boundaries */
 static double time_tolerance = 1.e-3; /* in units of seconds */
+/* Notes on the time tolerance
+/*   Masaharu Hirayama, GSSC
+/*   October 20th, 2009
+/*
+/* Rationale for 1-millisecond tolerance:
+/* o The time duration of 1 millisecond is more than two orders of
+/*   magnitude longer than the time resolution of Fermi time stamps (3-10
+/*   microseconds). Therefore, if two time stamps are separate by more
+/*   than 1 millisecond, one can safely assume that they represent two
+/*   different points in time.
+/* o The Fermi spacecraft travels approximately 25 nano-light-seconds in
+/*   1 millisecond, and that can create a difference in a photon arrival
+/*   time of 25 nanoseconds at most, which is more than 2 orders of
+/*   magnitude shorter than the time resolution of Fermi time stamp (3-10
+/*   microseconds). Therefore, it is highly unlikely that extrapolation
+/*   of spacecraft positions at a boundary of FT2 coverage for 1
+/*   millisecond will create a significant difference in geocentric or
+/*   barycentric times.
+/*
+/* Related fact:
+/* o The time duration of 25 nanoseconds is even shorter than (but of the
+/*   same order of magnitude of) the computation precision guaranteed by
+/*   the barycentering function ctatv.c (100 ns). This means that
+/*   1-millisecond tolerance is as acceptable as use of (the current
+/*   version of) ctatv.c.
 
 /* compute vector inner product */
 static double inner_product(double vect_x[], double vect_y[])
