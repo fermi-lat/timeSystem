@@ -1,6 +1,9 @@
 #include "math.h"
 #include "bary.h"
 
+/* tolerance of 1 millisecond in checking time boundaries */
+static double time_tolerance = 1.e-3; /* in units of seconds */
+
 /* compute vector inner product */
 static double inner_product(double vect_x[], double vect_y[])
 {
@@ -72,20 +75,40 @@ double *glastscorbit (char *filename, double t, int *oerror)
     if (t < sctime2) break;
   }
 
-  /* Check bounds. Handle time which happens to fall exactly on the last sc time. */
-  if (num_rows == index && t == sctime2) {
-    /* In this case, sctime2 is the time from final row from loop above, equivalent to
-       num_rows, so set index back to num_rows - 1 so that sctime1 will be the time of
-       the penultimate row. */
+  /* Check bounds, with some level of tolerance. */
+  if (index > 0 && index < num_rows) {
+    /* In this case, the given time is between the first and the final rows,
+       so read "START" column, which is column # 1, in the previous row. */
+    fits_read_col(OE, TDOUBLE, 1, index, 1, 1, 0, &sctime1, 0, oerror);
+
+  } else if (0 == index && t > sctime2 - time_tolerance) {
+    /* In this case, the given time is earlier than, but close enough
+       to, the time in the first row (which is currently stored in
+       sctime2) within the given tolerance.  So, set index to 1 so
+       that scposn1 will be the spacecraft position from the first
+       row, copy sctime2 to sctime1 so that sctime1 will be the time
+       from the first row, and read "START" column from the second row
+       to set to sctime2. */
+    index = 1;
+    sctime1 = sctime2;
+    fits_read_col(OE, TDOUBLE, 1, index + 1, 1, 1, 0, &sctime2, 0, oerror);
+
+  } else if (num_rows == index && t < sctime2 + time_tolerance) {
+    /* In this case, the given time is later than, but close enough
+       to, the time in the final row (which is currently stored in
+       sctime2) within the given tolerance.  So, set index back to
+       num_rows - 1 so that scposn1 will be the spacecraft position
+       from the penultimate row, and read "START" column from the
+       penultimate row to set to sctime1. */
     index = num_rows - 1;
-  } else if (0 == index || num_rows == index) {
+    fits_read_col(OE, TDOUBLE, 1, index, 1, 1, 0, &sctime1, 0, oerror);
+
+  } else {
+    /* In this case, the given time is out of bounds. */
     index = 0;
     *oerror = -2;
     return intposn;
   }
-
-  /* Read "START" column in the previous row. */
-  fits_read_col(OE, TDOUBLE, 1, index, 1, 1, 0, &sctime1, 0, oerror);
 
   /* Read "SC_POSITION" column, which is column # 3, in the previous and the current rows. */
   fits_read_col(OE, TDOUBLE, 3, index, 1, 3, 0, scposn1, 0, oerror);
