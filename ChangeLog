@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Tue Oct 20 13:45:34 PDT 2009
+timeSystem/src
+
+Modified Files:
+	glastscorbit.c 
+Log Message:
+Add comments on the introduced tolerance.
+    *
+------------------------------------------------------------
 User: hirayama  Tue Oct 20 13:01:37 PDT 2009
 timeSystem/src/test
 
