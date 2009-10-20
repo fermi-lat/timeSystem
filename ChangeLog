@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Tue Oct 20 13:01:37 PDT 2009
+timeSystem/src
+
+Modified Files:
+	glastscorbit.c 
+Log Message:
+Introduce tolerance of 1 millisecond at the boundaries of FT2 time coverage.
+    *
+------------------------------------------------------------
 TAG
 Tag name: ScienceTools-09-15-05, operation: add
 Package: timeSystem
