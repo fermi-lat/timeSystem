@@ -3846,6 +3846,71 @@ void TimeSystemTestApp::testGlastTimeHandler() {
   } catch (const std::exception &) {
     err() << "GlastScTimeHandler::initTimeCorrection method threw an exception for spacecraft file with TELESCOP=FERMI." << std::endl;
   }
+
+  // Test arrival time corrections near the boundaries of spacecraft file.
+  double earliest_met = 212322400.0;
+  double latest_met =   212422420.0;
+  double small_time_diff = 1.e-6; // 1 micro-second.
+  double large_time_diff = 1.; // 1 second.
+
+  // Create a GlastScTimeHandler object for EVENTS extension of a copied event file for testing detections of time boundaries.
+  handler.reset(GlastScTimeHandler::createInstance(event_file_copy, "EVENTS", false));
+  handler->initTimeCorrection(sc_file, "SC_DATA", pl_ephem, match_solar_eph, angular_tolerance);
+  handler->setSourcePosition(ra, dec); // This has no effect.
+
+  // Test detection of time out of bounds, for a time too early.
+  handler->getHeader().setKeyword("TSTART", earliest_met - large_time_diff);
+  try {
+    handler->getBaryTime("TSTART", from_header);
+    err() << "GlastScTimeHandler::getBaryTime(\"TSTART\", " << from_header << ") did not throw an exception for the time " <<
+      large_time_diff << " second(s) earlier than the earliest time covered by the spacecraft file." << std::endl;
+  } catch (const std::exception &) {
+  }
+
+  // Test non-detection of time out of bounds, for a time slightly too early.
+  handler->getHeader().setKeyword("TSTART", earliest_met - small_time_diff);
+  try {
+    handler->getBaryTime("TSTART", from_header);
+  } catch (const std::exception &) {
+    err() << "GlastScTimeHandler::getBaryTime(\"TSTART\", " << from_header << ") threw an exception for the time " <<
+      small_time_diff << " second(s) earlier than the earliest time covered by the spacecraft file." << std::endl;
+  }
+
+  // Test non-detection of time out of bounds, for a time in-bounds.
+  handler->getHeader().setKeyword("TSTART", earliest_met + small_time_diff);
+  try {
+    handler->getBaryTime("TSTART", from_header);
+  } catch (const std::exception &) {
+    err() << "GlastScTimeHandler::getBaryTime(\"TSTART\", " << from_header << ") threw an exception for the time " <<
+      small_time_diff << " second(s) later than the earliest time covered by the spacecraft file." << std::endl;
+  }
+
+  // Test non-detection of time out of bounds, for a time in-bounds.
+  handler->getHeader().setKeyword("TSTART", latest_met - small_time_diff);
+  try {
+    handler->getBaryTime("TSTART", from_header);
+  } catch (const std::exception &) {
+    err() << "GlastScTimeHandler::getBaryTime(\"TSTART\", " << from_header << ") threw an exception for the time " <<
+      small_time_diff << " second(s) earlier than the latest time covered by the spacecraft file." << std::endl;
+  }
+
+  // Test non-detection of time out of bounds, for a time slightly late.
+  handler->getHeader().setKeyword("TSTART", latest_met + small_time_diff);
+  try {
+    handler->getBaryTime("TSTART", from_header);
+  } catch (const std::exception &) {
+    err() << "GlastScTimeHandler::getBaryTime(\"TSTART\", " << from_header << ") threw an exception for the time " <<
+      small_time_diff << " second(s) later than the latest time covered by the spacecraft file." << std::endl;
+  }
+
+  // Test detection of time out of bounds, for a time too late.
+  handler->getHeader().setKeyword("TSTART", latest_met + large_time_diff);
+  try {
+    handler->getBaryTime("TSTART", from_header);
+    err() << "GlastScTimeHandler::getBaryTime(\"TSTART\", " << from_header << ") did not throw an exception for the time " <<
+      large_time_diff << " second(s) later than the latest time covered by the spacecraft file." << std::endl;
+  } catch (const std::exception &) {
+  }
 }
 
 void TimeSystemTestApp::testTimeCorrectorApp() {
