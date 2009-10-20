@@ -1,5 +1,14 @@
 ------------------------------------------------------------
 User: hirayama  Tue Oct 20 13:01:37 PDT 2009
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Introduce tolerance of 1 millisecond at the boundaries of FT2 time coverage.
+    *
+------------------------------------------------------------
+User: hirayama  Tue Oct 20 13:01:37 PDT 2009
 timeSystem/src
 
 Modified Files:
