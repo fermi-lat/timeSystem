@@ -1,5 +1,5 @@
 # -*- python -*-
-# $Id: SConscript,v 1.26 2009/09/22 00:56:14 hirayama Exp $
+# $Id: SConscript,v 1.27 2009/10/23 22:41:46 hirayama Exp $
 # Authors: James Peachey <James.Peachey-1@nasa.gov>
 # Version: timeSystem-06-04-04
 
@@ -8,7 +8,6 @@ Import('listFiles')
 progEnv = baseEnv.Clone()
 libEnv = baseEnv.Clone()
 
-libEnv.Tool('timeSystemLib', depsOnly = 1)
 timeSystemLib = libEnv.StaticLibrary('timeSystem', listFiles(['src/*.cxx', 'src/*.c']))
 
 progEnv.Tool('timeSystemLib')
