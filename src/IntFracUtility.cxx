@@ -105,7 +105,7 @@ namespace timeSystem {
         frac_part_tmp = 0.;
 
       } else {
-        // Get the significand as a number in range [0.1, 1.)
+        // Get the significand as a number in range [0.1, 1.).
         // Note: the first digit in the digit list (all_digits) is guaranteed to be non-zero at this point.
         double significand_dbl = 0.;
         except = std::runtime_error("Error in converting the significand of \"" + value_string + "\" into a floating-point number");

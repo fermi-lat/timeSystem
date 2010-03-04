@@ -183,7 +183,7 @@ namespace {
     //       that is the computation procedure that is needed here.
     //       On the contrary, if "TT" is given, TT-to-TDB conversion would take place after the time difference is added.
     //       In that case, the time difference, TDB - TT, would be computed at a time different from the given absolute time,
-    //       and may be significantly different from that at the given absolute time,
+    //       and may be significantly different from that at the given absolute time.
     abs_time += ElapsedTime("TDB", Duration(delay, "Sec"));
   }
 

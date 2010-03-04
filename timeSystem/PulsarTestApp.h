@@ -180,7 +180,7 @@ namespace timeSystem {
 
   template <typename StreamType>
   StreamType & PulsarApplicationTester::writeException(StreamType & os, const std::exception & exception_object) const {
-    // Report the type of the exception if possible, using typeid; typeid can throw so be careful:
+    // Report the type of the exception if possible, using typeid; typeid can throw so be careful.
     const char * type_name = "std::exception";
     try {
       type_name = typeid(exception_object).name();
