@@ -1,5 +1,14 @@
 ------------------------------------------------------------
 User: hirayama  Wed Mar  3 18:26:36 PST 2010
+timeSystem/timeSystem
+
+Modified Files:
+	PulsarTestApp.h 
+Log Message:
+Improve comments (cosmetic).
+    *
+------------------------------------------------------------
+User: hirayama  Wed Mar  3 18:26:36 PST 2010
 timeSystem/src
 
 Modified Files:
