@@ -59,7 +59,7 @@ namespace timeSystem {
   }
 
   AbsoluteTime AbsoluteTime::computeAbsoluteTime(const std::string & time_system_name, const Duration & delta_t) const {
-    // Convert this time to a corresponding time in time_system
+    // Convert this time to a corresponding time in time_system.
     const TimeSystem & time_system(TimeSystem::getSystem(time_system_name));
     moment_type moment = time_system.convertFrom(*m_time_system, m_moment);
 

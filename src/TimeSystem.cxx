@@ -244,7 +244,7 @@ namespace {
           }
         }
 
-        // Conversion from TDB to TT not converged (error)
+        // Conversion from TDB to TT not converged (error).
         throw std::runtime_error("Conversion from " + time_system.getName() + " to " + getName() + " did not converge");
 
       } else if ("UTC" == time_system.getName()) {
