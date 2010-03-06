@@ -29,7 +29,6 @@
 #include "tip/FileSummary.h"
 #include "tip/Header.h"
 #include "tip/IFileSvc.h"
-#include "tip/TipException.h"
 #include "tip/TipFile.h"
 
 static const std::string s_cvs_id = "$Name:  $";
@@ -300,9 +299,9 @@ namespace timeSystem {
 
       // Determine TIERRELA value, in the same manner as in axBary.c by Arnold Rots, and set it to the header.
       double tierrela = -1.;
-      try {
+      if (output_header.find("TIERRELA") != output_header.end()) {
         output_header["TIERRELA"].get(tierrela);
-      } catch (const tip::TipException &) {
+      } else {
         tierrela = 1.e-9;
       }
       if (tierrela > 0.) {

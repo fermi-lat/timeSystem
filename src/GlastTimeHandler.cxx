@@ -36,9 +36,9 @@ namespace timeSystem {
     // Get time system name from TIMESYS keyword. If not found, assume TT system.
     const tip::Header & header(getHeader());
     std::string time_system_name;
-    try {
+    if (header.find("TIMESYS") != header.end()) {
       header["TIMESYS"].get(time_system_name);
-    } catch (const tip::TipException &) {
+    } else {
       time_system_name = "TT";
     }
 
@@ -46,11 +46,7 @@ namespace timeSystem {
     m_time_system = &TimeSystem::getSystem(time_system_name);
 
     // Get MJDREF value.
-    try {
-      m_mjd_ref = readMjdRef(header);
-    } catch (const std::exception &) {
-      m_mjd_ref = Mjd(51910, 64.184 / SecPerDay());
-    }
+    m_mjd_ref = readMjdRef(header, Mjd(51910, 64.184 / SecPerDay()));
   }
 
   GlastTimeHandler::~GlastTimeHandler() {}
@@ -109,13 +105,7 @@ namespace timeSystem {
     const tip::Header & header(table->getHeader());
 
     // Check whether required keywords exist or not.
-    try {
-      std::string dummy_string;
-      header["TELESCOP"].get(dummy_string);
-      header["INSTRUME"].get(dummy_string);
-    } catch (const tip::TipException &) {
-      return false;
-    }
+    if (header.find("TELESCOP") == header.end() || header.find("INSTRUME") == header.end()) return false;
 
     // Get TELESCOP keyword value.
     std::string telescope;
@@ -129,9 +119,9 @@ namespace timeSystem {
 
     // Get TIMEREF keyword value to check whether times in this table are already barycentered.
     std::string time_ref;
-    try {
+    if (header.find("TIMEREF") != header.end()) {
       header["TIMEREF"].get(time_ref);
-    } catch (const tip::TipException &) {
+    } else {
       time_ref = "LOCAL";
     }
     for (std::string::iterator itor = time_ref.begin(); itor != time_ref.end(); ++itor) *itor = std::toupper(*itor);
@@ -140,9 +130,9 @@ namespace timeSystem {
 
     // Get TIMESYS keyword value to check whether times in this table are already barycentered.
     std::string time_sys;
-    try {
+    if (header.find("TIMESYS") != header.end()) {
       header["TIMESYS"].get(time_sys);
-    } catch (const tip::TipException &) {
+    } else {
       time_sys = "TT";
     }
     for (std::string::iterator itor = time_sys.begin(); itor != time_sys.end(); ++itor) *itor = std::toupper(*itor);
@@ -377,15 +367,17 @@ namespace timeSystem {
     // Get table header.
     const tip::Header & header(getHeader());
 
-    // Get RA_NOM and DEC_NOM header keywords, if times in this table are barycentered.
+    // Get RA_NOM and DEC_NOM header keywords.
+    if (header.find("RA_NOM") == header.end()) {
+      throw std::runtime_error("Could not find RA_NOM header keyword in a barycentered event file");
+    }
+    if (header.find("DEC_NOM") == header.end()) {
+      throw std::runtime_error("Could not find DEC_NOM header keyword in a barycentered event file");
+    }
     double ra_file = 0.;
     double dec_file = 0.;
-    try {
-      header["RA_NOM"].get(ra_file);
-      header["DEC_NOM"].get(dec_file);
-    } catch (const std::exception &) {
-      throw std::runtime_error("Could not find RA_NOM or DEC_NOM header keyword in a barycentered event file");
-    }
+    header["RA_NOM"].get(ra_file);
+    header["DEC_NOM"].get(dec_file);
     m_ra_nom = ra_file;
     m_dec_nom = dec_file;
 
@@ -402,13 +394,12 @@ namespace timeSystem {
       m_max_vect_diff *= m_max_vect_diff;
     }
 
-    // Get PLEPHEM header keywords, if times in this table are barycentered.
-    std::string pl_ephem;
-    try {
-      header["PLEPHEM"].get(pl_ephem);
-    } catch (const std::exception &) {
+    // Get PLEPHEM header keywords.
+    if (header.find("PLEPHEM") == header.end()) {
       throw std::runtime_error("Could not find PLEPHEM header keyword in a barycentered event file");
     }
+    std::string pl_ephem;
+    header["PLEPHEM"].get(pl_ephem);
     m_pl_ephem = pl_ephem;
 
     // Check solar system ephemeris if requested to match.
