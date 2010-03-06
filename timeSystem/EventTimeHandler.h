@@ -184,10 +184,11 @@ namespace timeSystem {
       EventTimeHandler(const std::string & file_name, const std::string & extension_name, bool read_only = true);
 
       /** \brief Read a pair of MJDREFI and MJDREFF keywords or a single MJDREF header keyword from the opened FITS header.
-                 If none of the two is found, an exception is thrown.
+                 If neither of the two is found, return the value given by the second argument, default_mjd.
           \param header FITS header in which the aimed header keywords are searched for.
+          \param default_mjd MJD to be returned in case MJDREF* keyword(s) are not found in the given FITS header.
       */
-      Mjd readMjdRef(const tip::Header & header) const;
+      Mjd readMjdRef(const tip::Header & header, const Mjd & default_mjd) const;
 
     private:
       tip::Extension * m_extension;

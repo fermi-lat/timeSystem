@@ -141,40 +141,25 @@ namespace timeSystem {
     else throw std::runtime_error("EventTimeHandler::getCurrentRecord: given extension contains no data table");
   }
 
-  Mjd EventTimeHandler::readMjdRef(const tip::Header & header) const {
-    Mjd mjd_ref(0, 0.);
-    bool found_mjd_ref = false;
+  Mjd EventTimeHandler::readMjdRef(const tip::Header & header, const Mjd & default_mjd) const {
+    // Look for MJDREFI and MJDREFF keywords first, then MJDREF keyword next.
+    if (header.find("MJDREFI") != header.end() && header.find("MJDREFF") != header.end()) {
+      // MJDREFI/F keyword pair is found.
+      Mjd mjd_ref(0, 0.);
+      header["MJDREFI"].get(mjd_ref.m_int);
+      header["MJDREFF"].get(mjd_ref.m_frac);
+      return mjd_ref;
 
-    // Look for MJDREFI and MJDREFF keywords first.
-    if (!found_mjd_ref) {
-      try {
-        header["MJDREFI"].get(mjd_ref.m_int);
-        header["MJDREFF"].get(mjd_ref.m_frac);
-        found_mjd_ref = true;
-      } catch (const std::exception &) {}
-    }
-
-    // Look for MJDREF keyword next.
-    if (!found_mjd_ref) {
-      // Get the keyword value as a string to preserve its precision.
+    } else if (header.find("MJDREF") != header.end()) {
+      // Single MJDREF keyword found.
       std::string mjd_ref_string;
-      try {
-        header["MJDREF"].get(mjd_ref_string);
-        found_mjd_ref = true;
-      } catch (const std::exception &) {}
+      header["MJDREF"].get(mjd_ref_string);
+      const TimeFormat<Mjd> & mjd_format(TimeFormatFactory<Mjd>::getFormat());
+      return mjd_format.parse(mjd_ref_string);
 
-      // Parse the keyword value when found.
-      if (found_mjd_ref) {
-        const TimeFormat<Mjd> & mjd_format(TimeFormatFactory<Mjd>::getFormat());
-        mjd_ref = mjd_format.parse(mjd_ref_string);
-      }
+    } else {
+      // MJDREF* keyword(s) not found.
+      return default_mjd;
     }
-
-    // Throw an exception if none of above succeeds.
-    if (!found_mjd_ref) {
-      throw std::runtime_error("Could not find MJDREFI/MJDREFF keyword pair or MJDREF keyword");
-    }
-
-    return mjd_ref;
   }
 }
