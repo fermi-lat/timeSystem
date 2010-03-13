@@ -13,6 +13,7 @@
 #include <iostream>
 #include <list>
 #include <memory>
+#include <stdexcept>
 
 #include "facilities/commonUtilities.h"
 
