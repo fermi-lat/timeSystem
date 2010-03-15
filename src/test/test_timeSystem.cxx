@@ -1763,7 +1763,7 @@ void TimeSystemTestApp::testAbsoluteTime() {
   }
 
   // Test printing the absolute time, with a zero elapsed time, with the shift operator.
-  abs_time = AbsoluteTime("TDB", mjd_day, 0.);
+  abs_time = AbsoluteTime("TDB", mjd_day, Duration());
   {
     std::ostringstream os;
     os << abs_time;
@@ -1776,7 +1776,7 @@ void TimeSystemTestApp::testAbsoluteTime() {
   }
 
   // Test printing the absolute time, with a zero elapsed time, with AbsoluteTime::describe method.
-  abs_time = AbsoluteTime("TDB", mjd_day, 0.);
+  abs_time = AbsoluteTime("TDB", mjd_day, Duration());
   result_string = abs_time.describe();
   expected_string = "AbsoluteTime(TDB, 51910, Duration(0, 0))";
   if (expected_string != result_string) {
