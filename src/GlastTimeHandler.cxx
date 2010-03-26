@@ -248,6 +248,7 @@ namespace timeSystem {
 
     // Set spacecraft file to internal variable.
     m_sc_file = sc_file_name;
+    if (!sc_extension_name.empty()) m_sc_file += "[" + sc_extension_name + "]";
     m_sc_file_char = const_cast<char *>(m_sc_file.c_str());
 
     // Initializing clock and orbit are not necessary for GLAST.
