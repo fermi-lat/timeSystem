@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Thu Mar 25 17:47:17 PDT 2010
+timeSystem/src
+
+Modified Files:
+	GlastTimeHandler.cxx 
+Log Message:
+Append extension name to a FITS file name to make sure where to read spacecraft data from.
+    *
+------------------------------------------------------------
 User: hirayama  Thu Mar 25 17:45:51 PDT 2010
 timeSystem/src
 
