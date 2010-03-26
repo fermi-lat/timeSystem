@@ -49,7 +49,12 @@ double *glastscorbit (char *filename, double t, int *oerror)
   static double intposn[3];
   static fitsfile *OE = 0;
   static char savefile[256] = " ";
+  static int just_opened = 0;
   static long num_rows = 0;
+  static int colnum_start = 0;
+  static int colnum_scposn = 0;
+  static double *sctime_array = NULL;
+  static int sctime_array_size = 0;
   static int index = 0;
   static double sctime1 = 0.;
   double sctime2 = 0.;
@@ -64,6 +69,7 @@ double *glastscorbit (char *filename, double t, int *oerror)
   for (ii = 0; ii < 3; ++ii)
     intposn[ii] = 0.0;
 
+  /* Open file and move to the second HDU. */
   if ( strcmp (savefile, filename) ) {
     index = 0;
     num_rows = 0 ;
@@ -75,36 +81,64 @@ double *glastscorbit (char *filename, double t, int *oerror)
       fprintf(stderr, "glastscorbit: Cannot open file %s\n", filename) ;
     else {
       fits_movabs_hdu (OE, 2, 0, oerror) ;
-      fits_get_num_rows(OE, &num_rows, oerror);
-      if ( *oerror )
-	fits_close_file (OE, oerror) ;
-      else
+      if ( *oerror ) {
+        int close_error = 0;
+	fits_close_file (OE, &close_error) ;
+      } else {
 	strcpy (savefile, filename) ;
+        just_opened = 1;
+      }
     }
     if ( *oerror )
       return intposn ;
+  }
+
+  /* Initialize static variables for a newly opened file. */
+  if (just_opened) {
+    /* Read table information. */
+    fits_get_num_rows(OE, &num_rows, oerror);
+    fits_get_colnum(OE, CASEINSEN, "START", &colnum_start, oerror);
+    fits_get_colnum(OE, CASEINSEN, "SC_POSITION", &colnum_scposn, oerror);
+
+    /* Allocate memory space to cache "START" column. */
+    if (0 == *oerror && sctime_array_size < num_rows) {
+      free(sctime_array);
+      sctime_array = malloc(sizeof(double) * num_rows);
+      if (NULL == sctime_array) {
+        sctime_array_size = 0;
+        *oerror = MEMORY_ALLOCATION;
+      } else {
+        sctime_array_size = num_rows;
+      }
+    }
+
+    /* Read "START" column. */
+    fits_read_col(OE, TDOUBLE, colnum_start, 1, 1, num_rows, 0, sctime_array, 0, oerror);
+
+    /* Return if any error. */
+    if (*oerror) {
+      just_opened = 1; /* Not strictly necessary, but to play safe. */
+      return intposn;
+    } else {
+      just_opened = 0;
+    }
   }
 
   /* For times which are not monotonically increasing, start over at
      the beginning. */
   if (t < sctime1) index = 0;
 
+  /* Find the first time which is > the time being corrected. */
   for (; index < num_rows; ++index) {
-    /* Read "START" column, which is column # 1 */
-    fits_read_col(OE, TDOUBLE, 1, index + 1, 1, 1, 0, &sctime2, 0, oerror);
-
-    /* Return if an error occurs. */
-    if ( *oerror ) return intposn ;
-
-    /* Find the first time which is > the time being corrected. */
+    sctime2 = sctime_array[index];
     if (t < sctime2) break;
   }
 
   /* Check bounds, with some level of tolerance. */
   if (index > 0 && index < num_rows) {
     /* In this case, the given time is between the first and the final rows,
-       so read "START" column, which is column # 1, in the previous row. */
-    fits_read_col(OE, TDOUBLE, 1, index, 1, 1, 0, &sctime1, 0, oerror);
+       so get "START" column value in the previous row. */
+    sctime1 = sctime_array[index-1];
 
   } else if (0 == index && t > sctime2 - time_tolerance) {
     /* In this case, the given time is earlier than, but close enough
@@ -112,21 +146,21 @@ double *glastscorbit (char *filename, double t, int *oerror)
        sctime2) within the given tolerance.  So, set index to 1 so
        that scposn1 will be the spacecraft position from the first
        row, copy sctime2 to sctime1 so that sctime1 will be the time
-       from the first row, and read "START" column from the second row
-       to set to sctime2. */
+       from the first row, and set "START" column value of the second
+       row sctime2. */
     index = 1;
     sctime1 = sctime2;
-    fits_read_col(OE, TDOUBLE, 1, index + 1, 1, 1, 0, &sctime2, 0, oerror);
+    sctime2 = sctime_array[index];
 
   } else if (num_rows == index && t < sctime2 + time_tolerance) {
     /* In this case, the given time is later than, but close enough
        to, the time in the final row (which is currently stored in
        sctime2) within the given tolerance.  So, set index back to
        num_rows - 1 so that scposn1 will be the spacecraft position
-       from the penultimate row, and read "START" column from the
-       penultimate row to set to sctime1. */
+       from the penultimate row, and set "START" column value of the
+       penultimate row to sctime1. */
     index = num_rows - 1;
-    fits_read_col(OE, TDOUBLE, 1, index, 1, 1, 0, &sctime1, 0, oerror);
+    sctime1 = sctime_array[index-1];
 
   } else {
     /* In this case, the given time is out of bounds. */
@@ -135,11 +169,11 @@ double *glastscorbit (char *filename, double t, int *oerror)
     return intposn;
   }
 
-  /* Read "SC_POSITION" column, which is column # 3, in the previous and the current rows. */
-  fits_read_col(OE, TDOUBLE, 3, index, 1, 3, 0, scposn1, 0, oerror);
-  fits_read_col(OE, TDOUBLE, 3, index + 1, 1, 3, 0, scposn2, 0, oerror);
+  /* Read "SC_POSITION" column in the previous and the current rows. */
+  fits_read_col(OE, TDOUBLE, colnum_scposn, index,     1, 3, 0, scposn1, 0, oerror);
+  fits_read_col(OE, TDOUBLE, colnum_scposn, index + 1, 1, 3, 0, scposn2, 0, oerror);
 
-  /* Return if an error occurs while reading "START" and "SC_POSITION" columns. */
+  /* Return if an error occurs while reading "SC_POSITION" columns. */
   if ( *oerror ) return intposn ;
 
   /* Interpolate. */
