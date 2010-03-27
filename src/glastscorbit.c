@@ -1,7 +1,7 @@
 #include "math.h"
 #include "bary.h"
 
-/* tolerance of 1 millisecond in checking time boundaries */
+/* Tolerance of 1 millisecond in checking time boundaries */
 static double time_tolerance = 1.e-3; /* in units of seconds */
 /* Notes on the time tolerance
 /*   Masaharu Hirayama, GSSC
@@ -28,14 +28,15 @@ static double time_tolerance = 1.e-3; /* in units of seconds */
 /*   the barycentering function ctatv.c (100 ns). This means that
 /*   1-millisecond tolerance is as acceptable as use of (the current
 /*   version of) ctatv.c.
+ */
 
-/* compute vector inner product */
+/* Compute vector inner product. */
 static double inner_product(double vect_x[], double vect_y[])
 {
   return vect_x[0]*vect_y[0] + vect_x[1]*vect_y[1] + vect_x[2]*vect_y[2];
 }
 
-/* compute vector outer product */
+/* Compute vector outer product. */
 static void outer_product(double vect_x[], double vect_y[], double vect_z[])
 {
   vect_z[0] = vect_x[1]*vect_y[2] - vect_x[2]*vect_y[1];
@@ -43,8 +44,8 @@ static void outer_product(double vect_x[], double vect_y[], double vect_z[])
   vect_z[2] = vect_x[0]*vect_y[1] - vect_x[1]*vect_y[0];
 }
 
-/* read spacecraft positions from file and returns interpolated position */
-double *glastscorbit (char *filename, double t, int *oerror)
+/* Read spacecraft positions from file and returns interpolated position. */
+double *glastscorbit_getpos (char *filename, char *extname, double t, int *oerror)
 {
   static double intposn[3];
   static fitsfile *OE = 0;
@@ -80,7 +81,7 @@ double *glastscorbit (char *filename, double t, int *oerror)
     if ( fits_open_file (&OE, filename, 0, oerror) )
       fprintf(stderr, "glastscorbit: Cannot open file %s\n", filename) ;
     else {
-      fits_movabs_hdu (OE, 2, 0, oerror) ;
+      fits_movnam_hdu(OE, ANY_HDU, extname, 0, oerror);
       if ( *oerror ) {
         int close_error = 0;
 	fits_close_file (OE, &close_error) ;
@@ -182,17 +183,17 @@ double *glastscorbit (char *filename, double t, int *oerror)
     double length1, length2, length12, intlength;
     double vector12[3], vectprod_out[3];
     
-    /* linear interpolation for vector length */
+    /* Linear interpolation for vector length. */
     length1 = sqrt(inner_product(scposn1, scposn1));
     length2 = sqrt(inner_product(scposn2, scposn2));
     intlength = length1 + fract*(length2 - length1);
 
-    /* compute a base vector on the orbital plane (vector12) */
+    /* Compute a base vector on the orbital plane (vector12). */
     outer_product(scposn1, scposn2, vectprod_out);
     outer_product(vectprod_out, scposn1, vector12);
     length12 = sqrt(inner_product(vector12, vector12));
-		    
-    /* check vectors scposn1 and scposn2 */
+
+    /* Check vectors scposn1 and scposn2. */
     if ((length1 == 0.0) && (length2 == 0.0)) {
       /* both vectors are null */
       for (ii = 0; ii < 3; ++ii) intposn[ii] = 0.0;
@@ -210,9 +211,9 @@ double *glastscorbit (char *filename, double t, int *oerror)
 	intposn[ii] = scposn1[ii] / length1 * intlength;
       }
 
-    } else { /* both has a non-zero length, and they are not parallel */
+    } else { /* Both has a non-zero length, and they are not parallel. */
       double inttheta, factor_cos, factor_sin;
-      /* linear interpolation for orbital phase */
+      /* Linear interpolation for orbital phase. */
       inttheta = fract * acos(inner_product(scposn1, scposn2)
 			      / length1 / length2);
       factor_cos = cos(inttheta);
@@ -224,7 +225,7 @@ double *glastscorbit (char *filename, double t, int *oerror)
     }
   }
 
-  /* linear interpolation: obsolete
+  /* Linear interpolation: obsolete
   fract = (t - sctime1) / (sctime2 - sctime1);
   for (ii = 0; ii < 3; ++ii) {
     intposn[ii] = scposn1[ii] + fract * (scposn2[ii] - scposn1[ii]);
@@ -235,4 +236,12 @@ double *glastscorbit (char *filename, double t, int *oerror)
  *  Return position -----------------------------------------------------
  */
   return intposn ;
+}
+
+/* Wrapper function to read spacecraft positions from file and returns interpolated position,
+/* for backward compatibility.
+ */
+double *glastscorbit (char *filename, double t, int *oerror)
+{
+  return glastscorbit_getpos(filename, "SC_DATA", t, oerror);
 }
