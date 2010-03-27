@@ -44,6 +44,8 @@ static void outer_product(double vect_x[], double vect_y[], double vect_z[])
   vect_z[2] = vect_x[0]*vect_y[1] - vect_x[1]*vect_y[0];
 }
 
+
+
 /* Read spacecraft positions from file and returns interpolated position. */
 double *glastscorbit_getpos (char *filename, char *extname, double t, int *oerror)
 {
@@ -55,8 +57,8 @@ double *glastscorbit_getpos (char *filename, char *extname, double t, int *oerro
   static int colnum_start = 0;
   static int colnum_scposn = 0;
   static double *sctime_array = NULL;
-  static int sctime_array_size = 0;
-  static int index = 0;
+  static long sctime_array_size = 0;
+  static long index = 0;
   static double sctime1 = 0.;
   double sctime2 = 0.;
   double scposn1[3] = { 0., 0., 0. };
