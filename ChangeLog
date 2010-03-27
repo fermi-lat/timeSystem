@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Fri Mar 26 17:44:25 PDT 2010
+timeSystem/src
+
+Modified Files:
+	GlastTimeHandler.cxx glastscorbit.c 
+Log Message:
+Explicitly use extension name to read spacecraft data.
+    *
+------------------------------------------------------------
 User: hirayama  Fri Mar 26 17:44:24 PDT 2010
 timeSystem/timeSystem
 
