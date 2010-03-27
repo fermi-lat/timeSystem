@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Fri Mar 26 17:44:24 PDT 2010
+timeSystem/timeSystem
+
+Modified Files:
+	GlastTimeHandler.h 
+Log Message:
+Explicitly use extension name to read spacecraft data.
+    *
+------------------------------------------------------------
 User: hirayama  Thu Mar 25 17:47:17 PDT 2010
 timeSystem/src
 
