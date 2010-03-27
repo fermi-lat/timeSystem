@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Fri Mar 26 18:50:33 PDT 2010
+timeSystem/src
+
+Modified Files:
+	glastscorbit.c 
+Log Message:
+Use long for index and size of sctime_array.
+    *
+------------------------------------------------------------
 User: hirayama  Fri Mar 26 17:44:25 PDT 2010
 timeSystem/src
 
