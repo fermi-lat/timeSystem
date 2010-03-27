@@ -26,7 +26,7 @@
 extern "C" {
 // Copied from bary.h.
 #define RADEG   57.2957795130823
-double *glastscorbit (char *, double, int *) ;       /* GLAST-specific */
+double *glastscorbit_getpos (char *, char*, double, int *) ;       /* GLAST-specific */
 }
 
 namespace timeSystem {
@@ -220,8 +220,8 @@ namespace timeSystem {
   }
 
   GlastScTimeHandler::GlastScTimeHandler(const std::string & file_name, const std::string & extension_name, bool read_only):
-    GlastTimeHandler(file_name, extension_name, read_only), m_sc_file(), m_sc_file_char(0), m_ra_bary(0.), m_dec_bary(0.),
-    m_computer(0) {}
+    GlastTimeHandler(file_name, extension_name, read_only), m_sc_file(), m_sc_file_char(0), m_sc_table(), m_sc_table_char(0),
+    m_ra_bary(0.), m_dec_bary(0.), m_computer(0) {}
 
   GlastScTimeHandler::~GlastScTimeHandler() {}
 
@@ -248,8 +248,9 @@ namespace timeSystem {
 
     // Set spacecraft file to internal variable.
     m_sc_file = sc_file_name;
-    if (!sc_extension_name.empty()) m_sc_file += "[" + sc_extension_name + "]";
     m_sc_file_char = const_cast<char *>(m_sc_file.c_str());
+    m_sc_table = sc_extension_name;
+    m_sc_table_char = const_cast<char *>(m_sc_table.c_str());
 
     // Initializing clock and orbit are not necessary for GLAST.
     // Note: Leave these here as a reminder of an official way to call them.
@@ -287,7 +288,7 @@ namespace timeSystem {
 
     // Get space craft position at the given time.
     int error = 0;
-    double * sc_position_array = glastscorbit(m_sc_file_char, glast_time, &error);
+    double * sc_position_array = glastscorbit_getpos(m_sc_file_char, m_sc_table_char, glast_time, &error);
     if (error) {
       std::ostringstream os;
       os << "Cannot get Fermi spacecraft position for " << std::setprecision(std::numeric_limits<double>::digits10) <<
