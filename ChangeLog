@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Sat Mar 27 23:39:40 PDT 2010
+timeSystem/src
+
+Modified Files:
+	glastscorbit.c 
+Log Message:
+Report an error if the number of rows is less than 2.
+    *
+------------------------------------------------------------
 User: hirayama  Sat Mar 27 21:26:00 PDT 2010
 timeSystem/src
 
