@@ -52,7 +52,6 @@ double *glastscorbit_getpos (char *filename, char *extname, double t, int *oerro
   static double intposn[3];
   static fitsfile *OE = 0;
   static char savefile[256] = " ";
-  static int just_opened = 0;
   static long num_rows = 0;
   static int colnum_start = 0;
   static int colnum_scposn = 0;
@@ -72,7 +71,7 @@ double *glastscorbit_getpos (char *filename, char *extname, double t, int *oerro
   for (ii = 0; ii < 3; ++ii)
     intposn[ii] = 0.0;
 
-  /* Open file and move to the second HDU. */
+  /* Open file and prepare for reading the spacecraft position. */
   if ( strcmp (savefile, filename) ) {
     index = 0;
     num_rows = 0 ;
@@ -84,47 +83,35 @@ double *glastscorbit_getpos (char *filename, char *extname, double t, int *oerro
       fprintf(stderr, "glastscorbit: Cannot open file %s\n", filename) ;
     else {
       fits_movnam_hdu(OE, ANY_HDU, extname, 0, oerror);
-      if ( *oerror ) {
-        int close_error = 0;
-	fits_close_file (OE, &close_error) ;
-      } else {
-	strcpy (savefile, filename) ;
-        just_opened = 1;
+
+      /* Read table information. */
+      fits_get_num_rows(OE, &num_rows, oerror);
+      fits_get_colnum(OE, CASEINSEN, "START", &colnum_start, oerror);
+      fits_get_colnum(OE, CASEINSEN, "SC_POSITION", &colnum_scposn, oerror);
+
+      /* Allocate memory space to cache "START" column. */
+      if (0 == *oerror && sctime_array_size < num_rows) {
+        free(sctime_array);
+        sctime_array = malloc(sizeof(double) * num_rows);
+        if (NULL == sctime_array) {
+          sctime_array_size = 0;
+          *oerror = MEMORY_ALLOCATION;
+        } else {
+          sctime_array_size = num_rows;
+        }
       }
+
+      /* Read "START" column. */
+      fits_read_col(OE, TDOUBLE, colnum_start, 1, 1, num_rows, 0, sctime_array, 0, oerror);
+
+      /* Check for error(s) */
+      if ( *oerror )
+	fits_close_file (OE, oerror) ;
+      else
+	strcpy (savefile, filename) ;
     }
     if ( *oerror )
       return intposn ;
-  }
-
-  /* Initialize static variables for a newly opened file. */
-  if (just_opened) {
-    /* Read table information. */
-    fits_get_num_rows(OE, &num_rows, oerror);
-    fits_get_colnum(OE, CASEINSEN, "START", &colnum_start, oerror);
-    fits_get_colnum(OE, CASEINSEN, "SC_POSITION", &colnum_scposn, oerror);
-
-    /* Allocate memory space to cache "START" column. */
-    if (0 == *oerror && sctime_array_size < num_rows) {
-      free(sctime_array);
-      sctime_array = malloc(sizeof(double) * num_rows);
-      if (NULL == sctime_array) {
-        sctime_array_size = 0;
-        *oerror = MEMORY_ALLOCATION;
-      } else {
-        sctime_array_size = num_rows;
-      }
-    }
-
-    /* Read "START" column. */
-    fits_read_col(OE, TDOUBLE, colnum_start, 1, 1, num_rows, 0, sctime_array, 0, oerror);
-
-    /* Return if any error. */
-    if (*oerror) {
-      just_opened = 1; /* Not strictly necessary, but to play safe. */
-      return intposn;
-    } else {
-      just_opened = 0;
-    }
   }
 
   /* For times which are not monotonically increasing, start over at
