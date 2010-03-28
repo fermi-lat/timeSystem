@@ -44,8 +44,6 @@ static void outer_product(double vect_x[], double vect_y[], double vect_z[])
   vect_z[2] = vect_x[0]*vect_y[1] - vect_x[1]*vect_y[0];
 }
 
-
-
 /* Read spacecraft positions from file and returns interpolated position. */
 double *glastscorbit_getpos (char *filename, char *extname, double t, int *oerror)
 {
@@ -88,6 +86,13 @@ double *glastscorbit_getpos (char *filename, char *extname, double t, int *oerro
       fits_get_num_rows(OE, &num_rows, oerror);
       fits_get_colnum(OE, CASEINSEN, "START", &colnum_start, oerror);
       fits_get_colnum(OE, CASEINSEN, "SC_POSITION", &colnum_scposn, oerror);
+
+      /* Require two rows at the minimum, for interpolation to work. */
+      if (0 == *oerror && num_rows < 2) {
+        /* Return BAD_ROW_NUM because it would read the second row
+           which does not exist in this case. */
+        *oerror = BAD_ROW_NUM;
+      }
 
       /* Allocate memory space to cache "START" column. */
       if (0 == *oerror && sctime_array_size < num_rows) {
