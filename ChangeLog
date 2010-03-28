@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Sun Mar 28 16:54:16 PDT 2010
+timeSystem/src
+
+Modified Files:
+	glastscorbit.c 
+Log Message:
+Rearrange the initialization part for clarity.
+    *
+------------------------------------------------------------
 User: hirayama  Sat Mar 27 23:51:41 PDT 2010
 timeSystem/src
 
