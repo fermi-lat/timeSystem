@@ -30,6 +30,23 @@ static double time_tolerance = 1.e-3; /* in units of seconds */
 /*   version of) ctatv.c.
  */
 
+/* Compare two time intervals.
+/* Note: This expression becomes true if interval "x" is earlier than interval "y",
+/*       and false if otherwise.  Interval "x" is defined by a time range [x[0], x[1])
+/*       for x[0] < x[1], or (x[1], x[0]] for other cases.
+ */
+#define is_less_than(x, y) (x[0] < y[0] && x[1] <= y[0] && x[0] <= y[1] && x[1] <= y[1])
+
+/* Comparison function to be passed to "bsearch" function. */
+static int compare_interval(const void * a, const void * b) {
+  double *a_ptr = (double *)a;
+  double *b_ptr = (double *)b;
+
+  if (is_less_than(a_ptr, b_ptr)) return -1;
+  else if (is_less_than(b_ptr, a_ptr)) return 1;
+  else return 0;
+}
+
 /* Compute vector inner product. */
 static double inner_product(double vect_x[], double vect_y[])
 {
@@ -55,8 +72,11 @@ double *glastscorbit_getpos (char *filename, char *extname, double t, int *oerro
   static int colnum_scposn = 0;
   static double *sctime_array = NULL;
   static long sctime_array_size = 0;
-  static long index = 0;
-  static double sctime1 = 0.;
+  static double evtime_array[2];
+  double *sctime_ptr = NULL;
+  long scrow1 = 0;
+  long scrow2 = 0;
+  double sctime1 = 0.;
   double sctime2 = 0.;
   double scposn1[3] = { 0., 0., 0. };
   double scposn2[3] = { 0., 0., 0. };
@@ -71,9 +91,7 @@ double *glastscorbit_getpos (char *filename, char *extname, double t, int *oerro
 
   /* Open file and prepare for reading the spacecraft position. */
   if ( strcmp (savefile, filename) ) {
-    index = 0;
     num_rows = 0 ;
-    sctime1 = 0.0;
     if ( *savefile != ' ' )
       fits_close_file (OE, oerror) ;
     strcpy (savefile, " ") ;
@@ -119,54 +137,49 @@ double *glastscorbit_getpos (char *filename, char *extname, double t, int *oerro
       return intposn ;
   }
 
-  /* For times which are not monotonically increasing, start over at
-     the beginning. */
-  if (t < sctime1) index = 0;
+  /* Find two neighboring rows from which the spacecraft position at
+     the given time will be computed. */
+  if (fabs(t - sctime_array[0]) <= time_tolerance) {
+    /* In this case, the given time is close enough to the time in the
+       first row within the given tolerance.  So, use the first two
+       rows for the computation. */
+    scrow1 = 1;
+    scrow2 = 2;
+    sctime1 = sctime_array[0];
+    sctime2 = sctime_array[1];
 
-  /* Find the first time which is > the time being corrected. */
-  for (; index < num_rows; ++index) {
-    sctime2 = sctime_array[index];
-    if (t < sctime2) break;
-  }
-
-  /* Check bounds, with some level of tolerance. */
-  if (index > 0 && index < num_rows) {
-    /* In this case, the given time is between the first and the final rows,
-       so get "START" column value in the previous row. */
-    sctime1 = sctime_array[index-1];
-
-  } else if (0 == index && t > sctime2 - time_tolerance) {
-    /* In this case, the given time is earlier than, but close enough
-       to, the time in the first row (which is currently stored in
-       sctime2) within the given tolerance.  So, set index to 1 so
-       that scposn1 will be the spacecraft position from the first
-       row, copy sctime2 to sctime1 so that sctime1 will be the time
-       from the first row, and set "START" column value of the second
-       row sctime2. */
-    index = 1;
-    sctime1 = sctime2;
-    sctime2 = sctime_array[index];
-
-  } else if (num_rows == index && t < sctime2 + time_tolerance) {
-    /* In this case, the given time is later than, but close enough
-       to, the time in the final row (which is currently stored in
-       sctime2) within the given tolerance.  So, set index back to
-       num_rows - 1 so that scposn1 will be the spacecraft position
-       from the penultimate row, and set "START" column value of the
-       penultimate row to sctime1. */
-    index = num_rows - 1;
-    sctime1 = sctime_array[index-1];
+  } else if (fabs(t - sctime_array[num_rows-1]) <= time_tolerance) {
+    /* In this case, the given time is close enough to the time in the
+       final row within the given tolerance.  So, use the penultimate
+       row and the final row for the computation. */
+    scrow1 = num_rows - 1;
+    scrow2 = num_rows;
+    sctime1 = sctime_array[num_rows - 2];
+    sctime2 = sctime_array[num_rows - 1];
 
   } else {
-    /* In this case, the given time is out of bounds. */
-    index = 0;
-    *oerror = -2;
-    return intposn;
+    evtime_array[0] = evtime_array[1] = t;
+    sctime_ptr = (double *)bsearch(evtime_array, sctime_array, num_rows - 1, sizeof(double), compare_interval);
+
+    if (NULL == sctime_ptr) {
+      /* In this case, the given time is out of bounds. */
+      *oerror = -2;
+      return intposn;
+
+    } else {
+      /* In this case, the given time is between the first and the
+         final rows, so use the row returned by bsearch and the next
+         row for the computation. */
+      scrow1 = sctime_ptr - sctime_array + 1;
+      scrow2 = scrow1 + 1;
+      sctime1 = sctime_ptr[0];
+      sctime2 = sctime_ptr[1];
+    }
   }
 
-  /* Read "SC_POSITION" column in the previous and the current rows. */
-  fits_read_col(OE, TDOUBLE, colnum_scposn, index,     1, 3, 0, scposn1, 0, oerror);
-  fits_read_col(OE, TDOUBLE, colnum_scposn, index + 1, 1, 3, 0, scposn2, 0, oerror);
+  /* Read "SC_POSITION" column in the two rows found above. */
+  fits_read_col(OE, TDOUBLE, colnum_scposn, scrow1, 1, 3, 0, scposn1, 0, oerror);
+  fits_read_col(OE, TDOUBLE, colnum_scposn, scrow2, 1, 3, 0, scposn2, 0, oerror);
 
   /* Return if an error occurs while reading "SC_POSITION" columns. */
   if ( *oerror ) return intposn ;
