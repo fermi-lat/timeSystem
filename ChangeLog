@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Sat Mar 27 21:26:00 PDT 2010
+timeSystem/src
+
+Modified Files:
+	glastscorbit.c 
+Log Message:
+Close file for an error in caching START column values.
+    *
+------------------------------------------------------------
 User: hirayama  Fri Mar 26 18:50:33 PDT 2010
 timeSystem/src
 
