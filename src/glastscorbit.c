@@ -65,14 +65,14 @@ static void outer_product(double vect_x[], double vect_y[], double vect_z[])
 double *glastscorbit_getpos (char *filename, char *extname, double t, int *oerror)
 {
   static double intposn[3];
-  static fitsfile *OE = 0;
+  static fitsfile *OE = NULL;
   static char savefile[256] = " ";
   static long num_rows = 0;
   static int colnum_start = 0;
   static int colnum_scposn = 0;
   static double *sctime_array = NULL;
   static long sctime_array_size = 0;
-  static double evtime_array[2];
+  double evtime_array[2];
   double *sctime_ptr = NULL;
   long scrow1 = 0;
   long scrow2 = 0;
@@ -91,16 +91,19 @@ double *glastscorbit_getpos (char *filename, char *extname, double t, int *oerro
 
   /* Open file and prepare for reading the spacecraft position. */
   if ( strcmp (savefile, filename) ) {
-    num_rows = 0 ;
-    if ( *savefile != ' ' )
-      fits_close_file (OE, oerror) ;
-    strcpy (savefile, " ") ;
-    if ( fits_open_file (&OE, filename, 0, oerror) )
-      fprintf(stderr, "glastscorbit: Cannot open file %s\n", filename) ;
-    else {
-      fits_movnam_hdu(OE, ANY_HDU, extname, 0, oerror);
+    /* Close the previously opened file. */
+    if (NULL != OE) {
+      fits_close_file(OE, oerror);
+      OE = NULL;
+    }
 
-      /* Read table information. */
+    /* Open the given file. */
+    fits_open_file(&OE, filename, 0, oerror);
+
+    /* Initialize variables using the opened file. */
+    if (0 == *oerror) {
+      /* Move to the spacecraft data, and read table information. */
+      fits_movnam_hdu(OE, ANY_HDU, extname, 0, oerror);
       fits_get_num_rows(OE, &num_rows, oerror);
       fits_get_colnum(OE, CASEINSEN, "START", &colnum_start, oerror);
       fits_get_colnum(OE, CASEINSEN, "SC_POSITION", &colnum_scposn, oerror);
@@ -127,14 +130,20 @@ double *glastscorbit_getpos (char *filename, char *extname, double t, int *oerro
       /* Read "START" column. */
       fits_read_col(OE, TDOUBLE, colnum_start, 1, 1, num_rows, 0, sctime_array, 0, oerror);
 
-      /* Check for error(s) */
-      if ( *oerror )
-	fits_close_file (OE, oerror) ;
-      else
-	strcpy (savefile, filename) ;
+      /* Close file on error(s) */
+      if (*oerror) {
+        fits_close_file(OE, oerror);
+        OE = NULL;
+      }
     }
-    if ( *oerror )
+
+    /* Refresh the saved file name. */
+    if (0 == *oerror) {
+      strcpy (savefile, filename) ;
+    } else {
+      strcpy(savefile, " ");
       return intposn ;
+    }
   }
 
   /* Find two neighboring rows from which the spacecraft position at
