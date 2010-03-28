@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Sat Mar 27 23:51:41 PDT 2010
+timeSystem/src
+
+Modified Files:
+	glastscorbit.c 
+Log Message:
+Use bsearch to search for the spacecraft position at a given time.
+    *
+------------------------------------------------------------
 User: hirayama  Sat Mar 27 23:39:40 PDT 2010
 timeSystem/src
 
