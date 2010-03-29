@@ -205,9 +205,7 @@ namespace timeSystem {
 
     private:
       std::string m_sc_file;
-      char * m_sc_file_char;
       std::string m_sc_table;
-      char * m_sc_table_char;
       double m_ra_bary;  // RA and Dec for barycentering.
       double m_dec_bary;
       const BaryTimeComputer * m_computer;
