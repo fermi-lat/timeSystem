@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Sun Mar 28 18:18:14 PDT 2010
+timeSystem/timeSystem
+
+Modified Files:
+	GlastTimeHandler.h 
+Log Message:
+Introduce glastscorbit_init and glastscorbit_cleanup for clarity.
+    *
+------------------------------------------------------------
 User: hirayama  Sun Mar 28 18:18:13 PDT 2010
 timeSystem/src
 
