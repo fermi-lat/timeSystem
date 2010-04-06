@@ -103,14 +103,8 @@ void glastscorbit_init(char *filename, char *extname, int *oerror)
     fits_ptr = NULL;
   }
 
-  /* Open the given file. */
+  /* Open the given file, move to the spacecraft data, and read table information. */
   fits_open_file(&fits_ptr, filename, 0, oerror);
-  if (*oerror) {
-    fits_ptr = NULL;
-    return;
-  }
-
-  /* Move to the spacecraft data, and read table information. */
   fits_movnam_hdu(fits_ptr, ANY_HDU, extname, 0, oerror);
   fits_get_num_rows(fits_ptr, &num_rows, oerror);
   fits_get_colnum(fits_ptr, CASEINSEN, "START", &colnum_start, oerror);
@@ -140,7 +134,8 @@ void glastscorbit_init(char *filename, char *extname, int *oerror)
 
   /* Close file on error(s) */
   if (*oerror) {
-    fits_close_file(fits_ptr, oerror);
+    int close_status = 0; /* Ignore an error in closing file */
+    fits_close_file(fits_ptr, &close_status);
     fits_ptr = NULL;
   }
 }
