@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Wed Apr  7 16:24:47 PDT 2010
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Add and improve application tests.
+    *
+------------------------------------------------------------
 TAG
 Tag name: timeSystem-06-04-08, operation: add
 Package: timeSystem
