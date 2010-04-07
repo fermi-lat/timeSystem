@@ -3925,16 +3925,14 @@ void TimeSystemTestApp::testTimeCorrectorApp() {
   test_name_cont.push_back("par2");
   test_name_cont.push_back("par3");
   test_name_cont.push_back("par4");
+  test_name_cont.push_back("par5");
+  test_name_cont.push_back("par6");
 
   // Prepare settings to be used in the tests.
   std::string evfile_0540 = prependDataPath("my_pulsar_events_v3.fits");
   std::string scfile_0540 = prependDataPath("my_pulsar_spacecraft_data_v3r1.fits");
   double ra_0540 = 85.0482;
   double dec_0540 = -69.3319;
-  std::string evfile_crab = prependDataPath("ft1_beta2.fits");
-  std::string scfile_crab = prependDataPath("ft2_beta2.fits");
-  double ra_crab = 83.633208;
-  double dec_crab = 22.014472;
   std::string evfile_bary = prependDataPath("my_pulsar_events_bary_v3.fits");
   std::string evfile_geo = prependDataPath("my_pulsar_events_geo_v3.fits");
 
@@ -3994,10 +3992,10 @@ void TimeSystemTestApp::testTimeCorrectorApp() {
     } else if ("par3" == test_name) {
       // Test refusal of barycentric corrections on a barycentered file.
       pars["evfile"] = evfile_bary;
-      pars["scfile"] = scfile_crab;
+      pars["scfile"] = scfile_0540;
       pars["outfile"] = out_file;
-      pars["ra"] = ra_crab;
-      pars["dec"] = dec_crab;
+      pars["ra"] = ra_0540;
+      pars["dec"] = dec_0540;
       pars["tcorrect"] = "BARY";
 
       remove(log_file_ref.c_str());
@@ -4011,12 +4009,50 @@ void TimeSystemTestApp::testTimeCorrectorApp() {
       ignore_exception = true;
 
     } else if ("par4" == test_name) {
+      // Test refusal of geocentric corrections on a barycentered file.
+      pars["evfile"] = evfile_bary;
+      pars["scfile"] = scfile_0540;
+      pars["outfile"] = out_file;
+      pars["ra"] = ra_0540;
+      pars["dec"] = dec_0540;
+      pars["tcorrect"] = "GEO";
+
+      remove(log_file_ref.c_str());
+      std::ofstream ofs(log_file_ref.c_str());
+      std::runtime_error error("Unsupported timing extension: HDU 1 (EXTNAME=EVENTS) of input file \"" + evfile_bary + "\"");
+      app_tester.writeException(ofs, error);
+      ofs.close();
+
+      out_file.erase();
+      out_file_ref.erase();
+      ignore_exception = true;
+
+    } else if ("par5" == test_name) {
+      // Test refusal of barycentric corrections on a geocentered file.
+      pars["evfile"] = evfile_geo;
+      pars["scfile"] = scfile_0540;
+      pars["outfile"] = out_file;
+      pars["ra"] = ra_0540;
+      pars["dec"] = dec_0540;
+      pars["tcorrect"] = "BARY";
+
+      remove(log_file_ref.c_str());
+      std::ofstream ofs(log_file_ref.c_str());
+      std::runtime_error error("Unsupported timing extension: HDU 0 (primary HDU) of input file \"" + evfile_geo + "\"");
+      app_tester.writeException(ofs, error);
+      ofs.close();
+
+      out_file.erase();
+      out_file_ref.erase();
+      ignore_exception = true;
+
+    } else if ("par6" == test_name) {
       // Test refusal of geocentric corrections on a geocentered file.
       pars["evfile"] = evfile_geo;
-      pars["scfile"] = scfile_crab;
+      pars["scfile"] = scfile_0540;
       pars["outfile"] = out_file;
-      pars["ra"] = ra_crab;
-      pars["dec"] = dec_crab;
+      pars["ra"] = ra_0540;
+      pars["dec"] = dec_0540;
       pars["tcorrect"] = "GEO";
 
       remove(log_file_ref.c_str());
