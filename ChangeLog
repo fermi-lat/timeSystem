@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Wed Apr  7 20:39:33 PDT 2010
+timeSystem/data/outref
+
+Modified Files:
+	testTimeCorrectorApp_par1.fits testTimeCorrectorApp_par2.fits 
+Log Message:
+Replace test event files with non-time-ordered files.
+    *
+------------------------------------------------------------
 User: hirayama  Wed Apr  7 20:39:32 PDT 2010
 timeSystem/data
 
