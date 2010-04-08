@@ -3929,12 +3929,12 @@ void TimeSystemTestApp::testTimeCorrectorApp() {
   test_name_cont.push_back("par6");
 
   // Prepare settings to be used in the tests.
-  std::string evfile_0540 = prependDataPath("my_pulsar_events_v3.fits");
+  std::string evfile_0540 = prependDataPath("my_pulsar_events_v3r1.fits");
   std::string scfile_0540 = prependDataPath("my_pulsar_spacecraft_data_v3r1.fits");
   double ra_0540 = 85.0482;
   double dec_0540 = -69.3319;
-  std::string evfile_bary = prependDataPath("my_pulsar_events_bary_v3.fits");
-  std::string evfile_geo = prependDataPath("my_pulsar_events_geo_v3.fits");
+  std::string evfile_bary = prependDataPath("my_pulsar_events_bary_v3r1.fits");
+  std::string evfile_geo = prependDataPath("my_pulsar_events_geo_v3r1.fits");
 
   // Loop over parameter sets.
   for (std::list<std::string>::const_iterator test_itor = test_name_cont.begin(); test_itor != test_name_cont.end(); ++test_itor) {
