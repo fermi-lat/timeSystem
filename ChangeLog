@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: hirayama  Wed Apr  7 20:39:32 PDT 2010
+timeSystem/data
+
+Added Files:
+	my_pulsar_events_bary_v3r1.fits my_pulsar_events_geo_v3r1.fits 
+	my_pulsar_events_v3r1.fits 
+Log Message:
+Replace test event files with non-time-ordered files.
+    *
+------------------------------------------------------------
 User: hirayama  Wed Apr  7 16:24:47 PDT 2010
 timeSystem/src/test
 
