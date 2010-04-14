@@ -36,17 +36,21 @@ namespace {
   class JplComputer: public BaryTimeComputer {
     public:
       /** \brief Compute a barycentric time for a given time, and update the time with a computed time.
-          \param ra Right Ascension of a sky position for which a barycentric time is computed.
-          \param dec Declination of a sky position for which a barycentric time is computed.
-          \param sc_position Spacecraft position at the time for which a barycentric time is computed.
+          \param ra Right Ascension of a sky position in degrees for which a barycentric time is computed.
+          \param dec Declination of a sky position in degrees for which a barycentric time is computed.
+          \param sc_position Spacecraft position at the time for which a barycentric time is computed. The position must be
+                 given in the form of Cartesian coordinates in meters in the equatorial coordinate system with the origin at
+                 the center of the Earth.
           \param abs_time Photon arrival time at the spacecraft. This argument is updated to a barycentric time for it.
       */
       virtual void computeBaryTime(double ra, double dec, const std::vector<double> & sc_position, AbsoluteTime & abs_time) const;
 
       /** \brief Compute a geocentric time for a given time, and update the time with a computed time.
-          \param ra Right Ascension of a sky position for which a geocentric time is computed.
-          \param dec Declination of a sky position for which a geocentric time is computed.
-          \param sc_position Spacecraft position at the time for which a geocentric time is computed.
+          \param ra Right Ascension of a sky position in degrees for which a geocentric time is computed.
+          \param dec Declination of a sky position in degrees for which a geocentric time is computed.
+          \param sc_position Spacecraft position at the time for which a geocentric time is computed. The position must be
+                 given in the form of Cartesian coordinates in meters in the equatorial coordinate system with the origin at
+                 the center of the Earth.
           \param abs_time Photon arrival time at the spacecraft. This argument is updated to a geocentric time for it.
       */
       virtual void computeGeoTime(double ra, double dec, const std::vector<double> & sc_position, AbsoluteTime & abs_time) const;
