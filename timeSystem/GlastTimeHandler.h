@@ -51,8 +51,8 @@ namespace timeSystem {
         const std::string & solar_eph, bool match_solar_eph, double angular_tolerance) = 0;
 
       /** \brief Set the source position for arrival time corrections.
-          \param ra Right Ascension of the source position.
-          \param dec Declination of the source position.
+          \param ra Right Ascension of the source position in degrees.
+          \param dec Declination of the source position in degrees.
       */
       virtual void setSourcePosition(double ra, double dec) = 0;
 
@@ -182,8 +182,8 @@ namespace timeSystem {
         const std::string & solar_eph, bool match_solar_eph, double angular_tolerance);
 
       /** \brief Set the source position for arrival time corrections.
-          \param ra Right Ascension of the source position.
-          \param dec Declination of the source position.
+          \param ra Right Ascension of the source position in degrees.
+          \param dec Declination of the source position in degrees.
       */
       virtual void setSourcePosition(double ra, double dec);
 
@@ -258,8 +258,8 @@ namespace timeSystem {
         const std::string & solar_eph, bool match_solar_eph, double angular_tolerance);
 
       /** \brief Set the source position for arrival time corrections.
-          \param ra Right Ascension of the source position.
-          \param dec Declination of the source position.
+          \param ra Right Ascension of the source position in degrees.
+          \param dec Declination of the source position in degrees.
       */
       virtual void setSourcePosition(double ra, double dec);
 
@@ -321,8 +321,8 @@ namespace timeSystem {
         const std::string & solar_eph, bool match_solar_eph, double angular_tolerance);
 
       /** \brief Set the source position for arrival time corrections.
-          \param ra Right Ascension of the source position.
-          \param dec Declination of the source position.
+          \param ra Right Ascension of the source position in degrees.
+          \param dec Declination of the source position in degrees.
       */
       virtual void setSourcePosition(double ra, double dec);
 
@@ -358,9 +358,9 @@ namespace timeSystem {
       */
       GlastBaryTimeHandler(const std::string & file_name, const std::string & extension_name, bool read_only = true);
 
-      /** \brief Convert a sky position from a pair of Right Ascension and Declination to a three vector.
-          \param ra Right Ascension of a sky position to convert.
-          \param dec Declination of a sky position to convert.
+      /** \brief Convert a sky position from a pair of Right Ascension and Declination to a three vector (dimensionless).
+          \param ra Right Ascension of a sky position in degrees to convert to a three vector.
+          \param dec Declination of a sky position in degrees to convert to a three vector.
       */
       std::vector<double> computeThreeVector(double ra, double dec) const;
   };

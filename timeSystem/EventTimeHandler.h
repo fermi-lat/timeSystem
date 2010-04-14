@@ -109,8 +109,8 @@ namespace timeSystem {
         const std::string & solar_eph, bool match_solar_eph, double angular_tolerance) = 0;
 
       /** \brief Set the source position for arrival time corrections.
-          \param ra Right Ascension of the source position.
-          \param dec Declination of the source position.
+          \param ra Right Ascension of the source position in degrees.
+          \param dec Declination of the source position in degrees.
       */
       virtual void setSourcePosition(double ra, double dec) = 0;
 
