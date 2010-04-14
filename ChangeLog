@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Tue Apr 13 18:44:13 PDT 2010
+timeSystem/timeSystem
+
+Modified Files:
+	BaryTimeComputer.h EventTimeHandler.h GlastTimeHandler.h 
+Log Message:
+Improve Doxygen comments.
+    *
+------------------------------------------------------------
 User: hirayama  Tue Apr 13 18:44:12 PDT 2010
 timeSystem/src
 
