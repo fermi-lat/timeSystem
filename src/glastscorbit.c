@@ -294,6 +294,10 @@ double *glastscorbit(char *filename, double t, int *oerror)
 
   /* Check whether a new file is given. */
   if (strcmp(savefile, filename)) {
+    /* Close the previously opened spacecraft file, if any. */
+    glastscorbit_close(scptr, oerror);
+    free(scptr);
+
     /* Open file and prepare for reading the spacecraft position. */
     scptr = glastscorbit_open(filename, "SC_DATA", oerror);
 
