@@ -62,86 +62,108 @@ static void outer_product(double vect_x[], double vect_y[], double vect_z[])
   vect_z[2] = vect_x[0]*vect_y[1] - vect_x[1]*vect_y[0];
 }
 
-/* Global variables to hold the spacecraft file information. */
-static fitsfile *fits_ptr = NULL;
-static long num_rows = 0;
-static int colnum_scposn = 0;
-static double *sctime_array = NULL;
-static long sctime_array_size = 0;
+/* Structure to hold the spacecraft file information. */
+typedef struct {
+  fitsfile *fits_ptr;
+  long num_rows;
+  int colnum_scposn;
+  double *sctime_array;
+  long sctime_array_size;
+} GlastScFile;
 
-/* Clean up the initialized items. */
-void glastscorbit_cleanup(int *oerror)
+/* Close the spacecraft file and clean up the initialized items. */
+void glastscorbit_close(GlastScFile * scptr, int *oerror)
 {
   /* Clear the previously stored value. */
   *oerror = 0;
 
+  /* Do nothing if no spacecraft file information is available. */
+  if (NULL == scptr) return;
+
   /* Close the opened file and reset global variables. */
-  if (NULL != fits_ptr) {
-    fits_close_file(fits_ptr, oerror);
-    fits_ptr = NULL;
+  if (NULL != scptr->fits_ptr) {
+    fits_close_file(scptr->fits_ptr, oerror);
+    scptr->fits_ptr = NULL;
   }
-  num_rows = 0;
-  colnum_scposn = 0;
+  scptr->num_rows = 0;
+  scptr->colnum_scposn = 0;
 
   /* Free the allocated memory space and reset global variables. */
-  free(sctime_array);
-  sctime_array = NULL;
-  sctime_array_size = 0;
+  free(scptr->sctime_array);
+  scptr->sctime_array = NULL;
+  scptr->sctime_array_size = 0;
 }
 
 /* Open the given spacecraft file and initialize global variables. */
-void glastscorbit_init(char *filename, char *extname, int *oerror)
+GlastScFile * glastscorbit_open(char *filename, char *extname, int *oerror)
 {
+  GlastScFile * scptr = NULL;
   int colnum_start = 0;
 
   /* Clear the previously stored value. */
   *oerror = 0;
 
+  /* Allocate memory space for spacecraft file information. */
+  scptr = malloc(sizeof(GlastScFile));
+  if (NULL == scptr) {
+    *oerror = MEMORY_ALLOCATION;
+    return scptr;
+  } else {
+    scptr->fits_ptr = NULL;
+    scptr->num_rows = 0;
+    scptr->colnum_scposn = 0;
+    scptr->sctime_array = NULL;
+    scptr->sctime_array_size = 0;
+  }
+
   /* Close the previously opened file. */
-  if (NULL != fits_ptr) {
-    fits_close_file(fits_ptr, oerror);
-    fits_ptr = NULL;
+  if (NULL != scptr->fits_ptr) {
+    fits_close_file(scptr->fits_ptr, oerror);
+    scptr->fits_ptr = NULL;
   }
 
   /* Open the given file, move to the spacecraft data, and read table information. */
-  fits_open_file(&fits_ptr, filename, 0, oerror);
-  fits_movnam_hdu(fits_ptr, ANY_HDU, extname, 0, oerror);
-  fits_get_num_rows(fits_ptr, &num_rows, oerror);
-  fits_get_colnum(fits_ptr, CASEINSEN, "START", &colnum_start, oerror);
-  fits_get_colnum(fits_ptr, CASEINSEN, "SC_POSITION", &colnum_scposn, oerror);
+  fits_open_file(&(scptr->fits_ptr), filename, 0, oerror);
+  fits_movnam_hdu(scptr->fits_ptr, ANY_HDU, extname, 0, oerror);
+  fits_get_num_rows(scptr->fits_ptr, &(scptr->num_rows), oerror);
+  fits_get_colnum(scptr->fits_ptr, CASEINSEN, "START", &colnum_start, oerror);
+  fits_get_colnum(scptr->fits_ptr, CASEINSEN, "SC_POSITION", &(scptr->colnum_scposn), oerror);
 
   /* Require two rows at the minimum, for interpolation to work. */
-  if (0 == *oerror && num_rows < 2) {
+  if (0 == *oerror && scptr->num_rows < 2) {
     /* Return BAD_ROW_NUM because it would read the second row
        which does not exist in this case. */
     *oerror = BAD_ROW_NUM;
   }
 
   /* Allocate memory space to cache "START" column. */
-  if (0 == *oerror && sctime_array_size < num_rows) {
-    free(sctime_array);
-    sctime_array = malloc(sizeof(double) * num_rows);
-    if (NULL == sctime_array) {
-      sctime_array_size = 0;
+  if (0 == *oerror && scptr->sctime_array_size < scptr->num_rows) {
+    free(scptr->sctime_array);
+    scptr->sctime_array = malloc(sizeof(double) * scptr->num_rows);
+    if (NULL == scptr->sctime_array) {
+      scptr->sctime_array_size = 0;
       *oerror = MEMORY_ALLOCATION;
     } else {
-      sctime_array_size = num_rows;
+      scptr->sctime_array_size = scptr->num_rows;
     }
   }
 
   /* Read "START" column. */
-  fits_read_col(fits_ptr, TDOUBLE, colnum_start, 1, 1, num_rows, 0, sctime_array, 0, oerror);
+  fits_read_col(scptr->fits_ptr, TDOUBLE, colnum_start, 1, 1, scptr->num_rows, 0, scptr->sctime_array, 0, oerror);
 
   /* Close file on error(s) */
   if (*oerror) {
     int close_status = 0; /* Ignore an error in closing file */
-    fits_close_file(fits_ptr, &close_status);
-    fits_ptr = NULL;
+    fits_close_file(scptr->fits_ptr, &close_status);
+    scptr->fits_ptr = NULL;
   }
+
+  /* Return the spacecraft file information. */
+  return scptr;
 }
 
 /* Read spacecraft positions from file and returns interpolated position. */
-double *glastscorbit_getpos(double t, int *oerror)
+double *glastscorbit_calcpos(GlastScFile * scptr, double t, int *oerror)
 {
   static double intposn[3];
   double evtime_array[2];
@@ -155,33 +177,36 @@ double *glastscorbit_getpos(double t, int *oerror)
   double fract = 0.;
   int ii = 0;
 
+  /* Do nothing if no spacecraft file information is available. */
+  if (NULL == scptr) return;
+
   /* Clear the previously stored values. */
   *oerror = 0;
   for (ii = 0; ii < 3; ++ii) intposn[ii] = 0.0;
 
   /* Find two neighboring rows from which the spacecraft position at
      the given time will be computed. */
-  if (fabs(t - sctime_array[0]) <= time_tolerance) {
+  if (fabs(t - scptr->sctime_array[0]) <= time_tolerance) {
     /* In this case, the given time is close enough to the time in the
        first row within the given tolerance.  So, use the first two
        rows for the computation. */
     scrow1 = 1;
     scrow2 = 2;
-    sctime1 = sctime_array[0];
-    sctime2 = sctime_array[1];
+    sctime1 = scptr->sctime_array[0];
+    sctime2 = scptr->sctime_array[1];
 
-  } else if (fabs(t - sctime_array[num_rows-1]) <= time_tolerance) {
+  } else if (fabs(t - scptr->sctime_array[scptr->num_rows-1]) <= time_tolerance) {
     /* In this case, the given time is close enough to the time in the
        final row within the given tolerance.  So, use the penultimate
        row and the final row for the computation. */
-    scrow1 = num_rows - 1;
-    scrow2 = num_rows;
-    sctime1 = sctime_array[num_rows - 2];
-    sctime2 = sctime_array[num_rows - 1];
+    scrow1 = scptr->num_rows - 1;
+    scrow2 = scptr->num_rows;
+    sctime1 = scptr->sctime_array[scptr->num_rows - 2];
+    sctime2 = scptr->sctime_array[scptr->num_rows - 1];
 
   } else {
     evtime_array[0] = evtime_array[1] = t;
-    sctime_ptr = (double *)bsearch(evtime_array, sctime_array, num_rows - 1, sizeof(double), compare_interval);
+    sctime_ptr = (double *)bsearch(evtime_array, scptr->sctime_array, scptr->num_rows - 1, sizeof(double), compare_interval);
 
     if (NULL == sctime_ptr) {
       /* In this case, the given time is out of bounds. */
@@ -192,7 +217,7 @@ double *glastscorbit_getpos(double t, int *oerror)
       /* In this case, the given time is between the first and the
          final rows, so use the row returned by bsearch and the next
          row for the computation. */
-      scrow1 = sctime_ptr - sctime_array + 1;
+      scrow1 = sctime_ptr - scptr->sctime_array + 1;
       scrow2 = scrow1 + 1;
       sctime1 = sctime_ptr[0];
       sctime2 = sctime_ptr[1];
@@ -200,8 +225,8 @@ double *glastscorbit_getpos(double t, int *oerror)
   }
 
   /* Read "SC_POSITION" column in the two rows found above. */
-  fits_read_col(fits_ptr, TDOUBLE, colnum_scposn, scrow1, 1, 3, 0, scposn1, 0, oerror);
-  fits_read_col(fits_ptr, TDOUBLE, colnum_scposn, scrow2, 1, 3, 0, scposn2, 0, oerror);
+  fits_read_col(scptr->fits_ptr, TDOUBLE, scptr->colnum_scposn, scrow1, 1, 3, 0, scposn1, 0, oerror);
+  fits_read_col(scptr->fits_ptr, TDOUBLE, scptr->colnum_scposn, scrow2, 1, 3, 0, scposn2, 0, oerror);
 
   /* Return if an error occurs while reading "SC_POSITION" columns. */
   if (*oerror) return intposn;
@@ -265,11 +290,12 @@ double *glastscorbit(char *filename, double t, int *oerror)
 {
   static char savefile[256] = " ";
   static double dummy_scposn[3] = {0., 0., 0.};
+  static GlastScFile * scptr = NULL;
 
   /* Check whether a new file is given. */
   if (strcmp(savefile, filename)) {
     /* Open file and prepare for reading the spacecraft position. */
-    glastscorbit_init(filename, "SC_DATA", oerror);
+    scptr = glastscorbit_open(filename, "SC_DATA", oerror);
 
     /* Refresh the saved file name. */
     if (0 == *oerror) {
@@ -281,5 +307,5 @@ double *glastscorbit(char *filename, double t, int *oerror)
   }
 
   /* Compute and return the spacecraft position at the given time. */
-  return glastscorbit_getpos(t, oerror);
+  return glastscorbit_calcpos(scptr, t, oerror);
 }

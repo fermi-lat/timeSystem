@@ -12,6 +12,10 @@
 
 #include <string>
 
+extern "C" {
+  class GlastScFile;
+}
+
 namespace tip {
   class Header;
   class Table;
@@ -206,6 +210,7 @@ namespace timeSystem {
     private:
       std::string m_sc_file;
       std::string m_sc_table;
+      GlastScFile * m_sc_ptr;
       double m_ra_bary;  // RA and Dec for barycentering.
       double m_dec_bary;
       const BaryTimeComputer * m_computer;

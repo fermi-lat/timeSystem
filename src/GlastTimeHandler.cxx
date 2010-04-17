@@ -28,9 +28,9 @@ extern "C" {
 #define RADEG   57.2957795130823
 
 // Declare function prototypes for GLAST spacecraft file access.
-void glastscorbit_init(char *, char *, int *);
-double *glastscorbit_getpos(double, int *);
-void glastscorbit_cleanup(int *);
+GlastScFile * glastscorbit_open(char *, char *, int *);
+double *glastscorbit_calcpos(GlastScFile *, double, int *);
+void glastscorbit_close(GlastScFile *, int *);
 }
 
 namespace timeSystem {
@@ -224,13 +224,15 @@ namespace timeSystem {
   }
 
   GlastScTimeHandler::GlastScTimeHandler(const std::string & file_name, const std::string & extension_name, bool read_only):
-    GlastTimeHandler(file_name, extension_name, read_only), m_sc_file(), m_sc_table(), m_ra_bary(0.), m_dec_bary(0.),
+    GlastTimeHandler(file_name, extension_name, read_only), m_sc_file(), m_sc_table(), m_sc_ptr(0), m_ra_bary(0.), m_dec_bary(0.),
     m_computer(0) {}
 
   GlastScTimeHandler::~GlastScTimeHandler() {
     // Clean up the spacecraft file access.
     int error = 0;
-    glastscorbit_cleanup(&error);
+    glastscorbit_close(m_sc_ptr, &error);
+    free(m_sc_ptr);
+    m_sc_ptr = 0;
     if (error) {
       std::ostringstream os;
       os << "Error occurred while closing spacecraft file " << m_sc_file;
@@ -264,9 +266,9 @@ namespace timeSystem {
     m_sc_file = sc_file_name;
     m_sc_table = sc_extension_name;
 
-    // Initialize access to a spacecraft file.
+    // Open the given spacecraft file.
     int error = 0;
-    glastscorbit_init(const_cast<char *>(m_sc_file.c_str()), const_cast<char *>(m_sc_table.c_str()), &error);
+    m_sc_ptr = glastscorbit_open(const_cast<char *>(m_sc_file.c_str()), const_cast<char *>(m_sc_table.c_str()), &error);
     if (error) {
       std::ostringstream os;
       os << "Error occurred while opening spacecraft file " << m_sc_file;
@@ -308,9 +310,9 @@ namespace timeSystem {
     // Convert GLAST time to AbsoluteTime.
     AbsoluteTime abs_time = computeAbsoluteTime(glast_time);
 
-    // Get space craft position at the given time.
+    // Compute spacecraft position at the given time.
     int error = 0;
-    double * sc_position_array = glastscorbit_getpos(glast_time, &error);
+    double * sc_position_array = glastscorbit_calcpos(m_sc_ptr, glast_time, &error);
     if (error) {
       std::ostringstream os;
       os << "Cannot get Fermi spacecraft position for " << std::setprecision(std::numeric_limits<double>::digits10) <<

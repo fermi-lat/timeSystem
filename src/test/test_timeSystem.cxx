@@ -209,8 +209,11 @@ class TimeSystemTestApp : public PulsarTestApp {
     /// \brief Test BaryTimeComputer class.
     void testBaryTimeComputer();
 
-    /// \brief Test EventTimeHandler class.
+    /// \brief Test EventTimeHandlerFactory class.
     void testEventTimeHandlerFactory();
+
+    /// \brief Test C functions in glastscorbit.c.
+    void testglastscorbit();
 
     /// \brief Test GlastTimeHandler class.
     void testGlastTimeHandler();
@@ -376,6 +379,9 @@ void TimeSystemTestApp::runTest() {
 
   // Test EventTimeHandlerFactory class.
   testEventTimeHandlerFactory();
+
+  // Test C functions in glastscorbit.c.
+  testglastscorbit();
 
   // Test GlastTimeHandler class.
   testGlastTimeHandler();
@@ -3187,7 +3193,7 @@ class BogusTimeHandler3: public BogusTimeHandlerBase {
 };
 
 void TimeSystemTestApp::testEventTimeHandlerFactory() {
-  setMethod("testEventtTimeHandler");
+  setMethod("testEventTimeHandlerFactory");
 
   // Prepare test parameters in this method.
   std::string event_file = prependDataPath("my_pulsar_events_v3.fits");
@@ -3273,6 +3279,275 @@ void TimeSystemTestApp::testEventTimeHandlerFactory() {
     err() << "IEventTimeHandlerFactory::createHandler method did not return a BogusTimeHandler2 object" <<
       " when it is an appropriate handler that can respond first." << std::endl;
   }
+}
+
+extern "C" {
+// Declare function prototypes for GLAST spacecraft file access.
+GlastScFile * glastscorbit_open(char *, char *, int *);
+double *glastscorbit_calcpos(GlastScFile *, double, int *);
+void glastscorbit_close(GlastScFile *, int *);
+double *glastscorbit(char *, double, int *);
+}
+
+void TimeSystemTestApp::testglastscorbit() {
+  setMethod("testglastscorbit");
+
+  // Set spacecraft file name.
+  std::string sc_file = prependDataPath("testscfile_std.fits");
+  char * sc_file_char = const_cast<char *>(sc_file.c_str());
+
+  // Test initialization function.
+  int status = 0;
+  GlastScFile * scptr = glastscorbit_open(sc_file_char, "SC_DATA", &status);
+  if (status) {
+    err() << "Function glastscorbit_open returns with non-zero status (" << status << ") for spacecraft file \"" <<
+      sc_file << "\" and extension name \"SC_DATA\"." << std::endl;
+  }
+
+  // Test interpolation of spacecraft position.
+  double orbit_radius = 7000000.;
+  double scpos0x = orbit_radius;
+  double scpos1x = orbit_radius * sqrt(3.) / 2.;
+  double scpos1y = orbit_radius / 2. * sqrt(3.) / 2.;
+  double scpos1z = orbit_radius / 2. / 2.;
+  double scpos2x = orbit_radius / 2.;
+  double scpos2y = orbit_radius * sqrt(3.) / 2. * sqrt(3.) / 2.;
+  double scpos2z = orbit_radius * sqrt(3.) / 2. / 2.;
+  double scpos3y = orbit_radius * sqrt(3.) / 2.;
+  double scpos3z = orbit_radius / 2.;
+  double par_list[][4] = {
+    // F a circular orbit with the radius of 7000 km.
+    {1000., +scpos0x,       0.,       0.},
+    {1010., +scpos1x, +scpos1y, +scpos1z},
+    {1020., +scpos2x, +scpos2y, +scpos2z},
+    {1030.,       0., +scpos3y, +scpos3z},
+    {1040., -scpos2x, +scpos2y, +scpos2z},
+    {1050., -scpos1x, +scpos1y, +scpos1z},
+    {1060., -scpos0x,       0.,       0.},
+    {1070., -scpos1x, -scpos1y, -scpos1z},
+    {1080., -scpos2x, -scpos2y, -scpos2z},
+    {1090.,       0., -scpos3y, -scpos3z},
+    {1100., +scpos2x, -scpos2y, -scpos2z},
+    {1110., +scpos1x, -scpos1y, -scpos1z},
+    {1120., +scpos0x,       0.,       0.},
+    // For a non-circular orbit with the average radius of 7000 km.
+    {2000., +scpos0x*1.03,       0.,       0.},
+    {2010., +scpos1x*1.02, +scpos1y*1.02, +scpos1z*1.02},
+    {2020., +scpos2x*1.01, +scpos2y*1.01, +scpos2z*1.01},
+    {2030.,            0., +scpos3y,      +scpos3z},
+    {2040., -scpos2x*0.99, +scpos2y*0.99, +scpos2z*0.99},
+    {2050., -scpos1x*0.98, +scpos1y*0.98, +scpos1z*0.98},
+    {2060., -scpos0x*0.97,            0.,            0.},
+    {2070., -scpos1x*0.98, -scpos1y*0.98, -scpos1z*0.98},
+    {2080., -scpos2x*0.99, -scpos2y*0.99, -scpos2z*0.99},
+    {2090.,            0., -scpos3y,      -scpos3z},
+    {2100., +scpos2x*1.01, -scpos2y*1.01, -scpos2z*1.01},
+    {2110., +scpos1x*1.02, -scpos1y*1.02, -scpos1z*1.02},
+    {2120., +scpos0x*1.03,            0.,            0.},
+    // For unphysical special cases.
+    {3000., +7200000., 0., 0.},
+    {3010., +4800000., 0., 0.},
+    {3020., +2400000., 0., 0.},
+    {3030.,        0., 0., 0.},
+    {3040.,        0., 0., 0.},
+    {3050.,        0., 0., 0.},
+    {3060.,        0., 0., 0.},
+    {3070., -2400000., 0., 0.},
+    {3080., -4800000., 0., 0.},
+    {3090., -7200000., 0., 0.},
+    {3100., -7100000., 0., 0.},
+    {3110., -7000000., 0., 0.},
+    {3120., -6900000., 0., 0.}
+  };
+  double tolerance = 1.; // Absolute tolerance of 1 meter corresponds to 3.3 nanoseconds.
+  char axis_name[3] = {'X', 'Y', 'Z'};
+  for (size_t ipar = 0; ipar < sizeof(par_list)/sizeof(double)/4; ++ipar) {
+    status = 0;
+    double glast_time = par_list[ipar][0];
+    double * scpos_result = glastscorbit_calcpos(scptr, glast_time, &status);
+    double * scpos_expected = par_list[ipar] + 1;
+    if (status) {
+      err() << "Function glastscorbit_calcpos returns with non-zero status (" << status << ") for MET = " << glast_time <<
+        "." << std::endl;
+    } else {
+      for (int ii=0; ii<3; ++ii) {
+        if (std::fabs(scpos_result[ii] - scpos_expected[ii]) > tolerance) {
+          err() << "Function glastscorbit_calcpos returns " << axis_name[ii] << " = " << scpos_result[ii] << " for MET = " <<
+            glast_time << ", not " << scpos_expected[ii] << " as expected." << std::endl;
+        }
+      }
+    }
+  }
+
+  // Test clean-up function.
+  status = 0;
+  glastscorbit_close(scptr, &status);
+  if (status) {
+    err() << "Function glastscorbit_close returns with non-zero status (" << status << ")." << std::endl;
+  }
+
+  // Test the original function "glastscorbit" for backward compatibility.
+  for (size_t ipar = 0; ipar < sizeof(par_list)/sizeof(double)/4; ++ipar) {
+    status = 0;
+    double glast_time = par_list[ipar][0];
+    double * scpos_result = glastscorbit(sc_file_char, glast_time, &status);
+    double * scpos_expected = par_list[ipar] + 1;
+    if (status) {
+      err() << "Function glastscorbit returns with non-zero status (" << status << ") for MET = " << glast_time <<
+        "." << std::endl;
+    } else {
+      for (int ii=0; ii<3; ++ii) {
+        if (std::fabs(scpos_result[ii] - scpos_expected[ii]) > tolerance) {
+          err() << "Function glastscorbit returns " << axis_name[ii] << " = " << scpos_result[ii] << " for MET = " << glast_time <<
+            ", not " << scpos_expected[ii] << " as expected." << std::endl;
+        }
+      }
+    }
+  }
+  status = 0;
+  glastscorbit_close(scptr, &status);
+
+  // Test error detections near the boundaries of spacecraft file.
+  double earliest_met = 1000.0;
+  double latest_met   = 3120.0;
+  double small_time_diff = 1.e-6; // 1 micro-second.
+  double large_time_diff = 1.; // 1 second.
+  typedef std::list<std::pair<double, int> > time_status_type;
+  time_status_type time_status_list;
+  time_status_list.push_back(std::make_pair(earliest_met - large_time_diff, -2));
+  time_status_list.push_back(std::make_pair(earliest_met - small_time_diff,  0));
+  time_status_list.push_back(std::make_pair(earliest_met + small_time_diff,  0));
+  time_status_list.push_back(std::make_pair(latest_met   - small_time_diff,  0));
+  time_status_list.push_back(std::make_pair(latest_met   + small_time_diff,  0));
+  time_status_list.push_back(std::make_pair(latest_met   + large_time_diff, -2));
+
+  status = 0;
+  scptr = glastscorbit_open(sc_file_char, "SC_DATA", &status);
+  for (time_status_type::const_iterator itor = time_status_list.begin(); itor != time_status_list.end(); ++itor) {
+    double glast_time = itor->first;
+    int status_expected = itor->second;
+    int status_result = 0;
+    glastscorbit_calcpos(scptr, glast_time, &status_result);
+    if (status_result != status_expected) {
+      err() << "Function glastscorbit_calcpos returns with status = " << status_result << ", not " << status_expected <<
+        " as expected." << std::endl;
+    }
+  }
+  status = 0;
+  glastscorbit_close(scptr, &status);
+
+  for (time_status_type::const_iterator itor = time_status_list.begin(); itor != time_status_list.end(); ++itor) {
+    double glast_time = itor->first;
+    int status_expected = itor->second;
+    int status_result = 0;
+    glastscorbit(sc_file_char, glast_time, &status_result);
+    if (status_result != status_expected) {
+      err() << "Function glastscorbit returns with status = " << status_result << ", not " << status_expected <<
+        " as expected." << std::endl;
+    }
+  }
+  status = 0;
+  glastscorbit_close(scptr, &status);
+
+  // Test detection of non-existing file.
+  status = 0;
+  scptr = glastscorbit_open("no_such_file.fits", "SC_DATA", &status);
+  if (!status) {
+    err() << "Function glastscorbit_open returns with status = " << status << " for non-existing spacecraft file." << std::endl;
+  }
+  status = 0;
+  glastscorbit_close(scptr, &status);
+
+  status = 0;
+  glastscorbit("no_such_file.fits", 0., &status);
+  if (!status) {
+    err() << "Function glastscorbit returns with status = " << status << " for non-existing spacecraft file." << std::endl;
+  }
+  status = 0;
+  glastscorbit_close(scptr, &status);
+
+  // Test detection of non-existing extension.
+  status = 0;
+  scptr = glastscorbit_open(sc_file_char, "NO_SUCH_EXTENSION", &status);
+  if (!status) {
+    err() << "Function glastscorbit_open returns with status = " << status << " for non-existing extension." << std::endl;
+  }
+  status = 0;
+  glastscorbit_close(scptr, &status);
+
+  sc_file = prependDataPath("testscfile_lam.fits");
+  sc_file_char = const_cast<char *>(sc_file.c_str());
+  status = 0;
+  glastscorbit(sc_file_char, 2001., &status);
+  if (!status) {
+    err() << "Function glastscorbit returns with status = " << status << " for non-standard extension." << std::endl;
+  }
+  status = 0;
+  glastscorbit_close(scptr, &status);
+
+  // Test non-standard spacecraft file, with extention name "LOOK_AT_ME".
+  status = 0;
+  scptr = glastscorbit_open(sc_file_char, "LOOK_AT_ME", &status);
+  if (status) {
+    err() << "Function glastscorbit_open returns with non-zero status (" << status << ") for spacecraft file \"" <<
+      sc_file << "\" and extension name \"LOOK_AT_ME\"." << std::endl;
+
+  } else {
+    status = 0;
+    glastscorbit_calcpos(scptr, 2001., &status);
+    if (status) {
+      err() << "Function glastscorbit_calcpos returns with non-zero status (" << status << ") for spacecraft file \"" <<
+      sc_file << "\" and extension name \"LOOK_AT_ME\"." << std::endl;
+    }
+  }
+  status = 0;
+  glastscorbit_close(scptr, &status);
+
+  // Test non-standard spacecraft file, with LOOK_AT_ME extension in the second HDU and SC_DATA extension in the third.
+  sc_file = prependDataPath("testscfile_3rd.fits");
+  sc_file_char = const_cast<char *>(sc_file.c_str());
+  status = 0;
+  scptr = glastscorbit_open(sc_file_char, "LOOK_AT_ME", &status);
+  if (status) {
+    err() << "Function glastscorbit_open returns with non-zero status (" << status << ") for spacecraft file \"" <<
+      sc_file << "\" and extension name \"LOOK_AT_ME\"." << std::endl;
+
+  } else {
+    status = 0;
+    glastscorbit_calcpos(scptr, 2001., &status);
+    if (status) {
+      err() << "Function glastscorbit_calcpos returns with non-zero status (" << status << ") for spacecraft file \"" <<
+      sc_file << "\" and extension name \"LOOK_AT_ME\"." << std::endl;
+    }
+  }
+  status = 0;
+  glastscorbit_close(scptr, &status);
+
+  status = 0;
+  scptr = glastscorbit_open(sc_file_char, "SC_DATA", &status);
+  if (status) {
+    err() << "Function glastscorbit_open returns with non-zero status (" << status << ") for spacecraft file \"" <<
+      sc_file << "\" and extension name \"SC_DATA\"." << std::endl;
+
+  } else {
+    status = 0;
+    glastscorbit_calcpos(scptr, 1001., &status);
+    if (status) {
+      err() << "Function glastscorbit_calcpos returns with non-zero status (" << status << ") for spacecraft file \"" <<
+      sc_file << "\" and extension name \"SC_DATA\"." << std::endl;
+    }
+  }
+  status = 0;
+  glastscorbit_close(scptr, &status);
+
+  status = 0;
+  glastscorbit(sc_file_char, 1001., &status);
+  if (status) {
+    err() << "Function glastscorbit returns with non-zero status (" << status << ") for non-standard spacecraft file \"" <<
+      sc_file << "\" with \"SC_DATA\" in the third HDU." << std::endl;
+  }
+  status = 0;
+  glastscorbit_close(scptr, &status);
 }
 
 void TimeSystemTestApp::testGlastTimeHandler() {
@@ -3849,7 +4124,7 @@ void TimeSystemTestApp::testGlastTimeHandler() {
 
   // Test arrival time corrections near the boundaries of spacecraft file.
   double earliest_met = 212322400.0;
-  double latest_met =   212422420.0;
+  double latest_met   = 212422420.0;
   double small_time_diff = 1.e-6; // 1 micro-second.
   double large_time_diff = 1.; // 1 second.
 
