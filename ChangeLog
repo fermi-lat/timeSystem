@@ -1,5 +1,14 @@
 ------------------------------------------------------------
 User: hirayama  Fri Apr 16 19:36:22 PDT 2010
+timeSystem/data
+
+Added Files:
+	testscfile_3rd.fits testscfile_lam.fits testscfile_std.fits 
+Log Message:
+Improve robustness of functions glastscorbit_* for simultaneous access to multiple spacecraft files. Add direct tests of C functions in glastscorbit.c.
+    *
+------------------------------------------------------------
+User: hirayama  Fri Apr 16 19:36:22 PDT 2010
 timeSystem/timeSystem
 
 Modified Files:
