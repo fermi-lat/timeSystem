@@ -1,5 +1,14 @@
 ------------------------------------------------------------
 User: hirayama  Fri Apr 16 21:51:22 PDT 2010
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Free allocated memory appropriately.
+    *
+------------------------------------------------------------
+User: hirayama  Fri Apr 16 21:51:22 PDT 2010
 timeSystem/src
 
 Modified Files:
