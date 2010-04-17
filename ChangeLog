@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Fri Apr 16 21:51:22 PDT 2010
+timeSystem/src
+
+Modified Files:
+	glastscorbit.c GlastTimeHandler.cxx 
+Log Message:
+Free allocated memory appropriately.
+    *
+------------------------------------------------------------
 User: hirayama  Fri Apr 16 19:36:22 PDT 2010
 timeSystem/data
 
