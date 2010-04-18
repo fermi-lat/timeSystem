@@ -3420,7 +3420,6 @@ void TimeSystemTestApp::testglastscorbit() {
   time_status_list.push_back(std::make_pair(latest_met   + large_time_diff, -2));
 
   status = 0;
-  free(scptr);
   scptr = glastscorbit_open(sc_file_char, "SC_DATA", &status);
   for (time_status_type::const_iterator itor = time_status_list.begin(); itor != time_status_list.end(); ++itor) {
     double glast_time = itor->first;
@@ -3448,7 +3447,6 @@ void TimeSystemTestApp::testglastscorbit() {
 
   // Test detection of non-existing file.
   status = 0;
-  free(scptr);
   scptr = glastscorbit_open("no_such_file.fits", "SC_DATA", &status);
   if (!status) {
     err() << "Function glastscorbit_open returns with status = " << status << " for non-existing spacecraft file." << std::endl;
@@ -3464,7 +3462,6 @@ void TimeSystemTestApp::testglastscorbit() {
 
   // Test detection of non-existing extension.
   status = 0;
-  free(scptr);
   scptr = glastscorbit_open(sc_file_char, "NO_SUCH_EXTENSION", &status);
   if (!status) {
     err() << "Function glastscorbit_open returns with status = " << status << " for non-existing extension." << std::endl;
@@ -3482,7 +3479,6 @@ void TimeSystemTestApp::testglastscorbit() {
 
   // Test non-standard spacecraft file, with extention name "LOOK_AT_ME".
   status = 0;
-  free(scptr);
   scptr = glastscorbit_open(sc_file_char, "LOOK_AT_ME", &status);
   if (status) {
     err() << "Function glastscorbit_open returns with non-zero status (" << status << ") for spacecraft file \"" <<
@@ -3503,7 +3499,6 @@ void TimeSystemTestApp::testglastscorbit() {
   sc_file = prependDataPath("testscfile_3rd.fits");
   sc_file_char = const_cast<char *>(sc_file.c_str());
   status = 0;
-  free(scptr);
   scptr = glastscorbit_open(sc_file_char, "LOOK_AT_ME", &status);
   if (status) {
     err() << "Function glastscorbit_open returns with non-zero status (" << status << ") for spacecraft file \"" <<
@@ -3521,7 +3516,6 @@ void TimeSystemTestApp::testglastscorbit() {
   glastscorbit_close(scptr, &status);
 
   status = 0;
-  free(scptr);
   scptr = glastscorbit_open(sc_file_char, "SC_DATA", &status);
   if (status) {
     err() << "Function glastscorbit_open returns with non-zero status (" << status << ") for spacecraft file \"" <<

@@ -231,7 +231,6 @@ namespace timeSystem {
     // Clean up the spacecraft file access.
     int error = 0;
     glastscorbit_close(m_sc_ptr, &error);
-    free(m_sc_ptr);
     m_sc_ptr = 0;
     if (error) {
       std::ostringstream os;
@@ -269,7 +268,6 @@ namespace timeSystem {
     // Open the given spacecraft file.
     int error = 0;
     glastscorbit_close(m_sc_ptr, &error);
-    free(m_sc_ptr);
     m_sc_ptr = glastscorbit_open(const_cast<char *>(m_sc_file.c_str()), const_cast<char *>(m_sc_table.c_str()), &error);
     if (error) {
       std::ostringstream os;

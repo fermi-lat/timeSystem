@@ -92,6 +92,9 @@ void glastscorbit_close(GlastScFile * scptr, int *oerror)
   free(scptr->sctime_array);
   scptr->sctime_array = NULL;
   scptr->sctime_array_size = 0;
+
+  /* Free memory space for the spacecraft file information. */
+  free(scptr);
 }
 
 /* Open the given spacecraft file and initialize global variables. */
@@ -296,7 +299,6 @@ double *glastscorbit(char *filename, double t, int *oerror)
   if (strcmp(savefile, filename)) {
     /* Close the previously opened spacecraft file, if any. */
     glastscorbit_close(scptr, oerror);
-    free(scptr);
 
     /* Open file and prepare for reading the spacecraft position. */
     scptr = glastscorbit_open(filename, "SC_DATA", oerror);
