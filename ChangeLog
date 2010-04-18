@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Sat Apr 17 19:48:52 PDT 2010
+timeSystem/src
+
+Modified Files:
+	GlastTimeHandler.cxx glastscorbit.c 
+Log Message:
+Free memory space for GlastScFile in glasrscorbit_close function.
+    *
+------------------------------------------------------------
 User: hirayama  Fri Apr 16 21:51:22 PDT 2010
 timeSystem/src/test
 
