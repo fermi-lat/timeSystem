@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Sat Apr 17 20:03:38 PDT 2010
+timeSystem/src
+
+Modified Files:
+	glastscorbit.c 
+Log Message:
+Remove unnecessary code for the new design.
+    *
+------------------------------------------------------------
 User: hirayama  Sat Apr 17 19:48:52 PDT 2010
 timeSystem/src/test
 
