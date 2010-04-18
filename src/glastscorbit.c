@@ -106,7 +106,7 @@ GlastScFile * glastscorbit_open(char *filename, char *extname, int *oerror)
   /* Clear the previously stored value. */
   *oerror = 0;
 
-  /* Allocate memory space for spacecraft file information. */
+  /* Allocate memory space for spacecraft file information, and initialize the members. */
   scptr = malloc(sizeof(GlastScFile));
   if (NULL == scptr) {
     *oerror = MEMORY_ALLOCATION;
@@ -117,12 +117,6 @@ GlastScFile * glastscorbit_open(char *filename, char *extname, int *oerror)
     scptr->colnum_scposn = 0;
     scptr->sctime_array = NULL;
     scptr->sctime_array_size = 0;
-  }
-
-  /* Close the previously opened file. */
-  if (NULL != scptr->fits_ptr) {
-    fits_close_file(scptr->fits_ptr, oerror);
-    scptr->fits_ptr = NULL;
   }
 
   /* Open the given file, move to the spacecraft data, and read table information. */
@@ -140,8 +134,7 @@ GlastScFile * glastscorbit_open(char *filename, char *extname, int *oerror)
   }
 
   /* Allocate memory space to cache "START" column. */
-  if (0 == *oerror && scptr->sctime_array_size < scptr->num_rows) {
-    free(scptr->sctime_array);
+  if (0 == *oerror) {
     scptr->sctime_array = malloc(sizeof(double) * scptr->num_rows);
     if (NULL == scptr->sctime_array) {
       scptr->sctime_array_size = 0;
