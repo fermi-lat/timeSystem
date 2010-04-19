@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Sun Apr 18 18:30:38 PDT 2010
+timeSystem/src
+
+Modified Files:
+	glastscorbit.c 
+Log Message:
+Reuse already opened spacecraft file.
+    *
+------------------------------------------------------------
 User: hirayama  Sat Apr 17 20:03:38 PDT 2010
 timeSystem/src
 
