@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Sun Apr 18 18:30:39 PDT 2010
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Reuse already opened spacecraft file.
+    *
+------------------------------------------------------------
 User: hirayama  Sun Apr 18 18:30:38 PDT 2010
 timeSystem/src
 
