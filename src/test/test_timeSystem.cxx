@@ -3362,7 +3362,6 @@ void TimeSystemTestApp::testglastscorbit() {
   double tolerance = 1.; // Absolute tolerance of 1 meter corresponds to 3.3 nanoseconds.
   char axis_name[3] = {'X', 'Y', 'Z'};
   for (size_t ipar = 0; ipar < sizeof(par_list)/sizeof(double)/4; ++ipar) {
-    status = 0;
     double glast_time = par_list[ipar][0];
     double * scpos_result = glastscorbit_calcpos(scptr, glast_time, &status);
     double * scpos_expected = par_list[ipar] + 1;
@@ -3380,7 +3379,6 @@ void TimeSystemTestApp::testglastscorbit() {
   }
 
   // Test clean-up function.
-  status = 0;
   glastscorbit_close(scptr, &status);
   if (status) {
     err() << "Function glastscorbit_close returns with non-zero status (" << status << ")." << std::endl;
@@ -3388,7 +3386,6 @@ void TimeSystemTestApp::testglastscorbit() {
 
   // Test the original function "glastscorbit" for backward compatibility.
   for (size_t ipar = 0; ipar < sizeof(par_list)/sizeof(double)/4; ++ipar) {
-    status = 0;
     double glast_time = par_list[ipar][0];
     double * scpos_result = glastscorbit(sc_file_char, glast_time, &status);
     double * scpos_expected = par_list[ipar] + 1;
@@ -3419,7 +3416,6 @@ void TimeSystemTestApp::testglastscorbit() {
   time_status_list.push_back(std::make_pair(latest_met   + small_time_diff,  0));
   time_status_list.push_back(std::make_pair(latest_met   + large_time_diff, -2));
 
-  status = 0;
   scptr = glastscorbit_open(sc_file_char, "SC_DATA", &status);
   for (time_status_type::const_iterator itor = time_status_list.begin(); itor != time_status_list.end(); ++itor) {
     double glast_time = itor->first;
@@ -3431,7 +3427,6 @@ void TimeSystemTestApp::testglastscorbit() {
         " as expected." << std::endl;
     }
   }
-  status = 0;
   glastscorbit_close(scptr, &status);
 
   for (time_status_type::const_iterator itor = time_status_list.begin(); itor != time_status_list.end(); ++itor) {
@@ -3446,98 +3441,122 @@ void TimeSystemTestApp::testglastscorbit() {
   }
 
   // Test detection of non-existing file.
-  status = 0;
   scptr = glastscorbit_open("no_such_file.fits", "SC_DATA", &status);
   if (!status) {
     err() << "Function glastscorbit_open returns with status = " << status << " for non-existing spacecraft file." << std::endl;
   }
-  status = 0;
   glastscorbit_close(scptr, &status);
 
-  status = 0;
   glastscorbit("no_such_file.fits", 0., &status);
   if (!status) {
     err() << "Function glastscorbit returns with status = " << status << " for non-existing spacecraft file." << std::endl;
   }
 
   // Test detection of non-existing extension.
-  status = 0;
   scptr = glastscorbit_open(sc_file_char, "NO_SUCH_EXTENSION", &status);
   if (!status) {
     err() << "Function glastscorbit_open returns with status = " << status << " for non-existing extension." << std::endl;
   }
-  status = 0;
   glastscorbit_close(scptr, &status);
 
   sc_file = prependDataPath("testscfile_lam.fits");
   sc_file_char = const_cast<char *>(sc_file.c_str());
-  status = 0;
   glastscorbit(sc_file_char, 2001., &status);
   if (!status) {
     err() << "Function glastscorbit returns with status = " << status << " for non-standard extension." << std::endl;
   }
 
   // Test non-standard spacecraft file, with extention name "LOOK_AT_ME".
-  status = 0;
   scptr = glastscorbit_open(sc_file_char, "LOOK_AT_ME", &status);
   if (status) {
     err() << "Function glastscorbit_open returns with non-zero status (" << status << ") for spacecraft file \"" <<
       sc_file << "\" and extension name \"LOOK_AT_ME\"." << std::endl;
 
   } else {
-    status = 0;
     glastscorbit_calcpos(scptr, 2001., &status);
     if (status) {
       err() << "Function glastscorbit_calcpos returns with non-zero status (" << status << ") for spacecraft file \"" <<
       sc_file << "\" and extension name \"LOOK_AT_ME\"." << std::endl;
     }
   }
-  status = 0;
   glastscorbit_close(scptr, &status);
 
   // Test non-standard spacecraft file, with LOOK_AT_ME extension in the second HDU and SC_DATA extension in the third.
   sc_file = prependDataPath("testscfile_3rd.fits");
   sc_file_char = const_cast<char *>(sc_file.c_str());
-  status = 0;
   scptr = glastscorbit_open(sc_file_char, "LOOK_AT_ME", &status);
   if (status) {
     err() << "Function glastscorbit_open returns with non-zero status (" << status << ") for spacecraft file \"" <<
       sc_file << "\" and extension name \"LOOK_AT_ME\"." << std::endl;
 
   } else {
-    status = 0;
     glastscorbit_calcpos(scptr, 2001., &status);
     if (status) {
       err() << "Function glastscorbit_calcpos returns with non-zero status (" << status << ") for spacecraft file \"" <<
       sc_file << "\" and extension name \"LOOK_AT_ME\"." << std::endl;
     }
   }
-  status = 0;
   glastscorbit_close(scptr, &status);
 
-  status = 0;
   scptr = glastscorbit_open(sc_file_char, "SC_DATA", &status);
   if (status) {
     err() << "Function glastscorbit_open returns with non-zero status (" << status << ") for spacecraft file \"" <<
       sc_file << "\" and extension name \"SC_DATA\"." << std::endl;
 
   } else {
-    status = 0;
     glastscorbit_calcpos(scptr, 1001., &status);
     if (status) {
       err() << "Function glastscorbit_calcpos returns with non-zero status (" << status << ") for spacecraft file \"" <<
       sc_file << "\" and extension name \"SC_DATA\"." << std::endl;
     }
   }
-  status = 0;
   glastscorbit_close(scptr, &status);
 
-  status = 0;
   glastscorbit(sc_file_char, 1001., &status);
   if (status) {
     err() << "Function glastscorbit returns with non-zero status (" << status << ") for non-standard spacecraft file \"" <<
       sc_file << "\" with \"SC_DATA\" in the third HDU." << std::endl;
   }
+
+  // Test re-opening of an already opened spacecraft file.
+  std::string sc_file1 = prependDataPath("testscfile_std.fits");
+  char * sc_file1_char = const_cast<char *>(sc_file1.c_str());
+  GlastScFile * scptr1 = glastscorbit_open(sc_file1_char, "SC_DATA", &status);
+  GlastScFile * scptr2 = glastscorbit_open(sc_file1_char, "SC_DATA", &status);
+  if (scptr1 != scptr2) {
+    err() << "Function glastscorbit_open returns different pointers for the same file/extensin names." << std::endl;
+  }
+  glastscorbit_close(scptr1, &status);
+  glastscorbit_close(scptr2, &status);
+
+  // Test no re-opening of an already opened spacecraft file, in opening different extensions of the same file.
+  std::string sc_file2 = prependDataPath("testscfile_3rd.fits");
+  char * sc_file2_char = const_cast<char *>(sc_file2.c_str());
+  scptr1 = glastscorbit_open(sc_file2_char, "SC_DATA", &status);
+  scptr2 = glastscorbit_open(sc_file2_char, "LOOK_AT_ME", &status);
+  if (scptr1 == scptr2) {
+    err() << "Function glastscorbit_open returns the same pointer for different extensions of the same file." << std::endl;
+  }
+  glastscorbit_close(scptr1, &status);
+  glastscorbit_close(scptr2, &status);
+
+  // Test no re-opening of an already opened spacecraft file, in opening the same extensions of different files.
+  scptr1 = glastscorbit_open(sc_file1_char, "SC_DATA", &status);
+  scptr2 = glastscorbit_open(sc_file2_char, "SC_DATA", &status);
+  if (scptr1 == scptr2) {
+    err() << "Function glastscorbit_open returns the same pointer for same extensions of different files." << std::endl;
+  }
+  glastscorbit_close(scptr1, &status);
+  glastscorbit_close(scptr2, &status);
+
+  // Test no re-opening of an already opened spacecraft file, in opening different extensions of different files.
+  scptr1 = glastscorbit_open(sc_file1_char, "SC_DATA", &status);
+  scptr2 = glastscorbit_open(sc_file2_char, "LOOK_AT_ME", &status);
+  if (scptr1 == scptr2) {
+    err() << "Function glastscorbit_open returns the same pointer for different extensions of different files." << std::endl;
+  }
+  glastscorbit_close(scptr1, &status);
+  glastscorbit_close(scptr2, &status);
 }
 
 void TimeSystemTestApp::testGlastTimeHandler() {
