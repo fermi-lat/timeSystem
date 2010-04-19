@@ -69,7 +69,13 @@ typedef struct {
   int colnum_scposn;
   double *sctime_array;
   long sctime_array_size;
+  char * filename;
+  char * extname;
+  int open_count;
 } GlastScFile;
+
+static GlastScFile ** ScPtrTable = NULL;
+static const int NMAXFILES = 300; /* Same as in fitio2.h */
 
 /* Close the spacecraft file and clean up the initialized items. */
 void glastscorbit_close(GlastScFile * scptr, int *oerror)
@@ -80,21 +86,39 @@ void glastscorbit_close(GlastScFile * scptr, int *oerror)
   /* Do nothing if no spacecraft file information is available. */
   if (NULL == scptr) return;
 
-  /* Close the opened file and reset global variables. */
-  if (NULL != scptr->fits_ptr) {
-    fits_close_file(scptr->fits_ptr, oerror);
-    scptr->fits_ptr = NULL;
+  /* Decrement the file open counter. */
+  --(scptr->open_count);
+
+  /* Destroy this pointer if the file open counter is zero. */
+  if (0 == scptr->open_count) {
+    /* Close the opened file. */
+    if (NULL != scptr->fits_ptr) {
+      fits_close_file(scptr->fits_ptr, oerror);
+      scptr->fits_ptr = NULL;
+    }
+    scptr->num_rows = 0;
+    scptr->colnum_scposn = 0;
+
+    /* Free the allocated memory space for "START" column. */
+    free(scptr->sctime_array);
+    scptr->sctime_array = NULL;
+    scptr->sctime_array_size = 0;
+
+    /* Free the allocated memory space for names. */
+    free(scptr->filename);
+    free(scptr->extname);
+
+    /* Free memory space for this pointer. */
+    free(scptr);
+
+    /* Remove this pointer from the pointer table. */
+    if (ScPtrTable) {
+      int ii = 0;
+      for (ii = 0; ii < NMAXFILES; ++ii) {
+        if (ScPtrTable[ii] == scptr) ScPtrTable[ii] = NULL;
+      }
+    }
   }
-  scptr->num_rows = 0;
-  scptr->colnum_scposn = 0;
-
-  /* Free the allocated memory space and reset global variables. */
-  free(scptr->sctime_array);
-  scptr->sctime_array = NULL;
-  scptr->sctime_array_size = 0;
-
-  /* Free memory space for the spacecraft file information. */
-  free(scptr);
 }
 
 /* Open the given spacecraft file and initialize global variables. */
@@ -102,9 +126,26 @@ GlastScFile * glastscorbit_open(char *filename, char *extname, int *oerror)
 {
   GlastScFile * scptr = NULL;
   int colnum_start = 0;
+  int ii = 0;
 
   /* Clear the previously stored value. */
   *oerror = 0;
+
+  /* Check whether the file is already open. */
+  if (ScPtrTable) {
+    /* Look for an opened file with the same filename and the same extension name. */
+    for (ii = 0; ii < NMAXFILES; ++ii) {
+      scptr = ScPtrTable[ii];
+      if (scptr && !strcmp(filename, scptr->filename) && !strcmp(extname, scptr->extname)) {
+        ++(scptr->open_count);
+        return scptr;
+      }
+    }
+  } else {
+    /* Initialize the pointer table for opened spacecraft files. */
+    ScPtrTable = malloc(sizeof(GlastScFile *) * NMAXFILES);
+    for (ii = 0; ii < NMAXFILES; ++ii) ScPtrTable[ii] = NULL;
+  }
 
   /* Allocate memory space for spacecraft file information, and initialize the members. */
   scptr = malloc(sizeof(GlastScFile));
@@ -117,6 +158,19 @@ GlastScFile * glastscorbit_open(char *filename, char *extname, int *oerror)
     scptr->colnum_scposn = 0;
     scptr->sctime_array = NULL;
     scptr->sctime_array_size = 0;
+    scptr->filename = NULL;
+    scptr->extname = NULL;
+    scptr->open_count = 0;
+  }
+
+  /* Allocate memory space for filename and extension name, and keep their copies. */
+  scptr->filename = malloc(sizeof(char) * (strlen(filename) + 1));
+  scptr->extname = malloc(sizeof(char) * (strlen(extname) + 1));
+  if (scptr->filename && scptr->extname) {
+    strcpy(scptr->filename, filename);
+    strcpy(scptr->extname, extname);
+  } else {
+    *oerror = MEMORY_ALLOCATION;
   }
 
   /* Open the given file, move to the spacecraft data, and read table information. */
@@ -147,11 +201,34 @@ GlastScFile * glastscorbit_open(char *filename, char *extname, int *oerror)
   /* Read "START" column. */
   fits_read_col(scptr->fits_ptr, TDOUBLE, colnum_start, 1, 1, scptr->num_rows, 0, scptr->sctime_array, 0, oerror);
 
-  /* Close file on error(s) */
+  /* Finally check errors in opening file. */
   if (*oerror) {
+    /* Close file on error(s) */
     int close_status = 0; /* Ignore an error in closing file */
     fits_close_file(scptr->fits_ptr, &close_status);
     scptr->fits_ptr = NULL;
+
+    /* Free allocated memory spaces on error(s). */
+    free(scptr->sctime_array);
+    scptr->sctime_array = NULL;
+    free(scptr->filename);
+    scptr->filename = NULL;
+    free(scptr->extname);
+    scptr->extname = NULL;
+    free(scptr);
+    scptr = NULL;
+
+  } else {
+    /* Record filename, extension name, and start the open counnter. */
+    scptr->open_count = 1;
+
+    /* Add this file to the pointer table. */
+    for (ii = 0; ii < NMAXFILES; ++ii) {
+      if (NULL == ScPtrTable[ii]) {
+        ScPtrTable[ii] = scptr;
+        break;
+      }
+    }
   }
 
   /* Return the spacecraft file information. */
