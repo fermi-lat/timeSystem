@@ -77,6 +77,37 @@ typedef struct {
 static GlastScFile ** ScPtrTable = NULL;
 static const int NMAXFILES = 300; /* Same as in fitio2.h */
 
+static void close_scfile(GlastScFile * scptr, int *oerror)
+{
+  /* Clear the previously stored value. */
+  *oerror = 0;
+
+  /* Do nothing if no spacecraft file information is available. */
+  if (NULL == scptr) return;
+
+  /* Close the opened file. */
+  if (NULL != scptr->fits_ptr) {
+    fits_close_file(scptr->fits_ptr, oerror);
+    scptr->fits_ptr = NULL;
+  }
+  scptr->num_rows = 0;
+  scptr->colnum_scposn = 0;
+
+  /* Free the allocated memory space for "START" column. */
+  free(scptr->sctime_array);
+  scptr->sctime_array = NULL;
+  scptr->sctime_array_size = 0;
+
+  /* Free the allocated memory space for names. */
+  free(scptr->filename);
+  scptr->filename = NULL;
+  free(scptr->extname);
+  scptr->extname = NULL;
+
+  /* Free memory space for this pointer. */
+  free(scptr);
+}
+
 /* Close the spacecraft file and clean up the initialized items. */
 void glastscorbit_close(GlastScFile * scptr, int *oerror)
 {
@@ -91,25 +122,8 @@ void glastscorbit_close(GlastScFile * scptr, int *oerror)
 
   /* Destroy this pointer if the file open counter is zero. */
   if (0 == scptr->open_count) {
-    /* Close the opened file. */
-    if (NULL != scptr->fits_ptr) {
-      fits_close_file(scptr->fits_ptr, oerror);
-      scptr->fits_ptr = NULL;
-    }
-    scptr->num_rows = 0;
-    scptr->colnum_scposn = 0;
-
-    /* Free the allocated memory space for "START" column. */
-    free(scptr->sctime_array);
-    scptr->sctime_array = NULL;
-    scptr->sctime_array_size = 0;
-
-    /* Free the allocated memory space for names. */
-    free(scptr->filename);
-    free(scptr->extname);
-
-    /* Free memory space for this pointer. */
-    free(scptr);
+    /* Close spacecraft file and free all the allocated memory spaces. */
+    close_scfile(scptr, oerror);
 
     /* Remove this pointer from the pointer table. */
     if (ScPtrTable) {
@@ -131,6 +145,12 @@ GlastScFile * glastscorbit_open(char *filename, char *extname, int *oerror)
   /* Clear the previously stored value. */
   *oerror = 0;
 
+  /* Check the pointer arguments. */
+  if (NULL == filename || NULL == extname) {
+    *oerror = FILE_NOT_OPENED;
+    return;
+  }
+
   /* Check whether the file is already open. */
   if (ScPtrTable) {
     /* Look for an opened file with the same filename and the same extension name. */
@@ -144,6 +164,10 @@ GlastScFile * glastscorbit_open(char *filename, char *extname, int *oerror)
   } else {
     /* Initialize the pointer table for opened spacecraft files. */
     ScPtrTable = malloc(sizeof(GlastScFile *) * NMAXFILES);
+    if (NULL == ScPtrTable) {
+      *oerror = MEMORY_ALLOCATION;
+      return scptr;
+    }
     for (ii = 0; ii < NMAXFILES; ++ii) ScPtrTable[ii] = NULL;
   }
 
@@ -152,16 +176,15 @@ GlastScFile * glastscorbit_open(char *filename, char *extname, int *oerror)
   if (NULL == scptr) {
     *oerror = MEMORY_ALLOCATION;
     return scptr;
-  } else {
-    scptr->fits_ptr = NULL;
-    scptr->num_rows = 0;
-    scptr->colnum_scposn = 0;
-    scptr->sctime_array = NULL;
-    scptr->sctime_array_size = 0;
-    scptr->filename = NULL;
-    scptr->extname = NULL;
-    scptr->open_count = 0;
   }
+  scptr->fits_ptr = NULL;
+  scptr->num_rows = 0;
+  scptr->colnum_scposn = 0;
+  scptr->sctime_array = NULL;
+  scptr->sctime_array_size = 0;
+  scptr->filename = NULL;
+  scptr->extname = NULL;
+  scptr->open_count = 0;
 
   /* Allocate memory space for filename and extension name, and keep their copies. */
   scptr->filename = malloc(sizeof(char) * (strlen(filename) + 1));
@@ -201,34 +224,25 @@ GlastScFile * glastscorbit_open(char *filename, char *extname, int *oerror)
   /* Read "START" column. */
   fits_read_col(scptr->fits_ptr, TDOUBLE, colnum_start, 1, 1, scptr->num_rows, 0, scptr->sctime_array, 0, oerror);
 
+  /* Register the opened file to the pointer table. */
+  if (0 == *oerror) {
+    /* Find an open space in the pointer table. */
+    for (ii = 0; ii < NMAXFILES; ++ii) if (NULL == ScPtrTable[ii]) break;
+    if (ii < NMAXFILES) {
+      /* Add this file to the pointer table, and start the open counnter. */
+      ScPtrTable[ii] = scptr;
+      scptr->open_count = 1;
+    } else {
+      *oerror = MEMORY_ALLOCATION;
+    }
+  }
+
   /* Finally check errors in opening file. */
   if (*oerror) {
-    /* Close file on error(s) */
+    /* Close spacecraft file and free all the allocated memory spaces. */
     int close_status = 0; /* Ignore an error in closing file */
-    fits_close_file(scptr->fits_ptr, &close_status);
-    scptr->fits_ptr = NULL;
-
-    /* Free allocated memory spaces on error(s). */
-    free(scptr->sctime_array);
-    scptr->sctime_array = NULL;
-    free(scptr->filename);
-    scptr->filename = NULL;
-    free(scptr->extname);
-    scptr->extname = NULL;
-    free(scptr);
+    close_scfile(scptr, &close_status);
     scptr = NULL;
-
-  } else {
-    /* Record filename, extension name, and start the open counnter. */
-    scptr->open_count = 1;
-
-    /* Add this file to the pointer table. */
-    for (ii = 0; ii < NMAXFILES; ++ii) {
-      if (NULL == ScPtrTable[ii]) {
-        ScPtrTable[ii] = scptr;
-        break;
-      }
-    }
   }
 
   /* Return the spacecraft file information. */
@@ -280,21 +294,20 @@ double *glastscorbit_calcpos(GlastScFile * scptr, double t, int *oerror)
   } else {
     evtime_array[0] = evtime_array[1] = t;
     sctime_ptr = (double *)bsearch(evtime_array, scptr->sctime_array, scptr->num_rows - 1, sizeof(double), compare_interval);
-
     if (NULL == sctime_ptr) {
       /* In this case, the given time is out of bounds. */
       *oerror = -2;
       return intposn;
 
-    } else {
-      /* In this case, the given time is between the first and the
-         final rows, so use the row returned by bsearch and the next
-         row for the computation. */
-      scrow1 = sctime_ptr - scptr->sctime_array + 1;
-      scrow2 = scrow1 + 1;
-      sctime1 = sctime_ptr[0];
-      sctime2 = sctime_ptr[1];
     }
+
+    /* In this case, the given time is between the first and the
+       final rows, so use the row returned by bsearch and the next
+       row for the computation. */
+    scrow1 = sctime_ptr - scptr->sctime_array + 1;
+    scrow2 = scrow1 + 1;
+    sctime1 = sctime_ptr[0];
+    sctime2 = sctime_ptr[1];
   }
 
   /* Read "SC_POSITION" column in the two rows found above. */
