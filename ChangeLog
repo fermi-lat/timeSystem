@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Tue Apr 20 18:25:32 PDT 2010
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Add tests to give null pointer(s) for spacecraft filename and extension name.
+    *
+------------------------------------------------------------
 User: hirayama  Tue Apr 20 18:24:56 PDT 2010
 timeSystem/src
 
