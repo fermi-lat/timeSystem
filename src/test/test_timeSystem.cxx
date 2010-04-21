@@ -3440,6 +3440,27 @@ void TimeSystemTestApp::testglastscorbit() {
     }
   }
 
+  // Test detection of a null pointer for file name.
+  scptr = glastscorbit_open(0, "SC_DATA", &status);
+  if (!status) {
+    err() << "Function glastscorbit_open returns with status = " << status <<
+      " for a null pointer given for a spacecraft file name." << std::endl;
+  }
+
+  // Test detection of a null pointer for extension name.
+  scptr = glastscorbit_open(sc_file_char, 0, &status);
+  if (!status) {
+    err() << "Function glastscorbit_open returns with status = " << status <<
+      " for a null pointer given for an extension name." << std::endl;
+  }
+
+  // Test detection of null pointers for both file name and extension name.
+  scptr = glastscorbit_open(0, 0, &status);
+  if (!status) {
+    err() << "Function glastscorbit_open returns with status = " << status <<
+      " for null pointers given for a spacecraft file name and an extension name." << std::endl;
+  }
+
   // Test detection of non-existing file.
   scptr = glastscorbit_open("no_such_file.fits", "SC_DATA", &status);
   if (!status) {
