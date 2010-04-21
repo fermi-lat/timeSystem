@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Tue Apr 20 18:24:56 PDT 2010
+timeSystem/src
+
+Modified Files:
+	glastscorbit.c 
+Log Message:
+Introduce close_scfile function to improve cleanup processes. Test if filename and extname are null. Test if ScPtrTable is full.
+    *
+------------------------------------------------------------
 User: hirayama  Sun Apr 18 18:30:39 PDT 2010
 timeSystem/src/test
 
