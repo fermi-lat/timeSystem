@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Wed Apr 21 21:40:34 PDT 2010
+timeSystem/src
+
+Modified Files:
+	glastscorbit.c GlastTimeHandler.cxx 
+Log Message:
+Hide a pointer to a structure that holds the spacecraft data for safety. Remove status argument for clarity.
+    *
+------------------------------------------------------------
 User: hirayama  Tue Apr 20 18:25:32 PDT 2010
 timeSystem/src/test
 
