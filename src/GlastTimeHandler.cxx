@@ -28,9 +28,12 @@ extern "C" {
 #define RADEG   57.2957795130823
 
 // Declare function prototypes for GLAST spacecraft file access.
-GlastScFile * glastscorbit_open(char *, char *, int *);
-double *glastscorbit_calcpos(GlastScFile *, double, int *);
-void glastscorbit_close(GlastScFile *, int *);
+GlastScFile * glastscorbit_open(char *, char *);
+int glastscorbit_calcpos(GlastScFile *, double, double []);
+int glastscorbit_close(GlastScFile *);
+int glastscorbit_getstatus(GlastScFile *);
+int glastscorbit_outofrange(GlastScFile *);
+void glastscorbit_clearerr(GlastScFile *);
 }
 
 namespace timeSystem {
@@ -229,14 +232,13 @@ namespace timeSystem {
 
   GlastScTimeHandler::~GlastScTimeHandler() {
     // Clean up the spacecraft file access.
-    int error = 0;
-    glastscorbit_close(m_sc_ptr, &error);
+    int close_status = glastscorbit_close(m_sc_ptr);
     m_sc_ptr = 0;
-    if (error) {
+    if (close_status) {
       std::ostringstream os;
       os << "Error occurred while closing spacecraft file " << m_sc_file;
       if (!m_sc_table.empty()) os << "[" << m_sc_table << "]";
-      throw tip::TipException(error, os.str());
+      throw tip::TipException(close_status, os.str());
     }
   }
 
@@ -265,15 +267,17 @@ namespace timeSystem {
     m_sc_file = sc_file_name;
     m_sc_table = sc_extension_name;
 
+    // Close the previously opened spacecraft file (ignore errors).
+    glastscorbit_close(m_sc_ptr);
+
     // Open the given spacecraft file.
-    int error = 0;
-    glastscorbit_close(m_sc_ptr, &error);
-    m_sc_ptr = glastscorbit_open(const_cast<char *>(m_sc_file.c_str()), const_cast<char *>(m_sc_table.c_str()), &error);
-    if (error) {
+    m_sc_ptr = glastscorbit_open(const_cast<char *>(m_sc_file.c_str()), const_cast<char *>(m_sc_table.c_str()));
+    int open_status = glastscorbit_getstatus(m_sc_ptr);
+    if (open_status) {
       std::ostringstream os;
       os << "Error occurred while opening spacecraft file " << m_sc_file;
       if (!m_sc_table.empty()) os << "[" << m_sc_table << "]";
-      throw tip::TipException(error, os.str());
+      throw tip::TipException(open_status, os.str());
     }
 
     // Initializing clock and orbit are not necessary for GLAST.
@@ -311,20 +315,25 @@ namespace timeSystem {
     AbsoluteTime abs_time = computeAbsoluteTime(glast_time);
 
     // Compute spacecraft position at the given time.
-    int error = 0;
-    double * sc_position_array = glastscorbit_calcpos(m_sc_ptr, glast_time, &error);
-    if (error) {
+    double sc_position_array[3];
+    int calc_status = glastscorbit_calcpos(m_sc_ptr, glast_time, sc_position_array);
+    if (calc_status) {
+      // Save the type of error, and clear the error for the next event.
+      bool out_of_range = glastscorbit_outofrange(m_sc_ptr);
+      glastscorbit_clearerr(m_sc_ptr);
+
+      // Throw an appropriate exception depending on the type of error.
       std::ostringstream os;
       os << "Cannot get Fermi spacecraft position for " << std::setprecision(std::numeric_limits<double>::digits10) <<
         glast_time << " Fermi MET (TT):";
-      if (error > 0) {
-        os << " error occurred while reading spacecraft file " << m_sc_file;
-        if (!m_sc_table.empty()) os << "[" << m_sc_table << "]";
-        throw tip::TipException(error, os.str());
-      } else {
+      if (out_of_range) {
         os << " the time is not covered by spacecraft file " << m_sc_file;
         if (!m_sc_table.empty()) os << "[" << m_sc_table << "]";
         throw std::runtime_error(os.str());
+      } else {
+        os << " error occurred while reading spacecraft file " << m_sc_file;
+        if (!m_sc_table.empty()) os << "[" << m_sc_table << "]";
+        throw tip::TipException(calc_status, os.str());
       }
     }
     std::vector<double> sc_position(sc_position_array, sc_position_array + 3);
