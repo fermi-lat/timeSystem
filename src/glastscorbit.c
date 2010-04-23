@@ -63,6 +63,7 @@ static void outer_product(double vect_x[], double vect_y[], double vect_z[])
 }
 
 static GlastScData ** ScDataTable = NULL;
+static GlastScData ** ScDataTableEnd = NULL;
 static const int NMAXFILES = 300; /* Same as in fitio2.h */
 
 int glastscorbit_getstatus(GlastScFile * scfile) {
@@ -156,9 +157,9 @@ GlastScFile * glastscorbit_open(char *filename, char *extname)
 {
   GlastScFile * scfile = NULL;
   GlastScData * scdata = NULL;
+  GlastScData ** scitor = NULL;
   int colnum_start = 0;
   int open_status = 0;
-  int ii = 0;
 
   /* Create an object to return, and initialize the contents. */
   scfile = malloc(sizeof(GlastScFile));
@@ -180,23 +181,23 @@ GlastScFile * glastscorbit_open(char *filename, char *extname)
       scfile->status = MEMORY_ALLOCATION;
       return scfile;
     }
-    for (ii = 0; ii < NMAXFILES; ++ii) ScDataTable[ii] = NULL;
+    ScDataTableEnd = ScDataTable + NMAXFILES;
+    for (scitor = ScDataTable; scitor != ScDataTableEnd; ++scitor) *scitor = NULL;
     scfile->data = ScDataTable;
 
   } else {
     /* Find either an already opened file with the same name, or an open space in the pointer table. */
-    for (ii = 0; ii < NMAXFILES; ++ii) {
-      scdata = ScDataTable[ii];
-      if (scdata) {
+    for (scitor = ScDataTable; scitor != ScDataTableEnd; ++scitor) {
+      if (*scitor) {
         /* Use this table entry if this opened file has the same filename and the same extension name. */
-        if (!strcmp(filename, scdata->filename) && !strcmp(extname, scdata->extname)) {
-          scdata->open_count++;
-          scfile->data = ScDataTable + ii;
+        if (!strcmp(filename, (*scitor)->filename) && !strcmp(extname, (*scitor)->extname)) {
+          (*scitor)->open_count++;
+          scfile->data = scitor;
           return scfile;
         }
       } else {
         /* Use this table entry in case the file is not already open. */
-        if (NULL == scfile->data) scfile->data = ScDataTable + ii;
+        if (NULL == scfile->data) scfile->data = scitor;
       }
     }
 
@@ -414,13 +415,16 @@ int glastscorbit_calcpos(GlastScFile * scfile, double t, double intposn[3])
 double * glastscorbit(char *filename, double t, int *oerror)
 {
   static double intposn[3] = {0., 0., 0.};
-  static double dummy_scposn[3] = {0., 0., 0.};
   static char savefile[256] = " ";
   static GlastScFile * scfile = NULL;
+  int ii = 0;
 
   /* Override error status to preserve the original behavior. */
   *oerror = 0;
   glastscorbit_clearerr(scfile);
+
+  /* Clear the previously stored values. */
+  for (ii = 0; ii < 3; ++ii) intposn[ii] = 0.0;
 
   /* Check whether a new file is given. */
   if (strcmp(savefile, filename)) {
@@ -438,7 +442,7 @@ double * glastscorbit(char *filename, double t, int *oerror)
       strcpy(savefile, filename);
     } else {
       strcpy(savefile, " ");
-      return dummy_scposn;
+      return intposn;
     }
   }
 
