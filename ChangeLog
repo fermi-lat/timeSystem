@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Thu Apr 22 20:11:12 PDT 2010
+timeSystem/src
+
+Modified Files:
+	glastscorbit.c 
+Log Message:
+Store the spacecraft file pointer table element instead of the pointer itself. Return more appropriate error code. Adopt to glastscorbit.h.
+    *
+------------------------------------------------------------
 User: hirayama  Thu Apr 22 20:08:05 PDT 2010
 timeSystem/timeSystem
 
