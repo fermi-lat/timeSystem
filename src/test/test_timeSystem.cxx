@@ -34,6 +34,10 @@
 #include "timeSystem/TimeInterval.h"
 #include "timeSystem/TimeSystem.h"
 
+extern "C" {
+#include "timeSystem/glastscorbit.h"
+}
+
 #include "tip/IFileSvc.h"
 #include "tip/KeyRecord.h"
 #include "tip/TipFile.h"
@@ -3281,17 +3285,6 @@ void TimeSystemTestApp::testEventTimeHandlerFactory() {
   }
 }
 
-extern "C" {
-// Declare function prototypes for GLAST spacecraft file access.
-GlastScFile * glastscorbit_open(char *, char *);
-int glastscorbit_calcpos(GlastScFile *, double, double []);
-int glastscorbit_close(GlastScFile *);
-double * glastscorbit(char *, double, int *);
-int glastscorbit_getstatus(GlastScFile *);
-int glastscorbit_outofrange(GlastScFile *);
-void glastscorbit_clearerr(GlastScFile *);
-}
-
 void TimeSystemTestApp::testglastscorbit() {
   setMethod("testglastscorbit");
 
@@ -3421,24 +3414,22 @@ void TimeSystemTestApp::testglastscorbit() {
   double large_time_diff = 1.; // 1 second.
   typedef std::list<std::pair<double, int> > time_status_type;
   time_status_type time_status_list;
-  time_status_list.push_back(std::make_pair(earliest_met - large_time_diff, -2));
-  time_status_list.push_back(std::make_pair(earliest_met - small_time_diff,  0));
-  time_status_list.push_back(std::make_pair(earliest_met + small_time_diff,  0));
-  time_status_list.push_back(std::make_pair(latest_met   - small_time_diff,  0));
-  time_status_list.push_back(std::make_pair(latest_met   + small_time_diff,  0));
-  time_status_list.push_back(std::make_pair(latest_met   + large_time_diff, -2));
+  time_status_list.push_back(std::make_pair(earliest_met - large_time_diff, TIME_OUT_BOUNDS));
+  time_status_list.push_back(std::make_pair(earliest_met - small_time_diff, 0));
+  time_status_list.push_back(std::make_pair(earliest_met + small_time_diff, 0));
+  time_status_list.push_back(std::make_pair(latest_met   - small_time_diff, 0));
+  time_status_list.push_back(std::make_pair(latest_met   + small_time_diff, 0));
+  time_status_list.push_back(std::make_pair(latest_met   + large_time_diff, TIME_OUT_BOUNDS));
 
   scptr = glastscorbit_open(sc_file_char, "SC_DATA");
   for (time_status_type::const_iterator itor = time_status_list.begin(); itor != time_status_list.end(); ++itor) {
     double glast_time = itor->first;
     double dummy_array[3];
-    bool outofrange_expected = (itor->second != 0);
-    glastscorbit_clearerr(scptr);
-    glastscorbit_calcpos(scptr, glast_time, dummy_array);
-    bool outofrange_result = glastscorbit_outofrange(scptr);
-    if (outofrange_result != outofrange_expected) {
-      err() << "After calling glastscorbit_calcpos for MET = " << glast_time << ", function glastscorbit_outofrange returns " <<
-        outofrange_result << ", not " << outofrange_expected << " as expected." << std::endl;
+    int status_expected = itor->second;
+    int status_result = glastscorbit_calcpos(scptr, glast_time, dummy_array);
+    if (status_result != status_expected) {
+      err() << "Function glastscorbit_calcpos returns with status = " << status_result << " for MET = " << glast_time <<
+        ", not " << status_expected << " as expected." << std::endl;
     }
   }
   glastscorbit_close(scptr);
@@ -3449,8 +3440,8 @@ void TimeSystemTestApp::testglastscorbit() {
     int status_result = 0;
     glastscorbit(sc_file_char, glast_time, &status_result);
     if (status_result != status_expected) {
-      err() << "Function glastscorbit returns with status = " << status_result << ", not " << status_expected <<
-        " as expected." << std::endl;
+      err() << "Function glastscorbit returns with status = " << status_result << " for MET = " << glast_time <<
+        ", not " << status_expected << " as expected." << std::endl;
     }
   }
 
@@ -3573,14 +3564,12 @@ void TimeSystemTestApp::testglastscorbit() {
       sc_file << "\" with \"SC_DATA\" in the third HDU." << std::endl;
   }
 
-  // Note: As of April 21st, 2010, the design doesn't allow the following tests any longer.
-#if 0
   // Test re-opening of an already opened spacecraft file.
   std::string sc_file1 = prependDataPath("testscfile_std.fits");
   char * sc_file1_char = const_cast<char *>(sc_file1.c_str());
-  GlastScFile * scptr1 = glastscorbit_open(sc_file1_char, "SC_DATA"));
+  GlastScFile * scptr1 = glastscorbit_open(sc_file1_char, "SC_DATA");
   GlastScFile * scptr2 = glastscorbit_open(sc_file1_char, "SC_DATA");
-  if (scptr1 != scptr2) {
+  if (scptr1->data != scptr2->data) {
     err() << "Function glastscorbit_open returns different pointers for the same file/extensin names." << std::endl;
   }
   glastscorbit_close(scptr1);
@@ -3591,7 +3580,7 @@ void TimeSystemTestApp::testglastscorbit() {
   char * sc_file2_char = const_cast<char *>(sc_file2.c_str());
   scptr1 = glastscorbit_open(sc_file2_char, "SC_DATA");
   scptr2 = glastscorbit_open(sc_file2_char, "LOOK_AT_ME");
-  if (scptr1 == scptr2) {
+  if (scptr1->data == scptr2->data) {
     err() << "Function glastscorbit_open returns the same pointer for different extensions of the same file." << std::endl;
   }
   glastscorbit_close(scptr1);
@@ -3600,7 +3589,7 @@ void TimeSystemTestApp::testglastscorbit() {
   // Test no re-opening of an already opened spacecraft file, in opening the same extensions of different files.
   scptr1 = glastscorbit_open(sc_file1_char, "SC_DATA");
   scptr2 = glastscorbit_open(sc_file2_char, "SC_DATA");
-  if (scptr1 == scptr2) {
+  if (scptr1->data == scptr2->data) {
     err() << "Function glastscorbit_open returns the same pointer for same extensions of different files." << std::endl;
   }
   glastscorbit_close(scptr1);
@@ -3609,12 +3598,11 @@ void TimeSystemTestApp::testglastscorbit() {
   // Test no re-opening of an already opened spacecraft file, in opening different extensions of different files.
   scptr1 = glastscorbit_open(sc_file1_char, "SC_DATA");
   scptr2 = glastscorbit_open(sc_file2_char, "LOOK_AT_ME");
-  if (scptr1 == scptr2) {
+  if (scptr1->data == scptr2->data) {
     err() << "Function glastscorbit_open returns the same pointer for different extensions of different files." << std::endl;
   }
   glastscorbit_close(scptr1);
   glastscorbit_close(scptr2);
-#endif
 }
 
 void TimeSystemTestApp::testGlastTimeHandler() {
