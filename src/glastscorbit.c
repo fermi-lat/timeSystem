@@ -172,18 +172,8 @@ GlastScFile * glastscorbit_open(char *filename, char *extname)
     return scfile;
   }
 
-  /* Check whether the file is already open. */
-  if (ScDataTable) {
-    /* Look for an opened file with the same filename and the same extension name. */
-    for (ii = 0; ii < NMAXFILES; ++ii) {
-      scdata = ScDataTable[ii];
-      if (scdata && !strcmp(filename, scdata->filename) && !strcmp(extname, scdata->extname)) {
-        scdata->open_count++;
-        scfile->data = ScDataTable + ii;
-        return scfile;
-      }
-    }
-  } else {
+  /* Check the spacecraft data table. */
+  if (NULL == ScDataTable) {
     /* Initialize the pointer table for opened spacecraft files. */
     ScDataTable = malloc(sizeof(GlastScFile *) * NMAXFILES);
     if (NULL == ScDataTable) {
@@ -191,15 +181,33 @@ GlastScFile * glastscorbit_open(char *filename, char *extname)
       return scfile;
     }
     for (ii = 0; ii < NMAXFILES; ++ii) ScDataTable[ii] = NULL;
-  }
+    scfile->data = ScDataTable;
 
-  /* Find an open space in the pointer table. */
-  for (ii = 0; ii < NMAXFILES; ++ii) if (NULL == ScDataTable[ii]) break;
-  if (ii >= NMAXFILES) {
-    scfile->status = TOO_MANY_FILES;
-    return;
+  } else {
+    /* Find either an already opened file with the same name, or an open space in the pointer table. */
+    for (ii = 0; ii < NMAXFILES; ++ii) {
+      scdata = ScDataTable[ii];
+      if (scdata) {
+        /* Use this table entry if this opened file has the same filename and the same extension name. */
+        if (!strcmp(filename, scdata->filename) && !strcmp(extname, scdata->extname)) {
+          scdata->open_count++;
+          scfile->data = ScDataTable + ii;
+          return scfile;
+        }
+      } else {
+        /* Use this table entry in case the file is not already open. */
+        if (NULL == scfile->data) scfile->data = ScDataTable + ii;
+      }
+    }
+
+    /* Return an error if failed to find an entry in the spacecraft data table. */
+    /* Note: This condition is met if the requested file is not already open, AND
+       no open space is available in the pointer table, hence TOO_MANY_FILES. */
+    if (NULL == scfile->data) {
+      scfile->status = TOO_MANY_FILES;
+      return;
+    }
   }
-  scfile->data = ScDataTable + ii;
 
   /* Allocate memory space for spacecraft file information, and initialize the members. */
   scdata = malloc(sizeof(GlastScData));
