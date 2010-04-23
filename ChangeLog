@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Thu Apr 22 22:43:05 PDT 2010
+timeSystem/src
+
+Modified Files:
+	glastscorbit.c 
+Log Message:
+Minor improvements for clarity and safety.
+    *
+------------------------------------------------------------
 User: hirayama  Thu Apr 22 21:00:30 PDT 2010
 timeSystem/src
 
