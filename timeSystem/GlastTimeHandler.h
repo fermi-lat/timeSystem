@@ -6,15 +6,14 @@
 #ifndef timeSystem_GlastTimeHandler_h
 #define timeSystem_GlastTimeHandler_h
 
-#include "timeSystem/AbsoluteTime.h"
 #include "timeSystem/EventTimeHandler.h"
 #include "timeSystem/MjdFormat.h"
 
-#include <string>
-
 extern "C" {
-  class GlastScFile;
+#include "timeSystem/glastscorbit.h"
 }
+
+#include <string>
 
 namespace tip {
   class Header;
@@ -24,6 +23,7 @@ namespace tip {
 
 namespace timeSystem {
 
+  class AbsoluteTime;
   class BaryTimeComputer;
 
   /** \class GlastTimeHandler
