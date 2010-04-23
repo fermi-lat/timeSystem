@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Thu Apr 22 21:00:30 PDT 2010
+timeSystem/src
+
+Modified Files:
+	glastscorbit.c 
+Log Message:
+Search the spacecraft data table more efficiently.
+    *
+------------------------------------------------------------
 User: hirayama  Thu Apr 22 20:11:12 PDT 2010
 timeSystem/src/test
 
