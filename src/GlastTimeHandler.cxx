@@ -23,17 +23,10 @@
 #include <stdexcept>
 #include <vector>
 
+// TODO: Replace RADEG with a static const double and move it to the place to use it.
 extern "C" {
 // Copied from bary.h.
 #define RADEG   57.2957795130823
-
-// Declare function prototypes for GLAST spacecraft file access.
-GlastScFile * glastscorbit_open(char *, char *);
-int glastscorbit_calcpos(GlastScFile *, double, double []);
-int glastscorbit_close(GlastScFile *);
-int glastscorbit_getstatus(GlastScFile *);
-int glastscorbit_outofrange(GlastScFile *);
-void glastscorbit_clearerr(GlastScFile *);
 }
 
 namespace timeSystem {
@@ -318,15 +311,13 @@ namespace timeSystem {
     double sc_position_array[3];
     int calc_status = glastscorbit_calcpos(m_sc_ptr, glast_time, sc_position_array);
     if (calc_status) {
-      // Save the type of error, and clear the error for the next event.
-      bool out_of_range = glastscorbit_outofrange(m_sc_ptr);
-      glastscorbit_clearerr(m_sc_ptr);
-
-      // Throw an appropriate exception depending on the type of error.
+      // Create the common part of the error message.
       std::ostringstream os;
       os << "Cannot get Fermi spacecraft position for " << std::setprecision(std::numeric_limits<double>::digits10) <<
         glast_time << " Fermi MET (TT):";
-      if (out_of_range) {
+
+      // Throw an appropriate exception depending on the type of error.
+      if (TIME_OUT_BOUNDS == calc_status) {
         os << " the time is not covered by spacecraft file " << m_sc_file;
         if (!m_sc_table.empty()) os << "[" << m_sc_table << "]";
         throw std::runtime_error(os.str());
