@@ -30,14 +30,17 @@ static const double time_tolerance = 1.e-3; /* in units of seconds */
 /*   version of) ctatv.c.
  */
 
-/* Compare two time intervals.
-/* Note: This expression becomes true if interval "x" is earlier than interval "y",
-/*       and false if otherwise.  Interval "x" is defined by a time range [x[0], x[1])
-/*       for x[0] < x[1], or (x[1], x[0]] for other cases.
+/** \brief Helper expression for compare_interval to compare two time intervals.
+           Note: This expression becomes true if interval "x" is earlier than interval "y",
+           and false if otherwise.  Interval "x" is defined by a time range [x[0], x[1])
+           for x[0] < x[1], or (x[1], x[0]] for other cases.
  */
 #define is_less_than(x, y) (x[0] < y[0] && x[1] <= y[0] && x[0] <= y[1] && x[1] <= y[1])
 
-/* Comparison function to be passed to "bsearch" function. */
+/** \brief Comparison function to be passed to "bsearch" function.
+    \param a Pointer that points to the first element of an interval to compare with the other.
+    \param b Pointer that points to the first element of the other interval to compare.
+ */
 static int compare_interval(const void * a, const void * b)
 {
   double *a_ptr = (double *)a;
@@ -48,13 +51,30 @@ static int compare_interval(const void * a, const void * b)
   else return 0;
 }
 
-/* Compute vector inner product. */
+/** \brief Compute vector inner product, and return it.
+    \param vect_x Cartesian coordinates of the first vector of the inner product,
+           where vect_x[0] is its x coordinate, vect_x[1] y, and vect_x[2] z.
+           The size of the array must be at least 3.
+    \param vect_y Cartesian coordinates of the second vector of the inner product,
+           where vect_y[0] is its x coordinate, vect_y[1] y, and vect_y[2] z.
+           The size of the array must be at least 3.
+ */
 static double inner_product(double vect_x[], double vect_y[])
 {
   return vect_x[0]*vect_y[0] + vect_x[1]*vect_y[1] + vect_x[2]*vect_y[2];
 }
 
-/* Compute vector outer product. */
+/** \brief Compute vector outer product.
+    \param vect_x Cartesian coordinates of the first vector of the outer product,
+           where vect_x[0] is its x coordinate, vect_x[1] y, and vect_x[2] z.
+           The size of the array must be at least 3.
+    \param vect_y Cartesian coordinates of the second vector of the outer product,
+           where vect_y[0] is its x coordinate, vect_y[1] y, and vect_y[2] z.
+           The size of the array must be at least 3.
+    \param vect_z Cartesian coordinates of the resultant outer product,
+           where vect_z[0] is its x coordinate, vect_z[1] y, and vect_z[2] z.
+           The size of the array must be at least 3.
+ */
 static void outer_product(double vect_x[], double vect_y[], double vect_z[])
 {
   vect_z[0] = vect_x[1]*vect_y[2] - vect_x[2]*vect_y[1];
@@ -62,19 +82,32 @@ static void outer_product(double vect_x[], double vect_y[], double vect_z[])
   vect_z[2] = vect_x[0]*vect_y[1] - vect_x[1]*vect_y[0];
 }
 
-static GlastScData ** ScDataTable = NULL;
-static GlastScData ** ScDataTableEnd = NULL;
-static const int NMAXFILES = 300; /* Same as in fitio2.h */
+/* List of all opened spacecraft data files */
+static GlastScData ** ScDataTable = NULL;    /* Array of pointers to open spacecraft files */
+static GlastScData ** ScDataTableEnd = NULL; /* One past the last element of the above array */
+static const int NMAXFILES = 300;            /* The maximum number of spacecraft files to open */
+                                             /* Note: NMAXFILES is same as in fitio2.h */
 
+/** \brief Return the I/O status code in a spacecraft file pointer.
+    \param scfile Spacecraft file pointer whose I/O status code is to be returned.
+ */
 int glastscorbit_getstatus(GlastScFile * scfile) {
   if (scfile) return scfile->status;
   else return NULL_INPUT_PTR;
 }
 
+/** \brief Clear the I/O status code in a spacecraft file pointer.
+    \param scfile Spacecraft file pointer whose I/O status code is to be cleared.
+ */
 void glastscorbit_clearerr(GlastScFile * scfile) {
   if (scfile) scfile->status = 0;
 }
 
+/** \brief Helper function to clean up the contents of a spacecraft file pointer.
+           The function returns 0 if successful, and a non-zero error code if otherwise.
+           The returned error code can be decoded as a FITS error code.
+    \param scfile Spacecraft file pointer whose contents is to be cleaned.
+ */
 static int close_scfile(GlastScFile * scfile)
 {
   GlastScData * scdata = NULL;
@@ -115,8 +148,11 @@ static int close_scfile(GlastScFile * scfile)
   return close_status;
 }
 
-/* Close the spacecraft file and clean up the initialized items. */
-/* TODO: Describe function argument and return value. */
+/** \brief Close a spacecraft file and clean up initialized items.
+           The function returns 0 if successful, and a non-zero error code if otherwise.
+           The returned error code can be decoded as a FITS error code.
+    \param scfile Spacecraft file pointer whose contents is to be cleaned.
+ */
 int glastscorbit_close(GlastScFile * scfile)
 {
   GlastScData * scdata = NULL;
@@ -152,7 +188,18 @@ int glastscorbit_close(GlastScFile * scfile)
   return close_status;
 }
 
-/* Open the given spacecraft file and initialize global variables. */
+/** \brief Open the given spacecraft file and initialize global variables.
+           The function returns a pointer to a structure that acts as an
+           identifier of the opened file. Error status is stored in a returned
+           structure, and can be obtained by calling glastscorbit_getstatus
+           with the returned pointer. The returned error code can be decoded
+           as a FITS error code. The function returns a null pointer if
+           and only if memory allocation for a structure to return fails.
+           In all other cases, the function returns a valid pointer.
+    \param filename Character string representing the name of a file to open.
+    \param extname Character string representing the name of a FITS extension
+           that contains spacecraft position information.
+ */
 GlastScFile * glastscorbit_open(char *filename, char *extname)
 {
   GlastScFile * scfile = NULL;
@@ -279,7 +326,24 @@ GlastScFile * glastscorbit_open(char *filename, char *extname)
   return scfile;
 }
 
-/* Read spacecraft positions from file and returns interpolated position. */
+/** \brief Read spacecraft positions from file and computes interpolated position.
+           The resultant spacecraft position is set to the argument of the function.
+           The function returns 0 if successful, and a non-zero error code if otherwise.
+           The returned error code can be decoded as a FITS error code, except a given
+           time is not covered by the given spacecraft file, in which case the function
+           returns TIME_OUT_BOUNDS defined in glastscorbit.h. If an error occurs in file
+           I/O operation(s), then the function also sets the error code from the file I/O
+           to the given spacecraft file structure. The function does not perform any
+           computation when the given spacecraft file already has an I/O error. To clear
+           the error code, call glastscorbit_clearerr with the structure.
+    \param scfile Spacecraft file pointer whose contents is to be cleaned.
+    \param t Time in Mission Elapsed Time (MET) at which the spacecraft position is
+           to be computed.
+    \param intposn Array to which interpolated spacecraft position at the given time
+           is to be set, where intposn[0] is the x coordinate of the equatorial
+           coordinate system with the origin at the center of the Earth, intposn[1] y,
+           and intposn[2] z. The size of the array must be at least 3.
+ */
 int glastscorbit_calcpos(GlastScFile * scfile, double t, double intposn[3])
 {
   GlastScData * scdata = NULL;
@@ -409,8 +473,20 @@ int glastscorbit_calcpos(GlastScFile * scfile, double t, double intposn[3])
   return scfile->status;
 }
 
-/* Wrapper function to read spacecraft positions from file and returns interpolated position,
-/* for backward compatibility.
+/** \brief Read spacecraft positions from file and return interpolated position.
+           Note: This function is obsolete and unnecessary, but kept as is only
+           for backward compatibility. Use glastscorbit_open/calcpos/close instead.
+    \param filename Character string representing the name of a spacecraft file.
+           Note: The name of extension is purposely hard-coded as "SC_DATA" for
+           complete backward compatibility.
+    \param t Time in Mission Elapsed Time (MET) at which the spacecraft position is
+           to be computed.
+    \param oerror Pointer of an integer to which an error code is set by the function.
+           The returned error code can be decoded as a FITS error code, except a given
+           time is not covered by the given spacecraft file, in which case the function
+           returns TIME_OUT_BOUNDS defined in glastscorbit.h. The function ignores
+           an integer value pointed by this pointer at the time of a call to this function,
+           and resets it to zero (0) at the beginning of the function.
  */
 double * glastscorbit(char *filename, double t, int *oerror)
 {
