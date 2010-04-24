@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Sat Apr 24 01:35:46 PDT 2010
+timeSystem/src
+
+Modified Files:
+	glastscorbit.c 
+Log Message:
+Improve robustness and clarity. Rename close_scfile to detach_scdata.
+    *
+------------------------------------------------------------
 User: hirayama  Fri Apr 23 21:06:57 PDT 2010
 timeSystem/src
 
