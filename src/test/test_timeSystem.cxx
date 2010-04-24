@@ -3303,10 +3303,9 @@ void TimeSystemTestApp::testglastscorbit() {
   if (status) {
     err() << "Function glastscorbit_open returns with non-zero status (" << status << ") for spacecraft file \"" <<
       sc_file << "\" and extension name \"SC_DATA\"." << std::endl;
-    glastscorbit_clearerr(scptr);
   }
 
-  // Test interpolation of spacecraft position.
+  // Prepare parameters for testing interpolation of spacecraft position.
   double orbit_radius = 7000000.;
   double scpos0x = orbit_radius;
   double scpos1x = orbit_radius * sqrt(3.) / 2.;
@@ -3363,20 +3362,24 @@ void TimeSystemTestApp::testglastscorbit() {
   };
   double tolerance = 1.; // Absolute tolerance of 1 meter corresponds to 3.3 nanoseconds.
   char axis_name[3] = {'X', 'Y', 'Z'};
-  for (size_t ipar = 0; ipar < sizeof(par_list)/sizeof(double)/4; ++ipar) {
-    double glast_time = par_list[ipar][0];
-    double scpos_result[3];
-    status = glastscorbit_calcpos(scptr, glast_time, scpos_result);
-    double * scpos_expected = par_list[ipar] + 1;
-    if (status) {
-      err() << "Function glastscorbit_calcpos returns with non-zero status (" << status << ") for MET = " << glast_time <<
-        "." << std::endl;
-      glastscorbit_clearerr(scptr);
-    } else {
-      for (int ii=0; ii<3; ++ii) {
-        if (std::fabs(scpos_result[ii] - scpos_expected[ii]) > tolerance) {
-          err() << "Function glastscorbit_calcpos returns " << axis_name[ii] << " = " << scpos_result[ii] << " for MET = " <<
-            glast_time << ", not " << scpos_expected[ii] << " as expected." << std::endl;
+
+  // Test interpolation of spacecraft position, only if successful in file opening.
+  if (0 == glastscorbit_getstatus(scptr)) {
+    for (size_t ipar = 0; ipar < sizeof(par_list)/sizeof(double)/4; ++ipar) {
+      double glast_time = par_list[ipar][0];
+      double scpos_result[3];
+      status = glastscorbit_calcpos(scptr, glast_time, scpos_result);
+      double * scpos_expected = par_list[ipar] + 1;
+      if (status) {
+        err() << "Function glastscorbit_calcpos returns with non-zero status (" << status << ") for MET = " << glast_time <<
+          "." << std::endl;
+        glastscorbit_clearerr(scptr); // Clear a potential FITS read error.
+      } else {
+        for (int ii=0; ii<3; ++ii) {
+          if (std::fabs(scpos_result[ii] - scpos_expected[ii]) > tolerance) {
+            err() << "Function glastscorbit_calcpos returns " << axis_name[ii] << " = " << scpos_result[ii] << " for MET = " <<
+              glast_time << ", not " << scpos_expected[ii] << " as expected." << std::endl;
+          }
         }
       }
     }
@@ -3386,7 +3389,6 @@ void TimeSystemTestApp::testglastscorbit() {
   status = glastscorbit_close(scptr);
   if (status) {
     err() << "Function glastscorbit_close returns with non-zero status (" << status << ")." << std::endl;
-    glastscorbit_clearerr(scptr);
   }
 
   // Test the original function "glastscorbit" for backward compatibility.
@@ -3506,7 +3508,6 @@ void TimeSystemTestApp::testglastscorbit() {
   if (status) {
     err() << "Function glastscorbit_open returns with non-zero status (" << status << ") for spacecraft file \"" <<
       sc_file << "\" and extension name \"LOOK_AT_ME\"." << std::endl;
-    glastscorbit_clearerr(scptr);
 
   } else {
     double dummy_array[3];
@@ -3514,7 +3515,6 @@ void TimeSystemTestApp::testglastscorbit() {
     if (status) {
       err() << "Function glastscorbit_calcpos returns with non-zero status (" << status << ") for spacecraft file \"" <<
       sc_file << "\" and extension name \"LOOK_AT_ME\"." << std::endl;
-      glastscorbit_clearerr(scptr);
     }
   }
   glastscorbit_close(scptr);
@@ -3527,7 +3527,6 @@ void TimeSystemTestApp::testglastscorbit() {
   if (status) {
     err() << "Function glastscorbit_open returns with non-zero status (" << status << ") for spacecraft file \"" <<
       sc_file << "\" and extension name \"LOOK_AT_ME\"." << std::endl;
-    glastscorbit_clearerr(scptr);
 
   } else {
     double dummy_array[3];
@@ -3535,7 +3534,6 @@ void TimeSystemTestApp::testglastscorbit() {
     if (status) {
       err() << "Function glastscorbit_calcpos returns with non-zero status (" << status << ") for spacecraft file \"" <<
       sc_file << "\" and extension name \"LOOK_AT_ME\"." << std::endl;
-      glastscorbit_clearerr(scptr);
     }
   }
   glastscorbit_close(scptr);
@@ -3545,7 +3543,6 @@ void TimeSystemTestApp::testglastscorbit() {
   if (status) {
     err() << "Function glastscorbit_open returns with non-zero status (" << status << ") for spacecraft file \"" <<
       sc_file << "\" and extension name \"SC_DATA\"." << std::endl;
-    glastscorbit_clearerr(scptr);
 
   } else {
     double dummy_array[3];
@@ -3553,7 +3550,6 @@ void TimeSystemTestApp::testglastscorbit() {
     if (status) {
       err() << "Function glastscorbit_calcpos returns with non-zero status (" << status << ") for spacecraft file \"" <<
       sc_file << "\" and extension name \"SC_DATA\"." << std::endl;
-      glastscorbit_clearerr(scptr);
     }
   }
   glastscorbit_close(scptr);
