@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Sat Apr 24 02:15:06 PDT 2010
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Call glastscorbit_calcpos only after a successful opening of a spacecraft file. Remove unnecessary calls of glastscorbit_clearerr.
+    *
+------------------------------------------------------------
 User: hirayama  Sat Apr 24 01:46:10 PDT 2010
 timeSystem/src
 
