@@ -103,46 +103,62 @@ void glastscorbit_clearerr(GlastScFile * scfile) {
   if (scfile) scfile->status = 0;
 }
 
-/** \brief Helper function to clean up the contents of a spacecraft file pointer.
+/** \brief Helper function to detach spacecraft data from a given spacecraft file pointer.
+           If no other spacecraft file pointer needs the spacecraft data any longer,
+           the function also cleans up the contents of the spacecraft data.
            The function returns 0 if successful, and a non-zero error code if otherwise.
            The returned error code can be decoded as a FITS error code.
     \param scfile Spacecraft file pointer whose contents is to be cleaned.
  */
-static int close_scfile(GlastScFile * scfile)
+static int detach_scdata(GlastScFile * scfile)
 {
   GlastScData * scdata = NULL;
   int close_status = 0;
 
   /* Do nothing if no spacecraft file information is available. */
-  /* Note: These cases are considered a successful closing of a file,
-     in order to allow a caller to close a file before opening it. */
-  if (NULL == scfile || NULL == scfile->data || NULL == *(scfile->data)) return 0;
+  /* Note: These cases are considered successful, in order to allow
+     a caller to close a spacecraft file before opening it. */
+  if (NULL == scfile || NULL == scfile->data) return 0;
 
   /* Copy the pointer to the spacecraft data for better readability. */
   scdata = *(scfile->data);
 
-  /* Close the opened file. */
-  if (NULL != scdata->fits_ptr) {
-    fits_close_file(scdata->fits_ptr, &close_status);
-    scdata->fits_ptr = NULL;
+  if (scdata) {
+    /* Decrement the file open counter. */
+    scdata->open_count--;
+
+    /* Close spacecraft file and free all the allocated memory spaces
+       if this is the last closure of this file. */
+    if (scdata->open_count <= 0) {
+      /* Close the opened file. */
+      if (NULL != scdata->fits_ptr) {
+        fits_close_file(scdata->fits_ptr, &close_status);
+        scdata->fits_ptr = NULL;
+      }
+      scdata->num_rows = 0;
+      scdata->colnum_scposn = 0;
+
+      /* Free the allocated memory space for "START" column. */
+      free(scdata->sctime_array);
+      scdata->sctime_array = NULL;
+      scdata->sctime_array_size = 0;
+
+      /* Free the allocated memory space for names. */
+      free(scdata->filename);
+      scdata->filename = NULL;
+      free(scdata->extname);
+      scdata->extname = NULL;
+
+      /* Free memory space for this spacecraft data. */
+      free(scdata);
+
+      /* Clear the entry for this spacecraft data in the spacecraft data table. */
+      *(scfile->data) = NULL;
+    }
   }
-  scdata->num_rows = 0;
-  scdata->colnum_scposn = 0;
 
-  /* Free the allocated memory space for "START" column. */
-  free(scdata->sctime_array);
-  scdata->sctime_array = NULL;
-  scdata->sctime_array_size = 0;
-
-  /* Free the allocated memory space for names. */
-  free(scdata->filename);
-  scdata->filename = NULL;
-  free(scdata->extname);
-  scdata->extname = NULL;
-
-  /* Free memory space for this pointer. */
-  free(*(scfile->data));
-  *(scfile->data) = NULL;
+  /* Strip access to the spacecraft data. */
+  scfile->data = NULL;
 
   /* Return closing status. */
   return close_status;
@@ -155,31 +171,10 @@ static int close_scfile(GlastScFile * scfile)
  */
 int glastscorbit_close(GlastScFile * scfile)
 {
-  GlastScData * scdata = NULL;
   int close_status = 0;
 
-  /* Do nothing if no spacecraft file information is available. */
-  /* Note: This case is considered a successful closing of a file,
-     in order to allow a caller to close a file before opening it. */
-  if (NULL == scfile) return 0;
-
-  /* Copy the pointer to the spacecraft data for better readability. */
-  if (scfile->data) scdata = *(scfile->data);
-
-  /* Remove spacecraft data if necessary. */
-  if (scdata) {
-    /* Decrement the file open counter. */
-    scdata->open_count--;
-
-    /* Destroy this pointer if the file open counter is zero. */
-    if (scdata->open_count > 0) {
-      /* Strip access to the spacecraft data. */
-      scfile->data = NULL;
-    } else {
-      /* Close spacecraft file and free all the allocated memory spaces. */
-      close_status = close_scfile(scfile);
-    }
-  }
+  /* Remove a connection to the spacecraft data. */
+  close_status = detach_scdata(scfile);
 
   /* Destroy the spacecraft file pointer. */
   free(scfile);
@@ -206,7 +201,6 @@ GlastScFile * glastscorbit_open(char *filename, char *extname)
   GlastScData * scdata = NULL;
   GlastScData ** scitor = NULL;
   int colnum_start = 0;
-  int open_status = 0;
 
   /* Create an object to return, and initialize the contents. */
   scfile = malloc(sizeof(GlastScFile));
@@ -271,7 +265,7 @@ GlastScFile * glastscorbit_open(char *filename, char *extname)
   scdata->sctime_array_size = 0;
   scdata->filename = NULL;
   scdata->extname = NULL;
-  scdata->open_count = 0;
+  scdata->open_count = 1;
 
   /* Allocate memory space for filename and extension name, and keep their copies. */
   scdata->filename = malloc(sizeof(char) * (strlen(filename) + 1));
@@ -280,47 +274,41 @@ GlastScFile * glastscorbit_open(char *filename, char *extname)
     strcpy(scdata->filename, filename);
     strcpy(scdata->extname, extname);
   } else {
-    open_status = MEMORY_ALLOCATION;
+    scfile->status = MEMORY_ALLOCATION;
   }
 
   /* Open the given file, move to the spacecraft data, and read table information. */
-  fits_open_file(&(scdata->fits_ptr), filename, 0, &open_status);
-  fits_movnam_hdu(scdata->fits_ptr, ANY_HDU, extname, 0, &open_status);
-  fits_get_num_rows(scdata->fits_ptr, &(scdata->num_rows), &open_status);
-  fits_get_colnum(scdata->fits_ptr, CASEINSEN, "START", &colnum_start, &open_status);
-  fits_get_colnum(scdata->fits_ptr, CASEINSEN, "SC_POSITION", &(scdata->colnum_scposn), &open_status);
+  fits_open_file(&(scdata->fits_ptr), filename, 0, &(scfile->status));
+  fits_movnam_hdu(scdata->fits_ptr, ANY_HDU, extname, 0, &(scfile->status));
+  fits_get_num_rows(scdata->fits_ptr, &(scdata->num_rows), &(scfile->status));
+  fits_get_colnum(scdata->fits_ptr, CASEINSEN, "START", &colnum_start, &(scfile->status));
+  fits_get_colnum(scdata->fits_ptr, CASEINSEN, "SC_POSITION", &(scdata->colnum_scposn), &(scfile->status));
 
   /* Require two rows at the minimum, for interpolation to work. */
-  if (0 == open_status && scdata->num_rows < 2) {
+  if (0 == scfile->status && scdata->num_rows < 2) {
     /* Return BAD_ROW_NUM because it would read the second row
        which does not exist in this case. */
-    open_status = BAD_ROW_NUM;
+    scfile->status = BAD_ROW_NUM;
   }
 
   /* Allocate memory space to cache "START" column. */
-  if (0 == open_status) {
+  if (0 == scfile->status) {
     scdata->sctime_array = malloc(sizeof(double) * scdata->num_rows);
     if (NULL == scdata->sctime_array) {
       scdata->sctime_array_size = 0;
-      open_status = MEMORY_ALLOCATION;
+      scfile->status = MEMORY_ALLOCATION;
     } else {
       scdata->sctime_array_size = scdata->num_rows;
     }
   }
 
   /* Read "START" column. */
-  fits_read_col(scdata->fits_ptr, TDOUBLE, colnum_start, 1, 1, scdata->num_rows, 0, scdata->sctime_array, 0, &open_status);
+  fits_read_col(scdata->fits_ptr, TDOUBLE, colnum_start, 1, 1, scdata->num_rows, 0, scdata->sctime_array, 0, &(scfile->status));
 
-  /* Finally check errors in opening file. */
-  if (0 == open_status) {
-    /* Flag this file as successfully opened. */
-    scdata->open_count = 1;
-  } else {
-    /* Close spacecraft file and free all the allocated memory spaces. */
-    /* Note: Ignore an error in closing file, and report the error in opening it. */
-    close_scfile(scfile);
-    scfile->status = open_status;
-  }
+  /* Finally check errors in opening file. If an error occurred, close spacecraft file
+     and free all the allocated memory spaces. Ignore an error in closing file, and
+     preserve the error in opening it. */
+  if (scfile->status) detach_scdata(scfile);
 
   /* Return the successfully opened spacecraft file. */
   return scfile;
