@@ -310,7 +310,7 @@ GlastScFile * glastscorbit_open(char *filename, char *extname)
      preserve the error in opening it. */
   if (scfile->status) detach_scdata(scfile);
 
-  /* Return the successfully opened spacecraft file. */
+  /* Return the spacecraft file information. */
   return scfile;
 }
 
@@ -350,14 +350,14 @@ int glastscorbit_calcpos(GlastScFile * scfile, double t, double intposn[3])
   for (ii = 0; ii < 3; ++ii) intposn[ii] = 0.0;
 
   /* Do nothing if no spacecraft file information is available. */
+  /* Note: Do NOT override scfile->status with this status, because
+     this error is not from an I/O operation by this function. */
   if (NULL == scfile) return NULL_INPUT_PTR;
-  if (NULL == scfile->data || NULL == *(scfile->data)) {
-    /* Note: Do NOT override scfile->status with this status, because
-       this error is not from an I/O operation by this function. */
-    return BAD_FILEPTR;
-  }
+  if (NULL == scfile->data || NULL == *(scfile->data)) return BAD_FILEPTR;
 
   /* Return an error status if an error has occurred on this file. */
+  /* Note: Do NOT override scfile->status with this status, because
+     this error is not from an I/O operation by this function. */
   if (scfile->status) return BAD_FILEPTR;
 
   /* Copy the pointer to the spacecraft data for better readability. */
