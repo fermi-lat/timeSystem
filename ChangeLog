@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Sat Apr 24 21:54:15 PDT 2010
+timeSystem/data
+
+Added Files:
+	testscfile_one.fits 
+Log Message:
+Add more tests on error handling.
+    *
+------------------------------------------------------------
 User: hirayama  Sat Apr 24 21:53:33 PDT 2010
 timeSystem/src/test
 
