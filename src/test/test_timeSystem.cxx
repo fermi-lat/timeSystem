@@ -3410,6 +3410,7 @@ void TimeSystemTestApp::testglastscorbit() {
   }
 
   // Test error detections near the boundaries of spacecraft file.
+  double dummy_array[3];
   double earliest_met = 1000.0;
   double latest_met   = 3120.0;
   double small_time_diff = 1.e-6; // 1 micro-second.
@@ -3426,7 +3427,6 @@ void TimeSystemTestApp::testglastscorbit() {
   scptr = glastscorbit_open(sc_file_char, "SC_DATA");
   for (time_status_type::const_iterator itor = time_status_list.begin(); itor != time_status_list.end(); ++itor) {
     double glast_time = itor->first;
-    double dummy_array[3];
     int status_expected = itor->second;
     int status_result = glastscorbit_calcpos(scptr, glast_time, dummy_array);
     if (status_result != status_expected) {
@@ -3454,7 +3454,14 @@ void TimeSystemTestApp::testglastscorbit() {
     err() << "Function glastscorbit_open returns with status = " << status <<
       " for a null pointer given for a spacecraft file name." << std::endl;
   }
-  glastscorbit_close(scptr);
+  if (scptr->data) {
+    err() << "Function glastscorbit_open returns a non-null pointer to the spacecraft data" <<
+      " for a null pointer given for a spacecraft file name." << std::endl;
+  }
+  if (glastscorbit_close(scptr)) {
+    err() << "Function glastscorbit_close fails to close a file that was attempted to be opened" <<
+      " for a null pointer given for a spacecraft file name." << std::endl;
+  }
 
   // Test detection of a null pointer for extension name.
   scptr = glastscorbit_open(sc_file_char, 0);
@@ -3463,7 +3470,14 @@ void TimeSystemTestApp::testglastscorbit() {
     err() << "Function glastscorbit_open returns with status = " << status <<
       " for a null pointer given for an extension name." << std::endl;
   }
-  glastscorbit_close(scptr);
+  if (scptr->data) {
+    err() << "Function glastscorbit_open returns a non-null pointer to the spacecraft data" <<
+      " for a null pointer given for an extension name." << std::endl;
+  }
+  if (glastscorbit_close(scptr)) {
+    err() << "Function glastscorbit_close fails to close a file that was attempted to be opened" <<
+      " for a null pointer given for an extension name." << std::endl;
+  }
 
   // Test detection of null pointers for both file name and extension name.
   scptr = glastscorbit_open(0, 0);
@@ -3472,7 +3486,14 @@ void TimeSystemTestApp::testglastscorbit() {
     err() << "Function glastscorbit_open returns with status = " << status <<
       " for null pointers given for a spacecraft file name and an extension name." << std::endl;
   }
-  glastscorbit_close(scptr);
+  if (scptr->data) {
+    err() << "Function glastscorbit_open returns a non-null pointer to the spacecraft data" <<
+      " for null pointers given for a spacecraft file name and an extension name." << std::endl;
+  }
+  if (glastscorbit_close(scptr)) {
+    err() << "Function glastscorbit_close fails to close a file that was attempted to be opened" <<
+      " for null pointers given for a spacecraft file name and an extension name." << std::endl;
+  }
 
   // Test detection of non-existing file.
   scptr = glastscorbit_open("no_such_file.fits", "SC_DATA");
@@ -3480,7 +3501,14 @@ void TimeSystemTestApp::testglastscorbit() {
   if (!status) {
     err() << "Function glastscorbit_open returns with status = " << status << " for non-existing spacecraft file." << std::endl;
   }
-  glastscorbit_close(scptr);
+  if (scptr->data) {
+    err() << "Function glastscorbit_open returns a non-null pointer to the spacecraft data" <<
+      " for non-existing spacecraft file." << std::endl;
+  }
+  if (glastscorbit_close(scptr)) {
+    err() << "Function glastscorbit_close fails to close a file that was attempted to be opened" <<
+      " for non-existing spacecraft file." << std::endl;
+  }
 
   glastscorbit("no_such_file.fits", 0., &status);
   if (!status) {
@@ -3493,7 +3521,14 @@ void TimeSystemTestApp::testglastscorbit() {
   if (!status) {
     err() << "Function glastscorbit_open returns with status = " << status << " for non-existing extension." << std::endl;
   }
-  glastscorbit_close(scptr);
+  if (scptr->data) {
+    err() << "Function glastscorbit_open returns a non-null pointer to the spacecraft data" <<
+      " for non-existing extension." << std::endl;
+  }
+  if (glastscorbit_close(scptr)) {
+    err() << "Function glastscorbit_close fails to close a file that was attempted to be opened" <<
+      " for non-existing extension." << std::endl;
+  }
 
   sc_file = prependDataPath("testscfile_lam.fits");
   sc_file_char = const_cast<char *>(sc_file.c_str());
@@ -3502,7 +3537,31 @@ void TimeSystemTestApp::testglastscorbit() {
     err() << "Function glastscorbit returns with status = " << status << " for non-standard extension." << std::endl;
   }
 
+  // Test detection of not-enough spacecraft data.
+  sc_file = prependDataPath("testscfile_one.fits");
+  sc_file_char = const_cast<char *>(sc_file.c_str());
+  scptr = glastscorbit_open(sc_file_char, "SC_DATA");
+  status = glastscorbit_getstatus(scptr);
+  if (!status) {
+    err() << "Function glastscorbit_open returns with status = " << status << " for spacecraft file with only one row." << std::endl;
+  }
+  if (scptr->data) {
+    err() << "Function glastscorbit_open returns a non-null pointer to the spacecraft data" <<
+      " for spacecraft file with only one row." << std::endl;
+  }
+  if (glastscorbit_close(scptr)) {
+    err() << "Function glastscorbit_close fails to close a file that was attempted to be opened" <<
+      " for spacecraft file with only one row." << std::endl;
+  }
+
+  glastscorbit(sc_file_char, 2001., &status);
+  if (!status) {
+    err() << "Function glastscorbit returns with status = " << status << " for spacecraft file with only one row." << std::endl;
+  }
+
   // Test non-standard spacecraft file, with extention name "LOOK_AT_ME".
+  sc_file = prependDataPath("testscfile_lam.fits");
+  sc_file_char = const_cast<char *>(sc_file.c_str());
   scptr = glastscorbit_open(sc_file_char, "LOOK_AT_ME");
   status = glastscorbit_getstatus(scptr);
   if (status) {
@@ -3510,7 +3569,6 @@ void TimeSystemTestApp::testglastscorbit() {
       sc_file << "\" and extension name \"LOOK_AT_ME\"." << std::endl;
 
   } else {
-    double dummy_array[3];
     status = glastscorbit_calcpos(scptr, 2001., dummy_array);
     if (status) {
       err() << "Function glastscorbit_calcpos returns with non-zero status (" << status << ") for spacecraft file \"" <<
@@ -3529,7 +3587,6 @@ void TimeSystemTestApp::testglastscorbit() {
       sc_file << "\" and extension name \"LOOK_AT_ME\"." << std::endl;
 
   } else {
-    double dummy_array[3];
     status = glastscorbit_calcpos(scptr, 2001., dummy_array);
     if (status) {
       err() << "Function glastscorbit_calcpos returns with non-zero status (" << status << ") for spacecraft file \"" <<
@@ -3545,7 +3602,6 @@ void TimeSystemTestApp::testglastscorbit() {
       sc_file << "\" and extension name \"SC_DATA\"." << std::endl;
 
   } else {
-    double dummy_array[3];
     glastscorbit_calcpos(scptr, 1001., dummy_array);
     if (status) {
       err() << "Function glastscorbit_calcpos returns with non-zero status (" << status << ") for spacecraft file \"" <<
@@ -3568,7 +3624,15 @@ void TimeSystemTestApp::testglastscorbit() {
   if (scptr1->data != scptr2->data) {
     err() << "Function glastscorbit_open returns different pointers for the same file/extensin names." << std::endl;
   }
+
+  // Test closing of a "shared" spacecraft file.
   glastscorbit_close(scptr1);
+  if (0 == scptr2->data) {
+    err() << "Function call glastscorbit_close(scptr1) nullify a wrong pointer (scptr2)." << std::endl;
+  }
+  if (glastscorbit_calcpos(scptr2, 1001., dummy_array)) {
+    err() << "After glastscorbit_close(scptr1), glastscorbit_calcpos with scptr2 fails." << std::endl;
+  }
   glastscorbit_close(scptr2);
 
   // Test no re-opening of an already opened spacecraft file, in opening different extensions of the same file.
@@ -3599,6 +3663,52 @@ void TimeSystemTestApp::testglastscorbit() {
   }
   glastscorbit_close(scptr1);
   glastscorbit_close(scptr2);
+
+  // Test closing a null pointer.
+  status = glastscorbit_close(0);
+  if (status) {
+    err() << "Function call glastscorbit_close(0) returns a non-zero status." << std::endl;
+  }
+
+  // Test error reporting by glastscorbit_calcpos for a null input pointer.
+  status = glastscorbit_calcpos(0, 1001., dummy_array);
+  if (!status) {
+    err() << "Function glastscorbit_calcpos returns zero (0) for a null input pointer." << std::endl;
+  }
+
+  // Test error reporting by glastscorbit_calcpos for a null pointer to the spacecraft data table.
+  GlastScFile test_scfile;
+  test_scfile.data = 0;
+  test_scfile.status = 0;
+  status = glastscorbit_calcpos(&test_scfile, 1001., dummy_array);
+  if (!status) {
+    err() << "Function glastscorbit_calcpos returns zero (0), given a null pointer to the spacecraft data table." << std::endl;
+  }
+
+  // Test error reporting by glastscorbit_calcpos for a null pointer to the spacecraft data.
+  GlastScData * test_scdata = 0;
+  test_scfile.data = &test_scdata;
+  test_scfile.status = 0;
+  status = glastscorbit_calcpos(&test_scfile, 1001., dummy_array);
+  if (!status) {
+    err() << "Function glastscorbit_calcpos returns zero (0), given a null pointer to the spacecraft data." << std::endl;
+  }
+
+  // Test error reporting by glastscorbit_calcpos for a non-zero status.
+  sc_file = prependDataPath("testscfile_std.fits");
+  sc_file_char = const_cast<char *>(sc_file.c_str());
+  scptr = glastscorbit_open(sc_file_char, "SC_DATA");
+  scptr->status = -1000; // Bogus error status.
+  status = glastscorbit_calcpos(scptr, 1001., dummy_array);
+  if (!status) {
+    err() << "Function glastscorbit_calcpos returns zero (0), given a bogus non-zero status." << std::endl;
+  }
+  glastscorbit_clearerr(scptr);
+  status = glastscorbit_calcpos(scptr, 1001., dummy_array);
+  if (status) {
+    err() << "Function glastscorbit_calcpos returns a non-zero status, after clearing a bogus error status." << std::endl;
+  }
+  glastscorbit_close(scptr);
 }
 
 void TimeSystemTestApp::testGlastTimeHandler() {
