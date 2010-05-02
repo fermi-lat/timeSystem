@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Sun May  2 14:48:27 PDT 2010
+timeSystem/src
+
+Modified Files:
+	IntFracUtility.cxx 
+Log Message:
+Fix a bug producing a floating-point exception on a 64-bit machine in converting a large double into a long.
+    *
+------------------------------------------------------------
 User: hirayama  Sat Apr 24 21:54:15 PDT 2010
 timeSystem/data
 
