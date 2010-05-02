@@ -254,18 +254,43 @@ namespace timeSystem {
 
     // Perform a binary search for the largest integer expressible in double.
     while (upper_bound != lower_bound) {
+      // Prepare a variable for the result of sanity checks.
+      bool sanity_check_ok = false;
+
       // Take a mid-point as a test point.
       long test_point = upper_bound - (upper_bound - lower_bound) / 2;
 
-      // Convert types to check numerical correctness in type-conversions.
+      // Convert the test point to double type.
       double dval = static_cast<double>(test_point);
-      long ival = static_cast<long>(dval);
-      double dval_back = static_cast<double>(ival);
+
+      // Convert the double value back to long type.
+      // Note: static_cast<long>() may throw a floating-point exception for a double value
+      //       that is too large for a long-type variable. Check the converted double value
+      //       against the largest/smallest possible values, in order to ensure the type
+      //       cast works fine. The logic below works as long as static_cast<double>() is
+      //       monotonically increasing with a value to be converted.
+      long ival = 0;
+      static const double dval_max = static_cast<double>(std::numeric_limits<long>::max());
+      static const double dval_min = static_cast<double>(std::numeric_limits<long>::min());
+      if (dval >= dval_max) ival = std::numeric_limits<long>::max();
+      else if (dval <= dval_min) ival = std::numeric_limits<long>::min();
+      else ival = static_cast<long>(dval);
 
       // Check sanity in computations, by computing a difference to the current candidate.
       long diff_ival = ival - candidate_ival;
       double diff_dval = dval - candidate_dval;
-      if (std::fabs(dval_back - dval) < 0.5 && std::fabs(diff_dval - diff_ival) < 0.5) {
+      if (std::fabs(diff_dval - diff_ival) < 0.5) {
+
+        // Convert types to check numerical correctness in type-conversions.
+        long ival_back = static_cast<long>(dval);
+        double dval_back = static_cast<double>(ival);
+
+        // Check sanity in conversions, by comparing "before" and "after".
+        if (ival_back == ival && std::fabs(dval_back - dval) < 0.5) sanity_check_ok = true;
+      }
+
+      // Update candidates and bounds.
+      if (sanity_check_ok) {
         // Update candidate.
         candidate_dval = dval;
         candidate_ival = ival;
