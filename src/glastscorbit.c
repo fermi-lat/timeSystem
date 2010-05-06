@@ -1,4 +1,7 @@
+#include <longnam.h>
 #include <math.h>
+#include <stdlib.h>
+#include <string.h>
 #include "timeSystem/glastscorbit.h"
 
 /* Tolerance of 1 millisecond in checking time boundaries */
@@ -247,7 +250,7 @@ GlastScFile * glastscorbit_open(char *filename, char *extname)
        no open space is available in the pointer table, hence TOO_MANY_FILES. */
     if (NULL == scfile->data) {
       scfile->status = TOO_MANY_FILES;
-      return;
+      return scfile;
     }
   }
 
