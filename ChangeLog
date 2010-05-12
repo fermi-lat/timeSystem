@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Tue May 11 18:02:46 PDT 2010
+timeSystem/timeSystem
+
+Added Files:
+	SourcePosition.h 
+Log Message:
+Introduce SourcePosition class.
+    *
+------------------------------------------------------------
 TAG
 Tag name: timeSystem-06-04-11, operation: add
 Package: timeSystem
