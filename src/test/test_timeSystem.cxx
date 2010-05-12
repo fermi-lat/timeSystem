@@ -29,6 +29,7 @@
 #include "timeSystem/IntFracUtility.h"
 #include "timeSystem/MjdFormat.h"
 #include "timeSystem/PulsarTestApp.h"
+#include "timeSystem/SourcePosition.h"
 #include "timeSystem/TimeCorrectorApp.h"
 #include "timeSystem/TimeFormat.h"
 #include "timeSystem/TimeInterval.h"
@@ -210,6 +211,9 @@ class TimeSystemTestApp : public PulsarTestApp {
     /// \brief Test IntFracUtility class.
     void testIntFracUtility();
 
+    /// \brief Test SourcePosition class.
+    void testSourcePosition();
+
     /// \brief Test BaryTimeComputer class.
     void testBaryTimeComputer();
 
@@ -377,6 +381,9 @@ void TimeSystemTestApp::runTest() {
 
   // Test IntFracUtility class.
   testIntFracUtility();
+
+  // Test SourcePosition class.
+  testSourcePosition();
 
   // Test BaryTimeComputer class.
   testBaryTimeComputer();
@@ -3058,6 +3065,174 @@ void TimeSystemTestApp::testIntFracUtility() {
     err() << "IntFracUtility::split(\"" << too_small << "\", int_part, frac_part) did not throw an exception." << std::endl;
   } catch (const std::exception &) {
     // That's good.
+  }
+}
+
+void TimeSystemTestApp::testSourcePosition() {
+  setMethod("testSourcePosition");
+
+  // Prepare test parameters and variables.
+  std::auto_ptr<SourcePosition> src_ptr(0);
+  double base_ra = 30.;
+  double base_dec = 60.;
+  double base_x = 0.5 * std::sqrt(3.)/2.;
+  double base_y = 0.5 * 1./2.;
+  double base_z = std::sqrt(3.)/2.;
+  double test_distance = 3.26 * 365.25 * 86400.; // 1 light-year in light-seconds.
+  double tolerance = std::numeric_limits<double>::epsilon() * 1000.;
+  std::string coord_name("XYZ");
+  double par_table[][5] = {
+    {       base_ra,  base_dec,  base_x,  base_y,  base_z},
+    {180. - base_ra,  base_dec, -base_x,  base_y,  base_z},
+    {180. + base_ra,  base_dec, -base_x, -base_y,  base_z},
+    {360. - base_ra,  base_dec,  base_x, -base_y,  base_z},
+    {       base_ra, -base_dec,  base_x,  base_y, -base_z},
+    {180. - base_ra, -base_dec, -base_x,  base_y, -base_z},
+    {180. + base_ra, -base_dec, -base_x, -base_y, -base_z},
+    {360. - base_ra, -base_dec,  base_x, -base_y, -base_z}
+  };
+
+  // Test the constructor that takes RA and Dec.
+  for (size_t ii = 0; ii < sizeof(par_table)/sizeof(double)/5; ++ii) {
+    double * par_ptr = par_table[ii];
+    double test_ra = par_ptr[0];
+    double test_dec = par_ptr[1];
+    std::vector<double> expected_dircos(par_ptr+2, par_ptr+5);
+
+    // Test four different constructors.
+    for (size_t constructor_type = 0; constructor_type < 4; ++constructor_type) {
+      if (0 == constructor_type) {
+        src_ptr.reset(new SourcePosition(test_ra, test_dec));
+      } else if (1 == constructor_type) {
+        src_ptr.reset(new SourcePosition(test_ra, test_dec, test_distance));
+      } else if (2 == constructor_type) {
+        src_ptr.reset(new SourcePosition(expected_dircos));
+      } else if (3 == constructor_type) {
+        src_ptr.reset(new SourcePosition(expected_dircos, test_distance));
+      } else {
+        break;
+      }
+
+      // Create an indicator of the test type.
+      std::ostringstream os;
+      os << " (parameter index: " << ii << ", constructor type: " << constructor_type << ")";
+      std::string test_id(os.str());
+
+      // Test conversions/copies of direction cosines.
+      const std::vector<double> & result_dircos = src_ptr->getDirection();
+      if (result_dircos.size() != 3) {
+        err() << "SourcePosition.getDirection returns a vector of size " << result_dircos.size() << ", not 3." <<
+          test_id << std::endl;
+      } else {
+        for (size_t jj = 0; jj < 3; ++jj) {
+          if (std::fabs(result_dircos[jj] - expected_dircos[jj]) > tolerance) {
+            err() << "SourcePosition.getDirection returns " << result_dircos[jj] << " for its " << coord_name[jj] <<
+              " coordinate, not " << expected_dircos[jj] << "." << test_id << std::endl;
+          }
+        }
+      }
+
+      // Test access to the distance to the source.
+      if (constructor_type % 2) {
+        // Test distance checker.
+        if (!src_ptr->hasDistance()) {
+          err() << "SourcePosition.hasDistance returns " << src_ptr->hasDistance() << ", not " << true << "." <<
+            test_id << std::endl;
+        } else {
+          // Test distance getter.
+          double result_distance = src_ptr->getDistance();
+          if (std::fabs(result_distance - test_distance) > tolerance) {
+            err() << "SourcePosition.getDistance returns " << result_distance << ", not " << test_distance << "." <<
+              test_id << std::endl;
+          }
+        }
+
+      } else {
+        // Test distance checker.
+        if (src_ptr->hasDistance()) {
+          err() << "SourcePosition.hasDistance returns " << src_ptr->hasDistance() << ", not " << false << "." <<
+            test_id << std::endl;
+        }
+      }
+    }
+  }
+
+  // Test detection of a zero vector.
+  std::vector<double> zero_vector(3, 0.);
+  double dummy_distance = 123.4567;
+  try {
+    src_ptr.reset(new SourcePosition(zero_vector));
+    err() << "Constructor of SourcePosition (w/o distance) did not throw an exception for a zero vector." << std::endl;
+  } catch (const std::exception &) {
+  }
+  try {
+    src_ptr.reset(new SourcePosition(zero_vector, dummy_distance));
+    err() << "Constructor of SourcePosition (w/ distance) did not throw an exception for a zero vector." << std::endl;
+  } catch (const std::exception &) {
+  }
+
+  // Test detection of a vector with no element.
+  std::vector<double> zero_dim_vector(0, 0.);
+  try {
+    src_ptr.reset(new SourcePosition(zero_dim_vector));
+    err() << "Constructor of SourcePosition (w/o distance) did not throw an exception for a zero dimentional vector." << std::endl;
+  } catch (const std::exception &) {
+  }
+  try {
+    src_ptr.reset(new SourcePosition(zero_dim_vector, dummy_distance));
+    err() << "Constructor of SourcePosition (w/ distance) did not throw an exception for a zero dimentional vector." << std::endl;
+  } catch (const std::exception &) {
+  }
+
+  // Test proper handling of wrong-sized "three"-vector input.
+  double vector_table[][3] = {
+    {std::sqrt(1./3.), std::sqrt(1./3.), std::sqrt(1./3.)},
+    {std::sqrt(1./3.), std::sqrt(1./3.), std::sqrt(1./3.)},
+    {std::sqrt(1./3.), std::sqrt(1./3.), std::sqrt(1./3.)},
+    {std::sqrt(1./3.), std::sqrt(1./3.), std::sqrt(1./3.)},
+    {std::sqrt(1./3.), std::sqrt(1./3.), std::sqrt(1./3.)},
+    {std::sqrt(1./2.), std::sqrt(1./2.), 0.},
+    {1., 0., 0.}
+  };
+  size_t num_itor = sizeof(vector_table)/sizeof(double)/3;
+  std::vector<double> test_vector(num_itor, 1.);
+  for (size_t ii = 0; ii < num_itor; ++ii) {
+    double * vector_ptr = vector_table[ii];
+    std::vector<double> expected_dircos(vector_ptr, vector_ptr+3);
+
+    // Test two constructors that take a three vector.
+    for (size_t constructor_type = 0; constructor_type < 2; ++constructor_type) {
+      if (0 == constructor_type) {
+        src_ptr.reset(new SourcePosition(test_vector));
+      } else if (1 == constructor_type) {
+        src_ptr.reset(new SourcePosition(test_vector, dummy_distance));
+      } else {
+        break;
+      }
+
+      // Create an indicator of the test type.
+      std::ostringstream os;
+      os << " (parameter index: " << ii << ", constructor type: " << constructor_type << ")";
+      std::string test_id(os.str());
+
+
+      // Test conversions/copies of direction cosines.
+      const std::vector<double> & result_dircos = src_ptr->getDirection();
+      if (result_dircos.size() != 3) {
+        err() << "SourcePosition.getDirection returns a vector of size " << result_dircos.size() << ", not 3." <<
+          test_id << std::endl;
+      } else {
+        for (size_t jj = 0; jj < 3; ++jj) {
+          if (std::fabs(result_dircos[jj] - expected_dircos[jj]) > tolerance) {
+            err() << "SourcePosition.getDirection returns " << result_dircos[jj] << " for its " << coord_name[jj] <<
+              " coordinate, not " << expected_dircos[jj] << "." << test_id << std::endl;
+          }
+        }
+      }
+    }
+
+    // Remove one element from the test input for the next iteration.
+    test_vector.pop_back();
   }
 }
 
