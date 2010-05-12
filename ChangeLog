@@ -1,5 +1,14 @@
 ------------------------------------------------------------
 User: hirayama  Tue May 11 18:02:46 PDT 2010
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Introduce SourcePosition class.
+    *
+------------------------------------------------------------
+User: hirayama  Tue May 11 18:02:46 PDT 2010
 timeSystem/src
 
 Added Files:
