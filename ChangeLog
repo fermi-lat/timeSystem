@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Wed May 12 17:01:02 PDT 2010
+timeSystem/timeSystem
+
+Modified Files:
+	BaryTimeComputer.h 
+Log Message:
+Modify BaryTimeComputer to accept a SourcePosition object instead of RA and Dec.
+    *
+------------------------------------------------------------
 User: hirayama  Tue May 11 18:02:46 PDT 2010
 timeSystem/src/test
 
