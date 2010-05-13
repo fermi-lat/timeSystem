@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Wed May 12 17:01:03 PDT 2010
+timeSystem/src
+
+Modified Files:
+	BaryTimeComputer.cxx GlastTimeHandler.cxx 
+Log Message:
+Modify BaryTimeComputer to accept a SourcePosition object instead of RA and Dec.
+    *
+------------------------------------------------------------
 User: hirayama  Wed May 12 17:01:02 PDT 2010
 timeSystem/timeSystem
 
