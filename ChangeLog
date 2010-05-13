@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Wed May 12 18:12:06 PDT 2010
+timeSystem/src
+
+Modified Files:
+	GlastTimeHandler.cxx TimeCorrectorApp.cxx 
+Log Message:
+Use a SourcePosition object in stead of RA and Dec.
+    *
+------------------------------------------------------------
 User: hirayama  Wed May 12 17:01:03 PDT 2010
 timeSystem/src/test
 
