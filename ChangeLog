@@ -1,5 +1,14 @@
 ------------------------------------------------------------
 User: hirayama  Wed May 12 18:12:06 PDT 2010
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Use a SourcePosition object in stead of RA and Dec.
+    *
+------------------------------------------------------------
+User: hirayama  Wed May 12 18:12:06 PDT 2010
 timeSystem/src
 
 Modified Files:
