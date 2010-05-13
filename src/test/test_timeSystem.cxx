@@ -3273,23 +3273,25 @@ void TimeSystemTestApp::testBaryTimeComputer() {
 
   // Test barycentric correction.
   AbsoluteTime result = original;
-  computer405.computeBaryTime(ra, dec, sc_pos, result);
+  computer405.computeBaryTime(SourcePosition(ra, dec), sc_pos, result);
   ElapsedTime tolerance("TDB", Duration(1.e-7, "Sec"));
   if (!result.equivalentTo(expected_bary, tolerance)) {
-    err() << "BaryTimeComputer::computeBaryTime(" << ra << ", " << dec << ", " << original << ")" <<
+    err() << "BaryTimeComputer::computeBaryTime(SourcePosition(" << ra << ", " << dec << "), " << original << ")" <<
       " returned AbsoluteTime(" << result << "), not equivalent to AbsoluteTime(" << expected_bary <<
       ") with tolerance of " << tolerance << "." << std::endl;
   }
 
   // Test geocentric correction.
   result = original;
-  computer405.computeGeoTime(ra, dec, sc_pos, result);
+  computer405.computeGeoTime(SourcePosition(ra, dec), sc_pos, result);
   tolerance = ElapsedTime("TT", Duration(1.e-7, "Sec"));
   if (!result.equivalentTo(expected_geo, tolerance)) {
-    err() << "BaryTimeComputer::computeGeoTime(" << ra << ", " << dec << ", " << original << ")" <<
+    err() << "BaryTimeComputer::computeGeoTime(SourcePosition(" << ra << ", " << dec << "), " << original << ")" <<
       " returned AbsoluteTime(" << result << "), not equivalent to AbsoluteTime(" << expected_geo <<
       ") with tolerance of " << tolerance << "." << std::endl;
   }
+
+  // TODO: Add tests of parallax correction.
 
   // Test error detection in getting a BaryTimeComputer object for a different, supported JPL ephemeris.
   try {
