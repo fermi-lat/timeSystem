@@ -25,6 +25,7 @@
 #include "timeSystem/AbsoluteTime.h"
 #include "timeSystem/EventTimeHandler.h"
 #include "timeSystem/GlastTimeHandler.h"
+#include "timeSystem/SourcePosition.h"
 
 #include "tip/FileSummary.h"
 #include "tip/Header.h"
@@ -383,7 +384,7 @@ namespace timeSystem {
       // Note: Always require for solar system ephemeris to match between successive arrival time conversions.
       static const bool match_solar_eph = true;
       input_handler->initTimeCorrection(orbitFile_s, sc_extension, solar_eph, match_solar_eph, ang_tolerance);
-      input_handler->setSourcePosition(ra, dec);
+      input_handler->setSourcePosition(SourcePosition(ra, dec));
 
       // Apply arrival time correction to header keyword values.
       tip::Header & input_header = input_handler->getHeader();

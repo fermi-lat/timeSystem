@@ -18,9 +18,9 @@ namespace tip {
 namespace timeSystem {
 
   class AbsoluteTime;
-  class BaryTimeComputer;
   class EventTimeHandler;
   struct Mjd;
+  class SourcePosition;
 
   /** \class IEventTimeHandlerFactory
       \brief Abstract base class for EventTimeHandlerFactory.
@@ -109,10 +109,9 @@ namespace timeSystem {
         const std::string & solar_eph, bool match_solar_eph, double angular_tolerance) = 0;
 
       /** \brief Set the source position for arrival time corrections.
-          \param ra Right Ascension of the source position in degrees.
-          \param dec Declination of the source position in degrees.
+          \param src_position Position of the celestial object to be used for arrival time corrections.
       */
-      virtual void setSourcePosition(double ra, double dec) = 0;
+      virtual void setSourcePosition(const SourcePosition & src_position) = 0;
 
       /** \brief Read a given field of the opened FITS header or the current record of the opened FITS table,
                  compute an absolute time that it represents, and return it.
