@@ -9,7 +9,6 @@
 #include "timeSystem/BaryTimeComputer.h"
 #include "timeSystem/CalendarFormat.h"
 #include "timeSystem/ElapsedTime.h"
-#include "timeSystem/SourcePosition.h"
 #include "timeSystem/TimeInterval.h"
 
 #include "tip/IFileSvc.h"
@@ -23,12 +22,6 @@
 #include <sstream>
 #include <stdexcept>
 #include <vector>
-
-// TODO: Replace RADEG with a static const double and move it to the place to use it.
-extern "C" {
-// Copied from bary.h.
-#define RADEG   57.2957795130823
-}
 
 namespace timeSystem {
 
@@ -221,7 +214,7 @@ namespace timeSystem {
   }
 
   GlastScTimeHandler::GlastScTimeHandler(const std::string & file_name, const std::string & extension_name, bool read_only):
-    GlastTimeHandler(file_name, extension_name, read_only), m_sc_file(), m_sc_table(), m_sc_ptr(0), m_ra_bary(0.), m_dec_bary(0.),
+    GlastTimeHandler(file_name, extension_name, read_only), m_sc_file(), m_sc_table(), m_sc_ptr(0), m_pos_bary(0., 0.),
     m_computer(0) {}
 
   GlastScTimeHandler::~GlastScTimeHandler() {
@@ -284,10 +277,8 @@ namespace timeSystem {
     m_computer = &BaryTimeComputer::getComputer(solar_eph);
   }
 
-  void GlastScTimeHandler::setSourcePosition(double ra, double dec) {
-    // Set RA & Dec to internal variables.
-    m_ra_bary = ra;
-    m_dec_bary = dec;
+  void GlastScTimeHandler::setSourcePosition(const SourcePosition & src_position) {
+    m_pos_bary = src_position;
   }
 
   AbsoluteTime GlastScTimeHandler::getGeoTime(const std::string & field_name, bool from_header) const {
@@ -331,8 +322,8 @@ namespace timeSystem {
     std::vector<double> sc_position(sc_position_array, sc_position_array + 3);
 
     // Perform geocentric or barycentric correction on abs_time.
-    if (compute_bary) m_computer->computeBaryTime(SourcePosition(m_ra_bary, m_dec_bary), sc_position, abs_time);
-    else m_computer->computeGeoTime(SourcePosition(m_ra_bary, m_dec_bary), sc_position, abs_time);
+    if (compute_bary) m_computer->computeBaryTime(m_pos_bary, sc_position, abs_time);
+    else m_computer->computeGeoTime(m_pos_bary, sc_position, abs_time);
 
     // Return the requested time.
     return abs_time;
@@ -360,7 +351,7 @@ namespace timeSystem {
   void GlastGeoTimeHandler::initTimeCorrection(const std::string & /*sc_file_name*/, const std::string & /*sc_extension_name*/,
      const std::string & /*solar_eph*/, bool /*match_solar_eph*/, double /*angular_tolerance*/) {}
 
-  void GlastGeoTimeHandler::setSourcePosition(double /*ra*/, double /*dec*/) {}
+  void GlastGeoTimeHandler::setSourcePosition(const SourcePosition & /*src_position*/) {}
 
   AbsoluteTime GlastGeoTimeHandler::getGeoTime(const std::string & field_name, bool from_header) const {
     return readTime(field_name, from_header);
@@ -372,8 +363,8 @@ namespace timeSystem {
   }
 
   GlastBaryTimeHandler::GlastBaryTimeHandler(const std::string & file_name, const std::string & extension_name, bool read_only):
-    GlastTimeHandler(file_name, extension_name, read_only), m_file_name(file_name), m_ext_name(extension_name), m_ra_nom(0.),
-    m_dec_nom(0.), m_vect_nom(3), m_max_vect_diff(0.), m_pl_ephem() {}
+    GlastTimeHandler(file_name, extension_name, read_only), m_file_name(file_name), m_ext_name(extension_name), m_pos_nom(0., 0.),
+    m_max_vect_diff(0.), m_pl_ephem() {}
 
   GlastBaryTimeHandler::~GlastBaryTimeHandler() {}
 
@@ -407,11 +398,7 @@ namespace timeSystem {
     double dec_file = 0.;
     header["RA_NOM"].get(ra_file);
     header["DEC_NOM"].get(dec_file);
-    m_ra_nom = ra_file;
-    m_dec_nom = dec_file;
-
-    // Pre-compute three vector version of RA_NOM and DEC_NOM.
-    m_vect_nom = computeThreeVector(m_ra_nom, m_dec_nom);
+    m_pos_nom = SourcePosition(ra_file, dec_file);
 
     // Pre-compute threshold in sky position comparison.
     if (angular_tolerance > 180. || angular_tolerance < -180.) {
@@ -419,6 +406,7 @@ namespace timeSystem {
       // Note: The square of the length of difference in two unit vectors cannot be larger than 4.0.
       m_max_vect_diff = 5.;
     } else {
+      static const double RADEG = 57.2957795130823; // Copied from bary.h.
       m_max_vect_diff = 2. * std::sin(angular_tolerance / 2. / RADEG);
       m_max_vect_diff *= m_max_vect_diff;
     }
@@ -452,18 +440,21 @@ namespace timeSystem {
     }
   }
 
-  void GlastBaryTimeHandler::setSourcePosition(double ra, double dec) {
+  void GlastBaryTimeHandler::setSourcePosition(const SourcePosition & src_position) {
     // Check RA & Dec in argument list match the table header, if already barycentered.
-    std::vector<double> source = computeThreeVector(ra, dec);
-    double x_diff = source[0] - m_vect_nom[0];
-    double y_diff = source[1] - m_vect_nom[1];
-    double z_diff = source[2] - m_vect_nom[2];
+    const std::vector<double> & source = src_position.getDirection();
+    const std::vector<double> & nominal = m_pos_nom.getDirection();
+
+    double x_diff = source[0] - nominal[0];
+    double y_diff = source[1] - nominal[1];
+    double z_diff = source[2] - nominal[2];
     double r_diff = x_diff*x_diff + y_diff*y_diff + z_diff*z_diff;
 
     if (m_max_vect_diff < r_diff) {
       std::ostringstream os;
-      os << "Sky position for barycentric corrections (RA=" << ra << ", Dec=" << dec << 
-        ") does not match RA_NOM (" << m_ra_nom << ") and DEC_NOM (" << m_dec_nom << ") in Event file";
+      os << "Sky position for barycentric corrections (X=" << source[0] << ", Y=" << source[1] << ", Z=" << source[2] <<
+        ") does not match RA_NOM and DEC_NOM in event file (X=" << nominal[0] << ", Y=" << nominal[1] << ", Z=" <<
+        nominal[2] << ")";
       throw std::runtime_error(os.str());
     }
   }
@@ -477,13 +468,4 @@ namespace timeSystem {
     return readTime(field_name, from_header);
   }
 
-  std::vector<double> GlastBaryTimeHandler::computeThreeVector(double ra, double dec) const {
-    std::vector<double> vect(3);
-
-    vect[0] = std::cos(ra/RADEG) * std::cos(dec/RADEG);
-    vect[1] = std::sin(ra/RADEG) * std::cos(dec/RADEG);
-    vect[2] = std::sin(dec/RADEG);
-
-    return vect;
-  }
 }

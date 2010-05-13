@@ -3320,6 +3320,7 @@ class BogusTimeHandlerBase: public EventTimeHandler {
       const std::string & /*solar_eph*/, bool /*match_solar_eph*/, double /*angular_tolerance*/) {}
 
     virtual void setSourcePosition(double /*ra*/, double /*dec*/) {}
+    virtual void setSourcePosition(const SourcePosition & /*src_position*/) {}
 
     virtual AbsoluteTime readTime(const std::string & /*field_name*/, bool /*from_header*/ = false) const
       { return AbsoluteTime("TDB", 51910, 0.); }
@@ -4111,7 +4112,7 @@ void TimeSystemTestApp::testGlastTimeHandler() {
 
   // Initialize handler for arrival time corrections.
   handler->initTimeCorrection(sc_file, "SC_DATA", pl_ephem, match_solar_eph, angular_tolerance);
-  handler->setSourcePosition(ra, dec);
+  handler->setSourcePosition(SourcePosition(ra, dec));
 
   // Test reading header keyword value, requesting geocentering.
   result = handler->getGeoTime("TSTART", from_header);
@@ -4212,7 +4213,7 @@ void TimeSystemTestApp::testGlastTimeHandler() {
   // Create an GlastBaryTimeHandler object for EVENTS extension of a barycentered event file.
   handler.reset(GlastBaryTimeHandler::createInstance(event_file_bary, "EVENTS"));
   handler->initTimeCorrection(sc_file, "SC_DATA", pl_ephem, match_solar_eph, angular_tolerance);
-  handler->setSourcePosition(ra, dec);
+  handler->setSourcePosition(SourcePosition(ra, dec));
 
   // Test parsing a time string.
   time_string = "12345.6789012345";
@@ -4271,47 +4272,47 @@ void TimeSystemTestApp::testGlastTimeHandler() {
 
   // Test setting a wrong sky position (ra, dec).
   try {
-    handler->setSourcePosition(ra_wrong, dec_wrong);
-    err() << "GlastBaryTimeHandler::setSourcePosition(" << ra_wrong << ", " << dec_wrong << 
-      ") did not throw an exception when it should." << std::endl;
+    handler->setSourcePosition(SourcePosition(ra_wrong, dec_wrong));
+    err() << "GlastBaryTimeHandler::setSourcePosition(SourcePosition(" << ra_wrong << ", " << dec_wrong << 
+      ")) did not throw an exception when it should." << std::endl;
   } catch (const std::exception &) {
   }
 
   // Test setting a different, but close sky position (ra, dec).
   try {
-    handler->setSourcePosition(ra_close, dec_close);
+    handler->setSourcePosition(SourcePosition(ra_close, dec_close));
   } catch (const std::exception &) {
-    err() << "GlastBaryTimeHandler::setSourcePosition(" << ra_close << ", " << dec_close << 
-      ") threw an exception when it should not." << std::endl;
+    err() << "GlastBaryTimeHandler::setSourcePosition(SourcePosition(" << ra_close << ", " << dec_close << 
+      ")) threw an exception when it should not." << std::endl;
   }
 
   // Test exact match in sky position (ra, dec), with angular tolerance of zero (0) degree.
   angular_tolerance = 0.;
   handler->initTimeCorrection(sc_file, "SC_DATA", pl_ephem, match_solar_eph, angular_tolerance);
   try {
-    handler->setSourcePosition(ra, dec);
+    handler->setSourcePosition(SourcePosition(ra, dec));
   } catch (const std::exception &) {
-    err() << "GlastBaryTimeHandler::setSourcePosition(" << ra << ", " << dec << 
-      ") threw an exception with angular tolerance of zero (0) degree." << std::endl;
+    err() << "GlastBaryTimeHandler::setSourcePosition(SourcePosition(" << ra << ", " << dec << 
+      ")) threw an exception with angular tolerance of zero (0) degree." << std::endl;
   }
 
   // Test large angular tolerance over 180 degrees.
   angular_tolerance = 180.1;
   handler->initTimeCorrection(sc_file, "SC_DATA", pl_ephem, match_solar_eph, angular_tolerance);
   try {
-    handler->setSourcePosition(ra_wrong, dec_wrong);
+    handler->setSourcePosition(SourcePosition(ra_wrong, dec_wrong));
   } catch (const std::exception &) {
-    err() << "GlastBaryTimeHandler::setSourcePosition(" << ra_wrong << ", " << dec_wrong << 
-      ") threw an exception with angular tolerance of 180.1 degrees." << std::endl;
+    err() << "GlastBaryTimeHandler::setSourcePosition(SourcePosition(" << ra_wrong << ", " << dec_wrong <<
+      ")) threw an exception with angular tolerance of 180.1 degrees." << std::endl;
   }
 
   // Test large angular difference, with small angular tolerance.
   angular_tolerance = 1.e-8;
   handler->initTimeCorrection(sc_file, "SC_DATA", pl_ephem, match_solar_eph, angular_tolerance);
   try {
-    handler->setSourcePosition(ra_opposite, dec_opposite);
-    err() << "GlastBaryTimeHandler::setSourcePosition(\"TSTART\", " << ra_opposite << ", " << dec_opposite << 
-      ") did not throw an exception with angular tolerance of 1e-8 degrees." << std::endl;
+    handler->setSourcePosition(SourcePosition(ra_opposite, dec_opposite));
+    err() << "GlastBaryTimeHandler::setSourcePosition(SourcePosition(" << ra_opposite << ", " << dec_opposite <<
+      ")) did not throw an exception with angular tolerance of 1e-8 degrees." << std::endl;
   } catch (const std::exception &) {
   }
 
@@ -4319,10 +4320,10 @@ void TimeSystemTestApp::testGlastTimeHandler() {
   angular_tolerance = 180.1;
   handler->initTimeCorrection(sc_file, "SC_DATA", pl_ephem, match_solar_eph, angular_tolerance);
   try {
-    handler->setSourcePosition(ra_opposite, dec_opposite);
+    handler->setSourcePosition(SourcePosition(ra_opposite, dec_opposite));
   } catch (const std::exception &) {
-    err() << "GlastBaryTimeHandler::setSourcePosition(" << ra_opposite << ", " << dec_opposite << 
-      ") threw an exception with angular tolerance of 180.1 degrees." << std::endl;
+    err() << "GlastBaryTimeHandler::setSourcePosition(SourcePosition(" << ra_opposite << ", " << dec_opposite <<
+      ")) threw an exception with angular tolerance of 180.1 degrees." << std::endl;
   }
 
   // Test checking solar system ephemeris name, with a non-barycentered event extension.
@@ -4372,7 +4373,7 @@ void TimeSystemTestApp::testGlastTimeHandler() {
   // Create an GlastGeoTimeHandler object for EVENTS extension of a geocentered event file.
   handler.reset(GlastGeoTimeHandler::createInstance(event_file_geo, "EVENTS"));
   handler->initTimeCorrection(sc_file, "SC_DATA", pl_ephem, match_solar_eph, angular_tolerance); // This has no effect.
-  handler->setSourcePosition(ra, dec); // This has no effect.
+  handler->setSourcePosition(SourcePosition(ra, dec)); // This has no effect.
 
   // Test parsing a time string.
   time_string = "12345.6789012345";
@@ -4431,18 +4432,18 @@ void TimeSystemTestApp::testGlastTimeHandler() {
 
   // Test setting a wrong sky position (ra, dec).
   try {
-    handler->setSourcePosition(ra_wrong, dec_wrong);
+    handler->setSourcePosition(SourcePosition(ra_wrong, dec_wrong));
   } catch (const std::exception &) {
-    err() << "GlastGeoTimeHandler::setSourcePosition(" << ra_wrong << ", " << dec_wrong << 
-      ") threw an exception when it should not." << std::endl;
+    err() << "GlastGeoTimeHandler::setSourcePosition(SourcePosition(" << ra_wrong << ", " << dec_wrong <<
+      ")) threw an exception when it should not." << std::endl;
   }
 
   // Test setting a different, but close sky position (ra, dec).
   try {
-    handler->setSourcePosition(ra_close, dec_close);
+    handler->setSourcePosition(SourcePosition(ra_close, dec_close));
   } catch (const std::exception &) {
-    err() << "GlastGeoTimeHandler::setSourcePosition(" << ra_close << ", " << dec_close << 
-      ") threw an exception when it should not." << std::endl;
+    err() << "GlastGeoTimeHandler::setSourcePosition(SourcePosition(" << ra_close << ", " << dec_close <<
+      ")) threw an exception when it should not." << std::endl;
   }
 
   // Test loading of an event file with TELESCOP = FERMI.
@@ -4469,7 +4470,7 @@ void TimeSystemTestApp::testGlastTimeHandler() {
   // Create a GlastScTimeHandler object for EVENTS extension of a copied event file for testing detections of time boundaries.
   handler.reset(GlastScTimeHandler::createInstance(event_file_copy, "EVENTS", false));
   handler->initTimeCorrection(sc_file, "SC_DATA", pl_ephem, match_solar_eph, angular_tolerance);
-  handler->setSourcePosition(ra, dec); // This has no effect.
+  handler->setSourcePosition(SourcePosition(ra, dec)); // This has no effect.
 
   // Test detection of time out of bounds, for a time too early.
   handler->getHeader().setKeyword("TSTART", earliest_met - large_time_diff);

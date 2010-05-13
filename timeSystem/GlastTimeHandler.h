@@ -8,6 +8,7 @@
 
 #include "timeSystem/EventTimeHandler.h"
 #include "timeSystem/MjdFormat.h"
+#include "timeSystem/SourcePosition.h"
 
 extern "C" {
 #include "timeSystem/glastscorbit.h"
@@ -55,10 +56,9 @@ namespace timeSystem {
         const std::string & solar_eph, bool match_solar_eph, double angular_tolerance) = 0;
 
       /** \brief Set the source position for arrival time corrections.
-          \param ra Right Ascension of the source position in degrees.
-          \param dec Declination of the source position in degrees.
+          \param src_position Position of the celestial object to be used for arrival time corrections.
       */
-      virtual void setSourcePosition(double ra, double dec) = 0;
+      virtual void setSourcePosition(const SourcePosition & src_position) = 0;
 
       /** \brief Read a given field of the opened FITS header or the current record of the opened FITS table,
                  compute an absolute time that it represents, and return it.
@@ -186,10 +186,9 @@ namespace timeSystem {
         const std::string & solar_eph, bool match_solar_eph, double angular_tolerance);
 
       /** \brief Set the source position for arrival time corrections.
-          \param ra Right Ascension of the source position in degrees.
-          \param dec Declination of the source position in degrees.
+          \param src_position Position of the celestial object to be used for arrival time corrections.
       */
-      virtual void setSourcePosition(double ra, double dec);
+      virtual void setSourcePosition(const SourcePosition & src_position);
 
       /** \brief Read a given field of the opened FITS header or the current record of the opened FITS table,
                  compute an absolute time that it represents, compute a geocentric time for it, and return it.
@@ -211,8 +210,7 @@ namespace timeSystem {
       std::string m_sc_file;
       std::string m_sc_table;
       GlastScFile * m_sc_ptr;
-      double m_ra_bary;  // RA and Dec for barycentering.
-      double m_dec_bary;
+      SourcePosition m_pos_bary;   // The source position for barycentering.
       const BaryTimeComputer * m_computer;
 
       /** Construct a GlastScTimeHandler object.
@@ -263,10 +261,9 @@ namespace timeSystem {
         const std::string & solar_eph, bool match_solar_eph, double angular_tolerance);
 
       /** \brief Set the source position for arrival time corrections.
-          \param ra Right Ascension of the source position in degrees.
-          \param dec Declination of the source position in degrees.
+          \param src_position Position of the celestial object to be used for arrival time corrections.
       */
-      virtual void setSourcePosition(double ra, double dec);
+      virtual void setSourcePosition(const SourcePosition & src_position);
 
       /** \brief Read a given field of the opened FITS header or the current record of the opened FITS table,
                  compute an absolute time that it represents, compute a geocentric time for it, and return it.
@@ -326,10 +323,9 @@ namespace timeSystem {
         const std::string & solar_eph, bool match_solar_eph, double angular_tolerance);
 
       /** \brief Set the source position for arrival time corrections.
-          \param ra Right Ascension of the source position in degrees.
-          \param dec Declination of the source position in degrees.
+          \param src_position Position of the celestial object to be used for arrival time corrections.
       */
-      virtual void setSourcePosition(double ra, double dec);
+      virtual void setSourcePosition(const SourcePosition & src_position);
 
       /** \brief Read a given field of the opened FITS header or the current record of the opened FITS table,
                  compute an absolute time that it represents, compute a geocentric time for it, and return it.
@@ -350,9 +346,7 @@ namespace timeSystem {
     private:
       std::string m_file_name;
       std::string m_ext_name;
-      double m_ra_nom;  // RA and Dec from an event file header.
-      double m_dec_nom;
-      std::vector<double> m_vect_nom; // Three vector representation of m_ra_nom and m_dec_nom.
+      SourcePosition m_pos_nom; // The source position (RA and Dec) from an event file header.
       double m_max_vect_diff;
       std::string m_pl_ephem;
 
@@ -362,12 +356,6 @@ namespace timeSystem {
           \param read_only Set to true to open the file in a read-only mode. Set to false to open it in a read-write mode.
       */
       GlastBaryTimeHandler(const std::string & file_name, const std::string & extension_name, bool read_only = true);
-
-      /** \brief Convert a sky position from a pair of Right Ascension and Declination to a three vector (dimensionless).
-          \param ra Right Ascension of a sky position in degrees to convert to a three vector.
-          \param dec Declination of a sky position in degrees to convert to a three vector.
-      */
-      std::vector<double> computeThreeVector(double ra, double dec) const;
   };
 
 }
