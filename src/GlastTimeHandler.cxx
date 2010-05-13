@@ -9,6 +9,7 @@
 #include "timeSystem/BaryTimeComputer.h"
 #include "timeSystem/CalendarFormat.h"
 #include "timeSystem/ElapsedTime.h"
+#include "timeSystem/SourcePosition.h"
 #include "timeSystem/TimeInterval.h"
 
 #include "tip/IFileSvc.h"
@@ -330,8 +331,8 @@ namespace timeSystem {
     std::vector<double> sc_position(sc_position_array, sc_position_array + 3);
 
     // Perform geocentric or barycentric correction on abs_time.
-    if (compute_bary) m_computer->computeBaryTime(m_ra_bary, m_dec_bary, sc_position, abs_time);
-    else m_computer->computeGeoTime(m_ra_bary, m_dec_bary, sc_position, abs_time);
+    if (compute_bary) m_computer->computeBaryTime(SourcePosition(m_ra_bary, m_dec_bary), sc_position, abs_time);
+    else m_computer->computeGeoTime(SourcePosition(m_ra_bary, m_dec_bary), sc_position, abs_time);
 
     // Return the requested time.
     return abs_time;

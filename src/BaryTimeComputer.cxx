@@ -9,6 +9,7 @@
 #include "timeSystem/Duration.h"
 #include "timeSystem/ElapsedTime.h"
 #include "timeSystem/MjdFormat.h"
+#include "timeSystem/SourcePosition.h"
 
 #include <cctype>
 #include <cmath>
@@ -36,24 +37,24 @@ namespace {
   class JplComputer: public BaryTimeComputer {
     public:
       /** \brief Compute a barycentric time for a given time, and update the time with a computed time.
-          \param ra Right Ascension of a sky position in degrees for which a barycentric time is computed.
-          \param dec Declination of a sky position in degrees for which a barycentric time is computed.
-          \param sc_position Spacecraft position at the time for which a barycentric time is computed. The position must be
+          \param src_position Position of the celestial object for which a barycentric time is computed.
+          \param obs_position Observatory position at the time for which a barycentric time is computed. The position must be
                  given in the form of Cartesian coordinates in meters in the equatorial coordinate system with the origin at
                  the center of the Earth.
           \param abs_time Photon arrival time at the spacecraft. This argument is updated to a barycentric time for it.
       */
-      virtual void computeBaryTime(double ra, double dec, const std::vector<double> & sc_position, AbsoluteTime & abs_time) const;
+      virtual void computeBaryTime(const SourcePosition & src_position, const std::vector<double> & obs_position,
+        AbsoluteTime & abs_time) const;
 
       /** \brief Compute a geocentric time for a given time, and update the time with a computed time.
-          \param ra Right Ascension of a sky position in degrees for which a geocentric time is computed.
-          \param dec Declination of a sky position in degrees for which a geocentric time is computed.
-          \param sc_position Spacecraft position at the time for which a geocentric time is computed. The position must be
+          \param src_position Position of the celestial object for which a geocentric time is computed.
+          \param obs_position Observatory position at the time for which a geocentric time is computed. The position must be
                  given in the form of Cartesian coordinates in meters in the equatorial coordinate system with the origin at
                  the center of the Earth.
           \param abs_time Photon arrival time at the spacecraft. This argument is updated to a geocentric time for it.
       */
-      virtual void computeGeoTime(double ra, double dec, const std::vector<double> & sc_position, AbsoluteTime & abs_time) const;
+      virtual void computeGeoTime(const SourcePosition & src_position, const std::vector<double> & obs_position,
+        AbsoluteTime & abs_time) const;
 
     protected:
       /** \brief Construct a JplComputer object.
@@ -131,11 +132,17 @@ namespace {
     }
   }
 
-  void JplComputer::computeBaryTime(double ra, double dec, const std::vector<double> & sc_position,
+  void JplComputer::computeBaryTime(const SourcePosition & src_position, const std::vector<double> & obs_position,
     AbsoluteTime & abs_time) const {
-    // Check the size of sc_position.
-    if (sc_position.size() < 3) {
+    // Check the size of obs_position.
+    if (obs_position.size() < 3) {
       throw std::runtime_error("Space craft position was given in a wrong format");
+    }
+
+    // Check if the distance to the source is available.
+    if (src_position.hasDistance()) {
+      // TODO: Support the parallax correction.
+      throw std::runtime_error("Parallax correction not supported");
     }
 
     // Set given time to a variable to pass to dpleph C-function.
@@ -162,22 +169,19 @@ namespace {
     std::vector<double> rsa(3);
     for (int idx = 0; idx < 3; ++idx) {
       // Compute SSBC-to-S/C vector.
-      rca[idx] = rce[idx] + sc_position[idx]/m_speed_of_light;
+      rca[idx] = rce[idx] + obs_position[idx]/m_speed_of_light;
 
       // Compute Sun-to-S/C vector.
       rsa[idx] = rca[idx] - rcs[idx];
     }
 
-    // Convert source direction from (RA, Dec) to a three-vector.
-    std::vector<double> sourcedir(3);
-    sourcedir[0] = std::cos(ra/RADEG) * std::cos(dec/RADEG);
-    sourcedir[1] = std::sin(ra/RADEG) * std::cos(dec/RADEG);
-    sourcedir[2] = std::sin(dec/RADEG);
+    // Get Cartesian coordinates of the source direction.
+    const std::vector<double> & sourcedir = src_position.getDirection();
 
     // Compute total propagation delay.
     double sundis = sqrt(computeInnerProduct(rsa, rsa));
     double cth = computeInnerProduct(sourcedir, rsa) / sundis;
-    double delay = computeInnerProduct(sourcedir, rca) + computeInnerProduct(sc_position, vce)/m_speed_of_light
+    double delay = computeInnerProduct(sourcedir, rca) + computeInnerProduct(obs_position, vce)/m_speed_of_light
       + 2*m_solar_mass*log(1.+cth);
 
     // Compute a barycenteric time for the give arrival time.
@@ -191,21 +195,24 @@ namespace {
     abs_time += ElapsedTime("TDB", Duration(delay, "Sec"));
   }
 
-  void JplComputer::computeGeoTime(double ra, double dec, const std::vector<double> & sc_position,
+  void JplComputer::computeGeoTime(const SourcePosition & src_position, const std::vector<double> & obs_position,
     AbsoluteTime & abs_time) const {
-    // Check the size of sc_position.
-    if (sc_position.size() < 3) {
+    // Check the size of obs_position.
+    if (obs_position.size() < 3) {
       throw std::runtime_error("Space craft position was given in a wrong format");
     }
 
-    // Convert source direction from (RA, Dec) to a three-vector.
-    std::vector<double> sourcedir(3);
-    sourcedir[0] = std::cos(ra/RADEG) * std::cos(dec/RADEG);
-    sourcedir[1] = std::sin(ra/RADEG) * std::cos(dec/RADEG);
-    sourcedir[2] = std::sin(dec/RADEG);
+    // Check if the distance to the source is available.
+    if (src_position.hasDistance()) {
+      // TODO: Support the parallax correction.
+      throw std::runtime_error("Parallax correction not supported");
+    }
+
+    // Get Cartesian coordinates of the source direction.
+    const std::vector<double> & sourcedir = src_position.getDirection();
 
     // Compute total propagation delay.
-    double delay = computeInnerProduct(sourcedir, sc_position)/m_speed_of_light;
+    double delay = computeInnerProduct(sourcedir, obs_position)/m_speed_of_light;
 
     // Compute a geocenteric time for the give arrival time.
     abs_time += ElapsedTime("TT", Duration(delay, "Sec"));
