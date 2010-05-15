@@ -194,6 +194,7 @@ namespace timeSystem {
       tip::Table * m_table;
       tip::Table::Iterator m_record_itor;
   };
+
 }
 
 #endif

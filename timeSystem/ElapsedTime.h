@@ -99,6 +99,7 @@ namespace timeSystem {
   std::ostream & operator <<(std::ostream & os, const ElapsedTime & elapsed_time);
 
   st_stream::OStream & operator <<(st_stream::OStream & os, const ElapsedTime & elapsed_time);
+
 }
 
 #endif
