@@ -31,6 +31,7 @@ namespace timeSystem {
   inline long SecPerHour() { static long r = SecPerMin() * MinPerHour(); return r; }
   inline long MinPerDay() { static long r = MinPerHour() * HourPerDay(); return r; }
   inline long SecPerDay() { static long r = SecPerMin() * MinPerHour() * HourPerDay(); return r; }
+
 }
 
 #endif

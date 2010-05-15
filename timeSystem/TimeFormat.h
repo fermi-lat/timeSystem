@@ -61,6 +61,7 @@ namespace timeSystem {
         throw std::runtime_error("Requested time representation not supported");
       }
   };
+
 }
 
 #endif
