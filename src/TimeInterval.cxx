@@ -33,4 +33,5 @@ namespace timeSystem {
   Duration TimeInterval::computeDuration(const std::string & time_system_name) const {
     return computeElapsedTime(time_system_name).getDuration();
   }
+
 }
