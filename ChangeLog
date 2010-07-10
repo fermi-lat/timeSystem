@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Fri Jul  9 18:38:50 PDT 2010
+timeSystem/timeSystem
+
+Modified Files:
+	ElapsedTime.h 
+Log Message:
+remove unnecessary qualifiers.
+    *
+------------------------------------------------------------
 User: hirayama  Fri Jul  9 18:38:49 PDT 2010
 timeSystem/src
 
