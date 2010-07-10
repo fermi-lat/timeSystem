@@ -44,7 +44,7 @@ namespace timeSystem {
       ElapsedTime operator -() const;
 
       /// \brief Return the name of the time system in which this object is defined.
-      const timeSystem::TimeSystem & getSystem() const;
+      const TimeSystem & getSystem() const;
 
       /** \brief Compute time duration of this object in a specified time unit, and set the result to the arguments of this method.
           \param time_unit_name Name of time unit to be used to compute time duration.
