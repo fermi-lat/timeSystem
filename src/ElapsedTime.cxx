@@ -21,7 +21,7 @@ namespace timeSystem {
 
   ElapsedTime ElapsedTime::operator -() const { return ElapsedTime(m_time_system, -m_duration); }
 
-  const timeSystem::TimeSystem & ElapsedTime::getSystem() const { return *m_time_system; }
+  const TimeSystem & ElapsedTime::getSystem() const { return *m_time_system; }
 
   void ElapsedTime::getDuration(const std::string & time_unit_name, long & time_value_int, double & time_value_frac) const {
     m_duration.get(time_unit_name, time_value_int, time_value_frac);

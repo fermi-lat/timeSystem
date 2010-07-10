@@ -250,7 +250,7 @@ namespace timeSystem {
 
     // Handle leap seconds.
     std::string leap_sec_file = pars["leapsecfile"];
-    timeSystem::TimeSystem::setDefaultLeapSecFileName(leap_sec_file);
+    TimeSystem::setDefaultLeapSecFileName(leap_sec_file);
 
     // Get RA and Dec.
     double ra = pars["ra"];
