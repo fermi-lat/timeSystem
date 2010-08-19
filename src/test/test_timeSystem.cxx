@@ -1,4 +1,4 @@
-/** \file test_timeSystem.h
+/** \file test_timeSystem.cxx
     \brief Unit test for timeSystem package.
     \author Masa Hirayama, James Peachey
 */
@@ -358,9 +358,6 @@ TimeSystemTestApp::TimeSystemTestApp(): PulsarTestApp("timeSystem") {
 }
 
 void TimeSystemTestApp::runTest() {
-  // Set precision high enough to show numbers in error messages accurately.
-  setPrecision(std::numeric_limits<double>::digits10);
-
   // Test Duration class.
   testDuration();
 
