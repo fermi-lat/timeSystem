@@ -43,6 +43,9 @@ namespace timeSystem {
 
     // Set the directory name for output reference files.
     m_outref_dir = facilities::commonUtilities::joinPath(m_data_dir, "outref");
+
+    // Set precision high enough to show numbers in error messages accurately.
+    std::cerr.precision(std::numeric_limits<double>::digits10);
   }
 
   PulsarTestApp::~PulsarTestApp() throw() {}
