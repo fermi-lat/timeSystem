@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Thu Aug 19 16:03:41 PDT 2010
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Remove unnecessary setting of precision. Correct file name in the Doxygen comment.
+    *
+------------------------------------------------------------
 User: hirayama  Thu Aug 19 16:03:11 PDT 2010
 timeSystem/src
 
