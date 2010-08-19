@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Thu Aug 19 16:03:11 PDT 2010
+timeSystem/src
+
+Modified Files:
+	PulsarTestApp.cxx 
+Log Message:
+Set precision in the constructor of PulsarTestApp class.
+    *
+------------------------------------------------------------
 TAG
 Tag name: ScienceTools-09-18-01, operation: add
 Package: timeSystem
