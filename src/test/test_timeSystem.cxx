@@ -3238,19 +3238,52 @@ void TimeSystemTestApp::testBaryTimeComputer() {
 
   // Prepare a time to be geo/barycentered and an expected result after geo/barycentered.
   AbsoluteTime glast_tt_origin("TT", 51910, 64.184);
-  double glast_time = 2.123393677090199E+08; // TSTART in my_pulsar_events_v3.fits.
-  AbsoluteTime original = glast_tt_origin + ElapsedTime("TT", Duration(glast_time, "Sec"));
+  double glast_time_original = 2.123393677090199E+08; // TSTART in my_pulsar_events_v3.fits.
+  AbsoluteTime original = glast_tt_origin + ElapsedTime("TT", Duration(glast_time_original, "Sec"));
   AbsoluteTime glast_tdb_origin("TDB", 51910, 64.184);
-  glast_time = 2.123393824137859E+08; // TSTART in my_pulsar_events_bary_v3.fits.
-  AbsoluteTime expected_bary = glast_tdb_origin + ElapsedTime("TDB", Duration(glast_time, "Sec"));
-  glast_time = 212339367.70603555441; // Once computed by BaryTimeComputer::computeGeoTime method.
-  AbsoluteTime expected_geo = glast_tt_origin + ElapsedTime("TT", Duration(glast_time, "Sec"));
+  double glast_time_bary = 2.123393824137859E+08; // TSTART in my_pulsar_events_bary_v3.fits.
+  AbsoluteTime expected_bary = glast_tdb_origin + ElapsedTime("TDB", Duration(glast_time_bary, "Sec"));
+  double glast_time_geo = 212339367.70603555441; // Once computed by BaryTimeComputer::computeGeoTime method.
+  AbsoluteTime expected_geo = glast_tt_origin + ElapsedTime("TT", Duration(glast_time_geo, "Sec"));
+
+  // Set position/velocity vectors of the Earth, the Sun, and the solar system barycenter.
+  // Note: Those values are once computed by C-function "dpleph" in dpleph.c with JPL DE405.
+  //double rce[] = {500.8780937237265789, 10.97861817447444821, 4.7143308336665485925}; // SSBC-to-Earth vector (nnecessary here).
+  double rca[] = {500.88913851975058833, 10.996303638826491422, 4.724526724679001255}; // SSBC-to-S/C vector.
+  double vce[] = {-3.5658338025897011906e-06, 9.078003543825905223e-05, 3.9352343261386849526e-05}; // Earth velocity w.r.t SSBC.
+  //double rcs[] = {0.38800865319152139099, 2.2364243580518863297, 0.9254092484672552521}; // SSBC-to-Sun vector (nnecessary here).
+  double rsa[] = {500.50112986655904024, 8.7598792807746050926, 3.7991174762117458918}; // Sun-to-S/C vector.
 
   // Set parameters for barycentering.
   double ra = 85.0482;
   double dec = -69.3319;
-  double sc_pos_array[] = {3311146.54815027, 5301968.82897028, 3056651.22812332}; // SC position at TSTART (computed separately).
-  std::vector<double> sc_pos(sc_pos_array, sc_pos_array + 3);
+  double glast_pos_array[] = {3311146.54815027, 5301968.82897028, 3056651.22812332}; // SC position at TSTART (computed separately).
+  std::vector<double> glast_pos(glast_pos_array, glast_pos_array + 3);
+  SourcePosition src_pos(ra, dec);
+  const std::vector<double> & src_dir = src_pos.getDirection();
+
+  // Check pre-computed results of geo/barycentric corrections.
+  ElapsedTime tolerance("TDB", Duration(1.e-7, "Sec"));
+  const double speed_of_light = 2.99792458e+8;
+  const double solar_mass = 4.925490948308836987e-06; // Once computed by C-function "dpleph" in dpleph.c with JPL DE405.
+  double bary_delay = src_dir[0]*rca[0] + src_dir[1]*rca[1] + src_dir[2]*rca[2]
+    + (glast_pos[0]*vce[0] + glast_pos[1]*vce[1] + glast_pos[2]*vce[2]) / speed_of_light
+    + 2. * solar_mass * std::log(1. + (src_dir[0]*rsa[0] + src_dir[1]*rsa[1] + src_dir[2]*rsa[2])
+      / std::sqrt(rsa[0]*rsa[0] + rsa[1]*rsa[1] + rsa[2]*rsa[2]));
+  AbsoluteTime result = original + ElapsedTime("TDB", Duration(bary_delay, "Sec"));
+  if (!result.equivalentTo(expected_bary, tolerance)) {
+    err() << "Explicit computation of barycentric time results in AbsoluteTime(" << result <<
+      "), not equivalent to the pre-computed barycentric time AbsoluteTime(" << expected_bary <<
+      ") with tolerance of " << tolerance << "." << std::endl;
+  }
+
+  double geo_delay = (src_dir[0] * glast_pos[0] + src_dir[1] * glast_pos[1] + src_dir[2] * glast_pos[2]) / speed_of_light;
+  result = original + ElapsedTime("TT", Duration(geo_delay, "Sec"));
+  if (!result.equivalentTo(expected_geo, tolerance)) {
+    err() << "Explicit computation of geocentric time results in AbsoluteTime(" << result <<
+      "), not equivalent to the pre-computed geocentric time AbsoluteTime(" << expected_geo <<
+      ") with tolerance of " << tolerance << "." << std::endl;
+  }
 
   // Test error detection in getting a BaryTimeComputer object for non-existing ephemeris.
   try {
@@ -3268,19 +3301,18 @@ void TimeSystemTestApp::testBaryTimeComputer() {
     err() << "BaryTimeComputer::getPlanetaryEphemerisName() returned \"" << ephem_name << "\", not \"JPL DE405\"." << std::endl;
   }
 
-  // Test barycentric correction.
-  AbsoluteTime result = original;
-  computer405.computeBaryTime(SourcePosition(ra, dec), sc_pos, result);
-  ElapsedTime tolerance("TDB", Duration(1.e-7, "Sec"));
+  // Test barycentric correction (for a source at an infinate distance).
+  result = original;
+  computer405.computeBaryTime(src_pos, glast_pos, result);
   if (!result.equivalentTo(expected_bary, tolerance)) {
     err() << "BaryTimeComputer::computeBaryTime(SourcePosition(" << ra << ", " << dec << "), " << original << ")" <<
       " returned AbsoluteTime(" << result << "), not equivalent to AbsoluteTime(" << expected_bary <<
       ") with tolerance of " << tolerance << "." << std::endl;
   }
 
-  // Test geocentric correction.
+  // Test geocentric correction (for a source at an infinate distance).
   result = original;
-  computer405.computeGeoTime(SourcePosition(ra, dec), sc_pos, result);
+  computer405.computeGeoTime(src_pos, glast_pos, result);
   tolerance = ElapsedTime("TT", Duration(1.e-7, "Sec"));
   if (!result.equivalentTo(expected_geo, tolerance)) {
     err() << "BaryTimeComputer::computeGeoTime(SourcePosition(" << ra << ", " << dec << "), " << original << ")" <<
@@ -3288,7 +3320,36 @@ void TimeSystemTestApp::testBaryTimeComputer() {
       ") with tolerance of " << tolerance << "." << std::endl;
   }
 
-  // TODO: Add tests of parallax correction.
+  // Compute a source position at a finite distance, whose apparent viewing direction at the spacecraft
+  // happens to be identical to the one used in the previous test (ra = 85.0482, dec = -69.3319).
+  double distance_from_sc = 3.26 * 365.25 * 86400. * speed_of_light; // Approx. 1 parsecs.
+  std::vector<double> ssb_to_src(3);
+  double distance_from_ssb = 0.;
+  for (std::size_t ii = 0; ii < 3; ++ii) {
+    ssb_to_src[ii] = rca[ii] + src_dir[ii] * distance_from_sc;
+    distance_from_ssb += ssb_to_src[ii]*ssb_to_src[ii];
+  }
+  distance_from_ssb = std::sqrt(distance_from_ssb);
+  SourcePosition nearby_src(ssb_to_src, distance_from_ssb);
+
+  // Test barycentric correction for a source at a finite distance.
+  result = original;
+  computer405.computeBaryTime(nearby_src, glast_pos, result);
+  if (!result.equivalentTo(expected_bary, tolerance)) {
+    err() << "BaryTimeComputer::computeBaryTime(nearby_src, " << original << ")" <<
+      " returned AbsoluteTime(" << result << "), not equivalent to AbsoluteTime(" << expected_bary <<
+      ") with tolerance of " << tolerance << "." << std::endl;
+  }
+
+  // Test geocentric correction for a source at a finate distance.
+  result = original;
+  computer405.computeGeoTime(nearby_src, glast_pos, result);
+  tolerance = ElapsedTime("TT", Duration(1.e-7, "Sec"));
+  if (!result.equivalentTo(expected_geo, tolerance)) {
+    err() << "BaryTimeComputer::computeGeoTime(nearby_src, " << original << ")" <<
+      " returned AbsoluteTime(" << result << "), not equivalent to AbsoluteTime(" << expected_geo <<
+      ") with tolerance of " << tolerance << "." << std::endl;
+  }
 
   // Test error detection in getting a BaryTimeComputer object for a different, supported JPL ephemeris.
   try {
@@ -3483,13 +3544,13 @@ void TimeSystemTestApp::testglastscorbit() {
   // Prepare parameters for testing interpolation of spacecraft position.
   double orbit_radius = 7000000.;
   double scpos0x = orbit_radius;
-  double scpos1x = orbit_radius * sqrt(3.) / 2.;
-  double scpos1y = orbit_radius / 2. * sqrt(3.) / 2.;
+  double scpos1x = orbit_radius * std::sqrt(3.) / 2.;
+  double scpos1y = orbit_radius / 2. * std::sqrt(3.) / 2.;
   double scpos1z = orbit_radius / 2. / 2.;
   double scpos2x = orbit_radius / 2.;
-  double scpos2y = orbit_radius * sqrt(3.) / 2. * sqrt(3.) / 2.;
-  double scpos2z = orbit_radius * sqrt(3.) / 2. / 2.;
-  double scpos3y = orbit_radius * sqrt(3.) / 2.;
+  double scpos2y = orbit_radius * std::sqrt(3.) / 2. * std::sqrt(3.) / 2.;
+  double scpos2z = orbit_radius * std::sqrt(3.) / 2. / 2.;
+  double scpos3y = orbit_radius * std::sqrt(3.) / 2.;
   double scpos3z = orbit_radius / 2.;
   double par_list[][4] = {
     // F a circular orbit with the radius of 7000 km.
