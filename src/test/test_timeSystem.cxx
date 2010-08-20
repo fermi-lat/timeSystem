@@ -3322,7 +3322,7 @@ void TimeSystemTestApp::testBaryTimeComputer() {
 
   // Compute a source position at a finite distance, whose apparent viewing direction at the spacecraft
   // happens to be identical to the one used in the previous test (ra = 85.0482, dec = -69.3319).
-  double distance_from_sc = 3.26 * 365.25 * 86400. * speed_of_light; // Approx. 1 parsecs.
+  double distance_from_sc = 5000.; // Approximately 10 AU, in order for parallax to stand out.
   std::vector<double> ssb_to_src(3);
   double distance_from_ssb = 0.;
   for (std::size_t ii = 0; ii < 3; ++ii) {
