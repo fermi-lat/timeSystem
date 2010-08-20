@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Thu Aug 19 20:09:53 PDT 2010
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Improve the test for parallax corrections.
+    *
+------------------------------------------------------------
 User: hirayama  Thu Aug 19 19:47:29 PDT 2010
 timeSystem/src/test
 
