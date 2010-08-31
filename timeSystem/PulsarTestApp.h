@@ -24,7 +24,8 @@ namespace tip {
 
 namespace timeSystem {
 
-  /** \brief Base class for unit-test classes of pulsar tool packages.
+  /** \class PulsarTestApp
+      \brief Base class for unit-test classes of pulsar tool packages.
   */
   class PulsarTestApp : public st_app::StApp {
     public:
@@ -75,7 +76,8 @@ namespace timeSystem {
       std::string m_outref_dir;
   };
 
-  /** \brief Base class for classes to test an application in a pulsar tool package.
+  /** \class PulsarApplicationTester
+      \brief Base class for classes to test an application in a pulsar tool package.
   */
   class PulsarApplicationTester {
     public:
