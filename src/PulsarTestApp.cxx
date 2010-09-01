@@ -387,7 +387,7 @@ namespace timeSystem {
     if (!ifs_ref) err() << "Could not open reference file for " << out_file << ": " << ref_file << std::endl;
 
     // Read the output file.
-    static const size_t s_line_size = 2048;
+    static const std::size_t s_line_size = 2048;
     char out_buf[s_line_size];
     std::list<std::string> out_line_list;
     while (ifs_out) {

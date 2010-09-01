@@ -3090,14 +3090,14 @@ void TimeSystemTestApp::testSourcePosition() {
   };
 
   // Test the constructor that takes RA and Dec.
-  for (size_t ii = 0; ii < sizeof(par_table)/sizeof(double)/5; ++ii) {
+  for (std::size_t ii = 0; ii < sizeof(par_table)/sizeof(double)/5; ++ii) {
     double * par_ptr = par_table[ii];
     double test_ra = par_ptr[0];
     double test_dec = par_ptr[1];
     std::vector<double> expected_dircos(par_ptr+2, par_ptr+5);
 
     // Test four different constructors.
-    for (size_t constructor_type = 0; constructor_type < 4; ++constructor_type) {
+    for (std::size_t constructor_type = 0; constructor_type < 4; ++constructor_type) {
       if (0 == constructor_type) {
         src_ptr.reset(new SourcePosition(test_ra, test_dec));
       } else if (1 == constructor_type) {
@@ -3121,7 +3121,7 @@ void TimeSystemTestApp::testSourcePosition() {
         err() << "SourcePosition.getDirection returns a vector of size " << result_dircos.size() << ", not 3." <<
           test_id << std::endl;
       } else {
-        for (size_t jj = 0; jj < 3; ++jj) {
+        for (std::size_t jj = 0; jj < 3; ++jj) {
           if (std::fabs(result_dircos[jj] - expected_dircos[jj]) > tolerance) {
             err() << "SourcePosition.getDirection returns " << result_dircos[jj] << " for its " << coord_name[jj] <<
               " coordinate, not " << expected_dircos[jj] << "." << test_id << std::endl;
@@ -3191,14 +3191,14 @@ void TimeSystemTestApp::testSourcePosition() {
     {std::sqrt(1./2.), std::sqrt(1./2.), 0.},
     {1., 0., 0.}
   };
-  size_t num_itor = sizeof(vector_table)/sizeof(double)/3;
+  std::size_t num_itor = sizeof(vector_table)/sizeof(double)/3;
   std::vector<double> test_vector(num_itor, 1.);
-  for (size_t ii = 0; ii < num_itor; ++ii) {
+  for (std::size_t ii = 0; ii < num_itor; ++ii) {
     double * vector_ptr = vector_table[ii];
     std::vector<double> expected_dircos(vector_ptr, vector_ptr+3);
 
     // Test two constructors that take a three vector.
-    for (size_t constructor_type = 0; constructor_type < 2; ++constructor_type) {
+    for (std::size_t constructor_type = 0; constructor_type < 2; ++constructor_type) {
       if (0 == constructor_type) {
         src_ptr.reset(new SourcePosition(test_vector));
       } else if (1 == constructor_type) {
@@ -3219,7 +3219,7 @@ void TimeSystemTestApp::testSourcePosition() {
         err() << "SourcePosition.getDirection returns a vector of size " << result_dircos.size() << ", not 3." <<
           test_id << std::endl;
       } else {
-        for (size_t jj = 0; jj < 3; ++jj) {
+        for (std::size_t jj = 0; jj < 3; ++jj) {
           if (std::fabs(result_dircos[jj] - expected_dircos[jj]) > tolerance) {
             err() << "SourcePosition.getDirection returns " << result_dircos[jj] << " for its " << coord_name[jj] <<
               " coordinate, not " << expected_dircos[jj] << "." << test_id << std::endl;
@@ -3601,7 +3601,7 @@ void TimeSystemTestApp::testglastscorbit() {
 
   // Test interpolation of spacecraft position, only if successful in file opening.
   if (0 == glastscorbit_getstatus(scptr)) {
-    for (size_t ipar = 0; ipar < sizeof(par_list)/sizeof(double)/4; ++ipar) {
+    for (std::size_t ipar = 0; ipar < sizeof(par_list)/sizeof(double)/4; ++ipar) {
       double glast_time = par_list[ipar][0];
       double scpos_result[3];
       status = glastscorbit_calcpos(scptr, glast_time, scpos_result);
@@ -3628,7 +3628,7 @@ void TimeSystemTestApp::testglastscorbit() {
   }
 
   // Test the original function "glastscorbit" for backward compatibility.
-  for (size_t ipar = 0; ipar < sizeof(par_list)/sizeof(double)/4; ++ipar) {
+  for (std::size_t ipar = 0; ipar < sizeof(par_list)/sizeof(double)/4; ++ipar) {
     double glast_time = par_list[ipar][0];
     double * scpos_result = glastscorbit(sc_file_char, glast_time, &status);
     double * scpos_expected = par_list[ipar] + 1;

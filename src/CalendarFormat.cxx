@@ -102,7 +102,7 @@ namespace {
   GregorianCalendar::GregorianCalendar() {
     // Initialize the list of the number of days in each month --- for non-leap years.
     long day_per_month_array[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
-    size_t array_size = sizeof(day_per_month_array)/sizeof(long);
+    std::size_t array_size = sizeof(day_per_month_array)/sizeof(long);
     m_day_per_month_regular_year = table_type(day_per_month_array, day_per_month_array + array_size);
 
     // Initialize the list of the number of days in each month --- for leap years.
