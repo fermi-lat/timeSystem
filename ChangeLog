@@ -1,5 +1,14 @@
 ------------------------------------------------------------
 User: hirayama  Tue Aug 31 17:12:07 PDT 2010
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Add std qualifier in front of size_t for clarity.
+    *
+------------------------------------------------------------
+User: hirayama  Tue Aug 31 17:12:07 PDT 2010
 timeSystem/src
 
 Modified Files:
