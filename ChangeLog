@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Tue Aug 31 17:12:07 PDT 2010
+timeSystem/src
+
+Modified Files:
+	CalendarFormat.cxx PulsarTestApp.cxx 
+Log Message:
+Add std qualifier in front of size_t for clarity.
+    *
+------------------------------------------------------------
 User: hirayama  Tue Aug 31 15:34:38 PDT 2010
 timeSystem/timeSystem
 
