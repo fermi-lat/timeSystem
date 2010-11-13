@@ -176,11 +176,13 @@ namespace {
       throw std::runtime_error("Space craft position was given in a wrong format");
     }
 
-    // Get Cartesian coordinates of the source direction.
-    std::vector<double> sourcedir = src_position.getDirection();
-
-    // Perform all computations that require the solar system ephemeris.
+    // Prepare the return value.
     double delay = 0.;
+
+    // Read solar system ephemeris when necessary.
+    const double * rce = 0;
+    const double * vce = 0;
+    const double * rcs = 0;
     if (barycentric || src_position.hasDistance()) {
       // Set given time to a variable to pass to dpleph C-function.
       Jd jd_rep(0, 0.);
@@ -190,7 +192,7 @@ namespace {
       // Read solar system ephemeris for the given time.
       const int iearth = 3;
       const int isun = 11;
-      const double *eposn;
+      const double * eposn = 0;
       eposn = dpleph(jdt, iearth, isun);
       if (NULL == eposn) {
         std::ostringstream os;
@@ -198,41 +200,72 @@ namespace {
         throw std::runtime_error(os.str());
       }
 
-      // Compute vectors between related objects for the parallax correction.
-      std::vector<double> rce(eposn, eposn + 3); // SSBC-to-Earth vector.
-      std::vector<double> rca(3); // SSBC-to-S/C vector.
-      for (int idx = 0; idx < 3; ++idx) rca[idx] = rce[idx] + obs_position[idx]/m_speed_of_light;
-
-      // Correct the source direction for parallax.
-      if (src_position.hasDistance()) {
-        // Compute S/C-to-Source vector.
-        double distance = 0.;
-        for (int idx = 0; idx < 3; ++idx) {
-          sourcedir[idx] = src_position.getDirection()[idx] * src_position.getDistance() - rca[idx];
-          distance += sourcedir[idx] * sourcedir[idx];
-        }
-        distance = std::sqrt(distance);
-        for (int idx = 0; idx < 3; ++idx) sourcedir[idx] /= distance;
-      }
-
-      // Compute a time delay for the barycentric correction.
-      if (barycentric) {
-        // Compute vectors between related objects for the barycentric correction.
-        std::vector<double> vce(eposn + 3, eposn + 6); // Earth velocity with respect to SSBC.
-        std::vector<double> rcs(eposn + 6, eposn + 9); // SSBC-to-Sun vector.
-        std::vector<double> rsa(3); // Sun-to-S/C vector.
-        for (int idx = 0; idx < 3; ++idx) rsa[idx] = rca[idx] - rcs[idx];
-
-        // Compute total propagation delay.
-        double sundis = std::sqrt(computeInnerProduct(rsa, rsa));
-        double cth = computeInnerProduct(sourcedir, rsa) / sundis;
-        delay = computeInnerProduct(sourcedir, rca) + computeInnerProduct(obs_position, vce)/m_speed_of_light
-          + 2. * m_solar_mass * std::log(1. + cth);
-      }
+      // Set pointer values for convenience.
+      rce = eposn;     // SSBC-to-Earth vector.
+      vce = eposn + 3; // Earth velocity with respect to SSBC.
+      rcs = eposn + 6; // SSBC-to-Sun vector.
     }
 
-    // Compute a time delay for the geocentric correction.
-    if (!barycentric) delay = computeInnerProduct(sourcedir, obs_position)/m_speed_of_light;
+    // Compute the vector pointing from the geo/barycenter to the spacecraft.
+    std::vector<double> origin_to_observer(3);
+    for (int idx = 0; idx < 3; ++idx) origin_to_observer[idx] = obs_position[idx]/m_speed_of_light;
+    if (barycentric) for (int idx = 0; idx < 3; ++idx) origin_to_observer[idx] += rce[idx];
+
+    // Compute the Roemer delay and the direction of the line of sight.
+    std::vector<double> line_of_sight(3);
+    if (src_position.hasDistance()) {
+      // Compute the vector pointing from the geo/barycenter to the source.
+      std::vector<double> origin_to_source = src_position.getDirection();
+      for (int idx = 0; idx < 3; ++idx) origin_to_source[idx] *= src_position.getDistance();
+      if (!barycentric) for (int idx = 0; idx < 3; ++idx) origin_to_source[idx] -= rce[idx];
+
+      // Compute the vector pointing from the spacecraft to the source.
+      std::vector<double> observer_to_source(3);
+      for (int idx = 0; idx < 3; ++idx) {
+        observer_to_source[idx] = origin_to_source[idx] - origin_to_observer[idx];
+      }
+
+      // Compute the unit vector parallel to the line of sight.
+      double length = std::sqrt(computeInnerProduct(observer_to_source, observer_to_source));
+      for (int idx = 0; idx < 3; ++idx) line_of_sight[idx] = observer_to_source[idx] / length;
+
+      // Compute the Roemer delay, taking into account of the curvature of spherical wavefront.
+      // Note: The following computation is exact in general cases.  Letting
+      //          x = origin_to_source, y = observer_to_source, and z = origin_to_observer,
+      //       then one obtains the Roemer delay by
+      //          delay = |x| - |y|
+      //                = (x + y) * z / (|x| + |y|)
+      //       where z = x - y by definition.
+      double sum_length = std::sqrt(computeInnerProduct(origin_to_source, origin_to_source));
+      sum_length += std::sqrt(computeInnerProduct(observer_to_source, observer_to_source));
+      if (sum_length == 0.) throw std::runtime_error("Distance to the source is computed as zero (0) in the barycentric correction");
+      for (int idx = 0; idx < 3; ++idx) {
+        delay += (origin_to_source[idx] + observer_to_source[idx]) * origin_to_observer[idx] / sum_length;
+      }
+
+    } else {
+      // Take the original source direction as the line of sight, assuming the wavefront is planar.
+      line_of_sight = src_position.getDirection();
+
+      // Compute the Roemer delay, assuming the wavefront is planar.
+      delay += computeInnerProduct(line_of_sight, origin_to_observer);
+    }
+
+    // Compute additional time delays for the barycentric correction.
+    if (barycentric) {
+      // Compute the Einstein delay.
+      std::vector<double> earth_velocity(vce, vce + 3);
+      delay += computeInnerProduct(obs_position, earth_velocity)/m_speed_of_light;
+
+      // Compute the vector pointing from the Sun to the spacecraft (to be used for the Shapiro delay).
+      std::vector<double> sun_to_observer(3); // Sun-to-S/C vector.
+      for (int idx = 0; idx < 3; ++idx) sun_to_observer[idx] = origin_to_observer[idx] - rcs[idx];
+
+      // Compute the Shapiro delay.
+      double sundis = std::sqrt(computeInnerProduct(sun_to_observer, sun_to_observer));
+      double cth = computeInnerProduct(line_of_sight, sun_to_observer) / sundis;
+      delay += 2. * m_solar_mass * std::log(1. + cth);
+    }
 
     // Return the computed time delay.
     return delay;
