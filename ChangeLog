@@ -1,5 +1,14 @@
 ------------------------------------------------------------
 User: hirayama  Fri Nov 12 17:02:32 PST 2010
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Improve arrival time correction for nearby targets, take into account of the curvature of spherical wavefront.
+    *
+------------------------------------------------------------
+User: hirayama  Fri Nov 12 17:02:32 PST 2010
 timeSystem/src
 
 Modified Files:
