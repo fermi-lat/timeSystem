@@ -3248,7 +3248,7 @@ void TimeSystemTestApp::testBaryTimeComputer() {
 
   // Set position/velocity vectors of the Earth, the Sun, and the solar system barycenter.
   // Note: Those values are once computed by C-function "dpleph" in dpleph.c with JPL DE405.
-  //double rce[] = {500.8780937237265789, 10.97861817447444821, 4.7143308336665485925}; // SSBC-to-Earth vector (nnecessary here).
+  double rce[] = {500.8780937237265789, 10.97861817447444821, 4.7143308336665485925}; // SSBC-to-Earth vector.
   double rca[] = {500.88913851975058833, 10.996303638826491422, 4.724526724679001255}; // SSBC-to-S/C vector.
   double vce[] = {-3.5658338025897011906e-06, 9.078003543825905223e-05, 3.9352343261386849526e-05}; // Earth velocity w.r.t SSBC.
   //double rcs[] = {0.38800865319152139099, 2.2364243580518863297, 0.9254092484672552521}; // SSBC-to-Sun vector (nnecessary here).
@@ -3332,12 +3332,35 @@ void TimeSystemTestApp::testBaryTimeComputer() {
   distance_from_ssb = std::sqrt(distance_from_ssb);
   SourcePosition nearby_src(ssb_to_src, distance_from_ssb);
 
+  // Compute the expected barycentric time, taking into account of the curvature of spherical wavefront.
+  double curvature_correction_bary = 0.;
+  double sum_distance = distance_from_ssb + distance_from_sc;
+  for (std::size_t ii = 0; ii < 3; ++ii) {
+    curvature_correction_bary += (ssb_to_src[ii] - distance_from_ssb * src_dir[ii]) / sum_distance * rca[ii];
+  }
+  AbsoluteTime expected_bary_nearby = expected_bary + ElapsedTime("TDB", Duration(curvature_correction_bary, "Sec"));
+
+  // Compute the expected geocentric time, taking into account of the curvature of spherical wavefront.
+  double curvature_correction_geo = 0.;
+  double distance_from_geo = 0.;
+  std::vector<double> geo_to_src(3);
+  for (std::size_t ii = 0; ii < 3; ++ii) {
+    geo_to_src[ii] = ssb_to_src[ii] - rce[ii];
+    distance_from_geo += geo_to_src[ii] * geo_to_src[ii];
+  }
+  distance_from_geo = std::sqrt(distance_from_geo);
+  sum_distance = distance_from_geo + distance_from_sc;
+  for (std::size_t ii = 0; ii < 3; ++ii) {
+    curvature_correction_geo += (geo_to_src[ii] - distance_from_geo * src_dir[ii]) / sum_distance * glast_pos[ii] / speed_of_light;
+  }
+  AbsoluteTime expected_geo_nearby = expected_geo + ElapsedTime("TT", Duration(curvature_correction_geo, "Sec"));
+
   // Test barycentric correction for a source at a finite distance.
   result = original;
   computer405.computeBaryTime(nearby_src, glast_pos, result);
-  if (!result.equivalentTo(expected_bary, tolerance)) {
+  if (!result.equivalentTo(expected_bary_nearby, tolerance)) {
     err() << "BaryTimeComputer::computeBaryTime(nearby_src, " << original << ")" <<
-      " returned AbsoluteTime(" << result << "), not equivalent to AbsoluteTime(" << expected_bary <<
+      " returned AbsoluteTime(" << result << "), not equivalent to AbsoluteTime(" << expected_bary_nearby <<
       ") with tolerance of " << tolerance << "." << std::endl;
   }
 
@@ -3345,9 +3368,9 @@ void TimeSystemTestApp::testBaryTimeComputer() {
   result = original;
   computer405.computeGeoTime(nearby_src, glast_pos, result);
   tolerance = ElapsedTime("TT", Duration(1.e-7, "Sec"));
-  if (!result.equivalentTo(expected_geo, tolerance)) {
+  if (!result.equivalentTo(expected_geo_nearby, tolerance)) {
     err() << "BaryTimeComputer::computeGeoTime(nearby_src, " << original << ")" <<
-      " returned AbsoluteTime(" << result << "), not equivalent to AbsoluteTime(" << expected_geo <<
+      " returned AbsoluteTime(" << result << "), not equivalent to AbsoluteTime(" << expected_geo_nearby <<
       ") with tolerance of " << tolerance << "." << std::endl;
   }
 
