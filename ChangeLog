@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Fri Nov 12 17:02:32 PST 2010
+timeSystem/src
+
+Modified Files:
+	BaryTimeComputer.cxx 
+Log Message:
+Improve arrival time correction for nearby targets, take into account of the curvature of spherical wavefront.
+    *
+------------------------------------------------------------
 TAG
 Tag name: ScienceTools-09-19-00, operation: add
 Package: timeSystem
