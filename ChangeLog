@@ -1,5 +1,14 @@
 ------------------------------------------------------------
 User: hirayama  Tue Dec  7 19:47:53 PST 2010
+timeSystem/data/outref
+
+Modified Files:
+	testTimeCorrectorApp_par1.fits testTimeCorrectorApp_par2.fits 
+Log Message:
+Remove unnecessary PULSE_PHASE column.
+    *
+------------------------------------------------------------
+User: hirayama  Tue Dec  7 19:47:53 PST 2010
 timeSystem/data
 
 Modified Files:
