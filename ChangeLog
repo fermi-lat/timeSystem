@@ -1,4 +1,17 @@
 ------------------------------------------------------------
+User: hirayama  Tue Dec  7 19:47:53 PST 2010
+timeSystem/data
+
+Modified Files:
+	testevdata_1day.fits testevdata_1day_bary.fits 
+	testevdata_1day_copy.fits testevdata_1day_fermi.fits 
+	testevdata_1day_geo.fits testevdata_1day_unordered.fits 
+	testevdata_1day_unordered_bary.fits 
+	testevdata_1day_unordered_geo.fits 
+Log Message:
+Remove unnecessary PULSE_PHASE column.
+    *
+------------------------------------------------------------
 User: hirayama  Tue Dec  7 18:48:00 PST 2010
 timeSystem/data/outref
 
