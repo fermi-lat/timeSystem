@@ -1,5 +1,14 @@
 ------------------------------------------------------------
 User: hirayama  Tue Dec  7 18:48:00 PST 2010
+timeSystem/data/outref
+
+Modified Files:
+	testTimeCorrectorApp_par1.fits testTimeCorrectorApp_par2.fits 
+Log Message:
+Downsize test data files, and rename them for clarity.
+    *
+------------------------------------------------------------
+User: hirayama  Tue Dec  7 18:48:00 PST 2010
 timeSystem/data
 
 Added Files:
