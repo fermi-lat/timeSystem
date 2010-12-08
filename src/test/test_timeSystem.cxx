@@ -3238,10 +3238,10 @@ void TimeSystemTestApp::testBaryTimeComputer() {
 
   // Prepare a time to be geo/barycentered and an expected result after geo/barycentered.
   AbsoluteTime glast_tt_origin("TT", 51910, 64.184);
-  double glast_time_original = 2.123393677090199E+08; // TSTART in my_pulsar_events_v3.fits.
+  double glast_time_original = 2.123393677090199E+08; // TSTART in testevdata_1day.fits.
   AbsoluteTime original = glast_tt_origin + ElapsedTime("TT", Duration(glast_time_original, "Sec"));
   AbsoluteTime glast_tdb_origin("TDB", 51910, 64.184);
-  double glast_time_bary = 2.123393824137859E+08; // TSTART in my_pulsar_events_bary_v3.fits.
+  double glast_time_bary = 2.123393824137859E+08; // TSTART in testevdata_1day_bary.fits.
   AbsoluteTime expected_bary = glast_tdb_origin + ElapsedTime("TDB", Duration(glast_time_bary, "Sec"));
   double glast_time_geo = 212339367.70603555441; // Once computed by BaryTimeComputer::computeGeoTime method.
   AbsoluteTime expected_geo = glast_tt_origin + ElapsedTime("TT", Duration(glast_time_geo, "Sec"));
@@ -3459,7 +3459,7 @@ void TimeSystemTestApp::testEventTimeHandlerFactory() {
   setMethod("testEventTimeHandlerFactory");
 
   // Prepare test parameters in this method.
-  std::string event_file = prependDataPath("my_pulsar_events_v3.fits");
+  std::string event_file = prependDataPath("testevdata_1day.fits");
 
   // Test creation of BogusTimeHandler1 (an EventTimeHandler sub-class) through its createInstance method.
   std::auto_ptr<EventTimeHandler> handler(0);
@@ -3977,13 +3977,13 @@ void TimeSystemTestApp::testGlastTimeHandler() {
   ElapsedTime time_tolerance("TT", Duration(1.e-7, "Sec"));
 
   // Prepare test parameters in this method.
-  std::string event_file = prependDataPath("my_pulsar_events_v3.fits");
-  std::string event_file_geo = prependDataPath("my_pulsar_events_geo_v3.fits");
-  std::string event_file_bary = prependDataPath("my_pulsar_events_bary_v3.fits");
-  std::string event_file_copy = prependDataPath("my_pulsar_events_copy_v3.fits");
-  std::string event_file_fermi = prependDataPath("my_pulsar_events_v4.fits");
-  std::string sc_file = prependDataPath("my_pulsar_spacecraft_data_v3r1.fits");
-  std::string sc_file_fermi = prependDataPath("my_pulsar_spacecraft_data_v4.fits");
+  std::string event_file = prependDataPath("testevdata_1day.fits");
+  std::string event_file_geo = prependDataPath("testevdata_1day_geo.fits");
+  std::string event_file_bary = prependDataPath("testevdata_1day_bary.fits");
+  std::string event_file_copy = prependDataPath("testevdata_1day_copy.fits");
+  std::string event_file_fermi = prependDataPath("testevdata_1day_fermi.fits");
+  std::string sc_file = prependDataPath("testscdata_1day.fits");
+  std::string sc_file_fermi = prependDataPath("testscdata_1day_fermi.fits");
   double ra = 85.0482;
   double dec = -69.3319;
   double angular_tolerance = 1.e-8; // In degrees.
@@ -4099,7 +4099,7 @@ void TimeSystemTestApp::testGlastTimeHandler() {
   handler->setFirstRecord();
   double glast_time;
   handler->getCurrentRecord()["TIME"].get(glast_time);
-  double expected_glast_time = 2.123393701794728E+08; // TIME in the first row of my_pulsar_events_v3.fits.
+  double expected_glast_time = 2.123393701794728E+08; // TIME in the first row of testevdata_1day.fits.
   double epsilon = 1.e-7; // 100 nanoseconds.
   if (std::fabs(glast_time - expected_glast_time) > epsilon) {
     err() << "GlastScTimeHandler::getCurrentRecord() did not return the first record after GlastScTimeHandler::setFirstRecord()." <<
@@ -4111,7 +4111,7 @@ void TimeSystemTestApp::testGlastTimeHandler() {
   handler->setNextRecord();
   handler->setNextRecord();
   handler->getCurrentRecord()["TIME"].get(glast_time);
-  expected_glast_time = 2.123393750454886E+08; // TIME in the third row of my_pulsar_events_v3.fits.
+  expected_glast_time = 2.123393750454886E+08; // TIME in the third row of testevdata_1day.fits.
   if (std::fabs(glast_time - expected_glast_time) > epsilon) {
     err() << "GlastScTimeHandler::getCurrentRecord() did not return the third record after GlastScTimeHandler::setFirstRecord()" <<
       " followed by two GlastScTimeHandler::setNextRecord() calls." << std::endl;
@@ -4120,7 +4120,7 @@ void TimeSystemTestApp::testGlastTimeHandler() {
   // Test setting to the last record.
   handler->setLastRecord();
   handler->getCurrentRecord()["TIME"].get(glast_time);
-  expected_glast_time = 2.124148548657289E+08; // TIME in the last row of my_pulsar_events_v3.fits.
+  expected_glast_time = 2.124148548657289E+08; // TIME in the last row of testevdata_1day.fits.
   if (std::fabs(glast_time - expected_glast_time) > epsilon) {
     err() << "GlastScTimeHandler::getCurrentRecord() did not return the last record after GlastScTimeHandler::setLastRecord()." <<
       std::endl;
@@ -4159,7 +4159,7 @@ void TimeSystemTestApp::testGlastTimeHandler() {
 
   // Test reading header keyword value.
   result = handler->readTime("TSTART", from_header);
-  glast_time = 2.123393677090199E+08; // TSTART in my_pulsar_events_v3.fits.
+  glast_time = 2.123393677090199E+08; // TSTART in testevdata_1day.fits.
   expected = glast_tt_origin + ElapsedTime("TT", Duration(glast_time, "Sec"));
   if (!result.equivalentTo(expected, time_tolerance)) {
     err() << "GlastScTimeHandler::readTime(\"TSTART\", " << from_header << ") returned AbsoluteTime(" << result <<
@@ -4168,7 +4168,7 @@ void TimeSystemTestApp::testGlastTimeHandler() {
 
   // Test reading header keyword value, in Calendar date & time format.
   result = handler->readTime("DATE-OBS", from_header);
-  time_string = "2007-09-24T15:09:31"; // DATE-OBS in my_pulsar_events_v3.fits.
+  time_string = "2007-09-24T15:09:31"; // DATE-OBS in testevdata_1day.fits.
   expected = AbsoluteTime("UTC", CalendarFmt, time_string);
   if (!result.equivalentTo(expected, time_tolerance)) {
     err() << "GlastScTimeHandler::readTime(\"DATE-OBS\", " << from_header << ") returned AbsoluteTime(" << result <<
@@ -4206,7 +4206,7 @@ void TimeSystemTestApp::testGlastTimeHandler() {
 
   // Test reading header keyword value, requesting barycentering.
   result = handler->getBaryTime("TSTART", from_header);
-  glast_time = 2.123393824137859E+08; // TSTART in my_pulsar_events_bary_v3.fits.
+  glast_time = 2.123393824137859E+08; // TSTART in testevdata_1day_bary.fits.
   expected = glast_tdb_origin + ElapsedTime("TDB", Duration(glast_time, "Sec"));
   if (!result.equivalentTo(expected, time_tolerance)) {
     err() << "GlastScTimeHandler::getBaryTime(\"TSTART\", " << from_header << ") returned AbsoluteTime(" << result <<
@@ -4218,7 +4218,7 @@ void TimeSystemTestApp::testGlastTimeHandler() {
   handler->setNextRecord();  // Points to the second event.
   handler->setNextRecord();  // Points to the third event.
   result = handler->readTime("TIME", from_column);
-  glast_time = 2.123393750454886E+08; // TIME of the third row in my_pulsar_events_v3.fits.
+  glast_time = 2.123393750454886E+08; // TIME of the third row in testevdata_1day.fits.
   expected = glast_tt_origin + ElapsedTime("TT", Duration(glast_time, "Sec"));
   if (!result.equivalentTo(expected, time_tolerance)) {
     err() << "GlastScTimeHandler::readTime(\"TIME\", " << from_column << ") returned AbsoluteTime(" << result <<
@@ -4242,7 +4242,7 @@ void TimeSystemTestApp::testGlastTimeHandler() {
   handler->setNextRecord();  // Points to the second event.
   handler->setNextRecord();  // Points to the third event.
   result = handler->getBaryTime("TIME", from_column);
-  glast_time = 2.123393897503012E+08; // TIME of the third row in my_pulsar_events_bary_v3.fits.
+  glast_time = 2.123393897503012E+08; // TIME of the third row in testevdata_1day_bary.fits.
   expected = glast_tdb_origin + ElapsedTime("TDB", Duration(glast_time, "Sec"));
   if (!result.equivalentTo(expected, time_tolerance)) {
     err() << "GlastScTimeHandler::getBaryTime(\"TIME\", " << from_column << ") returned AbsoluteTime(" << result <<
@@ -4324,7 +4324,7 @@ void TimeSystemTestApp::testGlastTimeHandler() {
 
   // Test reading header keyword value, requesting barycentering.
   result = handler->getBaryTime("TSTART", from_header);
-  glast_time = 2.123393824137859E+08; // TSTART in my_pulsar_events_bary_v3.fits.
+  glast_time = 2.123393824137859E+08; // TSTART in testevdata_1day_bary.fits.
   expected = glast_tdb_origin + ElapsedTime("TDB", Duration(glast_time, "Sec"));
   if (!result.equivalentTo(expected, time_tolerance)) {
     err() << "GlastBaryTimeHandler::getBaryTime(\"TSTART\", " << from_header << ") returned AbsoluteTime(" << result <<
@@ -4344,7 +4344,7 @@ void TimeSystemTestApp::testGlastTimeHandler() {
   handler->setNextRecord();  // Points to the second event.
   handler->setNextRecord();  // Points to the third event.
   result = handler->getBaryTime("TIME", from_column);
-  glast_time = 2.123393897503012E+08; // TIME of the third row in my_pulsar_events_bary_v3.fits.
+  glast_time = 2.123393897503012E+08; // TIME of the third row in testevdata_1day_bary.fits.
   expected = glast_tdb_origin + ElapsedTime("TDB", Duration(glast_time, "Sec"));
   if (!result.equivalentTo(expected, time_tolerance)) {
     err() << "GlastBaryTimeHandler::getBaryTime(\"TIME\", " << from_column << ") returned AbsoluteTime(" << result <<
@@ -4476,7 +4476,7 @@ void TimeSystemTestApp::testGlastTimeHandler() {
 
   // Test reading header keyword value, requesting geocentering.
   result = handler->getGeoTime("TSTART", from_header);
-  glast_time = 2.12339367706036E+08; // TSTART in my_pulsar_events_geo_v3.fits.
+  glast_time = 2.12339367706036E+08; // TSTART in testevdata_1day_geo.fits.
   expected = glast_tt_origin + ElapsedTime("TT", Duration(glast_time, "Sec"));
   if (!result.equivalentTo(expected, time_tolerance)) {
     err() << "GlastGeoTimeHandler::getGeoTime(\"TSTART\", " << from_header << ") returned AbsoluteTime(" << result <<
@@ -4488,7 +4488,7 @@ void TimeSystemTestApp::testGlastTimeHandler() {
   handler->setNextRecord();  // Points to the second event.
   handler->setNextRecord();  // Points to the third event.
   result = handler->getGeoTime("TIME", from_column);
-  glast_time = 2.123393750425875E+08; // TIME of the third row in my_pulsar_events_geo_v3.fits.
+  glast_time = 2.123393750425875E+08; // TIME of the third row in testevdata_1day_geo.fits.
   expected = glast_tt_origin + ElapsedTime("TT", Duration(glast_time, "Sec"));
   if (!result.equivalentTo(expected, time_tolerance)) {
     err() << "GlastGeoTimeHandler::getGeoTime(\"TIME\", " << from_column << ") returned AbsoluteTime(" << result <<
@@ -4624,12 +4624,12 @@ void TimeSystemTestApp::testTimeCorrectorApp() {
   test_name_cont.push_back("par6");
 
   // Prepare settings to be used in the tests.
-  std::string evfile_0540 = prependDataPath("my_pulsar_events_v3r1.fits");
-  std::string scfile_0540 = prependDataPath("my_pulsar_spacecraft_data_v3r1.fits");
+  std::string evfile_0540 = prependDataPath("testevdata_1day_unordered.fits");
+  std::string scfile_0540 = prependDataPath("testscdata_1day.fits");
   double ra_0540 = 85.0482;
   double dec_0540 = -69.3319;
-  std::string evfile_bary = prependDataPath("my_pulsar_events_bary_v3r1.fits");
-  std::string evfile_geo = prependDataPath("my_pulsar_events_geo_v3r1.fits");
+  std::string evfile_bary = prependDataPath("testevdata_1day_unordered_bary.fits");
+  std::string evfile_geo = prependDataPath("testevdata_1day_unordered_geo.fits");
 
   // Loop over parameter sets.
   for (std::list<std::string>::const_iterator test_itor = test_name_cont.begin(); test_itor != test_name_cont.end(); ++test_itor) {
