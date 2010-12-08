@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Tue Dec  7 18:47:56 PST 2010
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Downsize test data files, and rename them for clarity.
+    *
+------------------------------------------------------------
 User: hirayama  Fri Nov 12 17:02:32 PST 2010
 timeSystem/src/test
 
