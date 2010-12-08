@@ -1,4 +1,25 @@
 ------------------------------------------------------------
+User: hirayama  Tue Dec  7 18:48:00 PST 2010
+timeSystem/data
+
+Added Files:
+	testevdata_1day.fits testevdata_1day_bary.fits 
+	testevdata_1day_copy.fits testevdata_1day_fermi.fits 
+	testevdata_1day_geo.fits testevdata_1day_unordered.fits 
+	testevdata_1day_unordered_bary.fits 
+	testevdata_1day_unordered_geo.fits testscdata_1day.fits 
+	testscdata_1day_fermi.fits 
+Removed Files:
+	my_pulsar_events_bary_v3.fits my_pulsar_events_bary_v3r1.fits 
+	my_pulsar_events_geo_v3.fits my_pulsar_events_geo_v3r1.fits 
+	my_pulsar_events_v3.fits my_pulsar_events_v3r1.fits 
+	my_pulsar_events_v4.fits my_pulsar_spacecraft_data_v3.fits 
+	my_pulsar_spacecraft_data_v3r1.fits 
+	my_pulsar_spacecraft_data_v4.fits 
+Log Message:
+Downsize test data files, and rename them for clarity.
+    *
+------------------------------------------------------------
 User: hirayama  Tue Dec  7 18:47:56 PST 2010
 timeSystem/src/test
 
