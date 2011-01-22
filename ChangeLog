@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Fri Jan 21 19:16:53 PST 2011
+timeSystem/data
+
+Removed Files:
+	testevdata_1day_copy.fits 
+Log Message:
+Remove an unnecessary test data file.
+    *
+------------------------------------------------------------
 TAG
 Tag name: ScienceTools-09-20-00, operation: add
 Package: timeSystem
