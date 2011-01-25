@@ -6,6 +6,7 @@
 #include "timeSystem/EventTimeHandler.h"
 
 #include "timeSystem/MjdFormat.h"
+#include "timeSystem/SourcePosition.h"
 #include "timeSystem/TimeFormat.h"
 
 #include "tip/IFileSvc.h"
@@ -106,6 +107,10 @@ namespace timeSystem {
   EventTimeHandler * EventTimeHandler::createInstance(const std::string & /*file_name*/, const std::string & /*extension_name*/,
     bool /*read_only*/) {
     return 0;
+  }
+
+  void EventTimeHandler::setSourcePosition(double ra, double dec) {
+    setSourcePosition(SourcePosition(ra, dec));
   }
 
   void EventTimeHandler::setFirstRecord() {
