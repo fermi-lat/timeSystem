@@ -1,5 +1,14 @@
 ------------------------------------------------------------
 User: hirayama  Mon Jan 24 17:58:42 PST 2011
+timeSystem/src
+
+Modified Files:
+	EventTimeHandler.cxx 
+Log Message:
+Revive setSourcePosition method taking RA and Dec as double variables.
+    *
+------------------------------------------------------------
+User: hirayama  Mon Jan 24 17:58:42 PST 2011
 timeSystem/timeSystem
 
 Modified Files:
