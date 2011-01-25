@@ -109,7 +109,14 @@ namespace timeSystem {
         const std::string & solar_eph, bool match_solar_eph, double angular_tolerance) = 0;
 
       /** \brief Set the source position for arrival time corrections.
-          \param src_position Position of the celestial object to be used for arrival time corrections.
+          \param ra Right Ascension of the celestial object in degrees for which arrival time corrections are to be computed.
+          \param dec Declination of the celestial object in degrees for which arrival time corrections are to be computed.
+      */
+      virtual void setSourcePosition(double ra, double dec);
+      // TODO: Add tests of the above method to the unit test.
+
+      /** \brief Set the source position for arrival time corrections.
+          \param src_position Position of the celestial object for which arrival time corrections are to be computed.
       */
       virtual void setSourcePosition(const SourcePosition & src_position) = 0;
 
