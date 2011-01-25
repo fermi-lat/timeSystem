@@ -32,6 +32,17 @@ namespace timeSystem {
       std::string getPlanetaryEphemerisName() const;
 
       /** \brief Compute a barycentric time for a given time, and update the time with a computed time.
+          \param ra Right Ascension of the celestial object in degrees for which a barycentric time is computed.
+          \param dec Declination of the celestial object in degrees for which a barycentric time is computed.
+          \param obs_position Observatory position at the time for which a barycentric time is computed. The position must be
+                 given in the form of Cartesian coordinates in meters in the equatorial coordinate system with the origin at
+                 the center of the Earth.
+          \param abs_time Photon arrival time at the spacecraft. This argument is updated to a barycentric time for it.
+      */
+      virtual void computeBaryTime(double ra, double dec, const std::vector<double> & obs_position, AbsoluteTime & abs_time) const;
+      // TODO: Add tests of the above method to the unit test.
+
+      /** \brief Compute a barycentric time for a given time, and update the time with a computed time.
           \param src_position Position of the celestial object for which a barycentric time is computed.
           \param obs_position Observatory position at the time for which a barycentric time is computed. The position must be
                  given in the form of Cartesian coordinates in meters in the equatorial coordinate system with the origin at
@@ -40,6 +51,17 @@ namespace timeSystem {
       */
       virtual void computeBaryTime(const SourcePosition & src_position, const std::vector<double> & obs_position,
         AbsoluteTime & abs_time) const = 0;
+
+      /** \brief Compute a geocentric time for a given time, and update the time with a computed time.
+          \param ra Right Ascension of the celestial object in degrees for which a geocentric time is computed.
+          \param dec Declination of the celestial object in degrees for which a geocentric time is computed.
+          \param obs_position Observatory position at the time for which a barycentric time is computed. The position must be
+                 given in the form of Cartesian coordinates in meters in the equatorial coordinate system with the origin at
+                 the center of the Earth.
+          \param abs_time Photon arrival time at the spacecraft. This argument is updated to a geocentric time for it.
+      */
+      virtual void computeGeoTime(double ra, double dec, const std::vector<double> & obs_position, AbsoluteTime & abs_time) const;
+      // TODO: Add tests of the above method to the unit test.
 
       /** \brief Compute a geocentric time for a given time, and update the time with a computed time.
           \param src_position Position of the celestial object for which a geocentric time is computed.
