@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: hirayama  Mon Jan 24 18:00:18 PST 2011
+timeSystem/src/test
+
+Modified Files:
+	test_timeSystem.cxx 
+Log Message:
+Add tests for the revived methods: BaryTimeComputer::computeBary/GeoTime and EventTimeHandler::setSourcePosition which take RA and Dec as double variables.
+    *
+------------------------------------------------------------
 User: hirayama  Mon Jan 24 17:58:42 PST 2011
 timeSystem/src
 
