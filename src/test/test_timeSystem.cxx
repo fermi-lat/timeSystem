@@ -3303,6 +3303,25 @@ void TimeSystemTestApp::testBaryTimeComputer() {
 
   // Test barycentric correction (for a source at an infinate distance).
   result = original;
+  computer405.computeBaryTime(ra, dec, glast_pos, result);
+  if (!result.equivalentTo(expected_bary, tolerance)) {
+    err() << "BaryTimeComputer::computeBaryTime(" << ra << ", " << dec << ", " << original << ")" <<
+      " returned AbsoluteTime(" << result << "), not equivalent to AbsoluteTime(" << expected_bary <<
+      ") with tolerance of " << tolerance << "." << std::endl;
+  }
+
+  // Test geocentric correction (for a source at an infinate distance).
+  result = original;
+  computer405.computeGeoTime(ra, dec, glast_pos, result);
+  tolerance = ElapsedTime("TT", Duration(1.e-7, "Sec"));
+  if (!result.equivalentTo(expected_geo, tolerance)) {
+    err() << "BaryTimeComputer::computeGeoTime(" << ra << ", " << dec << ", " << original << ")" <<
+      " returned AbsoluteTime(" << result << "), not equivalent to AbsoluteTime(" << expected_geo <<
+      ") with tolerance of " << tolerance << "." << std::endl;
+  }
+
+  // Test barycentric correction (for a source at an infinate distance), with a SourcePosition object.
+  result = original;
   computer405.computeBaryTime(src_pos, glast_pos, result);
   if (!result.equivalentTo(expected_bary, tolerance)) {
     err() << "BaryTimeComputer::computeBaryTime(SourcePosition(" << ra << ", " << dec << "), " << original << ")" <<
@@ -4193,60 +4212,74 @@ void TimeSystemTestApp::testGlastTimeHandler() {
 
   // Initialize handler for arrival time corrections.
   handler->initTimeCorrection(sc_file, "SC_DATA", pl_ephem, match_solar_eph, angular_tolerance);
-  handler->setSourcePosition(SourcePosition(ra, dec));
 
-  // Test reading header keyword value, requesting geocentering.
-  result = handler->getGeoTime("TSTART", from_header);
-  glast_time = 212339367.70603555441; // Once computed by BaryTimeComputer::computeGeoTime method.
-  expected = glast_tt_origin + ElapsedTime("TT", Duration(glast_time, "Sec"));
-  if (!result.equivalentTo(expected, time_tolerance)) {
-    err() << "GlastScTimeHandler::getGeoTime(\"TSTART\", " << from_header << ") returned AbsoluteTime(" << result <<
-      "), not equivalent to AbsoluteTime(" << expected << ") with tolerance of " << time_tolerance << "." << std::endl;
-  }
+  // Perform the tests in this loop for the two versions of GlastTimeHandler::setSourcePosition method.
+  for (int ii=0; ii<2; ++ii) {
+    std::ostringstream os;
+    os << "After setSourcePosition(";
+    if (0 == ii) {
+      handler->setSourcePosition(ra, dec);
+      os << ra << ", " << dec;
+    } else {
+      handler->setSourcePosition(SourcePosition(ra, dec));
+      os << "SourcePosition(" << ra << ", " << dec << ")";
+    }
+    os << "), ";
+    std::string prefix(os.str());
 
-  // Test reading header keyword value, requesting barycentering.
-  result = handler->getBaryTime("TSTART", from_header);
-  glast_time = 2.123393824137859E+08; // TSTART in testevdata_1day_bary.fits.
-  expected = glast_tdb_origin + ElapsedTime("TDB", Duration(glast_time, "Sec"));
-  if (!result.equivalentTo(expected, time_tolerance)) {
-    err() << "GlastScTimeHandler::getBaryTime(\"TSTART\", " << from_header << ") returned AbsoluteTime(" << result <<
-      "), not equivalent to AbsoluteTime(" << expected << ") with tolerance of " << time_tolerance << "." << std::endl;
-  }
+    // Test reading header keyword value, requesting geocentering.
+    result = handler->getGeoTime("TSTART", from_header);
+    glast_time = 212339367.70603555441; // Once computed by BaryTimeComputer::computeGeoTime method.
+    expected = glast_tt_origin + ElapsedTime("TT", Duration(glast_time, "Sec"));
+    if (!result.equivalentTo(expected, time_tolerance)) {
+      err() << prefix << "GlastScTimeHandler::getGeoTime(\"TSTART\", " << from_header << ") returned AbsoluteTime(" << result <<
+        "), not equivalent to AbsoluteTime(" << expected << ") with tolerance of " << time_tolerance << "." << std::endl;
+    }
 
-  // Test reading TIME column value.
-  handler->setFirstRecord(); // Points to the first event.
-  handler->setNextRecord();  // Points to the second event.
-  handler->setNextRecord();  // Points to the third event.
-  result = handler->readTime("TIME", from_column);
-  glast_time = 2.123393750454886E+08; // TIME of the third row in testevdata_1day.fits.
-  expected = glast_tt_origin + ElapsedTime("TT", Duration(glast_time, "Sec"));
-  if (!result.equivalentTo(expected, time_tolerance)) {
-    err() << "GlastScTimeHandler::readTime(\"TIME\", " << from_column << ") returned AbsoluteTime(" << result <<
-      "), not equivalent to AbsoluteTime(" << expected << ") with tolerance of " << time_tolerance << "." << std::endl;
-  }
+    // Test reading header keyword value, requesting barycentering.
+    result = handler->getBaryTime("TSTART", from_header);
+    glast_time = 2.123393824137859E+08; // TSTART in testevdata_1day_bary.fits.
+    expected = glast_tdb_origin + ElapsedTime("TDB", Duration(glast_time, "Sec"));
+    if (!result.equivalentTo(expected, time_tolerance)) {
+      err() << prefix << "GlastScTimeHandler::getBaryTime(\"TSTART\", " << from_header << ") returned AbsoluteTime(" << result <<
+        "), not equivalent to AbsoluteTime(" << expected << ") with tolerance of " << time_tolerance << "." << std::endl;
+    }
 
-  // Test reading TIME column value, requesting geocentering.
-  handler->setFirstRecord(); // Re-setting to the first event.
-  handler->setNextRecord();  // Points to the second event.
-  handler->setNextRecord();  // Points to the third event.
-  result = handler->getGeoTime("TIME", from_column);
-  glast_time = 212339375.04258754849; // Once computed by BaryTimeComputer::computeGeoTime method.
-  expected = glast_tt_origin + ElapsedTime("TT", Duration(glast_time, "Sec"));
-  if (!result.equivalentTo(expected, time_tolerance)) {
-    err() << "GlastScTimeHandler::getGeoTime(\"TIME\", " << from_column << ") returned AbsoluteTime(" << result <<
-      "), not equivalent to AbsoluteTime(" << expected << ") with tolerance of " << time_tolerance << "." << std::endl;
-  }
+    // Test reading TIME column value.
+    handler->setFirstRecord(); // Points to the first event.
+    handler->setNextRecord();  // Points to the second event.
+    handler->setNextRecord();  // Points to the third event.
+    result = handler->readTime("TIME", from_column);
+    glast_time = 2.123393750454886E+08; // TIME of the third row in testevdata_1day.fits.
+    expected = glast_tt_origin + ElapsedTime("TT", Duration(glast_time, "Sec"));
+    if (!result.equivalentTo(expected, time_tolerance)) {
+      err() << prefix << "GlastScTimeHandler::readTime(\"TIME\", " << from_column << ") returned AbsoluteTime(" << result <<
+        "), not equivalent to AbsoluteTime(" << expected << ") with tolerance of " << time_tolerance << "." << std::endl;
+    }
 
-  // Test reading TIME column value, requesting barycentering.
-  handler->setFirstRecord(); // Re-setting to the first event.
-  handler->setNextRecord();  // Points to the second event.
-  handler->setNextRecord();  // Points to the third event.
-  result = handler->getBaryTime("TIME", from_column);
-  glast_time = 2.123393897503012E+08; // TIME of the third row in testevdata_1day_bary.fits.
-  expected = glast_tdb_origin + ElapsedTime("TDB", Duration(glast_time, "Sec"));
-  if (!result.equivalentTo(expected, time_tolerance)) {
-    err() << "GlastScTimeHandler::getBaryTime(\"TIME\", " << from_column << ") returned AbsoluteTime(" << result <<
-      "), not equivalent to AbsoluteTime(" << expected << ") with tolerance of " << time_tolerance << "." << std::endl;
+    // Test reading TIME column value, requesting geocentering.
+    handler->setFirstRecord(); // Re-setting to the first event.
+    handler->setNextRecord();  // Points to the second event.
+    handler->setNextRecord();  // Points to the third event.
+    result = handler->getGeoTime("TIME", from_column);
+    glast_time = 212339375.04258754849; // Once computed by BaryTimeComputer::computeGeoTime method.
+    expected = glast_tt_origin + ElapsedTime("TT", Duration(glast_time, "Sec"));
+    if (!result.equivalentTo(expected, time_tolerance)) {
+      err() << prefix << "GlastScTimeHandler::getGeoTime(\"TIME\", " << from_column << ") returned AbsoluteTime(" << result <<
+        "), not equivalent to AbsoluteTime(" << expected << ") with tolerance of " << time_tolerance << "." << std::endl;
+    }
+
+    // Test reading TIME column value, requesting barycentering.
+    handler->setFirstRecord(); // Re-setting to the first event.
+    handler->setNextRecord();  // Points to the second event.
+    handler->setNextRecord();  // Points to the third event.
+    result = handler->getBaryTime("TIME", from_column);
+    glast_time = 2.123393897503012E+08; // TIME of the third row in testevdata_1day_bary.fits.
+    expected = glast_tdb_origin + ElapsedTime("TDB", Duration(glast_time, "Sec"));
+    if (!result.equivalentTo(expected, time_tolerance)) {
+      err() << prefix << "GlastScTimeHandler::getBaryTime(\"TIME\", " << from_column << ") returned AbsoluteTime(" << result <<
+        "), not equivalent to AbsoluteTime(" << expected << ") with tolerance of " << time_tolerance << "." << std::endl;
+    }
   }
 
   // Create a GlastScTimeHandler object for EVENTS extension of a copied event file for write testing.
@@ -4294,64 +4327,84 @@ void TimeSystemTestApp::testGlastTimeHandler() {
   // Create an GlastBaryTimeHandler object for EVENTS extension of a barycentered event file.
   handler.reset(GlastBaryTimeHandler::createInstance(event_file_bary, "EVENTS"));
   handler->initTimeCorrection(sc_file, "SC_DATA", pl_ephem, match_solar_eph, angular_tolerance);
-  handler->setSourcePosition(SourcePosition(ra, dec));
 
-  // Test parsing a time string.
-  time_string = "12345.6789012345";
-  result = handler->parseTimeString(time_string);
-  expected = glast_tdb_origin + ElapsedTime("TDB", Duration(12345.6789012345, "Sec"));
-  if (!result.equivalentTo(expected, time_tolerance)) {
-    err() << "GlastBaryTimeHandler::parseTimeString(\"" << time_string << "\") returned AbsoluteTime(" << result <<
-      "), not equivalent to AbsoluteTime(" << expected << ") with tolerance of " << time_tolerance << "." << std::endl;
-  }
+  // Perform the tests in this loop for the two versions of GlastTimeHandler::setSourcePosition method.
+  for (int ii=0; ii<2; ++ii) {
+    std::ostringstream os;
+    os << "After setSourcePosition(";
+    if (0 == ii) {
+      handler->setSourcePosition(ra, dec);
+      os << ra << ", " << dec;
+    } else {
+      handler->setSourcePosition(SourcePosition(ra, dec));
+      os << "SourcePosition(" << ra << ", " << dec << ")";
+    }
+    os << "), ";
+    std::string prefix(os.str());
 
-  // Test parsing a time string, with a different time system.
-  time_string = "12345.6789012345";
-  result = handler->parseTimeString(time_string, "TT");
-  expected = glast_tt_origin + ElapsedTime("TT", Duration(12345.6789012345, "Sec"));
-  if (!result.equivalentTo(expected, time_tolerance)) {
-    err() << "GlastBaryTimeHandler::parseTimeString(\"" << time_string << "\", \"TT\") returned AbsoluteTime(" << result <<
-      "), not equivalent to AbsoluteTime(" << expected << ") with tolerance of " << time_tolerance << "." << std::endl;
-  }
+    // Test parsing a time string.
+    time_string = "12345.6789012345";
+    result = handler->parseTimeString(time_string);
+    expected = glast_tdb_origin + ElapsedTime("TDB", Duration(12345.6789012345, "Sec"));
+    if (!result.equivalentTo(expected, time_tolerance)) {
+      err() << prefix << "GlastBaryTimeHandler::parseTimeString(\"" << time_string << "\") returned AbsoluteTime(" << result <<
+        "), not equivalent to AbsoluteTime(" << expected << ") with tolerance of " << time_tolerance << "." << std::endl;
+    }
 
-  // Test reading header keyword value, requesting geocentering.
-  try {
-    result = handler->getGeoTime("TSTART", from_header);
-    err() << "GlastBaryTimeHandler::getGeoTime(\"TSTART\", " << from_header << ") did not throw an exception when it should." <<
-      std::endl;
-  } catch (const std::exception &) {
-  }
+    // Test parsing a time string, with a different time system.
+    time_string = "12345.6789012345";
+    result = handler->parseTimeString(time_string, "TT");
+    expected = glast_tt_origin + ElapsedTime("TT", Duration(12345.6789012345, "Sec"));
+    if (!result.equivalentTo(expected, time_tolerance)) {
+      err() << prefix << "GlastBaryTimeHandler::parseTimeString(\"" << time_string << "\", \"TT\") returned AbsoluteTime(" << result <<
+        "), not equivalent to AbsoluteTime(" << expected << ") with tolerance of " << time_tolerance << "." << std::endl;
+    }
 
-  // Test reading header keyword value, requesting barycentering.
-  result = handler->getBaryTime("TSTART", from_header);
-  glast_time = 2.123393824137859E+08; // TSTART in testevdata_1day_bary.fits.
-  expected = glast_tdb_origin + ElapsedTime("TDB", Duration(glast_time, "Sec"));
-  if (!result.equivalentTo(expected, time_tolerance)) {
-    err() << "GlastBaryTimeHandler::getBaryTime(\"TSTART\", " << from_header << ") returned AbsoluteTime(" << result <<
-      "), not equivalent to AbsoluteTime(" << expected << ") with tolerance of " << time_tolerance << "." << std::endl;
-  }
+    // Test reading header keyword value, requesting geocentering.
+    try {
+      result = handler->getGeoTime("TSTART", from_header);
+      err() << prefix << "GlastBaryTimeHandler::getGeoTime(\"TSTART\", " << from_header <<
+        ") did not throw an exception when it should." << std::endl;
+    } catch (const std::exception &) {
+    }
 
-  // Test reading column value, requesting geocentering.
-  try {
-    result = handler->getGeoTime("TIME", from_column);
-    err() << "GlastBaryTimeHandler::getGeoTime(\"TIME\", " << from_column << ") did not throw an exception when it should." <<
-      std::endl;
-  } catch (const std::exception &) {
-  }
+    // Test reading header keyword value, requesting barycentering.
+    result = handler->getBaryTime("TSTART", from_header);
+    glast_time = 2.123393824137859E+08; // TSTART in testevdata_1day_bary.fits.
+    expected = glast_tdb_origin + ElapsedTime("TDB", Duration(glast_time, "Sec"));
+    if (!result.equivalentTo(expected, time_tolerance)) {
+      err() << prefix << "GlastBaryTimeHandler::getBaryTime(\"TSTART\", " << from_header << ") returned AbsoluteTime(" << result <<
+        "), not equivalent to AbsoluteTime(" << expected << ") with tolerance of " << time_tolerance << "." << std::endl;
+    }
 
-  // Test reading column value, requesting barycentering.
-  handler->setFirstRecord(); // Points to the first event.
-  handler->setNextRecord();  // Points to the second event.
-  handler->setNextRecord();  // Points to the third event.
-  result = handler->getBaryTime("TIME", from_column);
-  glast_time = 2.123393897503012E+08; // TIME of the third row in testevdata_1day_bary.fits.
-  expected = glast_tdb_origin + ElapsedTime("TDB", Duration(glast_time, "Sec"));
-  if (!result.equivalentTo(expected, time_tolerance)) {
-    err() << "GlastBaryTimeHandler::getBaryTime(\"TIME\", " << from_column << ") returned AbsoluteTime(" << result <<
-      "), not equivalent to AbsoluteTime(" << expected << ") with tolerance of " << time_tolerance << "." << std::endl;
+    // Test reading column value, requesting geocentering.
+    try {
+      result = handler->getGeoTime("TIME", from_column);
+      err() << prefix << "GlastBaryTimeHandler::getGeoTime(\"TIME\", " << from_column <<
+        ") did not throw an exception when it should." << std::endl;
+    } catch (const std::exception &) {
+    }
+
+    // Test reading column value, requesting barycentering.
+    handler->setFirstRecord(); // Points to the first event.
+    handler->setNextRecord();  // Points to the second event.
+    handler->setNextRecord();  // Points to the third event.
+    result = handler->getBaryTime("TIME", from_column);
+    glast_time = 2.123393897503012E+08; // TIME of the third row in testevdata_1day_bary.fits.
+    expected = glast_tdb_origin + ElapsedTime("TDB", Duration(glast_time, "Sec"));
+    if (!result.equivalentTo(expected, time_tolerance)) {
+      err() << prefix << "GlastBaryTimeHandler::getBaryTime(\"TIME\", " << from_column << ") returned AbsoluteTime(" << result <<
+        "), not equivalent to AbsoluteTime(" << expected << ") with tolerance of " << time_tolerance << "." << std::endl;
+    }
   }
 
   // Test setting a wrong sky position (ra, dec).
+  try {
+    handler->setSourcePosition(ra_wrong, dec_wrong);
+    err() << "GlastBaryTimeHandler::setSourcePosition(" << ra_wrong << ", " << dec_wrong <<
+      ") did not throw an exception when it should." << std::endl;
+  } catch (const std::exception &) {
+  }
   try {
     handler->setSourcePosition(SourcePosition(ra_wrong, dec_wrong));
     err() << "GlastBaryTimeHandler::setSourcePosition(SourcePosition(" << ra_wrong << ", " << dec_wrong << 
@@ -4360,6 +4413,12 @@ void TimeSystemTestApp::testGlastTimeHandler() {
   }
 
   // Test setting a different, but close sky position (ra, dec).
+  try {
+    handler->setSourcePosition(ra_close, dec_close);
+  } catch (const std::exception &) {
+    err() << "GlastBaryTimeHandler::setSourcePosition(" << ra_close << ", " << dec_close <<
+      ") threw an exception when it should not." << std::endl;
+  }
   try {
     handler->setSourcePosition(SourcePosition(ra_close, dec_close));
   } catch (const std::exception &) {
@@ -4371,6 +4430,12 @@ void TimeSystemTestApp::testGlastTimeHandler() {
   angular_tolerance = 0.;
   handler->initTimeCorrection(sc_file, "SC_DATA", pl_ephem, match_solar_eph, angular_tolerance);
   try {
+    handler->setSourcePosition(ra, dec);
+  } catch (const std::exception &) {
+    err() << "GlastBaryTimeHandler::setSourcePosition(" << ra << ", " << dec <<
+      ") threw an exception with angular tolerance of zero (0) degree." << std::endl;
+  }
+  try {
     handler->setSourcePosition(SourcePosition(ra, dec));
   } catch (const std::exception &) {
     err() << "GlastBaryTimeHandler::setSourcePosition(SourcePosition(" << ra << ", " << dec << 
@@ -4380,6 +4445,12 @@ void TimeSystemTestApp::testGlastTimeHandler() {
   // Test large angular tolerance over 180 degrees.
   angular_tolerance = 180.1;
   handler->initTimeCorrection(sc_file, "SC_DATA", pl_ephem, match_solar_eph, angular_tolerance);
+  try {
+    handler->setSourcePosition(ra_wrong, dec_wrong);
+  } catch (const std::exception &) {
+    err() << "GlastBaryTimeHandler::setSourcePosition(" << ra_wrong << ", " << dec_wrong <<
+      ") threw an exception with angular tolerance of 180.1 degrees." << std::endl;
+  }
   try {
     handler->setSourcePosition(SourcePosition(ra_wrong, dec_wrong));
   } catch (const std::exception &) {
@@ -4391,6 +4462,12 @@ void TimeSystemTestApp::testGlastTimeHandler() {
   angular_tolerance = 1.e-8;
   handler->initTimeCorrection(sc_file, "SC_DATA", pl_ephem, match_solar_eph, angular_tolerance);
   try {
+    handler->setSourcePosition(ra_opposite, dec_opposite);
+    err() << "GlastBaryTimeHandler::setSourcePosition(" << ra_opposite << ", " << dec_opposite <<
+      ") did not throw an exception with angular tolerance of 1e-8 degrees." << std::endl;
+  } catch (const std::exception &) {
+  }
+  try {
     handler->setSourcePosition(SourcePosition(ra_opposite, dec_opposite));
     err() << "GlastBaryTimeHandler::setSourcePosition(SourcePosition(" << ra_opposite << ", " << dec_opposite <<
       ")) did not throw an exception with angular tolerance of 1e-8 degrees." << std::endl;
@@ -4400,6 +4477,12 @@ void TimeSystemTestApp::testGlastTimeHandler() {
   // Test large angular difference, with large angular tolerance over 180 degrees.
   angular_tolerance = 180.1;
   handler->initTimeCorrection(sc_file, "SC_DATA", pl_ephem, match_solar_eph, angular_tolerance);
+  try {
+    handler->setSourcePosition(ra_opposite, dec_opposite);
+  } catch (const std::exception &) {
+    err() << "GlastBaryTimeHandler::setSourcePosition(" << ra_opposite << ", " << dec_opposite <<
+      ") threw an exception with angular tolerance of 180.1 degrees." << std::endl;
+  }
   try {
     handler->setSourcePosition(SourcePosition(ra_opposite, dec_opposite));
   } catch (const std::exception &) {
@@ -4454,64 +4537,84 @@ void TimeSystemTestApp::testGlastTimeHandler() {
   // Create an GlastGeoTimeHandler object for EVENTS extension of a geocentered event file.
   handler.reset(GlastGeoTimeHandler::createInstance(event_file_geo, "EVENTS"));
   handler->initTimeCorrection(sc_file, "SC_DATA", pl_ephem, match_solar_eph, angular_tolerance); // This has no effect.
-  handler->setSourcePosition(SourcePosition(ra, dec)); // This has no effect.
 
-  // Test parsing a time string.
-  time_string = "12345.6789012345";
-  result = handler->parseTimeString(time_string);
-  expected = glast_tt_origin + ElapsedTime("TT", Duration(12345.6789012345, "Sec"));
-  if (!result.equivalentTo(expected, time_tolerance)) {
-    err() << "GlastGeoTimeHandler::parseTimeString(\"" << time_string << "\") returned AbsoluteTime(" << result <<
-      "), not equivalent to AbsoluteTime(" << expected << ") with tolerance of " << time_tolerance << "." << std::endl;
-  }
+  // Perform the tests in this loop for the two versions of GlastTimeHandler::setSourcePosition method.
+  for (int ii=0; ii<2; ++ii) {
+    std::ostringstream os;
+    os << "After setSourcePosition(";
+    if (0 == ii) {
+      handler->setSourcePosition(ra, dec);
+      os << ra << ", " << dec;
+    } else {
+      handler->setSourcePosition(SourcePosition(ra, dec));
+      os << "SourcePosition(" << ra << ", " << dec << ")";
+    }
+    os << "), ";
+    std::string prefix(os.str());
 
-  // Test parsing a time string, with a different time system.
-  time_string = "12345.6789012345";
-  result = handler->parseTimeString(time_string, "TDB");
-  expected = glast_tdb_origin + ElapsedTime("TDB", Duration(12345.6789012345, "Sec"));
-  if (!result.equivalentTo(expected, time_tolerance)) {
-    err() << "GlastGeoTimeHandler::parseTimeString(\"" << time_string << "\", \"TDB\") returned AbsoluteTime(" << result <<
-      "), not equivalent to AbsoluteTime(" << expected << ") with tolerance of " << time_tolerance << "." << std::endl;
-  }
+    // Test parsing a time string.
+    time_string = "12345.6789012345";
+    result = handler->parseTimeString(time_string);
+    expected = glast_tt_origin + ElapsedTime("TT", Duration(12345.6789012345, "Sec"));
+    if (!result.equivalentTo(expected, time_tolerance)) {
+      err() << prefix << "GlastGeoTimeHandler::parseTimeString(\"" << time_string << "\") returned AbsoluteTime(" << result <<
+        "), not equivalent to AbsoluteTime(" << expected << ") with tolerance of " << time_tolerance << "." << std::endl;
+    }
 
-  // Test reading header keyword value, requesting geocentering.
-  result = handler->getGeoTime("TSTART", from_header);
-  glast_time = 2.12339367706036E+08; // TSTART in testevdata_1day_geo.fits.
-  expected = glast_tt_origin + ElapsedTime("TT", Duration(glast_time, "Sec"));
-  if (!result.equivalentTo(expected, time_tolerance)) {
-    err() << "GlastGeoTimeHandler::getGeoTime(\"TSTART\", " << from_header << ") returned AbsoluteTime(" << result <<
-      "), not equivalent to AbsoluteTime(" << expected << ") with tolerance of " << time_tolerance << "." << std::endl;
-  }
+    // Test parsing a time string, with a different time system.
+    time_string = "12345.6789012345";
+    result = handler->parseTimeString(time_string, "TDB");
+    expected = glast_tdb_origin + ElapsedTime("TDB", Duration(12345.6789012345, "Sec"));
+    if (!result.equivalentTo(expected, time_tolerance)) {
+      err() << prefix << "GlastGeoTimeHandler::parseTimeString(\"" << time_string << "\", \"TDB\") returned AbsoluteTime(" << result <<
+        "), not equivalent to AbsoluteTime(" << expected << ") with tolerance of " << time_tolerance << "." << std::endl;
+    }
 
-  // Test reading column value, requesting geocentering.
-  handler->setFirstRecord(); // Points to the first event.
-  handler->setNextRecord();  // Points to the second event.
-  handler->setNextRecord();  // Points to the third event.
-  result = handler->getGeoTime("TIME", from_column);
-  glast_time = 2.123393750425875E+08; // TIME of the third row in testevdata_1day_geo.fits.
-  expected = glast_tt_origin + ElapsedTime("TT", Duration(glast_time, "Sec"));
-  if (!result.equivalentTo(expected, time_tolerance)) {
-    err() << "GlastGeoTimeHandler::getGeoTime(\"TIME\", " << from_column << ") returned AbsoluteTime(" << result <<
-      "), not equivalent to AbsoluteTime(" << expected << ") with tolerance of " << time_tolerance << "." << std::endl;
-  }
+    // Test reading header keyword value, requesting geocentering.
+    result = handler->getGeoTime("TSTART", from_header);
+    glast_time = 2.12339367706036E+08; // TSTART in testevdata_1day_geo.fits.
+    expected = glast_tt_origin + ElapsedTime("TT", Duration(glast_time, "Sec"));
+    if (!result.equivalentTo(expected, time_tolerance)) {
+      err() << prefix << "GlastGeoTimeHandler::getGeoTime(\"TSTART\", " << from_header << ") returned AbsoluteTime(" << result <<
+        "), not equivalent to AbsoluteTime(" << expected << ") with tolerance of " << time_tolerance << "." << std::endl;
+    }
 
-  // Test reading column value, requesting barycentering.
-  try {
-    result = handler->getBaryTime("TIME", from_column);
-    err() << "GlastGeoTimeHandler::getBaryTime(\"TIME\", " << from_column << ") did not throw an exception when it should." <<
-      std::endl;
-  } catch (const std::exception &) {
-  }
+    // Test reading column value, requesting geocentering.
+    handler->setFirstRecord(); // Points to the first event.
+    handler->setNextRecord();  // Points to the second event.
+    handler->setNextRecord();  // Points to the third event.
+    result = handler->getGeoTime("TIME", from_column);
+    glast_time = 2.123393750425875E+08; // TIME of the third row in testevdata_1day_geo.fits.
+    expected = glast_tt_origin + ElapsedTime("TT", Duration(glast_time, "Sec"));
+    if (!result.equivalentTo(expected, time_tolerance)) {
+      err() << prefix << "GlastGeoTimeHandler::getGeoTime(\"TIME\", " << from_column << ") returned AbsoluteTime(" << result <<
+        "), not equivalent to AbsoluteTime(" << expected << ") with tolerance of " << time_tolerance << "." << std::endl;
+    }
 
-  // Test reading header keyword value, requesting barycentering.
-  try {
-    result = handler->getBaryTime("TSTART", from_header);
-    err() << "GlastGeoTimeHandler::getBaryTime(\"TSTART\", " << from_header << ") did not throw an exception when it should." <<
-      std::endl;
-  } catch (const std::exception &) {
+    // Test reading column value, requesting barycentering.
+    try {
+      result = handler->getBaryTime("TIME", from_column);
+      err() << prefix << "GlastGeoTimeHandler::getBaryTime(\"TIME\", " << from_column <<
+        ") did not throw an exception when it should." << std::endl;
+    } catch (const std::exception &) {
+    }
+
+    // Test reading header keyword value, requesting barycentering.
+    try {
+      result = handler->getBaryTime("TSTART", from_header);
+      err() << prefix << "GlastGeoTimeHandler::getBaryTime(\"TSTART\", " << from_header <<
+        ") did not throw an exception when it should." << std::endl;
+    } catch (const std::exception &) {
+    }
   }
 
   // Test setting a wrong sky position (ra, dec).
+  try {
+    handler->setSourcePosition(ra_wrong, dec_wrong);
+  } catch (const std::exception &) {
+    err() << "GlastGeoTimeHandler::setSourcePosition(" << ra_wrong << ", " << dec_wrong <<
+      ") threw an exception when it should not." << std::endl;
+  }
   try {
     handler->setSourcePosition(SourcePosition(ra_wrong, dec_wrong));
   } catch (const std::exception &) {
@@ -4520,6 +4623,12 @@ void TimeSystemTestApp::testGlastTimeHandler() {
   }
 
   // Test setting a different, but close sky position (ra, dec).
+  try {
+    handler->setSourcePosition(ra_close, dec_close);
+  } catch (const std::exception &) {
+    err() << "GlastGeoTimeHandler::setSourcePosition(" << ra_close << ", " << dec_close <<
+      ") threw an exception when it should not." << std::endl;
+  }
   try {
     handler->setSourcePosition(SourcePosition(ra_close, dec_close));
   } catch (const std::exception &) {
@@ -4551,60 +4660,74 @@ void TimeSystemTestApp::testGlastTimeHandler() {
   // Create a GlastScTimeHandler object for EVENTS extension of a copied event file for testing detections of time boundaries.
   handler.reset(GlastScTimeHandler::createInstance(event_file_copy, "EVENTS", false));
   handler->initTimeCorrection(sc_file, "SC_DATA", pl_ephem, match_solar_eph, angular_tolerance);
-  handler->setSourcePosition(SourcePosition(ra, dec)); // This has no effect.
 
-  // Test detection of time out of bounds, for a time too early.
-  handler->getHeader().setKeyword("TSTART", earliest_met - large_time_diff);
-  try {
-    handler->getBaryTime("TSTART", from_header);
-    err() << "GlastScTimeHandler::getBaryTime(\"TSTART\", " << from_header << ") did not throw an exception for the time " <<
-      large_time_diff << " second(s) earlier than the earliest time covered by the spacecraft file." << std::endl;
-  } catch (const std::exception &) {
-  }
+  // Perform the tests in this loop for the two versions of GlastTimeHandler::setSourcePosition method.
+  for (int ii=0; ii<2; ++ii) {
+    std::ostringstream os;
+    os << "After setSourcePosition(";
+    if (0 == ii) {
+      handler->setSourcePosition(ra, dec);
+      os << ra << ", " << dec;
+    } else {
+      handler->setSourcePosition(SourcePosition(ra, dec));
+      os << "SourcePosition(" << ra << ", " << dec << ")";
+    }
+    os << "), ";
+    std::string prefix(os.str());
 
-  // Test non-detection of time out of bounds, for a time slightly too early.
-  handler->getHeader().setKeyword("TSTART", earliest_met - small_time_diff);
-  try {
-    handler->getBaryTime("TSTART", from_header);
-  } catch (const std::exception &) {
-    err() << "GlastScTimeHandler::getBaryTime(\"TSTART\", " << from_header << ") threw an exception for the time " <<
-      small_time_diff << " second(s) earlier than the earliest time covered by the spacecraft file." << std::endl;
-  }
+    // Test detection of time out of bounds, for a time too early.
+    handler->getHeader().setKeyword("TSTART", earliest_met - large_time_diff);
+    try {
+      handler->getBaryTime("TSTART", from_header);
+      err() << prefix << "GlastScTimeHandler::getBaryTime(\"TSTART\", " << from_header << ") did not throw an exception for the time " <<
+        large_time_diff << " second(s) earlier than the earliest time covered by the spacecraft file." << std::endl;
+    } catch (const std::exception &) {
+    }
 
-  // Test non-detection of time out of bounds, for a time in-bounds.
-  handler->getHeader().setKeyword("TSTART", earliest_met + small_time_diff);
-  try {
-    handler->getBaryTime("TSTART", from_header);
-  } catch (const std::exception &) {
-    err() << "GlastScTimeHandler::getBaryTime(\"TSTART\", " << from_header << ") threw an exception for the time " <<
-      small_time_diff << " second(s) later than the earliest time covered by the spacecraft file." << std::endl;
-  }
+    // Test non-detection of time out of bounds, for a time slightly too early.
+    handler->getHeader().setKeyword("TSTART", earliest_met - small_time_diff);
+    try {
+      handler->getBaryTime("TSTART", from_header);
+    } catch (const std::exception &) {
+      err() << prefix << "GlastScTimeHandler::getBaryTime(\"TSTART\", " << from_header << ") threw an exception for the time " <<
+        small_time_diff << " second(s) earlier than the earliest time covered by the spacecraft file." << std::endl;
+    }
 
-  // Test non-detection of time out of bounds, for a time in-bounds.
-  handler->getHeader().setKeyword("TSTART", latest_met - small_time_diff);
-  try {
-    handler->getBaryTime("TSTART", from_header);
-  } catch (const std::exception &) {
-    err() << "GlastScTimeHandler::getBaryTime(\"TSTART\", " << from_header << ") threw an exception for the time " <<
-      small_time_diff << " second(s) earlier than the latest time covered by the spacecraft file." << std::endl;
-  }
+    // Test non-detection of time out of bounds, for a time in-bounds.
+    handler->getHeader().setKeyword("TSTART", earliest_met + small_time_diff);
+    try {
+      handler->getBaryTime("TSTART", from_header);
+    } catch (const std::exception &) {
+      err() << prefix << "GlastScTimeHandler::getBaryTime(\"TSTART\", " << from_header << ") threw an exception for the time " <<
+        small_time_diff << " second(s) later than the earliest time covered by the spacecraft file." << std::endl;
+    }
 
-  // Test non-detection of time out of bounds, for a time slightly late.
-  handler->getHeader().setKeyword("TSTART", latest_met + small_time_diff);
-  try {
-    handler->getBaryTime("TSTART", from_header);
-  } catch (const std::exception &) {
-    err() << "GlastScTimeHandler::getBaryTime(\"TSTART\", " << from_header << ") threw an exception for the time " <<
-      small_time_diff << " second(s) later than the latest time covered by the spacecraft file." << std::endl;
-  }
+    // Test non-detection of time out of bounds, for a time in-bounds.
+    handler->getHeader().setKeyword("TSTART", latest_met - small_time_diff);
+    try {
+      handler->getBaryTime("TSTART", from_header);
+    } catch (const std::exception &) {
+      err() << prefix << "GlastScTimeHandler::getBaryTime(\"TSTART\", " << from_header << ") threw an exception for the time " <<
+        small_time_diff << " second(s) earlier than the latest time covered by the spacecraft file." << std::endl;
+    }
 
-  // Test detection of time out of bounds, for a time too late.
-  handler->getHeader().setKeyword("TSTART", latest_met + large_time_diff);
-  try {
-    handler->getBaryTime("TSTART", from_header);
-    err() << "GlastScTimeHandler::getBaryTime(\"TSTART\", " << from_header << ") did not throw an exception for the time " <<
-      large_time_diff << " second(s) later than the latest time covered by the spacecraft file." << std::endl;
-  } catch (const std::exception &) {
+    // Test non-detection of time out of bounds, for a time slightly late.
+    handler->getHeader().setKeyword("TSTART", latest_met + small_time_diff);
+    try {
+      handler->getBaryTime("TSTART", from_header);
+    } catch (const std::exception &) {
+      err() << prefix << "GlastScTimeHandler::getBaryTime(\"TSTART\", " << from_header << ") threw an exception for the time " <<
+        small_time_diff << " second(s) later than the latest time covered by the spacecraft file." << std::endl;
+    }
+
+    // Test detection of time out of bounds, for a time too late.
+    handler->getHeader().setKeyword("TSTART", latest_met + large_time_diff);
+    try {
+      handler->getBaryTime("TSTART", from_header);
+      err() << prefix << "GlastScTimeHandler::getBaryTime(\"TSTART\", " << from_header << ") did not throw an exception for the time " <<
+        large_time_diff << " second(s) later than the latest time covered by the spacecraft file." << std::endl;
+    } catch (const std::exception &) {
+    }
   }
 }
 
