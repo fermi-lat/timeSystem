@@ -322,6 +322,17 @@ namespace timeSystem {
     return m_pl_ephem;
   }
 
+
+  void BaryTimeComputer::computeBaryTime(double ra, double dec, const std::vector<double> & obs_position, AbsoluteTime & abs_time)
+    const {
+    computeBaryTime(SourcePosition(ra, dec), obs_position, abs_time);
+  }
+
+  void BaryTimeComputer::computeGeoTime(double ra, double dec, const std::vector<double> & obs_position, AbsoluteTime & abs_time)
+    const {
+    computeGeoTime(SourcePosition(ra, dec), obs_position, abs_time);
+  }
+
   BaryTimeComputer::container_type & BaryTimeComputer::getContainer() {
     static container_type s_container;
     return s_container;
