@@ -1,7 +1,7 @@
 /**
     \mainpage timeSystem package
 
-    \author Masaharu Hirayama hirayama@jca.umbc.edu
+    \author Masaharu Hirayama hirayama@umbc.edu
             James Peachey James.Peachey-1@nasa.gov
 
     \section intro Introduction
