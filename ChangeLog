@@ -1,5 +1,81 @@
 ------------------------------------------------------------
 TAG
+Tag name: ScienceTools-09-25-02, operation: add
+Package: timeSystem
+User: jchiang  Sun Oct  9 21:02:57 2011
+Files:
+  timeSystem/.cvsignore  1.1
+  timeSystem/ChangeLog  1.847
+  timeSystem/timeSystemLib.py  1.2
+  timeSystem/SConscript  1.37
+  timeSystem/cmt/requirements  1.3
+  timeSystem/data/testscfile_lam.fits  1.1
+  timeSystem/data/testevdata_1day.fits  1.2
+  timeSystem/data/testevdata_1day_unordered_geo.fits  1.2
+  timeSystem/data/bogusls.fits  1.1
+  timeSystem/data/testevdata_1day_unordered.fits  1.2
+  timeSystem/data/testevdata_1day_geo.fits  1.2
+  timeSystem/data/testevdata_1day_bary.fits  1.2
+  timeSystem/data/testevdata_1day_unordered_bary.fits  1.2
+  timeSystem/data/testscdata_1day_fermi.fits  1.1
+  timeSystem/data/testscfile_std.fits  1.1
+  timeSystem/data/testscfile_3rd.fits  1.1
+  timeSystem/data/testevdata_1day_fermi.fits  1.2
+  timeSystem/data/testls.fits  1.1
+  timeSystem/data/testscfile_one.fits  1.1
+  timeSystem/data/testscdata_1day.fits  1.1
+  timeSystem/data/outref/testTimeCorrectorApp_par1.fits  1.5
+  timeSystem/data/outref/testTimeCorrectorApp_par2.fits  1.5
+  timeSystem/doc/release.notes  1.47
+  timeSystem/pfiles/gtbary.par  1.10
+  timeSystem/src/axBary.c  1.3
+  timeSystem/src/IntFracUtility.cxx  1.5
+  timeSystem/src/AbsoluteTime.cxx  1.26
+  timeSystem/src/scorbit.c  1.1.1.1
+  timeSystem/src/bary.c  1.2
+  timeSystem/src/clock.c  1.2
+  timeSystem/src/ElapsedTime.cxx  1.5
+  timeSystem/src/TimeCorrectorApp.cxx  1.15
+  timeSystem/src/SourcePosition.cxx  1.1
+  timeSystem/src/phaseHist.c  1.1.1.1
+  timeSystem/src/mainpage.h  1.9
+  timeSystem/src/Duration.cxx  1.12
+  timeSystem/src/TimeSystem.cxx  1.42
+  timeSystem/src/bary.h  1.1.1.1
+  timeSystem/src/xCC.c  1.1.1.1
+  timeSystem/src/EventTimeHandler.cxx  1.32
+  timeSystem/src/PulsarTestApp.cxx  1.26
+  timeSystem/src/glastscorbit.c  1.28
+  timeSystem/src/BaryTimeComputer.cxx  1.23
+  timeSystem/src/TimeInterval.cxx  1.4
+  timeSystem/src/MjdFormat.cxx  1.15
+  timeSystem/src/ctatv.c  1.2
+  timeSystem/src/CalendarFormat.cxx  1.12
+  timeSystem/src/GlastTimeHandler.cxx  1.41
+  timeSystem/src/dpleph.c  1.2
+  timeSystem/src/gtbary/gtbary.cxx  1.12
+  timeSystem/src/test/test_timeSystem.cxx  1.156
+  timeSystem/timeSystem/TimeInterval.h  1.3
+  timeSystem/timeSystem/TimeCorrectorApp.h  1.3
+  timeSystem/timeSystem/Duration.h  1.22
+  timeSystem/timeSystem/ElapsedTime.h  1.6
+  timeSystem/timeSystem/GlastTimeHandler.h  1.25
+  timeSystem/timeSystem/EventTimeHandler.h  1.30
+  timeSystem/timeSystem/BaryTimeComputer.h  1.12
+  timeSystem/timeSystem/AbsoluteTime.h  1.27
+  timeSystem/timeSystem/TimeConstant.h  1.8
+  timeSystem/timeSystem/MjdFormat.h  1.8
+  timeSystem/timeSystem/TimeFormat.h  1.10
+  timeSystem/timeSystem/PulsarTestApp.h  1.16
+  timeSystem/timeSystem/IntFracUtility.h  1.2
+  timeSystem/timeSystem/CalendarFormat.h  1.4
+  timeSystem/timeSystem/glastscorbit.h  1.2
+  timeSystem/timeSystem/SourcePosition.h  1.1
+  timeSystem/timeSystem/TimeSystem.h  1.17
+
+    *
+------------------------------------------------------------
+TAG
 Tag name: ScienceTools-09-25-01, operation: add
 Package: timeSystem
 User: jchiang  Sat Sep 10 08:32:30 2011
