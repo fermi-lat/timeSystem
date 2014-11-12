@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: asercion  Wed Nov 12 10:14:05 PST 2014
+timeSystem/timeSystem
+
+Modified Files:
+	IntFracUtility.h 
+Log Message:
+Mavericks compatibility update
+    *
+------------------------------------------------------------
 TAG
 Tag name: ScienceTools-09-34-03, operation: add
 Package: timeSystem
