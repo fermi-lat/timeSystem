@@ -1,7 +1,8 @@
 /** \file release.notes
     \brief Log of changes to timeSystem package.
     \author Masaharu Hirayama, 
-            James Peachey, HEASARC/GSSC
+            James Peachey, HEASARC/GSSC,
+            Joe Asercion, FSSC/GSFC
 
 \verbatim
 --------------------------------------------------------------------------------
