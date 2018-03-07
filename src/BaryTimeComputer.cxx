@@ -187,7 +187,7 @@ namespace {
       // Set given time to a variable to pass to dpleph C-function.
       Jd jd_rep(0, 0.);
       abs_time.get("TT", jd_rep);
-      double jdt[2] = { jd_rep.m_int, jd_rep.m_frac };
+      double jdt[2] = { static_cast<double>(jd_rep.m_int), jd_rep.m_frac };
 
       // Read solar system ephemeris for the given time.
       const int iearth = 3;
