@@ -283,22 +283,22 @@ namespace {
 namespace timeSystem {
 
   const TimeFormat<Mjd> & TimeFormatFactory<Mjd>::getFormat() {
-    static const MjdFormat s_mjd_format;
+    static MjdFormat s_mjd_format;
     return s_mjd_format;
   }
 
   const TimeFormat<Mjd1> & TimeFormatFactory<Mjd1>::getFormat() {
-    static const Mjd1Format s_mjd1_format;
+    static Mjd1Format s_mjd1_format;
     return s_mjd1_format;
   }
 
   const TimeFormat<Jd> & TimeFormatFactory<Jd>::getFormat() {
-    static const JdFormat s_jd_format;
+    static JdFormat s_jd_format;
     return s_jd_format;
   }
 
   const TimeFormat<Jd1> & TimeFormatFactory<Jd1>::getFormat() {
-    static const Jd1Format s_jd1_format;
+    static Jd1Format s_jd1_format;
     return s_jd1_format;
   }
 

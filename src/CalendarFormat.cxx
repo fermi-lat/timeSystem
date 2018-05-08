@@ -800,17 +800,17 @@ namespace {
 namespace timeSystem {
 
   const TimeFormat<Calendar> & TimeFormatFactory<Calendar>::getFormat() {
-    static const CalendarFormat s_calendar_format;
+    static CalendarFormat s_calendar_format;
     return s_calendar_format;
   }
 
   const TimeFormat<IsoWeek> & TimeFormatFactory<IsoWeek>::getFormat() {
-    static const IsoWeekFormat s_iso_week_format;
+    static IsoWeekFormat s_iso_week_format;
     return s_iso_week_format;
   }
 
   const TimeFormat<Ordinal> & TimeFormatFactory<Ordinal>::getFormat() {
-    static const OrdinalFormat s_ordinal_format;
+    static OrdinalFormat s_ordinal_format;
     return s_ordinal_format;
   }
 
