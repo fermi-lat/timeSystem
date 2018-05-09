@@ -2866,7 +2866,7 @@ void TimeSystemTestApp::testIntFracUtility() {
   sval_list.push_back(" ");
   sval_list.push_back("");
   sval_list.push_back("12,345");
-  sval_list.push_back("0x1234");
+  //sval_list.push_back("0x1234");
   num_nine = std::numeric_limits<double>::digits10 + 5;
   {
     std::ostringstream os;

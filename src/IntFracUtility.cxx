@@ -26,8 +26,9 @@ namespace {
   void convertStringToNumber(const std::string & value_string, NumericType & value, const std::exception & except) {
     // Convert the copied string to a value of a numberic type, removing trailing space to prevent spurious errors.
     std::istringstream iss(value_string);
-    iss >> value >> std::ws;
-
+    iss >> value;
+    // Clear whitespace if eof bit is not flipped.
+    if (!iss.eof()) { iss >> std::ws; }
     // Throws an exception if an error occurs.
     if (iss.fail() || !iss.eof()) throw except;
   }
