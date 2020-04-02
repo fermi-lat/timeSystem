@@ -3069,7 +3069,7 @@ void TimeSystemTestApp::testSourcePosition() {
   setMethod("testSourcePosition");
 
   // Prepare test parameters and variables.
-  std::auto_ptr<SourcePosition> src_ptr(0);
+  std::unique_ptr<SourcePosition> src_ptr(0);
   double base_ra = 30.;
   double base_dec = 60.;
   double base_x = 0.5 * std::sqrt(3.)/2.;
@@ -3481,7 +3481,7 @@ void TimeSystemTestApp::testEventTimeHandlerFactory() {
   std::string event_file = prependDataPath("testevdata_1day.fits");
 
   // Test creation of BogusTimeHandler1 (an EventTimeHandler sub-class) through its createInstance method.
-  std::auto_ptr<EventTimeHandler> handler(0);
+  std::unique_ptr<EventTimeHandler> handler(0);
   handler.reset(BogusTimeHandler1::createInstance(event_file, "EVENTS"));
   if (handler.get() != 0) {
     err() << "BogusTimeHandler1::createInstance method did not return a null pointer (0)." << std::endl;
@@ -4025,7 +4025,7 @@ void TimeSystemTestApp::testGlastTimeHandler() {
   tip_file.copyFile(event_file_copy, true);
 
   // Create an auto-pointer object.
-  std::auto_ptr<EventTimeHandler> handler(0);
+  std::unique_ptr<EventTimeHandler> handler(0);
 
   // Test creation of GlastScTimeHandler through its createInstance method.
   handler.reset(GlastScTimeHandler::createInstance(event_file, "EVENTS"));

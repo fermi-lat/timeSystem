@@ -200,9 +200,9 @@ namespace timeSystem {
         std::ostringstream os;
         os << ext_number;
         std::string ext_name = os.str();
-        std::auto_ptr<const tip::Extension> out_ext(tip::IFileSvc::instance().readExtension(out_file, ext_name));
+        std::unique_ptr<const tip::Extension> out_ext(tip::IFileSvc::instance().readExtension(out_file, ext_name));
         const tip::Header & out_header(out_ext->getHeader());
-        std::auto_ptr<const tip::Extension> ref_ext(tip::IFileSvc::instance().readExtension(ref_file, ext_name));
+        std::unique_ptr<const tip::Extension> ref_ext(tip::IFileSvc::instance().readExtension(ref_file, ext_name));
         const tip::Header & ref_header(ref_ext->getHeader());
 
         // List header keywords to ignore in comparison.
@@ -277,8 +277,8 @@ namespace timeSystem {
 
         // Compare the tables, except for primary HDU's.
         if (ext_number != 0) {
-          std::auto_ptr<const tip::Table> out_table(tip::IFileSvc::instance().readTable(out_file, ext_name));
-          std::auto_ptr<const tip::Table> ref_table(tip::IFileSvc::instance().readTable(ref_file, ext_name));
+          std::unique_ptr<const tip::Table> out_table(tip::IFileSvc::instance().readTable(out_file, ext_name));
+          std::unique_ptr<const tip::Table> ref_table(tip::IFileSvc::instance().readTable(ref_file, ext_name));
 
           // Compare the number of rows.
           tip::Index_t out_num_row = out_table->getNumRecords();
@@ -441,7 +441,7 @@ namespace timeSystem {
     st_stream::SetDebugMode(debug_mode);
 
     // Create and setup an application object.
-    std::auto_ptr<st_app::StApp> app_ptr(createApplication());
+    std::unique_ptr<st_app::StApp> app_ptr(createApplication());
     if (0 == app_ptr.get()) {
       err() << "Cannot create an application object: \"" << m_app_name << "\"" << std::endl;
       return;

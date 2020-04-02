@@ -95,7 +95,7 @@ namespace timeSystem {
   bool GlastTimeHandler::checkHeaderKeyword(const std::string & file_name, const std::string & extension_name,
     const std::string & time_ref_value, const std::string & time_sys_value) {
     // Get the table and the header.
-    std::auto_ptr<const tip::Extension> table(tip::IFileSvc::instance().readExtension(file_name, extension_name));
+    std::unique_ptr<const tip::Extension> table(tip::IFileSvc::instance().readExtension(file_name, extension_name));
     const tip::Header & header(table->getHeader());
 
     // Check whether required keywords exist or not.

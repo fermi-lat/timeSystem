@@ -402,7 +402,7 @@ namespace {
     m_file_name = leap_sec_file_name;
 
     // Read MJD and number of leap seconds from table.
-    std::auto_ptr<const tip::Table> leap_sec_table(tip::IFileSvc::instance().readTable(m_file_name, "1"));
+    std::unique_ptr<const tip::Table> leap_sec_table(tip::IFileSvc::instance().readTable(m_file_name, "1"));
     long cumulative_leap_sec = 0;
     for (tip::Table::ConstIterator itor = leap_sec_table->begin(); itor != leap_sec_table->end(); ++itor) {
       // Read the MJD and LEAPSECS from the table.
