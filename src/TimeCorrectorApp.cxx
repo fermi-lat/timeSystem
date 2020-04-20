@@ -189,7 +189,7 @@ namespace timeSystem {
     for (tip::FileSummary::const_iterator ext_itor = file_summary.begin(); ext_itor != file_summary.end(); ++ext_itor, ++ext_number) {
       bool supported = false;
       for (factory_cont_type::const_iterator fact_itor = factory_cont.begin(); fact_itor != factory_cont.end(); ++fact_itor) {
-        std::auto_ptr<EventTimeHandler> input_handler((*fact_itor)->create(inFile_s, ext_number));
+        std::unique_ptr<EventTimeHandler> input_handler((*fact_itor)->create(inFile_s, ext_number));
         if (0 != input_handler.get()) supported = true;
       }
       if (!supported) {
@@ -273,7 +273,7 @@ namespace timeSystem {
       std::ostringstream oss;
       oss << ext_index;
       std::string ext_name = oss.str();
-      std::auto_ptr<tip::Extension> output_extension(tip::IFileSvc::instance().editExtension(tmpOutFile_s, ext_name));
+      std::unique_ptr<tip::Extension> output_extension(tip::IFileSvc::instance().editExtension(tmpOutFile_s, ext_name));
 
       // Change the header keywords of the output file that determine how to interpret event times.
       tip::Header & output_header = output_extension->getHeader();
@@ -351,8 +351,8 @@ namespace timeSystem {
     ext_number = 0;
     for (tip::FileSummary::const_iterator ext_itor = file_summary.begin(); ext_itor != file_summary.end(); ++ext_itor, ++ext_number) {
       // Open this extension of the input file, and the corresponding extension of the output file.
-      std::auto_ptr<EventTimeHandler> input_handler(0);
-      std::auto_ptr<EventTimeHandler> output_handler(0);
+      std::unique_ptr<EventTimeHandler> input_handler(nullptr);
+      std::unique_ptr<EventTimeHandler> output_handler(nullptr);
       for (factory_cont_type::const_iterator fact_itor = factory_cont.begin();
         fact_itor != factory_cont.end() && (0 == input_handler.get() || (0 == output_handler.get())); ++fact_itor) {
         std::pair<EventTimeHandler *, EventTimeHandler *> handler_pair = (*fact_itor)->create(inFile_s, tmpOutFile_s, ext_number);
