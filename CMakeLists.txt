@@ -44,3 +44,19 @@ target_link_libraries(gtbary PRIVATE timeSystem)
 ###### Tests ######
 add_executable(test_timeSystem src/test/test_timeSystem.cxx)
 target_link_libraries(test_timeSystem PRIVATE timeSystem)
+
+###############################################################
+# Installation
+###############################################################
+install(DIRECTORY timeSystem DESTINATION ${FERMI_INSTALL_INCLUDEDIR})
+install(DIRECTORY data/ DESTINATION ${FERMI_INSTALL_DATADIR})
+install(DIRECTORY pfiles/ DESTINATION ${FERMI_INSTALL_PFILESDIR})
+
+install(
+  TARGETS timeSystem gtbary
+  # EXPORT fermiTargets
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+  INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
