@@ -53,8 +53,8 @@ install(DIRECTORY data/ DESTINATION ${FERMI_INSTALL_DATADIR})
 install(DIRECTORY pfiles/ DESTINATION ${FERMI_INSTALL_PFILESDIR})
 
 install(
-  TARGETS timeSystem gtbary
-  # EXPORT fermiTargets
+  TARGETS timeSystem gtbary test_timeSystem
+  EXPORT fermiTargets
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
