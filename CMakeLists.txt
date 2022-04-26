@@ -49,7 +49,7 @@ target_link_libraries(test_timeSystem PRIVATE timeSystem)
 # Installation
 ###############################################################
 install(DIRECTORY timeSystem DESTINATION ${FERMI_INSTALL_INCLUDEDIR})
-install(DIRECTORY data/ DESTINATION ${FERMI_INSTALL_DATADIR})
+install(DIRECTORY data/ DESTINATION ${FERMI_INSTALL_REFDATADIR}/timeSystem)
 install(DIRECTORY pfiles/ DESTINATION ${FERMI_INSTALL_PFILESDIR})
 
 install(
