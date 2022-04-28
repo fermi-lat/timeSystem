@@ -51,10 +51,7 @@ target_link_libraries(test_timeSystem PRIVATE timeSystem)
 install(DIRECTORY timeSystem DESTINATION ${FERMI_INSTALL_INCLUDEDIR})
 install(DIRECTORY pfiles/ DESTINATION ${FERMI_INSTALL_PFILESDIR})
 install(DIRECTORY data/outref DESTINATION ${FERMI_INSTALL_DATADIR}/timeSystem)
-install(
-  DIRECTORY data/ DESTINATION ${FERMI_INSTALL_REFDATADIR}/timeSystem
-  PATTERN "outref" EXCLUDE
-)
+install(DIRECTORY data/ DESTINATION ${FERMI_INSTALL_REFDATADIR}/timeSystem)
 
 install(
   TARGETS timeSystem gtbary test_timeSystem
