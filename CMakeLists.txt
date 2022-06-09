@@ -1,6 +1,6 @@
 ##### Library ######
 add_library(
-  timeSystem STATIC
+  timeSystem 
   src/AbsoluteTime.cxx
   src/axBary.c
   src/bary.c
