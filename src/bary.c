@@ -1168,7 +1168,7 @@ int timeparms (char *insource, MJDTime *time, double roffset, int bin,
  * 
  *----------------------------------------------------------------------*/
 
-timeline (char *line, char *bsource, double *ra, double *dec,
+int timeline (char *line, char *bsource, double *ra, double *dec,
 	  long *mjd1, long *mjd2, long *mjdi, double *mjdf,
 	  double *fd, double *dfd, double *ddfd, double *dddfd,
 	  double *rms, int *fbin, int *denum, char *jsource) {
