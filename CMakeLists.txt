@@ -28,7 +28,7 @@ add_library(
 
 target_link_libraries(
   timeSystem
-  PUBLIC PkgConfig::cfitsio st_app st_stream st_facilities tip
+  PUBLIC cfitsio::cfitsio st_app st_stream st_facilities tip
 )
 
 target_include_directories(
