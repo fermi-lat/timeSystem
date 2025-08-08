@@ -31,6 +31,7 @@
 #include "tip/Header.h"
 #include "tip/IFileSvc.h"
 #include "tip/TipFile.h"
+#include "general_util/generic_utils.h"
 
 static const std::string s_cvs_id = "$Name:  $";
 
@@ -293,7 +294,10 @@ namespace timeSystem {
       output_header["PLEPHEM"].setComment("solar system ephemeris used for arrival time corrections");
       output_header["TIMEZERO"].set(0.);
       output_header["TIMEZERO"].setComment("clock correction");
-      output_header["CREATOR"].set(creator_name);
+
+      // Update CREATOR value with: Tool name/Group/Version
+      std::string creator_version =  GenericUtils::creator_banner(creator_name);
+      output_header["CREATOR"].set(creator_version);
       output_header["CREATOR"].setComment("software and version creating file");
       output_header["DATE"].set(date_keyword_value);
       output_header["DATE"].setComment("file creation date (YYYY-MM-DDThh:mm:ss UT)");
