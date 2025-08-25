@@ -38,6 +38,8 @@ target_include_directories(
 )
 
 ###### Executables ######
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
 add_executable(gtbary src/gtbary/gtbary.cxx)
 target_link_libraries(gtbary PRIVATE timeSystem)
 
