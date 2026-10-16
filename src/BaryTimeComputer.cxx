@@ -21,8 +21,8 @@
 extern "C" {
 // Copied from bary.h.
 #define RADEG   57.2957795130823
-int initephem (int, int *, double *, double *, double *) ;
-const double *dpleph (double *, int, int) ;
+auto initephem (int, int *, double *, double *, double *) -> int ;
+auto dpleph (double *, int, int) -> const double * ;
 }
 
 namespace {
@@ -81,14 +81,14 @@ namespace {
           \param barycentric If true, a time delay for a barycentric correction is computed. If false, one for a geocentric
                  correction is computed.
       */
-      double computeTimeDelay(const SourcePosition & src_position, const std::vector<double> & obs_position,
-        AbsoluteTime & abs_time, bool barycentric) const;
+      auto computeTimeDelay(const SourcePosition & src_position, const std::vector<double> & obs_position,
+        AbsoluteTime & abs_time, bool barycentric) const -> double;
 
       /** \brief Helper method to compute an inner product of a pair of three-vectors.
           \param vect_x One of the three vector to compute an inner product for.
           \param vect_y The other of the three vector to compute an inner product for.
       */
-      double computeInnerProduct(const std::vector<double> & vect_x, const std::vector<double> & vect_y) const;
+      auto computeInnerProduct(const std::vector<double> & vect_x, const std::vector<double> & vect_y) const -> double;
   };
 
   /** \class JplDe200Computer
@@ -169,8 +169,8 @@ namespace {
     abs_time += ElapsedTime("TT", Duration(delay, "Sec"));
   }
 
-  double JplComputer::computeTimeDelay(const SourcePosition & src_position, const std::vector<double> & obs_position,
-    AbsoluteTime & abs_time, bool barycentric) const {
+  auto JplComputer::computeTimeDelay(const SourcePosition & src_position, const std::vector<double> & obs_position,
+    AbsoluteTime & abs_time, bool barycentric) const -> double {
     // Check the size of obs_position.
     if (obs_position.size() < 3) {
       throw std::runtime_error("Space craft position was given in a wrong format");
@@ -271,7 +271,7 @@ namespace {
     return delay;
   }
 
-  double JplComputer::computeInnerProduct(const std::vector<double> & vect_x, const std::vector<double> & vect_y) const {
+  auto JplComputer::computeInnerProduct(const std::vector<double> & vect_x, const std::vector<double> & vect_y) const -> double {
     return vect_x[0]*vect_y[0] + vect_x[1]*vect_y[1] + vect_x[2]*vect_y[2];
   }
 
@@ -287,7 +287,7 @@ namespace timeSystem {
 
   BaryTimeComputer::~BaryTimeComputer() {}
 
-  const BaryTimeComputer & BaryTimeComputer::getComputer(const std::string & pl_ephem) {
+  auto BaryTimeComputer::getComputer(const std::string & pl_ephem) -> const BaryTimeComputer & {
     // Create instances of BaryTimeComputer's.
     static JplDe200Computer s_jpl_de200;
     static JplDe405Computer s_jpl_de405;
@@ -318,7 +318,7 @@ namespace timeSystem {
     return computer;
   }
 
-  std::string BaryTimeComputer::getPlanetaryEphemerisName() const {
+  auto BaryTimeComputer::getPlanetaryEphemerisName() const -> std::string {
     return m_pl_ephem;
   }
 
@@ -333,7 +333,7 @@ namespace timeSystem {
     computeGeoTime(SourcePosition(ra, dec), obs_position, abs_time);
   }
 
-  BaryTimeComputer::container_type & BaryTimeComputer::getContainer() {
+  auto BaryTimeComputer::getContainer() -> BaryTimeComputer::container_type & {
     static container_type s_container;
     return s_container;
   }

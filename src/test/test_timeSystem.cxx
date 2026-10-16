@@ -62,7 +62,7 @@ class TimeCorrectorAppTester: public PulsarApplicationTester {
   virtual ~TimeCorrectorAppTester() throw() {}
 
   /// \brief Returns an application object to be tested.
-  virtual st_app::StApp * createApplication() const;
+  virtual auto createApplication() const -> st_app::StApp *;
 
   /** \brief Return a logical true if the given header keyword is determined correct, and a logical false otherwise.
       \param keyword_name Name of the header keyword to be verified.
@@ -70,8 +70,8 @@ class TimeCorrectorAppTester: public PulsarApplicationTester {
       \param ref_keyword Header keyword taken from the reference file which out_keyword is checked against.
       \param error_stream Output stream for this method to put an error messages when verification fails.
   */
-  virtual bool verify(const std::string & keyword_name, const tip::KeyRecord & out_keyword,
-    const tip::KeyRecord & ref_keyword, std::ostream & error_stream) const;
+  virtual auto verify(const std::string & keyword_name, const tip::KeyRecord & out_keyword,
+    const tip::KeyRecord & ref_keyword, std::ostream & error_stream) const -> bool;
 
   /** \brief Return a logical true if the given table cell is considered correct, and a logical false otherwise.
       \param column_name Name of the FITS column that the given table cell belongs to.
@@ -79,25 +79,25 @@ class TimeCorrectorAppTester: public PulsarApplicationTester {
       \param ref_cell Table cell taken from the reference file which out_cell is checked against.
       \param error_stream Output stream for this method to put an error message when verification fails.
   */
-  virtual bool verify(const std::string & column_name, const tip::TableCell & out_cell, const tip::TableCell & ref_cell,
-    std::ostream & error_stream) const;
+  virtual auto verify(const std::string & column_name, const tip::TableCell & out_cell, const tip::TableCell & ref_cell,
+    std::ostream & error_stream) const -> bool;
 
   /** \brief Return a logical true if the given character string is considered correct, and a logical false otherwise.
       \param out_string Character string taken from the output file to be verified.
       \param ref_string Character string taken from the reference file which out_string is checked against.
       \param error_stream Output stream for this method to put an error message when verification fails.
   */
-  virtual bool verify(const std::string & out_string, const std::string & ref_string, std::ostream & error_stream) const;
+  virtual auto verify(const std::string & out_string, const std::string & ref_string, std::ostream & error_stream) const -> bool;
 };
 
 TimeCorrectorAppTester::TimeCorrectorAppTester(PulsarTestApp & test_app): PulsarApplicationTester("gtbary", test_app) {}
 
-st_app::StApp * TimeCorrectorAppTester::createApplication() const {
+auto TimeCorrectorAppTester::createApplication() const -> st_app::StApp * {
   return new TimeCorrectorApp();
 }
 
-bool TimeCorrectorAppTester::verify(const std::string & keyword_name, const tip::KeyRecord & out_keyword,
-  const tip::KeyRecord & ref_keyword, std::ostream & error_stream) const {
+auto TimeCorrectorAppTester::verify(const std::string & keyword_name, const tip::KeyRecord & out_keyword,
+  const tip::KeyRecord & ref_keyword, std::ostream & error_stream) const -> bool {
   // Initialize return value.
   bool verified = false;
 
@@ -138,8 +138,8 @@ bool TimeCorrectorAppTester::verify(const std::string & keyword_name, const tip:
   return verified;
 }
 
-bool TimeCorrectorAppTester::verify(const std::string & column_name, const tip::TableCell & out_cell,
-  const tip::TableCell & ref_cell, std::ostream & error_stream) const {
+auto TimeCorrectorAppTester::verify(const std::string & column_name, const tip::TableCell & out_cell,
+  const tip::TableCell & ref_cell, std::ostream & error_stream) const -> bool {
   // Initialize return value.
   bool verified = false;
 
@@ -167,7 +167,7 @@ bool TimeCorrectorAppTester::verify(const std::string & column_name, const tip::
   return verified;
 }
 
-bool TimeCorrectorAppTester::verify(const std::string & out_string, const std::string & ref_string, std::ostream & error_stream) const {
+auto TimeCorrectorAppTester::verify(const std::string & out_string, const std::string & ref_string, std::ostream & error_stream) const -> bool {
   bool verified = (out_string == ref_string);
   if (!verified) {
     error_stream << "Line not identical to reference." <<
@@ -3412,8 +3412,8 @@ class BogusTimeHandlerBase: public EventTimeHandler {
   public:
     virtual ~BogusTimeHandlerBase() {}
 
-    static EventTimeHandler * createInstance(const std::string & /*file_name*/, const std::string & /*extension_name*/,
-      bool /*read_only*/ = true)
+    static auto createInstance(const std::string & /*file_name*/, const std::string & /*extension_name*/,
+      bool /*read_only*/ = true) -> EventTimeHandler *
       { return 0; }
 
     virtual void initTimeCorrection(const std::string & /*sc_file_name*/, const std::string & /*sc_extension_name*/,
@@ -3422,18 +3422,18 @@ class BogusTimeHandlerBase: public EventTimeHandler {
     virtual void setSourcePosition(double /*ra*/, double /*dec*/) {}
     virtual void setSourcePosition(const SourcePosition & /*src_position*/) {}
 
-    virtual AbsoluteTime readTime(const std::string & /*field_name*/, bool /*from_header*/ = false) const
+    virtual auto readTime(const std::string & /*field_name*/, bool /*from_header*/ = false) const -> AbsoluteTime
       { return AbsoluteTime("TDB", 51910, 0.); }
 
     virtual void writeTime(const std::string & /*field_name*/, const AbsoluteTime & /*abs_time*/, bool /*to_header*/ = false) {}
 
-    virtual AbsoluteTime getGeoTime(const std::string & /*field_name*/, bool /*from_header*/ = false) const
+    virtual auto getGeoTime(const std::string & /*field_name*/, bool /*from_header*/ = false) const -> AbsoluteTime
       { return AbsoluteTime("TDB", 51910, 0.); }
 
-    virtual AbsoluteTime getBaryTime(const std::string & /*field_name*/, bool /*from_header*/ = false) const
+    virtual auto getBaryTime(const std::string & /*field_name*/, bool /*from_header*/ = false) const -> AbsoluteTime
       { return AbsoluteTime("TDB", 51910, 0.); }
 
-    virtual AbsoluteTime parseTimeString(const std::string & /*time_string*/, const std::string & /*time_system*/ = "FILE") const
+    virtual auto parseTimeString(const std::string & /*time_string*/, const std::string & /*time_system*/ = "FILE") const -> AbsoluteTime
       { return AbsoluteTime("TDB", 51910, 0.); }
 
   protected:
@@ -3443,8 +3443,8 @@ class BogusTimeHandlerBase: public EventTimeHandler {
 
 class BogusTimeHandler1: public BogusTimeHandlerBase {
   public:
-    static EventTimeHandler * createInstance(const std::string & /*file_name*/, const std::string & /*extension_name*/,
-      bool /*read_only*/ = true)
+    static auto createInstance(const std::string & /*file_name*/, const std::string & /*extension_name*/,
+      bool /*read_only*/ = true) -> EventTimeHandler *
       { return 0; }
 
   private:
@@ -3454,8 +3454,8 @@ class BogusTimeHandler1: public BogusTimeHandlerBase {
 
 class BogusTimeHandler2: public BogusTimeHandlerBase {
   public:
-    static EventTimeHandler * createInstance(const std::string & file_name, const std::string & extension_name,
-      bool read_only = true)
+    static auto createInstance(const std::string & file_name, const std::string & extension_name,
+      bool read_only = true) -> EventTimeHandler *
       { return new BogusTimeHandler2(file_name, extension_name, read_only); }
 
   private:
@@ -3465,8 +3465,8 @@ class BogusTimeHandler2: public BogusTimeHandlerBase {
 
 class BogusTimeHandler3: public BogusTimeHandlerBase {
   public:
-    static EventTimeHandler * createInstance(const std::string & file_name, const std::string & extension_name,
-      bool read_only = true)
+    static auto createInstance(const std::string & file_name, const std::string & extension_name,
+      bool read_only = true) -> EventTimeHandler *
       { return new BogusTimeHandler3(file_name, extension_name, read_only); }
 
   private:

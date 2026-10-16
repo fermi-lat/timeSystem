@@ -62,11 +62,11 @@ namespace timeSystem {
     if (m_failed) throw std::runtime_error(getName() + ": unit test failed.");
   }
 
-  std::string PulsarTestApp::prependDataPath(const std::string & base_name) const {
+  auto PulsarTestApp::prependDataPath(const std::string & base_name) const -> std::string {
     return facilities::commonUtilities::joinPath(m_data_dir, base_name);
   }
 
-  std::string PulsarTestApp::prependOutrefPath(const std::string & base_name) const {
+  auto PulsarTestApp::prependOutrefPath(const std::string & base_name) const -> std::string {
     return facilities::commonUtilities::joinPath(m_outref_dir, base_name);
   }
 
@@ -74,15 +74,15 @@ namespace timeSystem {
     m_method_name = method_name;
   }
 
-  std::string PulsarTestApp::getMethod() const {
+  auto PulsarTestApp::getMethod() const -> std::string {
     return m_method_name;
   }
 
-  std::streamsize PulsarTestApp::setPrecision(std::streamsize precision) {
+  auto PulsarTestApp::setPrecision(std::streamsize precision) -> std::streamsize {
     return std::cerr.precision(precision);
   }
 
-  std::ostream & PulsarTestApp::err() {
+  auto PulsarTestApp::err() -> std::ostream & {
     m_failed = true;
     return std::cerr << getName() << ": " << m_method_name << ": ";
   }
@@ -92,16 +92,16 @@ namespace timeSystem {
 
   PulsarApplicationTester::~PulsarApplicationTester() throw() {}
 
-  std::string PulsarApplicationTester::getName() const {
+  auto PulsarApplicationTester::getName() const -> std::string {
     return m_app_name;
   }
 
-  std::ostream & PulsarApplicationTester::err() {
+  auto PulsarApplicationTester::err() -> std::ostream & {
     return m_test_app->err();
   }
 
-  bool PulsarApplicationTester::equivalent(const std::string & string_value, const std::string & string_reference,
-    double tolerance_abs, double tolerance_rel) const {
+  auto PulsarApplicationTester::equivalent(const std::string & string_value, const std::string & string_reference,
+    double tolerance_abs, double tolerance_rel) const -> bool {
     // Prepare variables for comparison.
     const char * ptr_val_cur(string_value.c_str());
     char * ptr_val_next(0);
@@ -153,18 +153,18 @@ namespace timeSystem {
     return !mismatch_found;
   }
 
-  bool PulsarApplicationTester::verify(const std::string & /* keyword_name */, const tip::KeyRecord & /* out_keyword */,
-    const tip::KeyRecord & /* ref_keyword */, std::ostream & /* error_stream */) const {
+  auto PulsarApplicationTester::verify(const std::string & /* keyword_name */, const tip::KeyRecord & /* out_keyword */,
+    const tip::KeyRecord & /* ref_keyword */, std::ostream & /* error_stream */) const -> bool {
     throw std::runtime_error("Verification method for header keyword not implemented.");
   }
 
-  bool PulsarApplicationTester::verify(const std::string & /* column_name */, const tip::TableCell & /* out_cell */,
-    const tip::TableCell & /* ref_cell */, std::ostream & /* error_stream */) const {
+  auto PulsarApplicationTester::verify(const std::string & /* column_name */, const tip::TableCell & /* out_cell */,
+    const tip::TableCell & /* ref_cell */, std::ostream & /* error_stream */) const -> bool {
     throw std::runtime_error("Verification method for table cell not implemented.");
   }
 
-  bool PulsarApplicationTester::verify(const std::string & /* out_string */, const std::string & /* ref_string */,
-    std::ostream & /* error_stream */) const {
+  auto PulsarApplicationTester::verify(const std::string & /* out_string */, const std::string & /* ref_string */,
+    std::ostream & /* error_stream */) const -> bool {
     throw std::runtime_error("Verification method for character string not implemented.");
   }
 

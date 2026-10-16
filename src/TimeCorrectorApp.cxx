@@ -52,8 +52,8 @@ namespace {
           \param extension_number Extension number to be opened, with 0 (zero) for a primary HDU.
                  Both the first and the second files are opened with this extension number.
       */
-      std::pair<EventTimeHandler *, EventTimeHandler *> create(const std::string & first_file_name,
-        const std::string & second_file_name, int extension_number) const;
+      auto create(const std::string & first_file_name,
+        const std::string & second_file_name, int extension_number) const -> std::pair<EventTimeHandler *, EventTimeHandler *>;
 
       /** \brief Create one EventTimeHandler object. Actual creation must be done in a derived class.
                  This method is called to create a pair of EventTimeHandler objects.
@@ -62,7 +62,7 @@ namespace {
           \param as_first_file Set to true if file should be opened with the first EventTimeHandler class.
                                Set to false otherwise.
       */
-      virtual EventTimeHandler * create(const std::string & file_name, int extension_number, bool as_first_file = true) const = 0;
+      virtual auto create(const std::string & file_name, int extension_number, bool as_first_file = true) const -> EventTimeHandler * = 0;
 
     protected:
       /// \brief Construct an IHandlerPairFactory object.
@@ -90,8 +90,8 @@ namespace {
       virtual EventTimeHandler * create(const std::string & file_name, int extension_number, bool as_first_file = true) const;
   };
 
-  std::pair<EventTimeHandler *, EventTimeHandler *> IHandlerPairFactory::create(const std::string & first_file_name,
-    const std::string & second_file_name, int extension_number) const {
+  auto IHandlerPairFactory::create(const std::string & first_file_name,
+    const std::string & second_file_name, int extension_number) const -> std::pair<EventTimeHandler *, EventTimeHandler *> {
     // Prepare variables to hold the return value.
     EventTimeHandler * first_handler(0);
     EventTimeHandler * second_handler(0);
@@ -434,7 +434,7 @@ namespace timeSystem {
     }
   }
 
-  std::string TimeCorrectorApp::tmpFileName(const std::string & file_name) const {
+  auto TimeCorrectorApp::tmpFileName(const std::string & file_name) const -> std::string {
     return file_name + ".tmp";
   }
 

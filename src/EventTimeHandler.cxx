@@ -32,13 +32,13 @@ namespace timeSystem {
     getFactoryContainer().remove(this);
   }
 
-  IEventTimeHandlerFactory::cont_type & IEventTimeHandlerFactory::getFactoryContainer() {
+  auto IEventTimeHandlerFactory::getFactoryContainer() -> IEventTimeHandlerFactory::cont_type & {
     static cont_type s_factory_cont;
     return s_factory_cont;
   }
 
-  EventTimeHandler * IEventTimeHandlerFactory::createHandler(const std::string & file_name, const std::string & extension_name,
-    bool read_only) {
+  auto IEventTimeHandlerFactory::createHandler(const std::string & file_name, const std::string & extension_name,
+    bool read_only) -> EventTimeHandler * {
     // Get the factory container.
     cont_type factory_cont(getFactoryContainer());
 
@@ -104,8 +104,8 @@ namespace timeSystem {
     // Note: No need to delete m_table because it points to the same object as m_extension does.
   }
 
-  EventTimeHandler * EventTimeHandler::createInstance(const std::string & /*file_name*/, const std::string & /*extension_name*/,
-    bool /*read_only*/) {
+  auto EventTimeHandler::createInstance(const std::string & /*file_name*/, const std::string & /*extension_name*/,
+    bool /*read_only*/) -> EventTimeHandler * {
     return 0;
   }
 
@@ -128,25 +128,25 @@ namespace timeSystem {
     }
   }
 
-  bool EventTimeHandler::isEndOfTable() const {
+  auto EventTimeHandler::isEndOfTable() const -> bool {
     return (m_table == 0 || m_record_itor == m_table->end());
   }
 
-  tip::Table & EventTimeHandler::getTable() const {
+  auto EventTimeHandler::getTable() const -> tip::Table & {
     if (m_table) return *m_table;
     else throw std::runtime_error("EventTimeHandler::getTable: given extension contains no data table");
   }
 
-  tip::Header & EventTimeHandler::getHeader() const {
+  auto EventTimeHandler::getHeader() const -> tip::Header & {
     return m_extension->getHeader();
   }
 
-  tip::TableRecord & EventTimeHandler::getCurrentRecord() const {
+  auto EventTimeHandler::getCurrentRecord() const -> tip::TableRecord & {
     if (m_table) return *m_record_itor;
     else throw std::runtime_error("EventTimeHandler::getCurrentRecord: given extension contains no data table");
   }
 
-  Mjd EventTimeHandler::readMjdRef(const tip::Header & header, const Mjd & default_mjd) const {
+  auto EventTimeHandler::readMjdRef(const tip::Header & header, const Mjd & default_mjd) const -> Mjd {
     // Look for MJDREFI and MJDREFF keywords first, then MJDREF keyword next.
     if (header.find("MJDREFI") != header.end() && header.find("MJDREFF") != header.end()) {
       // MJDREFI/F keyword pair is found.

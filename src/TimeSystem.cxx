@@ -16,7 +16,7 @@
 
 extern "C" {
 // Copied from bary.h.
-double ctatv (long, double) ;
+auto ctatv (long, double) -> double ;
 }
 
 #include <cctype>
@@ -42,7 +42,7 @@ namespace {
           \param time_system Time system to conver a time moment from.
           \param moment Time moment to convert.
       */
-      virtual moment_type convertFrom(const TimeSystem & time_system, const moment_type & moment) const;
+      virtual auto convertFrom(const TimeSystem & time_system, const moment_type & moment) const -> moment_type;
   };
 
   /** \class TaiSystem
@@ -57,7 +57,7 @@ namespace {
           \param time_system Time system to conver a time moment from.
           \param moment Time moment to convert.
       */
-      virtual moment_type convertFrom(const TimeSystem & time_system, const moment_type & moment) const;
+      virtual auto convertFrom(const TimeSystem & time_system, const moment_type & moment) const -> moment_type;
   };
 
   /** \class TaiSystem
@@ -72,7 +72,7 @@ namespace {
           \param time_system Time system to conver a time moment from.
           \param moment Time moment to convert.
       */
-      virtual moment_type convertFrom(const TimeSystem & time_system, const moment_type & moment) const;
+      virtual auto convertFrom(const TimeSystem & time_system, const moment_type & moment) const -> moment_type;
   };
 
   /** \class TaiSystem
@@ -87,23 +87,23 @@ namespace {
           \param time_system Time system to conver a time moment from.
           \param moment Time moment to convert.
       */
-      virtual moment_type convertFrom(const TimeSystem & time_system, const moment_type & moment) const;
+      virtual auto convertFrom(const TimeSystem & time_system, const moment_type & moment) const -> moment_type;
 
       /** \brief Compute time difference between two moments of time, and return it.
           \param moment1 Time moment from which the other time moment is to be subtracted.
           \param moment2 Time moment which is subtracted from the other time moment.
       */
-      virtual Duration computeTimeDifference(const moment_type & moment1, const moment_type & moment2) const;
+      virtual auto computeTimeDifference(const moment_type & moment1, const moment_type & moment2) const -> Duration;
 
       /** \brief Compute date and time of a given time moment, and return it.
           \param moment Time moment to compute date and time for.
       */
-      virtual datetime_type computeDateTime(const moment_type & moment) const;
+      virtual auto computeDateTime(const moment_type & moment) const -> datetime_type;
 
       /** \brief Compute a time moment of a given date and time, and return it.
           \param datetime Date and time to compute a time moment for.
       */
-      virtual moment_type computeMoment(const datetime_type & datetime) const;
+      virtual auto computeMoment(const datetime_type & datetime) const -> moment_type;
 
       /** \brief Check validity of a given time moment.
           \param moment Time moment to be tested.
@@ -117,10 +117,10 @@ namespace {
   class LeapSecTable {
     public:
       /// \brief Return a leap second table.
-      static LeapSecTable & getTable();
+      static auto getTable() -> LeapSecTable &;
 
       /// \brief Return the file name from which this leap second data is loaded.
-      std::string getFileName() const;
+      auto getFileName() const -> std::string;
 
       /** \brief Load leap second data from a given FITS file.
           \param leap_sec_file_name Name of a leap-second file in the FITS format.
@@ -132,10 +132,10 @@ namespace {
       /** \brief Return the sum of all leap seconds that are inserted or removed before the beginning of a given MJD.
           \param mjd MJD number upto when leap seconds are summed up.
       */
-      long getCumulativeLeapSec(long mjd) const;
+      auto getCumulativeLeapSec(long mjd) const -> long;
 
       /// \brief Return the earliest MJD that the loaded leap-second table covers.
-      long getEarliestMjd() const;
+      auto getEarliestMjd() const -> long;
 
     private:
       typedef std::map<long, long> table_type;
@@ -150,12 +150,12 @@ namespace {
   };
 
   /// \brief Return the time difference between TT and TAI.
-  Duration computeTtMinusTai() {
+  auto computeTtMinusTai() -> Duration {
     static const Duration s_tt_minus_tai(32.184, "Sec");
     return s_tt_minus_tai;
   }
 
-  moment_type TaiSystem::convertFrom(const TimeSystem & time_system, const moment_type & moment) const {
+  auto TaiSystem::convertFrom(const TimeSystem & time_system, const moment_type & moment) const -> moment_type {
     if (&time_system != this) {
       if ("TDB" == time_system.getName()) {
         const TimeSystem & tt(getSystem("TT"));
@@ -184,7 +184,7 @@ namespace {
   }
 
   // Note: Keep computeTdbMinusTt method global, so that TdbSystem and TtSystem can call it.
-  Duration computeTdbMinusTt(const datetime_type & datetime) {
+  auto computeTdbMinusTt(const datetime_type & datetime) -> Duration {
     // Convert the time to JD number.
     const TimeFormat<Jd> & jd_format(TimeFormatFactory<Jd>::getFormat());
     Jd jd_rep = jd_format.convert(datetime);
@@ -193,7 +193,7 @@ namespace {
     return Duration(ctatv(jd_rep.m_int, jd_rep.m_frac), "Sec");
   }
 
-  moment_type TdbSystem::convertFrom(const TimeSystem & time_system, const moment_type & moment) const {
+  auto TdbSystem::convertFrom(const TimeSystem & time_system, const moment_type & moment) const -> moment_type {
     if (&time_system != this) {
       if ("TAI" == time_system.getName() || "UTC" == time_system.getName()) {
         const TimeSystem & tt(getSystem("TT"));
@@ -210,7 +210,7 @@ namespace {
     return moment;
   }
 
-  moment_type TtSystem::convertFrom(const TimeSystem & time_system, const moment_type & moment) const {
+  auto TtSystem::convertFrom(const TimeSystem & time_system, const moment_type & moment) const -> moment_type {
     if (&time_system != this) {
       if ("TAI" == time_system.getName()) {
         return moment_type(moment.first, moment.second + computeTtMinusTai());
@@ -258,7 +258,7 @@ namespace {
     return moment;
   }
 
-  moment_type UtcSystem::convertFrom(const TimeSystem & time_system, const moment_type & moment) const {
+  auto UtcSystem::convertFrom(const TimeSystem & time_system, const moment_type & moment) const -> moment_type {
     if (&time_system != this) {
       if ("TAI" == time_system.getName()) {
         // Get the leap-second table and the oldest MJD in the table.
@@ -294,7 +294,7 @@ namespace {
     return moment;
   }
 
-  Duration UtcSystem::computeTimeDifference(const moment_type & moment1, const moment_type & moment2) const {
+  auto UtcSystem::computeTimeDifference(const moment_type & moment1, const moment_type & moment2) const -> Duration {
     // Compute the cumulative numbers of leap seconds at the beginning of MJD given by moment1.first and moment2.first.
     const LeapSecTable & leap_sec_table(LeapSecTable::getTable());
     long leap1 = leap_sec_table.getCumulativeLeapSec(moment1.first);
@@ -304,7 +304,7 @@ namespace {
     return Duration(moment1.first - moment2.first, "Day") + Duration(leap1 - leap2, "Sec") + (moment1.second - moment2.second);
   }
 
-  datetime_type UtcSystem::computeDateTime(const moment_type & moment) const {
+  auto UtcSystem::computeDateTime(const moment_type & moment) const -> datetime_type {
     // Compute candidate MJD in day & second format.
     long day_int = 0;
     double day_frac = 0.;
@@ -343,7 +343,7 @@ namespace {
     return datetime;
   }
 
-  moment_type UtcSystem::computeMoment(const datetime_type & datetime) const {
+  auto UtcSystem::computeMoment(const datetime_type & datetime) const -> moment_type {
     // Compute the number of seconds in the given date.
     moment_type this_date(datetime.first, Duration::zero());
     moment_type next_date(datetime.first + 1, Duration::zero());
@@ -382,12 +382,12 @@ namespace {
     }
   }
 
-  LeapSecTable & LeapSecTable::getTable() {
+  auto LeapSecTable::getTable() -> LeapSecTable & {
     static LeapSecTable s_leap_sec_table;
     return s_leap_sec_table;
   }
 
-  std::string LeapSecTable::getFileName() const {
+  auto LeapSecTable::getFileName() const -> std::string {
     return m_file_name;
   }
 
@@ -425,7 +425,7 @@ namespace {
     }
   }
 
-  long LeapSecTable::getCumulativeLeapSec(long mjd) const {
+  auto LeapSecTable::getCumulativeLeapSec(long mjd) const -> long {
     // Find the first entry of the leap second table which is <= the given MJD.
     table_type::const_iterator itor = m_table.upper_bound(mjd);
     if (itor == m_table.begin()) {
@@ -441,7 +441,7 @@ namespace {
     return itor->second;
   }
 
-  long LeapSecTable::getEarliestMjd() const {
+  auto LeapSecTable::getEarliestMjd() const -> long {
     // Look for the first entry.
     table_type::const_iterator itor = m_table.begin();
     if (itor == m_table.end()) throw std::runtime_error("The leap-second table is empty");
@@ -454,7 +454,7 @@ namespace {
 
 namespace timeSystem {
 
-  const TimeSystem & TimeSystem::getSystem(const std::string & system_name) {
+  auto TimeSystem::getSystem(const std::string & system_name) -> const TimeSystem & {
     // Create TimeSystem objects.
     static const TaiSystem s_tai_system;
     static const TdbSystem s_tdb_system;
@@ -489,7 +489,7 @@ namespace timeSystem {
     leap_sec_table.load(leap_sec_file_name, force_load);
   }
 
-  std::string TimeSystem::getDefaultLeapSecFileName() {
+  auto TimeSystem::getDefaultLeapSecFileName() -> std::string {
     std::string uc_file_name = s_default_leap_sec_file;
     for (std::string::iterator itor = uc_file_name.begin(); itor != uc_file_name.end(); ++itor) *itor = std::toupper(*itor);
     if (uc_file_name.empty() || "DEFAULT" == uc_file_name) {
@@ -504,7 +504,7 @@ namespace timeSystem {
     s_default_leap_sec_file = leap_sec_file_name;
   }
 
-  TimeSystem::container_type & TimeSystem::getContainer() {
+  auto TimeSystem::getContainer() -> TimeSystem::container_type & {
     static container_type s_prototype;
     return s_prototype;
   }
@@ -517,15 +517,15 @@ namespace timeSystem {
 
   TimeSystem::~TimeSystem() {}
 
-  std::string TimeSystem::getName() const {
+  auto TimeSystem::getName() const -> std::string {
     return m_system_name;
   }
 
-  Duration TimeSystem::computeTimeDifference(const moment_type & moment1, const moment_type & moment2) const {
+  auto TimeSystem::computeTimeDifference(const moment_type & moment1, const moment_type & moment2) const -> Duration {
     return Duration(moment1.first - moment2.first, "Day") + (moment1.second - moment2.second);
   }
 
-  datetime_type TimeSystem::computeDateTime(const moment_type & moment) const {
+  auto TimeSystem::computeDateTime(const moment_type & moment) const -> datetime_type {
     // Split the elapsed time into days and seconds.
     const Duration & elapsed_total(moment.second);
     long elapsed_int = 0;
@@ -539,7 +539,7 @@ namespace timeSystem {
     return datetime_type(moment.first + elapsed_int, elapsed_sec);
   }
 
-  moment_type TimeSystem::computeMoment(const datetime_type & datetime) const {
+  auto TimeSystem::computeMoment(const datetime_type & datetime) const -> moment_type {
     // Check the date and time.
     if (datetime.second < 0. || datetime.second >= SecPerDay()) {
       std::ostringstream os;
@@ -555,12 +555,12 @@ namespace timeSystem {
     // Do nothing for most time systems.
   }
 
-  std::ostream & operator <<(std::ostream & os, const TimeSystem & sys) {
+  auto operator <<(std::ostream & os, const TimeSystem & sys) -> std::ostream & {
     sys.write(os);
     return os;
   }
 
-  st_stream::OStream & operator <<(st_stream::OStream & os, const TimeSystem & sys) {
+  auto operator <<(st_stream::OStream & os, const TimeSystem & sys) -> st_stream::OStream & {
     sys.write(os);
     return os;
   }

@@ -22,39 +22,39 @@ namespace {
   class GregorianCalendar {
     public:
       /// \brief Return a GregorianCalendar object.
-      static GregorianCalendar & getCalendar();
+      static auto getCalendar() -> GregorianCalendar &;
 
       /** \brief Find what year a give MJD is, and return it. Also compute an ordinal date for a give MJD, and set it
                  to the second argument of the method.
           \param mjd MJD for which Gregorian year is to be determined.
           \param ordinal_date Ordinal date of a given MJD is set to this argument as a return value.
       */
-      long findYear(long mjd, long & ordinal_date) const;
+      auto findYear(long mjd, long & ordinal_date) const -> long;
 
       /** \brief Compute an MJD number for a given combination of a year and an ordinal date, and return it.
           \param year Gregorian year to compute an MJD for.
           \param ordinal_date Ordinal date to compute an MJD for.
       */
-      long computeMjd(long year, long ordinal_date) const;
+      auto computeMjd(long year, long ordinal_date) const -> long;
 
       /** \brief Find which month a given date is in, and return it (1 for January).
           \param year Gregorian year to find a month for.
           \param ordinal_date Ordinal date to find a month for.
           \param day_of_month Day of the month of a given date is set to this argument as a return value.
       */
-      long findMonth(long year, long ordinal_date, long & day_of_month) const;
+      auto findMonth(long year, long ordinal_date, long & day_of_month) const -> long;
 
       /** \brief Compute an ordinal date of a given calendar year, month, and day, and return it.
           \param year Calendar year to compute an ordinal date for.
           \param month Month of the year to compute an ordinal date for.
           \param day Day of the month to compute an ordinal date for.
       */
-      long computeOrdinalDate(long year, long month, long day) const;
+      auto computeOrdinalDate(long year, long month, long day) const -> long;
 
       /** \brief Find a Monday closest to a give date, and return it.
           \param mjd MJD of a date to find the closest Monday to.
       */
-      long findNearestMonday(long mjd) const;
+      auto findNearestMonday(long mjd) const -> long;
 
       /** \brief Check validity of Gregorian year, month, and day, and throw an exception if any problem is found.
           \param year Gregorian year to check.
@@ -76,24 +76,24 @@ namespace {
       GregorianCalendar();
 
       /// \brief Return the number of days in 400 years.
-      long DayPer400Year() const;
+      auto DayPer400Year() const -> long;
 
       /// \brief Return the number of days in 100 years starting at the beginning of a century.
-      long DayPer100Year() const;
+      auto DayPer100Year() const -> long;
 
       /// \brief Return the number of days in 4 years not including the beginning of a century.
-      long DayPer4Year() const;
+      auto DayPer4Year() const -> long;
 
       /// \brief Return the number of days in a non-leap year.
-      long DayPerYear() const;
+      auto DayPerYear() const -> long;
 
-      const table_type & DayPerMonth(long year) const;
+      auto DayPerMonth(long year) const -> const table_type &;
 
       /// \brief Return the number of days in a week.
-      long DayPerWeek() const;
+      auto DayPerWeek() const -> long;
 
       /// \brief Return the MJD number of January 1st, 2001.
-      long MjdYear2001() const;
+      auto MjdYear2001() const -> long;
 
       table_type m_day_per_month_regular_year;
       table_type m_day_per_month_leap_year;
@@ -110,12 +110,12 @@ namespace {
     m_day_per_month_leap_year = table_type(day_per_month_array, day_per_month_array + array_size);
   }
 
-  GregorianCalendar & GregorianCalendar::getCalendar() {
+  auto GregorianCalendar::getCalendar() -> GregorianCalendar & {
     static GregorianCalendar s_calendar;
     return s_calendar;
   }
 
-  long GregorianCalendar::findYear(long mjd, long & ordinal_date) const {
+  auto GregorianCalendar::findYear(long mjd, long & ordinal_date) const -> long {
     // Split the given MJD into the following two parts.
     // 1) The number of days since the beginning of year 2001 until the beginning of the 400-year cycle that is
     //    the latest of those that are earlier than the beginning of the given MJD.  The result is set to residual_day.
@@ -148,7 +148,7 @@ namespace {
     return 2001 + elapsed_400year * 400 + elapsed_100year * 100 + elapsed_4year * 4 + elapsed_year;
   }
 
-  long GregorianCalendar::computeMjd(long year, long ordinal_date) const {
+  auto GregorianCalendar::computeMjd(long year, long ordinal_date) const -> long {
     // Split the given year into the following two parts.
     // 1) The number of days since the beginning of year 2001 until the beginning of the 400-year cycle that is
     //    the latest of those that are earlier than the beginning of the given year.  The result is set to elapsed_day.
@@ -172,7 +172,7 @@ namespace {
     return MjdYear2001() + elapsed_day + residual_day + ordinal_date - 1;
   }
 
-  long GregorianCalendar::findMonth(long year, long ordinal_date, long & day_of_month) const {
+  auto GregorianCalendar::findMonth(long year, long ordinal_date, long & day_of_month) const -> long {
     // Get the table of the number of days per month.
     const table_type & day_per_month = DayPerMonth(year);
 
@@ -206,7 +206,7 @@ namespace {
     }
   }
 
-  long GregorianCalendar::computeOrdinalDate(long year, long month, long day) const {
+  auto GregorianCalendar::computeOrdinalDate(long year, long month, long day) const -> long {
     // Check the given month and day numbers.
     checkCalendarDate(year, month, day);
     
@@ -224,7 +224,7 @@ namespace {
     return ordinal_date;
   }
 
-  long GregorianCalendar::findNearestMonday(long mjd) const {
+  auto GregorianCalendar::findNearestMonday(long mjd) const -> long {
     // Compute the weekday number of the given MJD.
     // Note: The weekday number is 1 for Monday, and 7 for Sunday.
     long weekday_number = (mjd + 2) % DayPerWeek() + 1;
@@ -270,37 +270,37 @@ namespace {
     }
   }
 
-  long GregorianCalendar::DayPer400Year() const {
+  auto GregorianCalendar::DayPer400Year() const -> long {
     static const long s_num_day = DayPer100Year() * 4 + 1;
     return s_num_day;
   }
 
-  long GregorianCalendar::DayPer100Year() const {
+  auto GregorianCalendar::DayPer100Year() const -> long {
     static const long s_num_day = DayPer4Year() * 25 - 1;
     return s_num_day;
   }
 
-  long GregorianCalendar::DayPer4Year() const {
+  auto GregorianCalendar::DayPer4Year() const -> long {
     static const long s_num_day = DayPerYear() * 4 + 1;
     return s_num_day;
   }
 
-  long GregorianCalendar::DayPerYear() const {
+  auto GregorianCalendar::DayPerYear() const -> long {
     static const long s_num_day = 365;
     return s_num_day;
   }
 
-  const GregorianCalendar::table_type & GregorianCalendar::DayPerMonth(long year) const {
+  auto GregorianCalendar::DayPerMonth(long year) const -> const GregorianCalendar::table_type & {
     bool leap_year = (year % 4 == 0) && ((year % 100 != 0) || (year % 400 == 0));
     return (leap_year ? m_day_per_month_leap_year : m_day_per_month_regular_year);
   }
 
-  long GregorianCalendar::DayPerWeek() const {
+  auto GregorianCalendar::DayPerWeek() const -> long {
     static const long s_num_day = 7;
     return s_num_day;
   }
 
-  long GregorianCalendar::MjdYear2001() const {
+  auto GregorianCalendar::MjdYear2001() const -> long {
     static const long s_mjd_year2001 = 51910;
     return s_mjd_year2001;
   }
@@ -319,7 +319,7 @@ namespace {
   */
   typedef std::vector<long> array_type;
   enum DateType { CalendarDate, IsoWeekDate, OrdinalDate, UnsupportedDate };
-  DateType parseIso8601Format(const std::string & time_string, array_type & integer_value, double & double_value);
+  auto parseIso8601Format(const std::string & time_string, array_type & integer_value, double & double_value) -> DateType;
 
   /** \function checkHourMinSec
       \brief Helper function to help CalendarFormat, IsoWeekFormat, and OrdinalFormat classes check the time part.
@@ -334,23 +334,23 @@ namespace {
       /** \brief Convert date and time to a calendar date, and return it.
           \param datetime Date and time to convert.
       */
-      virtual Calendar convert(const datetime_type & datetime) const;
+      virtual auto convert(const datetime_type & datetime) const -> Calendar;
 
       /** \brief Convert a calendar date to date and time.
           \param time_rep Calendar date to convert.
       */
-      virtual datetime_type convert(const Calendar & time_rep) const;
+      virtual auto convert(const Calendar & time_rep) const -> datetime_type;
 
       /** \brief Interpret a given time string as a calendar date, and return the calendar date.
           \param time_string Character string to interpret as a calendar date.
       */
-      virtual Calendar parse(const std::string & time_string) const;
+      virtual auto parse(const std::string & time_string) const -> Calendar;
 
       /** \brief Create a character string representing a given time in a calendar date format.
           \param time_rep Calendar date to format into a character string.
           \param precision Number of digits after a decimal point in the time part of a given time.
       */
-      virtual std::string format(const Calendar & time_rep, std::streamsize precision = std::numeric_limits<double>::digits10) const;
+      virtual auto format(const Calendar & time_rep, std::streamsize precision = std::numeric_limits<double>::digits10) const -> std::string;
   };
 
   /** \class IsoWeekFormat
@@ -361,23 +361,23 @@ namespace {
       /** \brief Convert date and time to an ISO week date, and return it.
           \param datetime Date and time to convert.
       */
-      virtual IsoWeek convert(const datetime_type & datetime) const;
+      virtual auto convert(const datetime_type & datetime) const -> IsoWeek;
 
       /** \brief Convert an ISO week date to date and time.
           \param time_rep ISO week date to convert.
       */
-      virtual datetime_type convert(const IsoWeek & time_rep) const;
+      virtual auto convert(const IsoWeek & time_rep) const -> datetime_type;
 
       /** \brief Interpret a given time string as an ISO week date, and return the ISO week date.
           \param time_string Character string to interpret as an ISO week date.
       */
-      virtual IsoWeek parse(const std::string & time_string) const;
+      virtual auto parse(const std::string & time_string) const -> IsoWeek;
 
       /** \brief Create a character string representing a given time in an ISO week date format.
           \param time_rep ISO week date to format into a character string.
           \param precision Number of digits after a decimal point in the time part of a given time.
       */
-      virtual std::string format(const IsoWeek & time_rep, std::streamsize precision = std::numeric_limits<double>::digits10) const;
+      virtual auto format(const IsoWeek & time_rep, std::streamsize precision = std::numeric_limits<double>::digits10) const -> std::string;
 
     private:
       /** \brief Check validity of an ISO year, an ISO week number, and an ISO weekday number, and throw an exception
@@ -397,26 +397,26 @@ namespace {
       /** \brief Convert date and time to an ordinal date, and return it.
           \param datetime Date and time to convert.
       */
-      virtual Ordinal convert(const datetime_type & datetime) const;
+      virtual auto convert(const datetime_type & datetime) const -> Ordinal;
 
       /** \brief Convert an ordinal date to date and time.
           \param time_rep Ordinal date to convert.
       */
-      virtual datetime_type convert(const Ordinal & time_rep) const;
+      virtual auto convert(const Ordinal & time_rep) const -> datetime_type;
 
       /** \brief Interpret a given time string as an ordinal date, and return the calendar date.
           \param time_string Character string to interpret as an ordinal date.
       */
-      virtual Ordinal parse(const std::string & time_string) const;
+      virtual auto parse(const std::string & time_string) const -> Ordinal;
 
       /** \brief Create a character string representing a given time in an ordinal date format.
           \param time_rep Ordinal date to format into a character string.
           \param precision Number of digits after a decimal point in the time part of a given time.
       */
-      virtual std::string format(const Ordinal & time_rep, std::streamsize precision = std::numeric_limits<double>::digits10) const;
+      virtual auto format(const Ordinal & time_rep, std::streamsize precision = std::numeric_limits<double>::digits10) const -> std::string;
   };
 
-  DateType parseIso8601Format(const std::string & time_string, array_type & integer_value, double & double_value) {
+  auto parseIso8601Format(const std::string & time_string, array_type & integer_value, double & double_value) -> DateType {
     // Separate date part and time part.
     std::string::size_type pos_sep = time_string.find('T');
     std::string date_part;
@@ -513,7 +513,7 @@ namespace {
     }
   }
 
-  Calendar CalendarFormat::convert(const datetime_type & datetime) const {
+  auto CalendarFormat::convert(const datetime_type & datetime) const -> Calendar {
     // Convert to the ordinal date representation.
     const TimeFormat<Ordinal> & ordinal_format(TimeFormatFactory<Ordinal>::getFormat());
     Ordinal ordinal_rep = ordinal_format.convert(datetime);
@@ -527,7 +527,7 @@ namespace {
     return Calendar(ordinal_rep.m_year, month, day, ordinal_rep.m_hour, ordinal_rep.m_min, ordinal_rep.m_sec);
   }
 
-  datetime_type CalendarFormat::convert(const Calendar & time_rep) const {
+  auto CalendarFormat::convert(const Calendar & time_rep) const -> datetime_type {
     // Check the date part of the given time representation.
     const GregorianCalendar & calendar(GregorianCalendar::getCalendar());
     calendar.checkCalendarDate(time_rep.m_year, time_rep.m_mon, time_rep.m_day);
@@ -541,7 +541,7 @@ namespace {
     return ordinal_format.convert(ordinal_rep);
   }
 
-  Calendar CalendarFormat::parse(const std::string & time_string) const {
+  auto CalendarFormat::parse(const std::string & time_string) const -> Calendar {
     // Split the given string to integer and double values.
     array_type int_array;
     double dbl_value;
@@ -561,7 +561,7 @@ namespace {
     return Calendar(int_array[0], int_array[1], int_array[2], int_array[3], int_array[4], dbl_value);
   }
 
-  std::string CalendarFormat::format(const Calendar & time_rep, std::streamsize precision) const {
+  auto CalendarFormat::format(const Calendar & time_rep, std::streamsize precision) const -> std::string {
     // Check the date part of the given time representation.
     const GregorianCalendar & calendar(GregorianCalendar::getCalendar());
     calendar.checkCalendarDate(time_rep.m_year, time_rep.m_mon, time_rep.m_day);
@@ -579,7 +579,7 @@ namespace {
     return os.str();
   }
 
-  IsoWeek IsoWeekFormat::convert(const datetime_type & datetime) const {
+  auto IsoWeekFormat::convert(const datetime_type & datetime) const -> IsoWeek {
     // Convert to the ordinal date representation.
     const TimeFormat<Ordinal> & ordinal_format(TimeFormatFactory<Ordinal>::getFormat());
     Ordinal ordinal_rep = ordinal_format.convert(datetime);
@@ -622,7 +622,7 @@ namespace {
     return IsoWeek(iso_year, week_number, weekday_number, ordinal_rep.m_hour, ordinal_rep.m_min, ordinal_rep.m_sec);
   }
 
-  datetime_type IsoWeekFormat::convert(const IsoWeek & time_rep) const {
+  auto IsoWeekFormat::convert(const IsoWeek & time_rep) const -> datetime_type {
     // Check the date part of the given time representation.
     checkWeekDate(time_rep.m_year, time_rep.m_week, time_rep.m_day);
 
@@ -646,7 +646,7 @@ namespace {
     return datetime;
   }
 
-  IsoWeek IsoWeekFormat::parse(const std::string & time_string) const {
+  auto IsoWeekFormat::parse(const std::string & time_string) const -> IsoWeek {
     // Split the given string to integer and double values.
     array_type int_array;
     double dbl_value;
@@ -665,7 +665,7 @@ namespace {
     return IsoWeek(int_array[0], int_array[1], int_array[2], int_array[3], int_array[4], dbl_value);
   }
 
-  std::string IsoWeekFormat::format(const IsoWeek & time_rep, std::streamsize precision) const {
+  auto IsoWeekFormat::format(const IsoWeek & time_rep, std::streamsize precision) const -> std::string {
     // Check the date part of the given time representation.
     checkWeekDate(time_rep.m_year, time_rep.m_week, time_rep.m_day);
 
@@ -710,7 +710,7 @@ namespace {
     }
   }
 
-  Ordinal OrdinalFormat::convert(const datetime_type & datetime) const {
+  auto OrdinalFormat::convert(const datetime_type & datetime) const -> Ordinal {
     // Check the time part of the given date and time.
     if (datetime.second < 0.) {
       std::ostringstream os;
@@ -739,7 +739,7 @@ namespace {
     return Ordinal(year, day, hour, min, sec);
   }
 
-  datetime_type OrdinalFormat::convert(const Ordinal & time_rep) const {
+  auto OrdinalFormat::convert(const Ordinal & time_rep) const -> datetime_type {
     // Check the date part of the given time representation.
     const GregorianCalendar & calendar(GregorianCalendar::getCalendar());
     calendar.checkOrdinalDate(time_rep.m_year, time_rep.m_day);
@@ -757,7 +757,7 @@ namespace {
     return datetime_type(mjd_number, num_second);
   }
 
-  Ordinal OrdinalFormat::parse(const std::string & time_string) const {
+  auto OrdinalFormat::parse(const std::string & time_string) const -> Ordinal {
     // Split the given string to integer and double values.
     array_type int_array;
     double dbl_value;
@@ -777,7 +777,7 @@ namespace {
     return Ordinal(int_array[0], int_array[1], int_array[2], int_array[3], dbl_value);
   }
 
-  std::string OrdinalFormat::format(const Ordinal & time_rep, std::streamsize precision) const {
+  auto OrdinalFormat::format(const Ordinal & time_rep, std::streamsize precision) const -> std::string {
     // Check the date part of the given time representation.
     const GregorianCalendar & calendar(GregorianCalendar::getCalendar());
     calendar.checkOrdinalDate(time_rep.m_year, time_rep.m_day);
@@ -799,17 +799,17 @@ namespace {
 
 namespace timeSystem {
 
-  const TimeFormat<Calendar> & TimeFormatFactory<Calendar>::getFormat() {
+  auto TimeFormatFactory<Calendar>::getFormat() -> const TimeFormat<Calendar> & {
     static CalendarFormat s_calendar_format;
     return s_calendar_format;
   }
 
-  const TimeFormat<IsoWeek> & TimeFormatFactory<IsoWeek>::getFormat() {
+  auto TimeFormatFactory<IsoWeek>::getFormat() -> const TimeFormat<IsoWeek> & {
     static IsoWeekFormat s_iso_week_format;
     return s_iso_week_format;
   }
 
-  const TimeFormat<Ordinal> & TimeFormatFactory<Ordinal>::getFormat() {
+  auto TimeFormatFactory<Ordinal>::getFormat() -> const TimeFormat<Ordinal> & {
     static OrdinalFormat s_ordinal_format;
     return s_ordinal_format;
   }

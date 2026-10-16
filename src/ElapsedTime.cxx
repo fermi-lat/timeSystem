@@ -15,13 +15,13 @@ namespace timeSystem {
   ElapsedTime::ElapsedTime(const TimeSystem * time_system, const Duration & time_duration):
     m_time_system(time_system), m_duration(time_duration) {}
 
-  AbsoluteTime ElapsedTime::operator +(const AbsoluteTime & absolute_time) const {
+  auto ElapsedTime::operator +(const AbsoluteTime & absolute_time) const -> AbsoluteTime {
     return absolute_time.computeAbsoluteTime(m_time_system->getName(), m_duration);
   }
 
-  ElapsedTime ElapsedTime::operator -() const { return ElapsedTime(m_time_system, -m_duration); }
+  auto ElapsedTime::operator -() const -> ElapsedTime { return ElapsedTime(m_time_system, -m_duration); }
 
-  const TimeSystem & ElapsedTime::getSystem() const { return *m_time_system; }
+  auto ElapsedTime::getSystem() const -> const TimeSystem & { return *m_time_system; }
 
   void ElapsedTime::getDuration(const std::string & time_unit_name, long & time_value_int, double & time_value_frac) const {
     m_duration.get(time_unit_name, time_value_int, time_value_frac);
@@ -31,18 +31,18 @@ namespace timeSystem {
     m_duration.get(time_unit_name, time_value);
   }
 
-  double ElapsedTime::getDuration(const std::string & time_unit_name) const {
+  auto ElapsedTime::getDuration(const std::string & time_unit_name) const -> double {
     return m_duration.get(time_unit_name);
   }
 
-  Duration ElapsedTime::getDuration() const { return m_duration; }
+  auto ElapsedTime::getDuration() const -> Duration { return m_duration; }
 
-  std::ostream & operator <<(std::ostream & os, const ElapsedTime & elapsed_time) {
+  auto operator <<(std::ostream & os, const ElapsedTime & elapsed_time) -> std::ostream & {
     elapsed_time.write(os);
     return os;
   }
 
-  st_stream::OStream & operator <<(st_stream::OStream & os, const ElapsedTime & elapsed_time) {
+  auto operator <<(st_stream::OStream & os, const ElapsedTime & elapsed_time) -> st_stream::OStream & {
     elapsed_time.write(os);
     return os;
   }

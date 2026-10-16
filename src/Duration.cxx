@@ -38,16 +38,16 @@ namespace {
       /** \brief Return a TimeUnit object.
           \param time_unit_name Name of a desired time unit.
       */
-      static const TimeUnit & getUnit(const std::string & time_unit_name);
+      static auto getUnit(const std::string & time_unit_name) -> const TimeUnit &;
 
       /// \brief Return a ratio of this time unit over a day.
-      long getUnitPerDay() const { return m_unit_per_day; }
+      auto getUnitPerDay() const -> long { return m_unit_per_day; }
 
       /// \brief Return a ratio of a second over this time unit.
-      long getSecPerUnit() const { return m_sec_per_unit; }
+      auto getSecPerUnit() const -> long { return m_sec_per_unit; }
 
       /// \brief Return a character string that represents this time unit.
-      std::string getUnitString() const { return m_unit_string; }
+      auto getUnitString() const -> std::string { return m_unit_string; }
 
     protected:
       /** \brief Construct a TimeUnit object.
@@ -62,7 +62,7 @@ namespace {
       typedef std::map<std::string, const TimeUnit *> container_type;
 
       /// \brief Return a container of registered time units.
-      static container_type & getContainer();
+      static auto getContainer() -> container_type &;
 
     private:
       long m_unit_per_day;
@@ -132,7 +132,7 @@ namespace {
     container["SECONDS"] = this;
   }
 
-  const TimeUnit & TimeUnit::getUnit(const std::string & time_unit_name) {
+  auto TimeUnit::getUnit(const std::string & time_unit_name) -> const TimeUnit & {
     // Create TimeUnit objects.
     static const TimeUnitDay s_day;
     static const TimeUnitHour s_hour;
@@ -150,7 +150,7 @@ namespace {
     return *cont_itor->second;
   }
 
-  TimeUnit::container_type & TimeUnit::getContainer() {
+  auto TimeUnit::getContainer() -> TimeUnit::container_type & {
     static container_type s_prototype;
     return s_prototype;
   }
@@ -187,7 +187,7 @@ namespace timeSystem {
     set(0, sec);
   }
 
-  const Duration & Duration::zero() {
+  auto Duration::zero() -> const Duration & {
     static const Duration s_zero_duration(duration_type(0, 0.));
     return s_zero_duration;
   }
@@ -239,34 +239,34 @@ namespace timeSystem {
     time_value = get(time_unit_name);
   }
 
-  double Duration::get(const std::string & time_unit_name) const {
+  auto Duration::get(const std::string & time_unit_name) const -> double {
     const TimeUnit & unit(TimeUnit::getUnit(time_unit_name));
     return std::floor(static_cast<double>(m_duration.first) * unit.getUnitPerDay()) + m_duration.second / unit.getSecPerUnit();
   }
 
-  Duration Duration::operator +(const Duration & other) const {
+  auto Duration::operator +(const Duration & other) const -> Duration {
     return Duration(add(m_duration, other.m_duration));
   }
 
-  Duration & Duration::operator +=(const Duration & other) {
+  auto Duration::operator +=(const Duration & other) -> Duration & {
     m_duration = add(m_duration, other.m_duration);
     return *this;
   }
 
-  Duration & Duration::operator -=(const Duration & other) {
+  auto Duration::operator -=(const Duration & other) -> Duration & {
     m_duration = add(m_duration, negate(other.m_duration));
     return *this;
   }
 
-  Duration Duration::operator -(const Duration & other) const {
+  auto Duration::operator -(const Duration & other) const -> Duration {
     return Duration(add(m_duration, negate(other.m_duration)));
   }
 
-  Duration Duration::operator -() const {
+  auto Duration::operator -() const -> Duration {
     return Duration(negate(m_duration));
   }
 
-  double Duration::operator /(const Duration & other) const {
+  auto Duration::operator /(const Duration & other) const -> double {
     std::string time_unit_name("Day");
 
     // If both times are less than a day, use seconds to preserve precision. This is not safe if either Duration
@@ -277,39 +277,39 @@ namespace timeSystem {
     return get(time_unit_name) / other.get(time_unit_name);
   }
 
-  bool Duration::operator !=(const Duration & other) const {
+  auto Duration::operator !=(const Duration & other) const -> bool {
     return m_duration.first != other.m_duration.first || m_duration.second != other.m_duration.second;
   }
 
-  bool Duration::operator ==(const Duration & other) const {
+  auto Duration::operator ==(const Duration & other) const -> bool {
     return m_duration.first == other.m_duration.first && m_duration.second == other.m_duration.second;
   }
 
-  bool Duration::operator <(const Duration & other) const {
+  auto Duration::operator <(const Duration & other) const -> bool {
     return m_duration.first < other.m_duration.first ||
       (m_duration.first == other.m_duration.first && m_duration.second < other.m_duration.second);
   }
 
-  bool Duration::operator <=(const Duration & other) const {
+  auto Duration::operator <=(const Duration & other) const -> bool {
     return m_duration.first < other.m_duration.first ||
       (m_duration.first == other.m_duration.first && m_duration.second <= other.m_duration.second);
   }
 
-  bool Duration::operator >(const Duration & other) const {
+  auto Duration::operator >(const Duration & other) const -> bool {
     return m_duration.first > other.m_duration.first ||
       (m_duration.first == other.m_duration.first && m_duration.second > other.m_duration.second);
   }
 
-  bool Duration::operator >=(const Duration & other) const {
+  auto Duration::operator >=(const Duration & other) const -> bool {
     return m_duration.first > other.m_duration.first ||
       (m_duration.first == other.m_duration.first && m_duration.second >= other.m_duration.second);
   }
 
-  bool Duration::equivalentTo(const Duration & other, const Duration & tolerance) const {
+  auto Duration::equivalentTo(const Duration & other, const Duration & tolerance) const -> bool {
     return (*this > other ? (*this <= other + tolerance) : (other <= *this + tolerance));
   }
 
-  std::string Duration::describe() const {
+  auto Duration::describe() const -> std::string {
     std::ostringstream os;
     os.precision(std::numeric_limits<double>::digits10);
     os << "Duration(" << m_duration.first << ", " << m_duration.second << ")";
@@ -340,7 +340,7 @@ namespace timeSystem {
     m_duration.second = double_sec;
   }
 
-  long Duration::add(long int1, long int2) const {
+  auto Duration::add(long int1, long int2) const -> long {
     // Check for integer over/underflow.
     if (int1 >=0 && std::numeric_limits<long>::max() - int1 < int2) {
       // Throw an exception for a value too large after addition.
@@ -359,7 +359,7 @@ namespace timeSystem {
     return int1 + int2;
   }
 
-  Duration::duration_type Duration::add(Duration::duration_type t1, Duration::duration_type t2) const {
+  auto Duration::add(Duration::duration_type t1, Duration::duration_type t2) const -> Duration::duration_type {
     // Sum the two seconds portions.
     double total_sec = t1.second + t2.second;
 
@@ -396,7 +396,7 @@ namespace timeSystem {
     return duration_type(total_day, total_sec);
   }
 
-  Duration::duration_type Duration::negate(Duration::duration_type t1) const {
+  auto Duration::negate(Duration::duration_type t1) const -> Duration::duration_type {
     // Check the day part of the value against the boundaries of long type.
     if (t1.first <= 0 && t1.first + std::numeric_limits<long>::max() < -1) {
       // Throw an exception for a value too large after negation.
@@ -415,12 +415,12 @@ namespace timeSystem {
     return duration_type(-t1.first - 1, SecPerDay() - t1.second);
   }
 
-  std::ostream & operator <<(std::ostream & os, const Duration & time_duration) {
+  auto operator <<(std::ostream & os, const Duration & time_duration) -> std::ostream & {
     time_duration.write(os);
     return os;
   }
 
-  st_stream::OStream & operator <<(st_stream::OStream & os, const Duration & time_duration) {
+  auto operator <<(st_stream::OStream & os, const Duration & time_duration) -> st_stream::OStream & {
     time_duration.write(os);
     return os;
   }

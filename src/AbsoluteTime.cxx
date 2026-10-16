@@ -24,41 +24,41 @@ namespace timeSystem {
     m_time_system(&TimeSystem::getSystem(time_system_name)), m_moment(mjd_day, Duration(mjd_sec, "Sec")) {
   }
 
-  AbsoluteTime AbsoluteTime::operator +(const ElapsedTime & elapsed_time) const { return elapsed_time + *this; }
+  auto AbsoluteTime::operator +(const ElapsedTime & elapsed_time) const -> AbsoluteTime { return elapsed_time + *this; }
 
-  AbsoluteTime AbsoluteTime::operator -(const ElapsedTime & elapsed_time) const { return -elapsed_time + *this; }
+  auto AbsoluteTime::operator -(const ElapsedTime & elapsed_time) const -> AbsoluteTime { return -elapsed_time + *this; }
 
-  AbsoluteTime & AbsoluteTime::operator +=(const ElapsedTime & elapsed_time) { *this = elapsed_time + *this; return *this; }
+  auto AbsoluteTime::operator +=(const ElapsedTime & elapsed_time) -> AbsoluteTime & { *this = elapsed_time + *this; return *this; }
 
-  AbsoluteTime & AbsoluteTime::operator -=(const ElapsedTime & elapsed_time) { *this = -elapsed_time + *this; return *this; }
+  auto AbsoluteTime::operator -=(const ElapsedTime & elapsed_time) -> AbsoluteTime & { *this = -elapsed_time + *this; return *this; }
 
-  TimeInterval AbsoluteTime::operator -(const AbsoluteTime & abs_time) const { return TimeInterval(abs_time, *this); }
+  auto AbsoluteTime::operator -(const AbsoluteTime & abs_time) const -> TimeInterval { return TimeInterval(abs_time, *this); }
 
-  bool AbsoluteTime::operator >(const AbsoluteTime & other) const {
+  auto AbsoluteTime::operator >(const AbsoluteTime & other) const -> bool {
     moment_type other_moment = m_time_system->convertFrom(*other.m_time_system, other.m_moment);
     return m_time_system->computeTimeDifference(m_moment, other_moment) > Duration::zero();
   }
 
-  bool AbsoluteTime::operator >=(const AbsoluteTime & other) const {
+  auto AbsoluteTime::operator >=(const AbsoluteTime & other) const -> bool {
     moment_type other_moment = m_time_system->convertFrom(*other.m_time_system, other.m_moment);
     return m_time_system->computeTimeDifference(m_moment, other_moment) >= Duration::zero();
   }
 
-  bool AbsoluteTime::operator <(const AbsoluteTime & other) const {
+  auto AbsoluteTime::operator <(const AbsoluteTime & other) const -> bool {
     moment_type other_moment = m_time_system->convertFrom(*other.m_time_system, other.m_moment);
     return m_time_system->computeTimeDifference(m_moment, other_moment) < Duration::zero();
   }
 
-  bool AbsoluteTime::operator <=(const AbsoluteTime & other) const {
+  auto AbsoluteTime::operator <=(const AbsoluteTime & other) const -> bool {
     moment_type other_moment = m_time_system->convertFrom(*other.m_time_system, other.m_moment);
     return m_time_system->computeTimeDifference(m_moment, other_moment) <= Duration::zero();
   }
 
-  bool AbsoluteTime::equivalentTo(const AbsoluteTime & other, const ElapsedTime & tolerance) const {
+  auto AbsoluteTime::equivalentTo(const AbsoluteTime & other, const ElapsedTime & tolerance) const -> bool {
     return (*this > other ? (*this <= other + tolerance) : (other <= *this + tolerance));
   }
 
-  AbsoluteTime AbsoluteTime::computeAbsoluteTime(const std::string & time_system_name, const Duration & delta_t) const {
+  auto AbsoluteTime::computeAbsoluteTime(const std::string & time_system_name, const Duration & delta_t) const -> AbsoluteTime {
     // Convert this time to a corresponding time in time_system.
     const TimeSystem & time_system(TimeSystem::getSystem(time_system_name));
     moment_type moment = time_system.convertFrom(*m_time_system, m_moment);
@@ -70,7 +70,7 @@ namespace timeSystem {
     return AbsoluteTime(time_system_name, moment.first, moment.second);
   }
 
-  ElapsedTime AbsoluteTime::computeElapsedTime(const std::string & time_system_name, const AbsoluteTime & since) const {
+  auto AbsoluteTime::computeElapsedTime(const std::string & time_system_name, const AbsoluteTime & since) const -> ElapsedTime {
     const TimeSystem & time_system(TimeSystem::getSystem(time_system_name));
     // Convert both times into the given time system.
     moment_type minuend = time_system.convertFrom(*m_time_system, m_moment);
@@ -81,18 +81,18 @@ namespace timeSystem {
     return ElapsedTime(time_system_name, time_diff);
   }
 
-  std::string AbsoluteTime::describe() const {
+  auto AbsoluteTime::describe() const -> std::string {
     std::ostringstream os;
     os << "AbsoluteTime(" << m_time_system->getName() << ", " << m_moment.first << ", " << m_moment.second.describe() << ")";
     return os.str();
   }
 
-  std::ostream & operator <<(std::ostream & os, const AbsoluteTime & time) {
+  auto operator <<(std::ostream & os, const AbsoluteTime & time) -> std::ostream & {
     time.write(os);
     return os;
   }
 
-  st_stream::OStream & operator <<(st_stream::OStream & os, const AbsoluteTime & time) {
+  auto operator <<(st_stream::OStream & os, const AbsoluteTime & time) -> st_stream::OStream & {
     time.write(os);
     return os;
   }

@@ -18,9 +18,9 @@ namespace {
   using namespace timeSystem;
 
   /// \brief Conversion constants between MJD and JD.
-  const long JdMinusMjdInt() { static const long s_value = 2400000; return s_value; }
-  const double JdMinusMjdFrac() { static const double s_value = .5; return s_value; }
-  const double JdMinusMjdDouble() { static const double s_value = JdMinusMjdInt() + JdMinusMjdFrac(); return s_value; }
+  auto JdMinusMjdInt() -> const long { static const long s_value = 2400000; return s_value; }
+  auto JdMinusMjdFrac() -> const double { static const double s_value = .5; return s_value; }
+  auto JdMinusMjdDouble() -> const double { static const double s_value = JdMinusMjdInt() + JdMinusMjdFrac(); return s_value; }
 
   /** \class MjdFormat
       \brief Class to convert time representations in MJD format, holding an integer and a fractional part separately.
@@ -30,23 +30,23 @@ namespace {
       /** \brief Convert date and time into an MJD number, and return it.
           \param datetime Date and time to convert.
       */
-      virtual Mjd convert(const datetime_type & datetime) const;
+      virtual auto convert(const datetime_type & datetime) const -> Mjd;
 
       /** \brief Convert an MJD number into date and time, and return it.
           \param time_rep MJD number to convert.
       */
-      virtual datetime_type convert(const Mjd & time_rep) const;
+      virtual auto convert(const Mjd & time_rep) const -> datetime_type;
 
       /** \brief Interpret a given character string as an MJD number, and return the MJD number.
           \param time_string Character string to interpret as an MJD number.
       */
-      virtual Mjd parse(const std::string & time_string) const;
+      virtual auto parse(const std::string & time_string) const -> Mjd;
 
       /** \brief Create a character string that represents a given MJD number, and return it.
           \param time_rep MJD number to format into a character string.
           \param precision Number of digits after a decimal point in a resultant character string.
       */
-      virtual std::string format(const Mjd & time_rep, std::streamsize precision = std::numeric_limits<double>::digits10) const;
+      virtual auto format(const Mjd & time_rep, std::streamsize precision = std::numeric_limits<double>::digits10) const -> std::string;
   };
 
   /** \class Mjd1Format
@@ -57,23 +57,23 @@ namespace {
       /** \brief Convert date and time into an MJD number, and return it.
           \param datetime Date and time to convert.
       */
-      virtual Mjd1 convert(const datetime_type & datetime) const;
+      virtual auto convert(const datetime_type & datetime) const -> Mjd1;
 
       /** \brief Convert an MJD number into date and time, and return it.
           \param time_rep MJD number to convert.
       */
-      virtual datetime_type convert(const Mjd1 & time_rep) const;
+      virtual auto convert(const Mjd1 & time_rep) const -> datetime_type;
 
       /** \brief Interpret a given character string as an MJD number, and return the MJD number.
           \param time_string Character string to interpret as an MJD number.
       */
-      virtual Mjd1 parse(const std::string & time_string) const;
+      virtual auto parse(const std::string & time_string) const -> Mjd1;
 
       /** \brief Create a character string that represents a given MJD number, and return it.
           \param time_rep MJD number to format into a character string.
           \param precision Number of digits after a decimal point in a resultant character string.
       */
-      virtual std::string format(const Mjd1 & time_rep, std::streamsize precision = std::numeric_limits<double>::digits10) const;
+      virtual auto format(const Mjd1 & time_rep, std::streamsize precision = std::numeric_limits<double>::digits10) const -> std::string;
   };
 
   /** \class JdFormat \brief Class to convert time representations in
@@ -84,23 +84,23 @@ namespace {
       /** \brief Convert date and time into a JD number, and return it.
           \param datetime Date and time to convert.
       */
-      virtual Jd convert(const datetime_type & datetime) const;
+      virtual auto convert(const datetime_type & datetime) const -> Jd;
 
       /** \brief Convert a JD number into date and time, and return it.
           \param time_rep JD number to convert.
       */
-      virtual datetime_type convert(const Jd & time_rep) const;
+      virtual auto convert(const Jd & time_rep) const -> datetime_type;
 
       /** \brief Interpret a given character string as a JD number, and return the JD number.
           \param time_string Character string to interpret as a JD number.
       */
-      virtual Jd parse(const std::string & time_string) const;
+      virtual auto parse(const std::string & time_string) const -> Jd;
 
       /** \brief Create a character string that represents a given JD number, and return it.
           \param time_rep JD number to format into a character string.
           \param precision Number of digits after a decimal point in a resultant character string.
       */
-      virtual std::string format(const Jd & time_rep, std::streamsize precision = std::numeric_limits<double>::digits10) const;
+      virtual auto format(const Jd & time_rep, std::streamsize precision = std::numeric_limits<double>::digits10) const -> std::string;
   };
 
   /** \class Jd1Format
@@ -111,26 +111,26 @@ namespace {
       /** \brief Convert date and time into a JD number, and return it.
           \param datetime Date and time to convert.
       */
-      virtual Jd1 convert(const datetime_type & datetime) const;
+      virtual auto convert(const datetime_type & datetime) const -> Jd1;
 
       /** \brief Convert a JD number into date and time, and return it.
           \param time_rep JD number to convert.
       */
-      virtual datetime_type convert(const Jd1 & time_rep) const;
+      virtual auto convert(const Jd1 & time_rep) const -> datetime_type;
 
       /** \brief Interpret a given character string as a JD number, and return the JD number.
           \param time_string Character string to interpret as a JD number.
       */
-      virtual Jd1 parse(const std::string & time_string) const;
+      virtual auto parse(const std::string & time_string) const -> Jd1;
 
       /** \brief Create a character string that represents a given JD number, and return it.
           \param time_rep JD number to format into a character string.
           \param precision Number of digits after a decimal point in a resultant character string.
       */
-      virtual std::string format(const Jd1 & time_rep, std::streamsize precision = std::numeric_limits<double>::digits10) const;
+      virtual auto format(const Jd1 & time_rep, std::streamsize precision = std::numeric_limits<double>::digits10) const -> std::string;
   };
 
-  Mjd MjdFormat::convert(const datetime_type & datetime) const {
+  auto MjdFormat::convert(const datetime_type & datetime) const -> Mjd {
     // Check whether the second part is in bounds.
     if (datetime.second < 0. || datetime.second >= SecPerDay()) {
       // During an inserted leap-second.
@@ -143,7 +143,7 @@ namespace {
     return Mjd(datetime.first, datetime.second / SecPerDay());
   }
 
-  datetime_type MjdFormat::convert(const Mjd & time_rep) const {
+  auto MjdFormat::convert(const Mjd & time_rep) const -> datetime_type {
     // Check the fractional part.
     const IntFracUtility & utility(IntFracUtility::getUtility());
     utility.check(time_rep.m_int, time_rep.m_frac);
@@ -152,7 +152,7 @@ namespace {
     return datetime_type(time_rep.m_int, time_rep.m_frac * SecPerDay());
   }
 
-  Mjd MjdFormat::parse(const std::string & time_string) const {
+  auto MjdFormat::parse(const std::string & time_string) const -> Mjd {
     Mjd mjd_rep(0, 0);
 
     // Convert the string into a pair of an integer and a fractional parts.
@@ -163,19 +163,19 @@ namespace {
     return mjd_rep;
   }
 
-  std::string MjdFormat::format(const Mjd & time_rep, std::streamsize precision) const {
+  auto MjdFormat::format(const Mjd & time_rep, std::streamsize precision) const -> std::string {
     // Convert the pair of an integer and a fractional parts of MJD into a string, and return it.
     const IntFracUtility & utility(IntFracUtility::getUtility());
     return utility.format(time_rep.m_int, time_rep.m_frac, precision) + " MJD";
   }
 
-  Mjd1 Mjd1Format::convert(const datetime_type & datetime) const {
+  auto Mjd1Format::convert(const datetime_type & datetime) const -> Mjd1 {
     const TimeFormat<Mjd> & mjd_format(TimeFormatFactory<Mjd>::getFormat());
     Mjd mjd_rep = mjd_format.convert(datetime);
     return Mjd1(mjd_rep.m_int + mjd_rep.m_frac);
   }
 
-  datetime_type Mjd1Format::convert(const Mjd1 & time_rep) const {
+  auto Mjd1Format::convert(const Mjd1 & time_rep) const -> datetime_type {
     // Split MJD value into integer part and fractional part.
     const IntFracUtility & utility(IntFracUtility::getUtility());
     long int_part = 0;
@@ -186,7 +186,7 @@ namespace {
     return datetime_type(int_part, frac_part * SecPerDay());
   }
 
-  Mjd1 Mjd1Format::parse(const std::string & time_string) const {
+  auto Mjd1Format::parse(const std::string & time_string) const -> Mjd1 {
     std::istringstream iss(time_string);
     Mjd1 mjd1_rep(0.);
     iss >> mjd1_rep.m_day;
@@ -195,14 +195,14 @@ namespace {
     return mjd1_rep;
   }
 
-  std::string Mjd1Format::format(const Mjd1 & time_rep, std::streamsize precision) const {
+  auto Mjd1Format::format(const Mjd1 & time_rep, std::streamsize precision) const -> std::string {
     std::ostringstream os;
     os.setf(std::ios::fixed);
     os << std::setprecision(precision) << time_rep.m_day << " MJD";
     return os.str();
   }
 
-  Jd JdFormat::convert(const datetime_type & datetime) const {
+  auto JdFormat::convert(const datetime_type & datetime) const -> Jd {
     // Convert the given time into MJD first.
     const TimeFormat<Mjd> & mjd_format(TimeFormatFactory<Mjd>::getFormat());
     Mjd mjd_rep = mjd_format.convert(datetime);
@@ -216,7 +216,7 @@ namespace {
     return jd_rep;
   }
 
-  datetime_type JdFormat::convert(const Jd & time_rep) const {
+  auto JdFormat::convert(const Jd & time_rep) const -> datetime_type {
     // Check the fractional part.
     const IntFracUtility & utility(IntFracUtility::getUtility());
     utility.check(time_rep.m_int, time_rep.m_frac);
@@ -233,7 +233,7 @@ namespace {
     return datetime_type(mjd_int, mjd_frac * SecPerDay());
   }
 
-  Jd JdFormat::parse(const std::string & time_string) const {
+  auto JdFormat::parse(const std::string & time_string) const -> Jd {
     Jd jd_rep(0, 0);
 
     // Convert the string into a pair of an integer and a fractional parts.
@@ -244,25 +244,25 @@ namespace {
     return jd_rep;
   }
 
-  std::string JdFormat::format(const Jd & time_rep, std::streamsize precision) const {
+  auto JdFormat::format(const Jd & time_rep, std::streamsize precision) const -> std::string {
     // Convert the pair of an integer and a fractional parts of JD into a string, and return it.
     const IntFracUtility & utility(IntFracUtility::getUtility());
     return utility.format(time_rep.m_int, time_rep.m_frac, precision) + " JD";
   }
 
-  Jd1 Jd1Format::convert(const datetime_type & datetime) const {
+  auto Jd1Format::convert(const datetime_type & datetime) const -> Jd1 {
     const TimeFormat<Jd> & jd_format(TimeFormatFactory<Jd>::getFormat());
     Jd jd_rep = jd_format.convert(datetime);
     return Jd1(jd_rep.m_int + jd_rep.m_frac);
   }
 
-  datetime_type Jd1Format::convert(const Jd1 & time_rep) const {
+  auto Jd1Format::convert(const Jd1 & time_rep) const -> datetime_type {
     Mjd1 mjd1_rep(time_rep.m_day - JdMinusMjdDouble());
     const TimeFormat<Mjd1> & mjd1_format(TimeFormatFactory<Mjd1>::getFormat());
     return mjd1_format.convert(mjd1_rep);
   }
 
-  Jd1 Jd1Format::parse(const std::string & time_string) const {
+  auto Jd1Format::parse(const std::string & time_string) const -> Jd1 {
     std::istringstream iss(time_string);
     Jd1 jd1_rep(0.);
     iss >> jd1_rep.m_day;
@@ -271,7 +271,7 @@ namespace {
     return jd1_rep;
   }
 
-  std::string Jd1Format::format(const Jd1 & time_rep, std::streamsize precision) const {
+  auto Jd1Format::format(const Jd1 & time_rep, std::streamsize precision) const -> std::string {
     std::ostringstream os;
     os.setf(std::ios::fixed);
     os << std::setprecision(precision) << time_rep.m_day << " JD";
@@ -282,22 +282,22 @@ namespace {
 
 namespace timeSystem {
 
-  const TimeFormat<Mjd> & TimeFormatFactory<Mjd>::getFormat() {
+  auto TimeFormatFactory<Mjd>::getFormat() -> const TimeFormat<Mjd> & {
     static MjdFormat s_mjd_format;
     return s_mjd_format;
   }
 
-  const TimeFormat<Mjd1> & TimeFormatFactory<Mjd1>::getFormat() {
+  auto TimeFormatFactory<Mjd1>::getFormat() -> const TimeFormat<Mjd1> & {
     static Mjd1Format s_mjd1_format;
     return s_mjd1_format;
   }
 
-  const TimeFormat<Jd> & TimeFormatFactory<Jd>::getFormat() {
+  auto TimeFormatFactory<Jd>::getFormat() -> const TimeFormat<Jd> & {
     static JdFormat s_jd_format;
     return s_jd_format;
   }
 
-  const TimeFormat<Jd1> & TimeFormatFactory<Jd1>::getFormat() {
+  auto TimeFormatFactory<Jd1>::getFormat() -> const TimeFormat<Jd1> & {
     static Jd1Format s_jd1_format;
     return s_jd1_format;
   }

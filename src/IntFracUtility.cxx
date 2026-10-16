@@ -39,7 +39,7 @@ namespace timeSystem {
 
   IntFracUtility::IntFracUtility() {}
 
-  IntFracUtility & IntFracUtility::getUtility() {
+  auto IntFracUtility::getUtility() -> IntFracUtility & {
     static IntFracUtility s_utility;
     return s_utility;
   }
@@ -175,7 +175,7 @@ namespace timeSystem {
     frac_part = frac_part_tmp;
   }
 
-  std::string IntFracUtility::format(long int_part, double frac_part, std::streamsize precision) const {
+  auto IntFracUtility::format(long int_part, double frac_part, std::streamsize precision) const -> std::string {
     // Check the fractional part.
     const IntFracUtility & utility(IntFracUtility::getUtility());
     utility.check(int_part, frac_part);
@@ -247,7 +247,7 @@ namespace timeSystem {
     frac_part = frac_part_dbl;
   }
 
-  double IntFracUtility::findLargestInteger(long upper_bound) const {
+  auto IntFracUtility::findLargestInteger(long upper_bound) const -> double {
     // Set initial values.
     double candidate_dval = 0.;
     long candidate_ival = 0;

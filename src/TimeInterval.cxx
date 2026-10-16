@@ -12,7 +12,7 @@ namespace timeSystem {
   TimeInterval::TimeInterval(const AbsoluteTime & abs_time1, const AbsoluteTime & abs_time2):
     m_abs_time1(abs_time1), m_abs_time2(abs_time2) {}
 
-  ElapsedTime TimeInterval::computeElapsedTime(const std::string & time_system_name) const {
+  auto TimeInterval::computeElapsedTime(const std::string & time_system_name) const -> ElapsedTime {
     return m_abs_time2.computeElapsedTime(time_system_name, m_abs_time1);
   }
 
@@ -26,11 +26,11 @@ namespace timeSystem {
     computeElapsedTime(time_system_name).getDuration(time_unit_name, time_value);
   }
 
-  double TimeInterval::computeDuration(const std::string & time_system_name, const std::string & time_unit_name) const {
+  auto TimeInterval::computeDuration(const std::string & time_system_name, const std::string & time_unit_name) const -> double {
     return computeElapsedTime(time_system_name).getDuration(time_unit_name);
   }
 
-  Duration TimeInterval::computeDuration(const std::string & time_system_name) const {
+  auto TimeInterval::computeDuration(const std::string & time_system_name) const -> Duration {
     return computeElapsedTime(time_system_name).getDuration();
   }
 

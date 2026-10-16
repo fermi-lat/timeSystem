@@ -31,16 +31,16 @@ namespace timeSystem {
     setDirection(direction);
   }
 
-  const std::vector<double> & SourcePosition::getDirection() const {
+  auto SourcePosition::getDirection() const -> const std::vector<double> & {
     return m_direction;
   }
 
-  double SourcePosition::getDistance() const {
+  auto SourcePosition::getDistance() const -> double {
     if (m_has_distance) return m_distance;
     else throw std::runtime_error("Distance not available for this celestial object");
   }
 
-  bool SourcePosition::hasDistance() const {
+  auto SourcePosition::hasDistance() const -> bool {
     return m_has_distance;
   }
 

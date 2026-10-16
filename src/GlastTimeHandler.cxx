@@ -45,8 +45,8 @@ namespace timeSystem {
 
   GlastTimeHandler::~GlastTimeHandler() {}
 
-  EventTimeHandler * GlastTimeHandler::createInstance(const std::string & file_name, const std::string & extension_name,
-    bool read_only) {
+  auto GlastTimeHandler::createInstance(const std::string & file_name, const std::string & extension_name,
+    bool read_only) -> EventTimeHandler * {
     // Try GlastScTimeHandler first.
     EventTimeHandler * handler = GlastScTimeHandler::createInstance(file_name, extension_name, read_only);
 
@@ -60,7 +60,7 @@ namespace timeSystem {
     return handler;
   }
 
-  AbsoluteTime GlastTimeHandler::readTime(const std::string & field_name, bool from_header) const {
+  auto GlastTimeHandler::readTime(const std::string & field_name, bool from_header) const -> AbsoluteTime {
     // Read the field value as a GLAST time.
     double glast_time = readGlastTime(field_name, from_header);
 
@@ -76,7 +76,7 @@ namespace timeSystem {
     writeGlastTime(field_name, glast_time, from_header);
   }
 
-  AbsoluteTime GlastTimeHandler::parseTimeString(const std::string & time_string, const std::string & time_system) const {
+  auto GlastTimeHandler::parseTimeString(const std::string & time_string, const std::string & time_system) const -> AbsoluteTime {
     // Rationalize time system name.
     std::string time_system_rat(time_system);
     for (std::string::iterator itor = time_system_rat.begin(); itor != time_system_rat.end(); ++itor) *itor = std::toupper(*itor);
@@ -92,8 +92,8 @@ namespace timeSystem {
     return computeAbsoluteTime(time_double, time_system_rat);
   }
 
-  bool GlastTimeHandler::checkHeaderKeyword(const std::string & file_name, const std::string & extension_name,
-    const std::string & time_ref_value, const std::string & time_sys_value) {
+  auto GlastTimeHandler::checkHeaderKeyword(const std::string & file_name, const std::string & extension_name,
+    const std::string & time_ref_value, const std::string & time_sys_value) -> bool {
     // Get the table and the header.
     std::unique_ptr<const tip::Extension> table(tip::IFileSvc::instance().readExtension(file_name, extension_name));
     const tip::Header & header(table->getHeader());
@@ -138,7 +138,7 @@ namespace timeSystem {
       time_sys == time_sys_arg);
   }
 
-  double GlastTimeHandler::readGlastTime(const std::string & field_name, bool from_header) const {
+  auto GlastTimeHandler::readGlastTime(const std::string & field_name, bool from_header) const -> double {
     double field_value = 0.;
 
     if (from_header) {
@@ -197,17 +197,17 @@ namespace timeSystem {
     }
   }
 
-  AbsoluteTime GlastTimeHandler::computeAbsoluteTime(double glast_time) const {
+  auto GlastTimeHandler::computeAbsoluteTime(double glast_time) const -> AbsoluteTime {
     // Convert GLAST time to AbsoluteTime, and return it.
     return computeAbsoluteTime(glast_time, m_time_system->getName());
   }
 
-  AbsoluteTime GlastTimeHandler::computeAbsoluteTime(double glast_time, const std::string & time_system_name) const {
+  auto GlastTimeHandler::computeAbsoluteTime(double glast_time, const std::string & time_system_name) const -> AbsoluteTime {
     // Convert GLAST time to AbsoluteTime, and return it.
     return AbsoluteTime(time_system_name, m_mjd_ref) + ElapsedTime(time_system_name, Duration(glast_time, "Sec"));
   }
 
-  double GlastTimeHandler::computeGlastTime(const AbsoluteTime & abs_time) const {
+  auto GlastTimeHandler::computeGlastTime(const AbsoluteTime & abs_time) const -> double {
     // Convert AbsoluteTime to GLAST time, and return it.
     const std::string time_system_name = m_time_system->getName();
     return (abs_time - AbsoluteTime(time_system_name, m_mjd_ref)).computeDuration(time_system_name, "Sec");
@@ -229,8 +229,8 @@ namespace timeSystem {
     }
   }
 
-  EventTimeHandler * GlastScTimeHandler::createInstance(const std::string & file_name, const std::string & extension_name,
-    bool read_only) {
+  auto GlastScTimeHandler::createInstance(const std::string & file_name, const std::string & extension_name,
+    bool read_only) -> EventTimeHandler * {
     // Create an object to hold a return value and set a default return value.
     EventTimeHandler * handler(0);
 
@@ -281,15 +281,15 @@ namespace timeSystem {
     m_pos_bary = src_position;
   }
 
-  AbsoluteTime GlastScTimeHandler::getGeoTime(const std::string & field_name, bool from_header) const {
+  auto GlastScTimeHandler::getGeoTime(const std::string & field_name, bool from_header) const -> AbsoluteTime {
     return getCorrectedTime(field_name, from_header, false);
   }
 
-  AbsoluteTime GlastScTimeHandler::getBaryTime(const std::string & field_name, bool from_header) const {
+  auto GlastScTimeHandler::getBaryTime(const std::string & field_name, bool from_header) const -> AbsoluteTime {
     return getCorrectedTime(field_name, from_header, true);
   }
 
-  AbsoluteTime GlastScTimeHandler::getCorrectedTime(const std::string & field_name, bool from_header, bool compute_bary) const {
+  auto GlastScTimeHandler::getCorrectedTime(const std::string & field_name, bool from_header, bool compute_bary) const -> AbsoluteTime {
     // Check initialization status.
     if (!m_computer) throw std::runtime_error("Arrival time corrections not initialized");
 
@@ -334,8 +334,8 @@ namespace timeSystem {
 
   GlastGeoTimeHandler::~GlastGeoTimeHandler() {}
 
-  EventTimeHandler * GlastGeoTimeHandler::createInstance(const std::string & file_name, const std::string & extension_name,
-    bool read_only) {
+  auto GlastGeoTimeHandler::createInstance(const std::string & file_name, const std::string & extension_name,
+    bool read_only) -> EventTimeHandler * {
     // Create an object to hold a return value and set a default return value.
     EventTimeHandler * handler(0);
 
@@ -353,11 +353,11 @@ namespace timeSystem {
 
   void GlastGeoTimeHandler::setSourcePosition(const SourcePosition & /*src_position*/) {}
 
-  AbsoluteTime GlastGeoTimeHandler::getGeoTime(const std::string & field_name, bool from_header) const {
+  auto GlastGeoTimeHandler::getGeoTime(const std::string & field_name, bool from_header) const -> AbsoluteTime {
     return readTime(field_name, from_header);
   }
 
-  AbsoluteTime GlastGeoTimeHandler::getBaryTime(const std::string & /*field_name*/, bool /*from_header*/) const {
+  auto GlastGeoTimeHandler::getBaryTime(const std::string & /*field_name*/, bool /*from_header*/) const -> AbsoluteTime {
     throw std::runtime_error("Computation of barycentic times is not supported for extension \"" + m_ext_name + "\" of file \"" +
       m_file_name);
   }
@@ -368,8 +368,8 @@ namespace timeSystem {
 
   GlastBaryTimeHandler::~GlastBaryTimeHandler() {}
 
-  EventTimeHandler * GlastBaryTimeHandler::createInstance(const std::string & file_name, const std::string & extension_name,
-    bool read_only) {
+  auto GlastBaryTimeHandler::createInstance(const std::string & file_name, const std::string & extension_name,
+    bool read_only) -> EventTimeHandler * {
     // Create an object to hold a return value and set a default return value.
     EventTimeHandler * handler(0);
 
@@ -459,12 +459,12 @@ namespace timeSystem {
     }
   }
 
-  AbsoluteTime GlastBaryTimeHandler::getGeoTime(const std::string & /*field_name*/, bool /*from_header*/) const {
+  auto GlastBaryTimeHandler::getGeoTime(const std::string & /*field_name*/, bool /*from_header*/) const -> AbsoluteTime {
     throw std::runtime_error("Computation of geocentic times is not supported for extension \"" + m_ext_name + "\" of file \"" +
       m_file_name);
   }
 
-  AbsoluteTime GlastBaryTimeHandler::getBaryTime(const std::string & field_name, bool from_header) const {
+  auto GlastBaryTimeHandler::getBaryTime(const std::string & field_name, bool from_header) const -> AbsoluteTime {
     return readTime(field_name, from_header);
   }
 
