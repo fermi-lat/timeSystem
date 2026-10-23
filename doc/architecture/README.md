@@ -294,7 +294,7 @@ None.
 
 Conda activation sets `TIMING_DIR` to
 `$CONDA_PREFIX/share/fermitools/refdata/fermi/jplephem` (see "Runtime
-environment" in `docs/architecture/README.md`). That directory comes from
+environment" in ScienceTools' `docs/architecture/README.md`). That directory comes from
 the `fermitools-data` conda package (pinned `=0.19` in `recipe/meta.yaml`),
 not from this repository. It holds `JPLEPH.200`, `JPLEPH.405`,
 `leapsec.fits` and `tai-utc.dat`. Only the first three are read by code
@@ -330,8 +330,9 @@ that runs.
   - `data/` (test inputs, including `outref/`) goes to
     `${FERMI_INSTALL_REFDATADIR}/timeSystem`
   - `data/outref/` also goes to `${FERMI_INSTALL_DATADIR}/timeSystem/outref`.
-    Nothing reads that second copy: `PulsarTestApp` looks under
-    `getDataPath("timeSystem")`, which is the refdata copy.
+    `PulsarTestApp` does not read that second copy (it looks under
+    `getDataPath("timeSystem")`, the refdata copy); only the commented-out
+    `check_test_timeSystem_output` in `ST-unit-test` would (see below).
 - **`test_timeSystem`** (`src/test/test_timeSystem.cxx`):
   - It is an `st_app` program run through `PulsarTestApp::run`. It is
     **not registered with CTest**. It has no par file of its own, which
@@ -361,6 +362,18 @@ that runs.
     needs write access to `$FERMI_INST_DIR/refdata/fermi/timeSystem`.
   - On failure it throws at the end of `run()`, after printing every
     mismatch.
+- **ST-unit-test:** ScienceTools' `recipe/tests/ST-unit-test` does **not**
+  run `test_timeSystem`: its entry and `check_test_timeSystem_output` are
+  commented out (`##`) in both the default and the ROOT list. If enabled,
+  the check would `diff` each `testTimeCorrectorApp_par{3..6}.log` against
+  the `.ref` the test wrote itself (both in the current directory), and
+  `ftdiff` `testTimeCorrectorApp_par{1,2}.fits` against
+  `share/fermitools/data/timeSystem/outref/`, which is this package's own
+  installed `data/outref`. `fermitools-data` also has
+  `outrefFiles/timeSystem/` (shipped in `fermitools-test-scripts-data`),
+  but it holds only the `par3`–`par6` `.log`/`.ref` files, which the check
+  never reads from `outref`. See "Testing" in ScienceTools'
+  `docs/architecture/README.md`.
 - **Legacy:** `SConscript` (old SCons build) and `azure-pipelines.yml`.
 
 ## Invariants and gotchas
