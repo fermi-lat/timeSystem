@@ -1,7 +1,7 @@
 ---
 package: timeSystem
 summary: Library for precise absolute times in TT/TAI/UTC/TDB (leap seconds, MJD/JD/calendar formats), geocentric and barycentric arrival-time corrections from FT2 orbits and the JPL ephemeris, and the gtbary tool.
-layer: analysis
+layer: io
 depends_on: [tip, st_app, st_stream, st_facilities, facilities, hoops, cfitsio]
 used_by: []
 last_reviewed_commit: 4597d4f
@@ -77,11 +77,9 @@ The CMake link list (`cfitsio st_app st_stream st_facilities tip`) matches
 actual use. `facilities` and `hoops` are used directly but are only linked
 transitively.
 
-**Tier.** dependency-layers.md puts timeSystem in `analysis`. All of its
-dependencies are in tiers 0 and 1, and its library is an astronomy
-primitive with no LAT-response knowledge, so it would also fit in `io`.
-That would remove the tier violation recorded for `skymaps`. Only `gtbary`
-is analysis-like.
+**Tier.** timeSystem is in the `io` tier. All of its dependencies are in
+tiers 0 and 1, and its library is an astronomy primitive with no
+LAT-response knowledge. `gtbary` is the only tool it ships.
 
 ## Key abstractions
 
