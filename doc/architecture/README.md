@@ -370,7 +370,7 @@ that runs.
   `ftdiff` `testTimeCorrectorApp_par{1,2}.fits` against
   `share/fermitools/data/timeSystem/outref/`, which is this package's own
   installed `data/outref`. `fermitools-data` also has
-  `outrefFiles/timeSystem/` (shipped in `fermitools-test-scripts-data`),
+  `outrefFiles/timeSystem/` (installed by the `fermitools-data` package),
   but it holds only the `par3`–`par6` `.log`/`.ref` files, which the check
   never reads from `outref`. See "Testing" in ScienceTools'
   `docs/architecture/README.md`.
