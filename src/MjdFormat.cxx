@@ -30,23 +30,23 @@ namespace {
       /** \brief Convert date and time into an MJD number, and return it.
           \param datetime Date and time to convert.
       */
-      virtual auto convert(const datetime_type & datetime) const -> Mjd;
+      [[nodiscard]] virtual auto convert(const datetime_type & datetime) const -> Mjd;
 
       /** \brief Convert an MJD number into date and time, and return it.
           \param time_rep MJD number to convert.
       */
-      virtual auto convert(const Mjd & time_rep) const -> datetime_type;
+      [[nodiscard]] virtual auto convert(const Mjd & time_rep) const -> datetime_type;
 
       /** \brief Interpret a given character string as an MJD number, and return the MJD number.
           \param time_string Character string to interpret as an MJD number.
       */
-      virtual auto parse(const std::string & time_string) const -> Mjd;
+      [[nodiscard]] virtual auto parse(const std::string & time_string) const -> Mjd;
 
       /** \brief Create a character string that represents a given MJD number, and return it.
           \param time_rep MJD number to format into a character string.
           \param precision Number of digits after a decimal point in a resultant character string.
       */
-      virtual auto format(const Mjd & time_rep, std::streamsize precision = std::numeric_limits<double>::digits10) const -> std::string;
+      [[nodiscard]] virtual auto format(const Mjd & time_rep, std::streamsize precision = std::numeric_limits<double>::digits10) const -> std::string;
   };
 
   /** \class Mjd1Format
@@ -57,23 +57,23 @@ namespace {
       /** \brief Convert date and time into an MJD number, and return it.
           \param datetime Date and time to convert.
       */
-      virtual auto convert(const datetime_type & datetime) const -> Mjd1;
+      [[nodiscard]] virtual auto convert(const datetime_type & datetime) const -> Mjd1;
 
       /** \brief Convert an MJD number into date and time, and return it.
           \param time_rep MJD number to convert.
       */
-      virtual auto convert(const Mjd1 & time_rep) const -> datetime_type;
+      [[nodiscard]] virtual auto convert(const Mjd1 & time_rep) const -> datetime_type;
 
       /** \brief Interpret a given character string as an MJD number, and return the MJD number.
           \param time_string Character string to interpret as an MJD number.
       */
-      virtual auto parse(const std::string & time_string) const -> Mjd1;
+      [[nodiscard]] virtual auto parse(const std::string & time_string) const -> Mjd1;
 
       /** \brief Create a character string that represents a given MJD number, and return it.
           \param time_rep MJD number to format into a character string.
           \param precision Number of digits after a decimal point in a resultant character string.
       */
-      virtual auto format(const Mjd1 & time_rep, std::streamsize precision = std::numeric_limits<double>::digits10) const -> std::string;
+      [[nodiscard]] virtual auto format(const Mjd1 & time_rep, std::streamsize precision = std::numeric_limits<double>::digits10) const -> std::string;
   };
 
   /** \class JdFormat \brief Class to convert time representations in
@@ -84,23 +84,23 @@ namespace {
       /** \brief Convert date and time into a JD number, and return it.
           \param datetime Date and time to convert.
       */
-      virtual auto convert(const datetime_type & datetime) const -> Jd;
+      [[nodiscard]] virtual auto convert(const datetime_type & datetime) const -> Jd;
 
       /** \brief Convert a JD number into date and time, and return it.
           \param time_rep JD number to convert.
       */
-      virtual auto convert(const Jd & time_rep) const -> datetime_type;
+      [[nodiscard]] virtual auto convert(const Jd & time_rep) const -> datetime_type;
 
       /** \brief Interpret a given character string as a JD number, and return the JD number.
           \param time_string Character string to interpret as a JD number.
       */
-      virtual auto parse(const std::string & time_string) const -> Jd;
+      [[nodiscard]] virtual auto parse(const std::string & time_string) const -> Jd;
 
       /** \brief Create a character string that represents a given JD number, and return it.
           \param time_rep JD number to format into a character string.
           \param precision Number of digits after a decimal point in a resultant character string.
       */
-      virtual auto format(const Jd & time_rep, std::streamsize precision = std::numeric_limits<double>::digits10) const -> std::string;
+      [[nodiscard]] virtual auto format(const Jd & time_rep, std::streamsize precision = std::numeric_limits<double>::digits10) const -> std::string;
   };
 
   /** \class Jd1Format
@@ -111,23 +111,23 @@ namespace {
       /** \brief Convert date and time into a JD number, and return it.
           \param datetime Date and time to convert.
       */
-      virtual auto convert(const datetime_type & datetime) const -> Jd1;
+      [[nodiscard]] virtual auto convert(const datetime_type & datetime) const -> Jd1;
 
       /** \brief Convert a JD number into date and time, and return it.
           \param time_rep JD number to convert.
       */
-      virtual auto convert(const Jd1 & time_rep) const -> datetime_type;
+      [[nodiscard]] virtual auto convert(const Jd1 & time_rep) const -> datetime_type;
 
       /** \brief Interpret a given character string as a JD number, and return the JD number.
           \param time_string Character string to interpret as a JD number.
       */
-      virtual auto parse(const std::string & time_string) const -> Jd1;
+      [[nodiscard]] virtual auto parse(const std::string & time_string) const -> Jd1;
 
       /** \brief Create a character string that represents a given JD number, and return it.
           \param time_rep JD number to format into a character string.
           \param precision Number of digits after a decimal point in a resultant character string.
       */
-      virtual auto format(const Jd1 & time_rep, std::streamsize precision = std::numeric_limits<double>::digits10) const -> std::string;
+      [[nodiscard]] virtual auto format(const Jd1 & time_rep, std::streamsize precision = std::numeric_limits<double>::digits10) const -> std::string;
   };
 
   auto MjdFormat::convert(const datetime_type & datetime) const -> Mjd {

@@ -26,7 +26,7 @@
 namespace timeSystem {
 
   GlastTimeHandler::GlastTimeHandler(const std::string & file_name, const std::string & extension_name, bool read_only):
-    EventTimeHandler(file_name, extension_name, read_only), m_time_system(0), m_mjd_ref(0, 0.) {
+    EventTimeHandler(file_name, extension_name, read_only), m_time_system(nullptr), m_mjd_ref(0, 0.) {
     // Get time system name from TIMESYS keyword. If not found, assume TT system.
     const tip::Header & header(getHeader());
     std::string time_system_name;
@@ -43,7 +43,7 @@ namespace timeSystem {
     m_mjd_ref = readMjdRef(header, Mjd(51910, 64.184 / SecPerDay()));
   }
 
-  GlastTimeHandler::~GlastTimeHandler() {}
+  GlastTimeHandler::~GlastTimeHandler() = default;
 
   auto GlastTimeHandler::createInstance(const std::string & file_name, const std::string & extension_name,
     bool read_only) -> EventTimeHandler * {
@@ -51,10 +51,10 @@ namespace timeSystem {
     EventTimeHandler * handler = GlastScTimeHandler::createInstance(file_name, extension_name, read_only);
 
     // Try GlastGeoTimeHandler next.
-    if (0 == handler) handler = GlastGeoTimeHandler::createInstance(file_name, extension_name, read_only);
+    if (nullptr == handler) handler = GlastGeoTimeHandler::createInstance(file_name, extension_name, read_only);
 
     // Try GlastBaryTimeHandler next.
-    if (0 == handler) handler = GlastBaryTimeHandler::createInstance(file_name, extension_name, read_only);
+    if (nullptr == handler) handler = GlastBaryTimeHandler::createInstance(file_name, extension_name, read_only);
 
     // Return the handler (or zero if those classes above cannot handle it).
     return handler;
@@ -214,13 +214,13 @@ namespace timeSystem {
   }
 
   GlastScTimeHandler::GlastScTimeHandler(const std::string & file_name, const std::string & extension_name, bool read_only):
-    GlastTimeHandler(file_name, extension_name, read_only), m_sc_file(), m_sc_table(), m_sc_ptr(0), m_pos_bary(0., 0.),
-    m_computer(0) {}
+    GlastTimeHandler(file_name, extension_name, read_only), m_sc_file(), m_sc_table(), m_sc_ptr(nullptr), m_pos_bary(0., 0.),
+    m_computer(nullptr) {}
 
   GlastScTimeHandler::~GlastScTimeHandler() {
     // Clean up the spacecraft file access.
     int close_status = glastscorbit_close(m_sc_ptr);
-    m_sc_ptr = 0;
+    m_sc_ptr = nullptr;
     if (close_status) {
       std::ostringstream os;
       os << "Error occurred while closing spacecraft file " << m_sc_file;
@@ -232,7 +232,7 @@ namespace timeSystem {
   auto GlastScTimeHandler::createInstance(const std::string & file_name, const std::string & extension_name,
     bool read_only) -> EventTimeHandler * {
     // Create an object to hold a return value and set a default return value.
-    EventTimeHandler * handler(0);
+    EventTimeHandler * handler(nullptr);
 
     // Check header keywords to identify an event file with barycentric corrections NOT applied.
     if (checkHeaderKeyword(file_name, extension_name, "LOCAL", "TT")) {
@@ -332,12 +332,12 @@ namespace timeSystem {
   GlastGeoTimeHandler::GlastGeoTimeHandler(const std::string & file_name, const std::string & extension_name, bool read_only):
     GlastTimeHandler(file_name, extension_name, read_only), m_file_name(file_name), m_ext_name(extension_name) {}
 
-  GlastGeoTimeHandler::~GlastGeoTimeHandler() {}
+  GlastGeoTimeHandler::~GlastGeoTimeHandler() = default;
 
   auto GlastGeoTimeHandler::createInstance(const std::string & file_name, const std::string & extension_name,
     bool read_only) -> EventTimeHandler * {
     // Create an object to hold a return value and set a default return value.
-    EventTimeHandler * handler(0);
+    EventTimeHandler * handler(nullptr);
 
     // Check header keywords to identify an event file with barycentric corrections applied.
     if (checkHeaderKeyword(file_name, extension_name, "GEOCENTRIC", "TT")) {
@@ -366,12 +366,12 @@ namespace timeSystem {
     GlastTimeHandler(file_name, extension_name, read_only), m_file_name(file_name), m_ext_name(extension_name), m_pos_nom(0., 0.),
     m_max_vect_diff(0.), m_pl_ephem() {}
 
-  GlastBaryTimeHandler::~GlastBaryTimeHandler() {}
+  GlastBaryTimeHandler::~GlastBaryTimeHandler() = default;
 
   auto GlastBaryTimeHandler::createInstance(const std::string & file_name, const std::string & extension_name,
     bool read_only) -> EventTimeHandler * {
     // Create an object to hold a return value and set a default return value.
-    EventTimeHandler * handler(0);
+    EventTimeHandler * handler(nullptr);
 
     // Check header keywords to identify an event file with barycentric corrections applied.
     if (checkHeaderKeyword(file_name, extension_name, "SOLARSYSTEM", "TDB")) {

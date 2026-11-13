@@ -63,7 +63,7 @@ namespace timeSystem {
     double length_squared = m_direction[0]*m_direction[0] + m_direction[1]*m_direction[1] + m_direction[2]*m_direction[2];
     if (length_squared > 0.) {
       double length = std::sqrt(length_squared);
-      for (std::vector<double>::iterator itor = m_direction.begin(); itor != m_direction.end(); ++itor) (*itor) /= length;
+      for (auto itor = m_direction.begin(); itor != m_direction.end(); ++itor) (*itor) /= length;
     } else {
       throw std::runtime_error("Direction cosine of non-positive length given for this celestial object");
     }

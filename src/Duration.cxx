@@ -41,13 +41,13 @@ namespace {
       static auto getUnit(const std::string & time_unit_name) -> const TimeUnit &;
 
       /// \brief Return a ratio of this time unit over a day.
-      auto getUnitPerDay() const -> long { return m_unit_per_day; }
+      [[nodiscard]] auto getUnitPerDay() const -> long { return m_unit_per_day; }
 
       /// \brief Return a ratio of a second over this time unit.
-      auto getSecPerUnit() const -> long { return m_sec_per_unit; }
+      [[nodiscard]] auto getSecPerUnit() const -> long { return m_sec_per_unit; }
 
       /// \brief Return a character string that represents this time unit.
-      auto getUnitString() const -> std::string { return m_unit_string; }
+      [[nodiscard]] auto getUnitString() const -> std::string { return m_unit_string; }
 
     protected:
       /** \brief Construct a TimeUnit object.
@@ -59,7 +59,7 @@ namespace {
         m_unit_per_day(unit_per_day), m_sec_per_unit(sec_per_unit), m_unit_string(unit_string) {}
 
     protected:
-      typedef std::map<std::string, const TimeUnit *> container_type;
+      using container_type = std::map<std::string, const TimeUnit *>;
 
       /// \brief Return a container of registered time units.
       static auto getContainer() -> container_type &;
@@ -145,7 +145,7 @@ namespace {
 
     // Find a requested TimeUnit object and return it.
     TimeUnit::container_type & container(getContainer());
-    container_type::iterator cont_itor = container.find(time_unit_name_uc);
+    auto cont_itor = container.find(time_unit_name_uc);
     if (container.end() == cont_itor) throw std::runtime_error("No such time unit implemented: " + time_unit_name);
     return *cont_itor->second;
   }

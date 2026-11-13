@@ -48,7 +48,7 @@ namespace timeSystem {
     std::cerr.precision(std::numeric_limits<double>::digits10);
   }
 
-  PulsarTestApp::~PulsarTestApp() throw() {}
+  PulsarTestApp::~PulsarTestApp() throw() = default;
 
   void PulsarTestApp::run() {
     // Initialize the internal variables that need to be refreshed everytime this method is called.
@@ -90,7 +90,7 @@ namespace timeSystem {
   PulsarApplicationTester::PulsarApplicationTester(const std::string & app_name, PulsarTestApp & test_app):
     m_app_name(app_name), m_test_app(&test_app) {}
 
-  PulsarApplicationTester::~PulsarApplicationTester() throw() {}
+  PulsarApplicationTester::~PulsarApplicationTester() throw() = default;
 
   auto PulsarApplicationTester::getName() const -> std::string {
     return m_app_name;
@@ -104,9 +104,9 @@ namespace timeSystem {
     double tolerance_abs, double tolerance_rel) const -> bool {
     // Prepare variables for comparison.
     const char * ptr_val_cur(string_value.c_str());
-    char * ptr_val_next(0);
+    char * ptr_val_next(nullptr);
     const char * ptr_ref_cur(string_reference.c_str());
-    char * ptr_ref_next(0);
+    char * ptr_ref_next(nullptr);
 
     // Loop over reference string.
     bool mismatch_found = false;
@@ -217,7 +217,7 @@ namespace timeSystem {
         ignored_keyword.insert("HISTORY");
 
         // Collect header keywords to compare.
-        typedef std::list<std::pair<int, tip::KeyRecord> > key_record_cont;
+        using key_record_cont = std::list<std::pair<int, tip::KeyRecord> >;
         key_record_cont out_key_record;
         key_record_cont ref_key_record;
         for (int ii = 0; ii < 2; ++ii) {
@@ -226,7 +226,7 @@ namespace timeSystem {
           const tip::Header & this_header = (is_out ? out_header : ref_header);
 
           int card_number = 1;
-          for (tip::Header::ConstIterator key_itor = this_header.begin(); key_itor != this_header.end(); ++key_itor, ++card_number) {
+          for (auto key_itor = this_header.begin(); key_itor != this_header.end(); ++key_itor, ++card_number) {
             std::string key_name = key_itor->getName();
             if (!key_name.empty() && ignored_keyword.find(key_name) == ignored_keyword.end()) {
               this_key_record.push_back(std::make_pair(card_number, *key_itor));
@@ -243,8 +243,8 @@ namespace timeSystem {
 
         } else {
           // Compare each header keyword.
-          key_record_cont::const_iterator out_itor = out_key_record.begin();
-          key_record_cont::const_iterator ref_itor = ref_key_record.begin();
+          auto out_itor = out_key_record.begin();
+          auto ref_itor = ref_key_record.begin();
           for (; out_itor != out_key_record.end() && ref_itor != ref_key_record.end(); ++out_itor, ++ref_itor) {
             // Get card numbers.
             const int out_card_number = out_itor->first;
@@ -272,8 +272,8 @@ namespace timeSystem {
         }
 
         // Close files as an extension before re-opening them as a table.
-        out_ext.reset(0);
-        ref_ext.reset(0);
+        out_ext.reset(nullptr);
+        ref_ext.reset(nullptr);
 
         // Compare the tables, except for primary HDU's.
         if (ext_number != 0) {
@@ -349,7 +349,7 @@ namespace timeSystem {
                 tip::ConstTableRecord & ref_record = *ref_itor;
 
                 // Compare all columns.
-                for (std::list<std::string>::const_iterator col_itor = common_column.begin(); col_itor != common_column.end();
+                for (auto col_itor = common_column.begin(); col_itor != common_column.end();
                   ++col_itor) {
                   const std::string & col_name = *col_itor;
                   const tip::TableCell & out_cell = out_record[col_name];
@@ -410,8 +410,8 @@ namespace timeSystem {
 
     } else {
       // Compare the file contents.
-      std::list<std::string>::const_iterator out_itor = out_line_list.begin();
-      std::list<std::string>::const_iterator ref_itor = ref_line_list.begin();
+      auto out_itor = out_line_list.begin();
+      auto ref_itor = ref_line_list.begin();
       int line_number = 1;
       for (; out_itor != out_line_list.end() && ref_itor != ref_line_list.end(); ++out_itor, ++ref_itor, ++line_number) {
         std::ostringstream os_err;
@@ -442,7 +442,7 @@ namespace timeSystem {
 
     // Create and setup an application object.
     std::unique_ptr<st_app::StApp> app_ptr(createApplication());
-    if (0 == app_ptr.get()) {
+    if (nullptr == app_ptr.get()) {
       err() << "Cannot create an application object: \"" << m_app_name << "\"" << std::endl;
       return;
     }

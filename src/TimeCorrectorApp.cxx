@@ -44,7 +44,7 @@ namespace {
   class IHandlerPairFactory {
     public:
       /// \brief Destruct this IHandlerPairFactory object.
-      virtual ~IHandlerPairFactory() {}
+      virtual ~IHandlerPairFactory() = default;
 
       /** \brief Create a pair of EventTimeHandler objects.
           \param first_file_name Name of a file to be opened by the first EventTimeHandler class.
@@ -52,7 +52,7 @@ namespace {
           \param extension_number Extension number to be opened, with 0 (zero) for a primary HDU.
                  Both the first and the second files are opened with this extension number.
       */
-      auto create(const std::string & first_file_name,
+      [[nodiscard]] auto create(const std::string & first_file_name,
         const std::string & second_file_name, int extension_number) const -> std::pair<EventTimeHandler *, EventTimeHandler *>;
 
       /** \brief Create one EventTimeHandler object. Actual creation must be done in a derived class.
@@ -62,7 +62,7 @@ namespace {
           \param as_first_file Set to true if file should be opened with the first EventTimeHandler class.
                                Set to false otherwise.
       */
-      virtual auto create(const std::string & file_name, int extension_number, bool as_first_file = true) const -> EventTimeHandler * = 0;
+      [[nodiscard]] virtual auto create(const std::string & file_name, int extension_number, bool as_first_file = true) const -> EventTimeHandler * = 0;
 
     protected:
       /// \brief Construct an IHandlerPairFactory object.
@@ -79,7 +79,7 @@ namespace {
       HandlerPairFactory(): IHandlerPairFactory() {}
 
       /// \brief Destruct this HandlerPairFactory object.
-      virtual ~HandlerPairFactory() {}
+      virtual ~HandlerPairFactory() = default;
 
       /** \brief Create one EventTimeHandler object of a given type.
           \param file_name Name of a file to be opened.
@@ -87,25 +87,25 @@ namespace {
           \param as_first_file Set to true if file should be opened with the first EventTimeHandler class.
                                Set to false otherwise.
       */
-      virtual EventTimeHandler * create(const std::string & file_name, int extension_number, bool as_first_file = true) const;
+      [[nodiscard]] virtual EventTimeHandler * create(const std::string & file_name, int extension_number, bool as_first_file = true) const;
   };
 
   auto IHandlerPairFactory::create(const std::string & first_file_name,
     const std::string & second_file_name, int extension_number) const -> std::pair<EventTimeHandler *, EventTimeHandler *> {
     // Prepare variables to hold the return value.
-    EventTimeHandler * first_handler(0);
-    EventTimeHandler * second_handler(0);
+    EventTimeHandler * first_handler(nullptr);
+    EventTimeHandler * second_handler(nullptr);
 
     // Try to create an event time handler for the first file.
     first_handler = create(first_file_name, extension_number, true);
-    if (0 != first_handler) {
+    if (nullptr != first_handler) {
       // Try to create an event time handler for the second file.
       second_handler = create(second_file_name, extension_number, false);
 
       // Destroy the handler for the first file if no handler is created for the second.
-      if (0 == second_handler) {
+      if (nullptr == second_handler) {
         delete first_handler;
-        first_handler = 0;
+        first_handler = nullptr;
       }
     }
 
@@ -117,7 +117,7 @@ namespace {
   EventTimeHandler * HandlerPairFactory<FirstHandlerType, SecondHandlerType>::create(const std::string & file_name,
     int extension_number, bool as_first_file) const {
     // Prepare a variable to hold the return value.
-    EventTimeHandler * handler(0);
+    EventTimeHandler * handler(nullptr);
 
     // Create an extension name string.
     std::ostringstream oss;
@@ -131,7 +131,7 @@ namespace {
 
     } catch (...) {
       // Return 0 (null pointer) for error(s) of any kind.
-      handler = 0;
+      handler = nullptr;
     }
 
     // Return the pointer.
@@ -147,7 +147,7 @@ namespace timeSystem {
     setVersion(s_cvs_id);
   }
 
-  TimeCorrectorApp::~TimeCorrectorApp() throw() {}
+  TimeCorrectorApp::~TimeCorrectorApp() throw() = default;
 
   void TimeCorrectorApp::run() {
     st_app::AppParGroup & pars = getParGroup();
@@ -158,7 +158,7 @@ namespace timeSystem {
     std::string t_correct = pars["tcorrect"];
     std::string t_correct_uc(t_correct);
     for (std::string::iterator itor = t_correct_uc.begin(); itor != t_correct_uc.end(); ++itor) *itor = std::toupper(*itor);
-    typedef std::list<IHandlerPairFactory *> factory_cont_type;
+    using factory_cont_type = std::list<IHandlerPairFactory *>;
     factory_cont_type factory_cont;
     std::string target_time_ref;
     std::string target_time_sys;
@@ -186,11 +186,11 @@ namespace timeSystem {
 
     // Loop over all extensions of the input file, including primary HDU, to check whether input file is supported or not.
     int ext_number = 0;
-    for (tip::FileSummary::const_iterator ext_itor = file_summary.begin(); ext_itor != file_summary.end(); ++ext_itor, ++ext_number) {
+    for (auto ext_itor = file_summary.begin(); ext_itor != file_summary.end(); ++ext_itor, ++ext_number) {
       bool supported = false;
-      for (factory_cont_type::const_iterator fact_itor = factory_cont.begin(); fact_itor != factory_cont.end(); ++fact_itor) {
+      for (auto fact_itor = factory_cont.begin(); fact_itor != factory_cont.end(); ++fact_itor) {
         std::unique_ptr<EventTimeHandler> input_handler((*fact_itor)->create(inFile_s, ext_number));
-        if (0 != input_handler.get()) supported = true;
+        if (nullptr != input_handler.get()) supported = true;
       }
       if (!supported) {
         std::ostringstream oss;
@@ -261,7 +261,7 @@ namespace timeSystem {
 
     // Construct a character string representing file creation time in UTC.
     // Note: UTC is the default time system for DATE header keyword in the FITS standard.
-    std::time_t current_time = std::time(0);
+    std::time_t current_time = std::time(nullptr);
     struct std::tm * gm_time_struct = std::gmtime(&current_time);
     char gm_time_char[] = "YYYY-MM-DDThh:mm:ss";
     std::strftime(gm_time_char, sizeof(gm_time_char), "%Y-%m-%dT%H:%M:%S", gm_time_struct);
@@ -349,19 +349,19 @@ namespace timeSystem {
 
     // Loop over all extensions in input and output files, including primary HDU.
     ext_number = 0;
-    for (tip::FileSummary::const_iterator ext_itor = file_summary.begin(); ext_itor != file_summary.end(); ++ext_itor, ++ext_number) {
+    for (auto ext_itor = file_summary.begin(); ext_itor != file_summary.end(); ++ext_itor, ++ext_number) {
       // Open this extension of the input file, and the corresponding extension of the output file.
       std::unique_ptr<EventTimeHandler> input_handler(nullptr);
       std::unique_ptr<EventTimeHandler> output_handler(nullptr);
-      for (factory_cont_type::const_iterator fact_itor = factory_cont.begin();
-        fact_itor != factory_cont.end() && (0 == input_handler.get() || (0 == output_handler.get())); ++fact_itor) {
+      for (auto fact_itor = factory_cont.begin();
+        fact_itor != factory_cont.end() && (nullptr == input_handler.get() || (nullptr == output_handler.get())); ++fact_itor) {
         std::pair<EventTimeHandler *, EventTimeHandler *> handler_pair = (*fact_itor)->create(inFile_s, tmpOutFile_s, ext_number);
         input_handler.reset(handler_pair.first);
         output_handler.reset(handler_pair.second);
       }
 
       // Check whether both of the input and the output files were successfully opened or not.
-      if (0 == input_handler.get() || 0 == output_handler.get()) {
+      if (nullptr == input_handler.get() || nullptr == output_handler.get()) {
         std::ostringstream oss;
         oss << "Arrival time correction \"" << t_correct << "\" not supported for HDU " << ext_number;
         if (0 == ext_number) oss << " (primary HDU)";
@@ -388,7 +388,7 @@ namespace timeSystem {
 
       // Apply arrival time correction to header keyword values.
       tip::Header & input_header = input_handler->getHeader();
-      for (std::list<std::string>::const_iterator name_itor = keyword_list.begin(); name_itor != keyword_list.end(); ++name_itor) {
+      for (auto name_itor = keyword_list.begin(); name_itor != keyword_list.end(); ++name_itor) {
         const std::string & keyword_name = *name_itor;
         if (input_header.find(keyword_name) != input_header.end()) {
           if ("BARY" == t_correct_uc) {
@@ -410,7 +410,7 @@ namespace timeSystem {
         input_handler->setNextRecord(), output_handler->setNextRecord()) {
 
         // Apply arrival time correction to the specified columns.
-        for (std::list<std::string>::const_iterator name_itor = column_list.begin(); name_itor != column_list.end(); ++name_itor) {
+        for (auto name_itor = column_list.begin(); name_itor != column_list.end(); ++name_itor) {
           const std::string & column_name = *name_itor;
           if ("BARY" == t_correct_uc) {
             output_handler->writeTime(column_name, input_handler->getBaryTime(column_name));
@@ -428,9 +428,9 @@ namespace timeSystem {
     std::rename(tmpOutFile_s.c_str(), outFile_s.c_str());
 
     // Clean up.
-    for (factory_cont_type::reverse_iterator fact_itor = factory_cont.rbegin(); fact_itor != factory_cont.rend(); ++fact_itor) {
+    for (auto fact_itor = factory_cont.rbegin(); fact_itor != factory_cont.rend(); ++fact_itor) {
       delete *fact_itor;
-      *fact_itor = 0;
+      *fact_itor = nullptr;
     }
   }
 

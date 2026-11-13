@@ -59,10 +59,10 @@ class TimeCorrectorAppTester: public PulsarApplicationTester {
   TimeCorrectorAppTester(PulsarTestApp & test_app);
 
   /// \brief Destruct this TimeCorrectorAppTester object.
-  virtual ~TimeCorrectorAppTester() throw() {}
+  virtual ~TimeCorrectorAppTester() throw() = default;
 
   /// \brief Returns an application object to be tested.
-  virtual auto createApplication() const -> st_app::StApp *;
+  [[nodiscard]] virtual auto createApplication() const -> st_app::StApp *;
 
   /** \brief Return a logical true if the given header keyword is determined correct, and a logical false otherwise.
       \param keyword_name Name of the header keyword to be verified.
@@ -185,7 +185,7 @@ class TimeSystemTestApp : public PulsarTestApp {
     TimeSystemTestApp();
 
     /// \brief Destruct this TimeSystemTestApp object.
-    virtual ~TimeSystemTestApp() throw() {}
+    virtual ~TimeSystemTestApp() throw() = default;
 
     /// \brief Do all tests.
     virtual void runTest();
@@ -657,7 +657,7 @@ void TimeSystemTestApp::testDuration() {
   unit_per_day["Hour"] = HourPerDay();
   unit_per_day["Min"] = MinPerDay();
   unit_per_day["Sec"] = SecPerDay();
-  for (std::map<std::string, long>::const_iterator itor = unit_per_day.begin(); itor != unit_per_day.end(); ++itor) {
+  for (auto itor = unit_per_day.begin(); itor != unit_per_day.end(); ++itor) {
     const std::string & time_unit_name(itor->first);
     long conversion_factor = itor->second;
 
@@ -709,7 +709,7 @@ void TimeSystemTestApp::testDuration() {
   sec_per_unit["hours"] = SecPerHour();
   sec_per_unit["minutes"] = SecPerMin();
   sec_per_unit["seconds"] = 1;
-  for (std::map<std::string, long>::const_iterator itor = sec_per_unit.begin(); itor != sec_per_unit.end(); ++itor) {
+  for (auto itor = sec_per_unit.begin(); itor != sec_per_unit.end(); ++itor) {
     const std::string & time_unit_string(itor->first);
     long conversion_factor = itor->second;
     long int_part = 0;
@@ -761,7 +761,7 @@ void TimeSystemTestApp::testDuration() {
   time_unit_list.push_back("Hour");
   time_unit_list.push_back("Min");
   time_unit_list.push_back("Sec");
-  for (std::list<std::string>::const_iterator itor = time_unit_list.begin(); itor != time_unit_list.end(); ++itor) {
+  for (auto itor = time_unit_list.begin(); itor != time_unit_list.end(); ++itor) {
     const std::string & time_unit(*itor);
     double time_value;
 
@@ -853,7 +853,7 @@ void TimeSystemTestApp::testDuration() {
   test_input.push_back(std::make_pair(Duration(345, 345.678), +1));
   test_input.push_back(std::make_pair(Duration(345, 456.789), +1));
 
-  for (std::list<std::pair<Duration, int> >::iterator itor = test_input.begin(); itor != test_input.end(); itor++) {
+  for (auto itor = test_input.begin(); itor != test_input.end(); itor++) {
     testOneComparison("!=", itor->first, dur0, (itor->second != 0));
     testOneComparison("==", itor->first, dur0, (itor->second == 0));
     testOneComparison("<",  itor->first, dur0, (itor->second <  0));
@@ -1007,7 +1007,7 @@ void TimeSystemTestApp::testOneSubtraction(const moment_type & moment1, const mo
 
   Duration tolerance(1.e-9, "Sec"); // 1 nanosecond.
 
-  for (std::map<std::string, Duration>::iterator itor_exp = expected_diff.begin(); itor_exp != expected_diff.end(); ++itor_exp) {
+  for (auto itor_exp = expected_diff.begin(); itor_exp != expected_diff.end(); ++itor_exp) {
     std::string time_system_name = itor_exp->first;
     const TimeSystem & time_system(TimeSystem::getSystem(time_system_name));
     Duration time_diff = time_system.computeTimeDifference(moment1, moment2);
@@ -1029,7 +1029,7 @@ void TimeSystemTestApp::testOneDateTimeComputation(const moment_type & moment, c
   time_system_name_list.push_back("UTC");
   double tolerance = 1.e-9;
 
-  for (std::list<std::string>::const_iterator itor_sys = time_system_name_list.begin(); itor_sys != time_system_name_list.end();
+  for (auto itor_sys = time_system_name_list.begin(); itor_sys != time_system_name_list.end();
     ++itor_sys) {
     std::string time_system_name = *itor_sys;
     const TimeSystem & time_system(TimeSystem::getSystem(time_system_name));
@@ -1344,7 +1344,7 @@ void TimeSystemTestApp::testTimeSystem() {
   time_system_name_list.push_back("TDB");
   time_system_name_list.push_back("TT");
   time_system_name_list.push_back("UTC");
-  for (std::list<std::string>::const_iterator itor_sys = time_system_name_list.begin(); itor_sys != time_system_name_list.end();
+  for (auto itor_sys = time_system_name_list.begin(); itor_sys != time_system_name_list.end();
     ++itor_sys) {
     std::string time_system_name = *itor_sys;
     const TimeSystem & time_system(TimeSystem::getSystem(time_system_name));
@@ -2785,7 +2785,7 @@ void TimeSystemTestApp::testIntFracUtility() {
     err() << "IntFracUtility::check(100, .56789567895678956789) threw an exception." << std::endl;
   }
 
-  typedef std::pair<long, double> pair_type;
+  using pair_type = std::pair<long, double>;
   std::list<pair_type> pair_list;
   pair_list.push_back(pair_type(+1, -.1));
   pair_list.push_back(pair_type(+1, +1.));
@@ -2793,7 +2793,7 @@ void TimeSystemTestApp::testIntFracUtility() {
   pair_list.push_back(pair_type(-1, -1.));
   pair_list.push_back(pair_type( 0, +1.));
   pair_list.push_back(pair_type( 0, -1.));
-  for (std::list<pair_type>::const_iterator itor = pair_list.begin(); itor != pair_list.end(); ++itor) {
+  for (auto itor = pair_list.begin(); itor != pair_list.end(); ++itor) {
     try {
       utility.check(itor->first, itor->second);
       err() << "IntFracUtility::check(" << itor->first << ", " << itor->second << ") did not throw an exception." << std::endl;
@@ -2812,7 +2812,7 @@ void TimeSystemTestApp::testIntFracUtility() {
   int num_nine = 0;
 
   // Test parsing a character string.
-  typedef std::map<std::string, std::pair<long, double> > map_type;
+  using map_type = std::map<std::string, std::pair<long, double> >;
   map_type expected_pair;
   expected_pair["00050089.56789567895678956789"] = map_type::mapped_type(50089, .56789567895678956789);
   expected_pair["-00050089.56789567895678956789"] = map_type::mapped_type(-50089, -.56789567895678956789);
@@ -2839,7 +2839,7 @@ void TimeSystemTestApp::testIntFracUtility() {
   expected_pair["-9999999." + std::string(num_nine, '9')] = map_type::mapped_type(-9999999, -1. + std::pow(0.1, num_nine));
 
   tolerance = std::numeric_limits<double>::epsilon() * 10.;
-  for (map_type::const_iterator itor = expected_pair.begin(); itor != expected_pair.end(); ++itor) {
+  for (auto itor = expected_pair.begin(); itor != expected_pair.end(); ++itor) {
     sval = itor->first;
     expected_int_part = (itor->second).first;
     expected_frac_part = (itor->second).second;
@@ -2882,7 +2882,7 @@ void TimeSystemTestApp::testIntFracUtility() {
   }
   sval += std::string(num_nine, '9');
   sval_list.push_back(sval);
-  for (std::list<std::string>::const_iterator itor = sval_list.begin(); itor != sval_list.end(); ++itor) {
+  for (auto itor = sval_list.begin(); itor != sval_list.end(); ++itor) {
     sval = *itor;
     result_int_part = 0;
     result_frac_part = 0.;
@@ -3410,11 +3410,11 @@ void TimeSystemTestApp::testBaryTimeComputer() {
 
 class BogusTimeHandlerBase: public EventTimeHandler {
   public:
-    virtual ~BogusTimeHandlerBase() {}
+    virtual ~BogusTimeHandlerBase() = default;
 
     static auto createInstance(const std::string & /*file_name*/, const std::string & /*extension_name*/,
       bool /*read_only*/ = true) -> EventTimeHandler *
-      { return 0; }
+      { return nullptr; }
 
     virtual void initTimeCorrection(const std::string & /*sc_file_name*/, const std::string & /*sc_extension_name*/,
       const std::string & /*solar_eph*/, bool /*match_solar_eph*/, double /*angular_tolerance*/) {}
@@ -3445,7 +3445,7 @@ class BogusTimeHandler1: public BogusTimeHandlerBase {
   public:
     static auto createInstance(const std::string & /*file_name*/, const std::string & /*extension_name*/,
       bool /*read_only*/ = true) -> EventTimeHandler *
-      { return 0; }
+      { return nullptr; }
 
   private:
     BogusTimeHandler1(const std::string & file_name, const std::string & extension_name):
@@ -3483,23 +3483,23 @@ void TimeSystemTestApp::testEventTimeHandlerFactory() {
   // Test creation of BogusTimeHandler1 (an EventTimeHandler sub-class) through its createInstance method.
   std::unique_ptr<EventTimeHandler> handler(nullptr);
   handler.reset(BogusTimeHandler1::createInstance(event_file, "EVENTS"));
-  if (handler.get() != 0) {
+  if (handler.get() != nullptr) {
     err() << "BogusTimeHandler1::createInstance method did not return a null pointer (0)." << std::endl;
   }
 
   // Test creation of BogusTimeHandler2 (an EventTimeHandler sub-class) through its createInstance method.
   handler.reset(BogusTimeHandler2::createInstance(event_file, "EVENTS"));
-  if (0 == handler.get()) {
+  if (nullptr == handler.get()) {
     err() << "BogusTimeHandler2::createInstance method returned a null pointer (0)." << std::endl;
-  } else if (0 == dynamic_cast<BogusTimeHandler2 *>(handler.get())) {
+  } else if (nullptr == dynamic_cast<BogusTimeHandler2 *>(handler.get())) {
     err() << "BogusTimeHandler2::createInstance method did not return a BogusTimeHandler2 object." << std::endl;
   }
 
   // Test creation of BogusTimeHandler3 (an EventTimeHandler sub-class) through its createInstance method.
   handler.reset(BogusTimeHandler3::createInstance(event_file, "EVENTS"));
-  if (0 == handler.get()) {
+  if (nullptr == handler.get()) {
     err() << "BogusTimeHandler3::createInstance method returned a null pointer (0)." << std::endl;
-  } else if (0 == dynamic_cast<BogusTimeHandler3 *>(handler.get())) {
+  } else if (nullptr == dynamic_cast<BogusTimeHandler3 *>(handler.get())) {
     err() << "BogusTimeHandler3::createInstance method did not return a BogusTimeHandler3 object." << std::endl;
   }
 
@@ -3526,9 +3526,9 @@ void TimeSystemTestApp::testEventTimeHandlerFactory() {
 
   // Test the decision-making mechanism for cases with BogusTimeHandler1 and BogusTimeHandler3 registered.
   handler.reset(IEventTimeHandlerFactory::createHandler(event_file, "EVENTS"));
-  if (0 == handler.get()) {
+  if (nullptr == handler.get()) {
     err() << "IEventTimeHandlerFactory::createHandler method returned a null pointer (0)." << std::endl;
-  } else if (0 == dynamic_cast<BogusTimeHandler3 *>(handler.get())) {
+  } else if (nullptr == dynamic_cast<BogusTimeHandler3 *>(handler.get())) {
     err() << "IEventTimeHandlerFactory::createHandler method did not return a BogusTimeHandler3 object" <<
       " when it is the only appropriate handler." << std::endl;
   }
@@ -3538,9 +3538,9 @@ void TimeSystemTestApp::testEventTimeHandlerFactory() {
 
   // Test the decision-making mechanism for cases with BogusTimeHandler1, BogusTimeHandler3, and BogusTimeHandler2 registered.
   handler.reset(IEventTimeHandlerFactory::createHandler(event_file, "EVENTS"));
-  if (0 == handler.get()) {
+  if (nullptr == handler.get()) {
     err() << "IEventTimeHandlerFactory::createHandler method returned a null pointer (0)." << std::endl;
-  } else if (0 == dynamic_cast<BogusTimeHandler3 *>(handler.get())) {
+  } else if (nullptr == dynamic_cast<BogusTimeHandler3 *>(handler.get())) {
     err() << "IEventTimeHandlerFactory::createHandler method did not return a BogusTimeHandler3 object" <<
       " when it is an appropriate handler that can respond first." << std::endl;
   }
@@ -3555,9 +3555,9 @@ void TimeSystemTestApp::testEventTimeHandlerFactory() {
 
   // Test the decision-making mechanism for cases with BogusTimeHandler2, BogusTimeHandler3, and BogusTimeHandler1 registered.
   handler.reset(IEventTimeHandlerFactory::createHandler(event_file, "EVENTS"));
-  if (0 == handler.get()) {
+  if (nullptr == handler.get()) {
     err() << "IEventTimeHandlerFactory::createHandler method returned a null pointer (0)." << std::endl;
-  } else if (0 == dynamic_cast<BogusTimeHandler2 *>(handler.get())) {
+  } else if (nullptr == dynamic_cast<BogusTimeHandler2 *>(handler.get())) {
     err() << "IEventTimeHandlerFactory::createHandler method did not return a BogusTimeHandler2 object" <<
       " when it is an appropriate handler that can respond first." << std::endl;
   }
@@ -3572,7 +3572,7 @@ void TimeSystemTestApp::testglastscorbit() {
 
   // Test initialization function.
   GlastScFile * scptr = glastscorbit_open(sc_file_char, "SC_DATA");
-  if (0 == scptr) {
+  if (nullptr == scptr) {
     err() << "Function glastscorbit_open returns a null pointer for spacecraft file \"" << sc_file <<
       "\" and extension name \"SC_DATA\"." << std::endl;
   }
@@ -3693,7 +3693,7 @@ void TimeSystemTestApp::testglastscorbit() {
   double latest_met   = 3120.0;
   double small_time_diff = 1.e-6; // 1 micro-second.
   double large_time_diff = 1.; // 1 second.
-  typedef std::list<std::pair<double, int> > time_status_type;
+  using time_status_type = std::list<std::pair<double, int> >;
   time_status_type time_status_list;
   time_status_list.push_back(std::make_pair(earliest_met - large_time_diff, TIME_OUT_BOUNDS));
   time_status_list.push_back(std::make_pair(earliest_met - small_time_diff, 0));
@@ -3703,7 +3703,7 @@ void TimeSystemTestApp::testglastscorbit() {
   time_status_list.push_back(std::make_pair(latest_met   + large_time_diff, TIME_OUT_BOUNDS));
 
   scptr = glastscorbit_open(sc_file_char, "SC_DATA");
-  for (time_status_type::const_iterator itor = time_status_list.begin(); itor != time_status_list.end(); ++itor) {
+  for (auto itor = time_status_list.begin(); itor != time_status_list.end(); ++itor) {
     double glast_time = itor->first;
     int status_expected = itor->second;
     int status_result = glastscorbit_calcpos(scptr, glast_time, dummy_array);
@@ -3714,7 +3714,7 @@ void TimeSystemTestApp::testglastscorbit() {
   }
   glastscorbit_close(scptr);
 
-  for (time_status_type::const_iterator itor = time_status_list.begin(); itor != time_status_list.end(); ++itor) {
+  for (auto itor = time_status_list.begin(); itor != time_status_list.end(); ++itor) {
     double glast_time = itor->first;
     int status_expected = itor->second;
     int status_result = 0;
@@ -3726,7 +3726,7 @@ void TimeSystemTestApp::testglastscorbit() {
   }
 
   // Test detection of a null pointer for file name.
-  scptr = glastscorbit_open(0, "SC_DATA");
+  scptr = glastscorbit_open(nullptr, "SC_DATA");
   status = glastscorbit_getstatus(scptr);
   if (!status) {
     err() << "Function glastscorbit_open returns with status = " << status <<
@@ -3742,7 +3742,7 @@ void TimeSystemTestApp::testglastscorbit() {
   }
 
   // Test detection of a null pointer for extension name.
-  scptr = glastscorbit_open(sc_file_char, 0);
+  scptr = glastscorbit_open(sc_file_char, nullptr);
   status = glastscorbit_getstatus(scptr);
   if (!status) {
     err() << "Function glastscorbit_open returns with status = " << status <<
@@ -3758,7 +3758,7 @@ void TimeSystemTestApp::testglastscorbit() {
   }
 
   // Test detection of null pointers for both file name and extension name.
-  scptr = glastscorbit_open(0, 0);
+  scptr = glastscorbit_open(nullptr, nullptr);
   status = glastscorbit_getstatus(scptr);
   if (!status) {
     err() << "Function glastscorbit_open returns with status = " << status <<
@@ -3905,7 +3905,7 @@ void TimeSystemTestApp::testglastscorbit() {
 
   // Test closing of a "shared" spacecraft file.
   glastscorbit_close(scptr1);
-  if (0 == scptr2->data) {
+  if (nullptr == scptr2->data) {
     err() << "Function call glastscorbit_close(scptr1) nullify a wrong pointer (scptr2)." << std::endl;
   }
   if (glastscorbit_calcpos(scptr2, 1001., dummy_array)) {
@@ -3943,20 +3943,20 @@ void TimeSystemTestApp::testglastscorbit() {
   glastscorbit_close(scptr2);
 
   // Test closing a null pointer.
-  status = glastscorbit_close(0);
+  status = glastscorbit_close(nullptr);
   if (status) {
     err() << "Function call glastscorbit_close(0) returns a non-zero status." << std::endl;
   }
 
   // Test error reporting by glastscorbit_calcpos for a null input pointer.
-  status = glastscorbit_calcpos(0, 1001., dummy_array);
+  status = glastscorbit_calcpos(nullptr, 1001., dummy_array);
   if (!status) {
     err() << "Function glastscorbit_calcpos returns zero (0) for a null input pointer." << std::endl;
   }
 
   // Test error reporting by glastscorbit_calcpos for a null pointer to the spacecraft data table.
   GlastScFile test_scfile;
-  test_scfile.data = 0;
+  test_scfile.data = nullptr;
   test_scfile.status = 0;
   status = glastscorbit_calcpos(&test_scfile, 1001., dummy_array);
   if (!status) {
@@ -3964,7 +3964,7 @@ void TimeSystemTestApp::testglastscorbit() {
   }
 
   // Test error reporting by glastscorbit_calcpos for a null pointer to the spacecraft data.
-  GlastScData * test_scdata = 0;
+  GlastScData * test_scdata = nullptr;
   test_scfile.data = &test_scdata;
   test_scfile.status = 0;
   status = glastscorbit_calcpos(&test_scfile, 1001., dummy_array);
@@ -4029,85 +4029,85 @@ void TimeSystemTestApp::testGlastTimeHandler() {
 
   // Test creation of GlastScTimeHandler through its createInstance method.
   handler.reset(GlastScTimeHandler::createInstance(event_file, "EVENTS"));
-  if (0 == handler.get()) {
+  if (nullptr == handler.get()) {
     err() << "GlastScTimeHandler::createInstance method returned a null pointer (0)." << std::endl;
-  } else if (0 == dynamic_cast<GlastScTimeHandler *>(handler.get())) {
+  } else if (nullptr == dynamic_cast<GlastScTimeHandler *>(handler.get())) {
     err() << "GlastScTimeHandler::createInstance method did not return a GlastScTimeHandler object." << std::endl;
   }
 
   // Test creation of GlastGeoTimeHandler through its createInstance method.
   handler.reset(GlastGeoTimeHandler::createInstance(event_file_geo, "EVENTS"));
-  if (0 == handler.get()) {
+  if (nullptr == handler.get()) {
     err() << "GlastGeoTimeHandler::createInstance method returned a null pointer (0)." << std::endl;
-  } else if (0 == dynamic_cast<GlastGeoTimeHandler *>(handler.get())) {
+  } else if (nullptr == dynamic_cast<GlastGeoTimeHandler *>(handler.get())) {
     err() << "GlastGeoTimeHandler::createInstance method did not return a GlastGeoTimeHandler object." << std::endl;
   }
 
   // Test creation of GlastBaryTimeHandler through its createInstance method.
   handler.reset(GlastBaryTimeHandler::createInstance(event_file_bary, "EVENTS"));
-  if (0 == handler.get()) {
+  if (nullptr == handler.get()) {
     err() << "GlastBaryTimeHandler::createInstance method returned a null pointer (0)." << std::endl;
-  } else if (0 == dynamic_cast<GlastBaryTimeHandler *>(handler.get())) {
+  } else if (nullptr == dynamic_cast<GlastBaryTimeHandler *>(handler.get())) {
     err() << "GlastBaryTimeHandler::createInstance method did not return a GlastBaryTimeHandler object." << std::endl;
   }
 
   // Test non-creation of GlastScTimeHandler through its createInstance method for a geocentered file.
   handler.reset(GlastScTimeHandler::createInstance(event_file_geo, "EVENTS"));
-  if (0 != handler.get()) {
+  if (nullptr != handler.get()) {
     err() << "GlastScTimeHandler::createInstance method did not return a null pointer (0)." << std::endl;
   }
 
   // Test non-creation of GlastScTimeHandler through its createInstance method for a barycentered file.
   handler.reset(GlastScTimeHandler::createInstance(event_file_bary, "EVENTS"));
-  if (0 != handler.get()) {
+  if (nullptr != handler.get()) {
     err() << "GlastScTimeHandler::createInstance method did not return a null pointer (0)." << std::endl;
   }
 
   // Test non-creation of GlastGeoTimeHandler through its createInstance method for a uncorrected file.
   handler.reset(GlastGeoTimeHandler::createInstance(event_file, "EVENTS"));
-  if (0 != handler.get()) {
+  if (nullptr != handler.get()) {
     err() << "GlastGeoTimeHandler::createInstance method did not return a null pointer (0)." << std::endl;
   }
 
   // Test non-creation of GlastGeoTimeHandler through its createInstance method for a barycentered file.
   handler.reset(GlastGeoTimeHandler::createInstance(event_file_bary, "EVENTS"));
-  if (0 != handler.get()) {
+  if (nullptr != handler.get()) {
     err() << "GlastGeoTimeHandler::createInstance method did not return a null pointer (0)." << std::endl;
   }
 
   // Test non-creation of GlastBaryTimeHandler through its createInstance method for a uncorrected file.
   handler.reset(GlastBaryTimeHandler::createInstance(event_file, "EVENTS"));
-  if (0 != handler.get()) {
+  if (nullptr != handler.get()) {
     err() << "GlastBaryTimeHandler::createInstance method did not return a null pointer (0)." << std::endl;
   }
 
   // Test non-creation of GlastBaryTimeHandler through its createInstance method for a geocentered file.
   handler.reset(GlastBaryTimeHandler::createInstance(event_file_geo, "EVENTS"));
-  if (0 != handler.get()) {
+  if (nullptr != handler.get()) {
     err() << "GlastBaryTimeHandler::createInstance method did not return a null pointer (0)." << std::endl;
   }
 
   // Test creation of GlastScTimeHandler through GlastTimeHandler::createInstance method.
   handler.reset(GlastTimeHandler::createInstance(event_file, "EVENTS"));
-  if (0 == handler.get()) {
+  if (nullptr == handler.get()) {
     err() << "GlastTimeHandler::createInstance method returned a null pointer (0)." << std::endl;
-  } else if (0 == dynamic_cast<GlastScTimeHandler *>(handler.get())) {
+  } else if (nullptr == dynamic_cast<GlastScTimeHandler *>(handler.get())) {
     err() << "GlastTimeHandler::createInstance method did not return a GlastScTimeHandler object." << std::endl;
   }
 
   // Test creation of GlastGeoTimeHandler through GlastTimeHandler:: createInstance method.
   handler.reset(GlastTimeHandler::createInstance(event_file_geo, "EVENTS"));
-  if (0 == handler.get()) {
+  if (nullptr == handler.get()) {
     err() << "GlastTimeHandler::createInstance method returned a null pointer (0)." << std::endl;
-  } else if (0 == dynamic_cast<GlastGeoTimeHandler *>(handler.get())) {
+  } else if (nullptr == dynamic_cast<GlastGeoTimeHandler *>(handler.get())) {
     err() << "GlastTimeHandler::createInstance method did not return a GlastGeoTimeHandler object." << std::endl;
   }
 
   // Test creation of GlastBaryTimeHandler through GlastTimeHandler:: createInstance method.
   handler.reset(GlastTimeHandler::createInstance(event_file_bary, "EVENTS"));
-  if (0 == handler.get()) {
+  if (nullptr == handler.get()) {
     err() << "GlastTimeHandler::createInstance method returned a null pointer (0)." << std::endl;
-  } else if (0 == dynamic_cast<GlastBaryTimeHandler *>(handler.get())) {
+  } else if (nullptr == dynamic_cast<GlastBaryTimeHandler *>(handler.get())) {
     err() << "GlastTimeHandler::createInstance method did not return a GlastBaryTimeHandler object." << std::endl;
   }
 
@@ -4638,9 +4638,9 @@ void TimeSystemTestApp::testGlastTimeHandler() {
 
   // Test loading of an event file with TELESCOP = FERMI.
   handler.reset(GlastScTimeHandler::createInstance(event_file_fermi, "EVENTS"));
-  if (0 == handler.get()) {
+  if (nullptr == handler.get()) {
     err() << "GlastScTimeHandler::createInstance method returned a null pointer (0)." << std::endl;
-  } else if (0 == dynamic_cast<GlastScTimeHandler *>(handler.get())) {
+  } else if (nullptr == dynamic_cast<GlastScTimeHandler *>(handler.get())) {
     err() << "GlastScTimeHandler::createInstance method did not return a GlastScTimeHandler object." << std::endl;
   }
 
@@ -4755,7 +4755,7 @@ void TimeSystemTestApp::testTimeCorrectorApp() {
   std::string evfile_geo = prependDataPath("testevdata_1day_unordered_geo.fits");
 
   // Loop over parameter sets.
-  for (std::list<std::string>::const_iterator test_itor = test_name_cont.begin(); test_itor != test_name_cont.end(); ++test_itor) {
+  for (auto test_itor = test_name_cont.begin(); test_itor != test_name_cont.end(); ++test_itor) {
     const std::string & test_name = *test_itor;
     std::string log_file(getMethod() + "_" + test_name + ".log");
     std::string log_file_ref(getMethod() + "_" + test_name + ".ref");

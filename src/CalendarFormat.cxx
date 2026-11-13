@@ -35,7 +35,7 @@ namespace {
           \param year Gregorian year to compute an MJD for.
           \param ordinal_date Ordinal date to compute an MJD for.
       */
-      auto computeMjd(long year, long ordinal_date) const -> long;
+      [[nodiscard]] auto computeMjd(long year, long ordinal_date) const -> long;
 
       /** \brief Find which month a given date is in, and return it (1 for January).
           \param year Gregorian year to find a month for.
@@ -49,12 +49,12 @@ namespace {
           \param month Month of the year to compute an ordinal date for.
           \param day Day of the month to compute an ordinal date for.
       */
-      auto computeOrdinalDate(long year, long month, long day) const -> long;
+      [[nodiscard]] auto computeOrdinalDate(long year, long month, long day) const -> long;
 
       /** \brief Find a Monday closest to a give date, and return it.
           \param mjd MJD of a date to find the closest Monday to.
       */
-      auto findNearestMonday(long mjd) const -> long;
+      [[nodiscard]] auto findNearestMonday(long mjd) const -> long;
 
       /** \brief Check validity of Gregorian year, month, and day, and throw an exception if any problem is found.
           \param year Gregorian year to check.
@@ -70,30 +70,30 @@ namespace {
       void checkOrdinalDate(long year, long day) const;
 
     private:
-      typedef std::vector<long> table_type;
+      using table_type = std::vector<long>;
 
       /// \brief Construct a GregorianCalendar object.
       GregorianCalendar();
 
       /// \brief Return the number of days in 400 years.
-      auto DayPer400Year() const -> long;
+      [[nodiscard]] auto DayPer400Year() const -> long;
 
       /// \brief Return the number of days in 100 years starting at the beginning of a century.
-      auto DayPer100Year() const -> long;
+      [[nodiscard]] auto DayPer100Year() const -> long;
 
       /// \brief Return the number of days in 4 years not including the beginning of a century.
-      auto DayPer4Year() const -> long;
+      [[nodiscard]] auto DayPer4Year() const -> long;
 
       /// \brief Return the number of days in a non-leap year.
-      auto DayPerYear() const -> long;
+      [[nodiscard]] auto DayPerYear() const -> long;
 
-      auto DayPerMonth(long year) const -> const table_type &;
+      [[nodiscard]] auto DayPerMonth(long year) const -> const table_type &;
 
       /// \brief Return the number of days in a week.
-      auto DayPerWeek() const -> long;
+      [[nodiscard]] auto DayPerWeek() const -> long;
 
       /// \brief Return the MJD number of January 1st, 2001.
-      auto MjdYear2001() const -> long;
+      [[nodiscard]] auto MjdYear2001() const -> long;
 
       table_type m_day_per_month_regular_year;
       table_type m_day_per_month_leap_year;
@@ -186,7 +186,7 @@ namespace {
     // Search for the month in which the given ordinal date is.
     long month = 1;
     long residual_day = ordinal_date;
-    for (table_type::const_iterator itor = day_per_month.begin(); itor != day_per_month.end(); ++itor, ++month) {
+    for (auto itor = day_per_month.begin(); itor != day_per_month.end(); ++itor, ++month) {
       const long & day_per_this_month(*itor);
       if (residual_day > day_per_this_month) {
         // The given date is in the next month or later.
@@ -215,7 +215,7 @@ namespace {
 
     // Compute an ordinal date for the given month and day numbers.
     long ordinal_date = 0;
-    for (table_type::const_iterator itor = day_per_month.begin(); itor != day_per_month.begin() + month - 1; ++itor) {
+    for (auto itor = day_per_month.begin(); itor != day_per_month.begin() + month - 1; ++itor) {
       ordinal_date += *itor;
     }
     ordinal_date += day;
@@ -317,7 +317,7 @@ namespace {
              the ISO 8601 standard. It interprets only the extended format, and requires all values (i.e., it does not
              allow omission of any value in the given string.
   */
-  typedef std::vector<long> array_type;
+  using array_type = std::vector<long>;
   enum DateType { CalendarDate, IsoWeekDate, OrdinalDate, UnsupportedDate };
   auto parseIso8601Format(const std::string & time_string, array_type & integer_value, double & double_value) -> DateType;
 
@@ -334,23 +334,23 @@ namespace {
       /** \brief Convert date and time to a calendar date, and return it.
           \param datetime Date and time to convert.
       */
-      virtual auto convert(const datetime_type & datetime) const -> Calendar;
+      [[nodiscard]] virtual auto convert(const datetime_type & datetime) const -> Calendar;
 
       /** \brief Convert a calendar date to date and time.
           \param time_rep Calendar date to convert.
       */
-      virtual auto convert(const Calendar & time_rep) const -> datetime_type;
+      [[nodiscard]] virtual auto convert(const Calendar & time_rep) const -> datetime_type;
 
       /** \brief Interpret a given time string as a calendar date, and return the calendar date.
           \param time_string Character string to interpret as a calendar date.
       */
-      virtual auto parse(const std::string & time_string) const -> Calendar;
+      [[nodiscard]] virtual auto parse(const std::string & time_string) const -> Calendar;
 
       /** \brief Create a character string representing a given time in a calendar date format.
           \param time_rep Calendar date to format into a character string.
           \param precision Number of digits after a decimal point in the time part of a given time.
       */
-      virtual auto format(const Calendar & time_rep, std::streamsize precision = std::numeric_limits<double>::digits10) const -> std::string;
+      [[nodiscard]] virtual auto format(const Calendar & time_rep, std::streamsize precision = std::numeric_limits<double>::digits10) const -> std::string;
   };
 
   /** \class IsoWeekFormat
@@ -361,23 +361,23 @@ namespace {
       /** \brief Convert date and time to an ISO week date, and return it.
           \param datetime Date and time to convert.
       */
-      virtual auto convert(const datetime_type & datetime) const -> IsoWeek;
+      [[nodiscard]] virtual auto convert(const datetime_type & datetime) const -> IsoWeek;
 
       /** \brief Convert an ISO week date to date and time.
           \param time_rep ISO week date to convert.
       */
-      virtual auto convert(const IsoWeek & time_rep) const -> datetime_type;
+      [[nodiscard]] virtual auto convert(const IsoWeek & time_rep) const -> datetime_type;
 
       /** \brief Interpret a given time string as an ISO week date, and return the ISO week date.
           \param time_string Character string to interpret as an ISO week date.
       */
-      virtual auto parse(const std::string & time_string) const -> IsoWeek;
+      [[nodiscard]] virtual auto parse(const std::string & time_string) const -> IsoWeek;
 
       /** \brief Create a character string representing a given time in an ISO week date format.
           \param time_rep ISO week date to format into a character string.
           \param precision Number of digits after a decimal point in the time part of a given time.
       */
-      virtual auto format(const IsoWeek & time_rep, std::streamsize precision = std::numeric_limits<double>::digits10) const -> std::string;
+      [[nodiscard]] virtual auto format(const IsoWeek & time_rep, std::streamsize precision = std::numeric_limits<double>::digits10) const -> std::string;
 
     private:
       /** \brief Check validity of an ISO year, an ISO week number, and an ISO weekday number, and throw an exception
@@ -397,23 +397,23 @@ namespace {
       /** \brief Convert date and time to an ordinal date, and return it.
           \param datetime Date and time to convert.
       */
-      virtual auto convert(const datetime_type & datetime) const -> Ordinal;
+      [[nodiscard]] virtual auto convert(const datetime_type & datetime) const -> Ordinal;
 
       /** \brief Convert an ordinal date to date and time.
           \param time_rep Ordinal date to convert.
       */
-      virtual auto convert(const Ordinal & time_rep) const -> datetime_type;
+      [[nodiscard]] virtual auto convert(const Ordinal & time_rep) const -> datetime_type;
 
       /** \brief Interpret a given time string as an ordinal date, and return the calendar date.
           \param time_string Character string to interpret as an ordinal date.
       */
-      virtual auto parse(const std::string & time_string) const -> Ordinal;
+      [[nodiscard]] virtual auto parse(const std::string & time_string) const -> Ordinal;
 
       /** \brief Create a character string representing a given time in an ordinal date format.
           \param time_rep Ordinal date to format into a character string.
           \param precision Number of digits after a decimal point in the time part of a given time.
       */
-      virtual auto format(const Ordinal & time_rep, std::streamsize precision = std::numeric_limits<double>::digits10) const -> std::string;
+      [[nodiscard]] virtual auto format(const Ordinal & time_rep, std::streamsize precision = std::numeric_limits<double>::digits10) const -> std::string;
   };
 
   auto parseIso8601Format(const std::string & time_string, array_type & integer_value, double & double_value) -> DateType {
@@ -471,7 +471,7 @@ namespace {
     integer_value.clear();
 
     // Convert year, month, day, hour, and minute fields into long variables.
-    for (std::vector<std::string>::const_iterator itor = field_list.begin(); itor != field_list.end(); ++itor) {
+    for (auto itor = field_list.begin(); itor != field_list.end(); ++itor) {
       std::istringstream iss(*itor);
       long long_variable = 0;
       iss >> long_variable;

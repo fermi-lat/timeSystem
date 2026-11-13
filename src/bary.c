@@ -388,14 +388,14 @@ const char *convertTime (MJDTime *mjd)
  *     ------------------
  */
   if ( yr < 96 )  /*  AXAF uses an early change-over date */
-    sprintf (date, "%02d/%02d/%02d\0", day, mon, yr);
+    snprintf (date, sizeof(date), "%02d/%02d/%02d\0", day, mon, yr);
 
 /*     ------------
  *   - Next century -
  *     ------------
  */
   else
-    sprintf (date, "%04d-%02d-%02dT%02d:%02d:%02d\0",
+    snprintf (date, sizeof(date), "%04d-%02d-%02dT%02d:%02d:%02d\0",
 	     yr+1900, mon, day, hr, min, sec) ;
 
 /*     ----
@@ -442,13 +442,13 @@ FILE *openAFile (const char *name)
   FILE *FF = NULL ;
 
   if ( filepath = getenv (TIMINGDIR) ) {
-    sprintf (fileName, "%s/%s", filepath, name) ;
+    snprintf (fileName, sizeof(fileName),  "%s/%s", filepath, name) ;
     FF = fopen (fileName, "r") ;
   }
 
   if ( FF == NULL )
     if ( filepath = getenv (LHEADIR) ) {
-      sprintf (fileName, "%s/%s", filepath, name) ;
+      snprintf (fileName, sizeof(fileName), "%s/%s", filepath, name) ;
       FF = fopen (fileName, "r") ;
     }
 
@@ -478,14 +478,14 @@ fitsfile *openFFile (const char *name)
   int error = 0 ;
 
   if ( filepath = getenv (TIMINGDIR) ) {
-    sprintf (fileName, "%s/%s", filepath, name) ;
+    snprintf (fileName, sizeof(fileName), "%s/%s", filepath, name) ;
     fits_open_file (&FF, fileName, READONLY, &error) ;
   }
 
   if ( FF == NULL )
     if ( filepath = getenv (LHEADIR) ) {
       error = 0 ;
-      sprintf (fileName, "%s/%s", filepath, name) ;
+      snprintf (fileName, sizeof(fileName), "%s/%s", filepath, name) ;
       fits_open_file (&FF, fileName, READONLY, &error) ;
     }
 

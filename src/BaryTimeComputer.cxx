@@ -68,8 +68,8 @@ namespace {
 
     private:
       int m_ephnum;
-      double m_speed_of_light;
-      double m_solar_mass;
+      double m_speed_of_light{0.};
+      double m_solar_mass{0.};
       static const JplComputer * m_initialized_computer;
 
       /** \brief Helper method to compute (and return) a time delay for a geocentric or a barycentric correction.
@@ -88,7 +88,7 @@ namespace {
           \param vect_x One of the three vector to compute an inner product for.
           \param vect_y The other of the three vector to compute an inner product for.
       */
-      auto computeInnerProduct(const std::vector<double> & vect_x, const std::vector<double> & vect_y) const -> double;
+      [[nodiscard]] auto computeInnerProduct(const std::vector<double> & vect_x, const std::vector<double> & vect_y) const -> double;
   };
 
   /** \class JplDe200Computer
@@ -109,10 +109,11 @@ namespace {
       JplDe405Computer(): JplComputer("JPL DE405", 405) {}
   };
 
-  const JplComputer * JplComputer::m_initialized_computer(0);
+  const JplComputer * JplComputer::m_initialized_computer(nullptr);
 
   JplComputer::JplComputer(const std::string & pl_ephem, int eph_num): BaryTimeComputer(pl_ephem), m_ephnum(eph_num),
-    m_speed_of_light(0.), m_solar_mass(0.) {}
+  m_speed_of_light(0.), m_solar_mass(0.) {}
+
 
   void JplComputer::initializeComputer() {
     // Check whether initialized or not.
@@ -180,9 +181,9 @@ namespace {
     double delay = 0.;
 
     // Read solar system ephemeris when necessary.
-    const double * rce = 0;
-    const double * vce = 0;
-    const double * rcs = 0;
+    const double * rce = nullptr;
+    const double * vce = nullptr;
+    const double * rcs = nullptr;
     if (barycentric || src_position.hasDistance()) {
       // Set given time to a variable to pass to dpleph C-function.
       Jd jd_rep(0, 0.);
@@ -192,9 +193,9 @@ namespace {
       // Read solar system ephemeris for the given time.
       const int iearth = 3;
       const int isun = 11;
-      const double * eposn = 0;
+      const double * eposn = nullptr;
       eposn = dpleph(jdt, iearth, isun);
-      if (NULL == eposn) {
+      if (nullptr == eposn) {
         std::ostringstream os;
         os << "Could not find solar system ephemeris for " << abs_time.represent("TT", MjdFmt);
         throw std::runtime_error(os.str());
@@ -285,7 +286,7 @@ namespace timeSystem {
     getContainer()[uc_pl_ephem] = this;
   }
 
-  BaryTimeComputer::~BaryTimeComputer() {}
+  BaryTimeComputer::~BaryTimeComputer() = default;
 
   auto BaryTimeComputer::getComputer(const std::string & pl_ephem) -> const BaryTimeComputer & {
     // Create instances of BaryTimeComputer's.
@@ -298,7 +299,7 @@ namespace timeSystem {
 
     // Find a requested BaryTimeComputer object.
     const container_type & container(getContainer());
-    container_type::const_iterator cont_itor = container.find(pl_ephem_uc);
+    auto cont_itor = container.find(pl_ephem_uc);
     if (container.end() == cont_itor) {
       throw std::runtime_error("BaryTimeComputer::getComputer could not find a barycentric time computer for planetary ephemeris "
         + pl_ephem);
@@ -307,7 +308,7 @@ namespace timeSystem {
 
     // Check whether the chosen computer has already been initialized.
     static std::set<const BaryTimeComputer *> s_initialized;
-    std::set<const BaryTimeComputer *>::iterator init_itor = s_initialized.find(&computer);
+    auto init_itor = s_initialized.find(&computer);
     if (s_initialized.end() == init_itor) {
       // Initialize the computer on the first request.
       computer.initializeComputer();

@@ -37,7 +37,7 @@ namespace {
 
 namespace timeSystem {
 
-  IntFracUtility::IntFracUtility() {}
+  IntFracUtility::IntFracUtility() = default;
 
   auto IntFracUtility::getUtility() -> IntFracUtility & {
     static IntFracUtility s_utility;
@@ -262,7 +262,7 @@ namespace timeSystem {
       long test_point = upper_bound - (upper_bound - lower_bound) / 2;
 
       // Convert the test point to double type.
-      double dval = static_cast<double>(test_point);
+      auto dval = static_cast<double>(test_point);
 
       // Convert the double value back to long type.
       // Note: static_cast<long>() may throw a floating-point exception for a double value
@@ -271,8 +271,8 @@ namespace timeSystem {
       //       cast works fine. The logic below works as long as static_cast<double>() is
       //       monotonically increasing with a value to be converted.
       long ival = 0;
-      static const double dval_max = static_cast<double>(std::numeric_limits<long>::max());
-      static const double dval_min = static_cast<double>(std::numeric_limits<long>::min());
+      static const auto dval_max = static_cast<double>(std::numeric_limits<long>::max());
+      static const auto dval_min = static_cast<double>(std::numeric_limits<long>::min());
       if (dval >= dval_max) ival = std::numeric_limits<long>::max();
       else if (dval <= dval_min) ival = std::numeric_limits<long>::min();
       else ival = static_cast<long>(dval);
@@ -284,7 +284,7 @@ namespace timeSystem {
 
         // Convert types to check numerical correctness in type-conversions.
         long ival_back = static_cast<long>(dval);
-        double dval_back = static_cast<double>(ival);
+        auto dval_back = static_cast<double>(ival);
 
         // Check sanity in conversions, by comparing "before" and "after".
         if (ival_back == ival && std::fabs(dval_back - dval) < 0.5) sanity_check_ok = true;

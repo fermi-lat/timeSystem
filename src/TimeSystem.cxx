@@ -42,7 +42,7 @@ namespace {
           \param time_system Time system to conver a time moment from.
           \param moment Time moment to convert.
       */
-      virtual auto convertFrom(const TimeSystem & time_system, const moment_type & moment) const -> moment_type;
+      [[nodiscard]] virtual auto convertFrom(const TimeSystem & time_system, const moment_type & moment) const -> moment_type;
   };
 
   /** \class TaiSystem
@@ -57,7 +57,7 @@ namespace {
           \param time_system Time system to conver a time moment from.
           \param moment Time moment to convert.
       */
-      virtual auto convertFrom(const TimeSystem & time_system, const moment_type & moment) const -> moment_type;
+      [[nodiscard]] virtual auto convertFrom(const TimeSystem & time_system, const moment_type & moment) const -> moment_type;
   };
 
   /** \class TaiSystem
@@ -72,7 +72,7 @@ namespace {
           \param time_system Time system to conver a time moment from.
           \param moment Time moment to convert.
       */
-      virtual auto convertFrom(const TimeSystem & time_system, const moment_type & moment) const -> moment_type;
+      [[nodiscard]] virtual auto convertFrom(const TimeSystem & time_system, const moment_type & moment) const -> moment_type;
   };
 
   /** \class TaiSystem
@@ -87,23 +87,23 @@ namespace {
           \param time_system Time system to conver a time moment from.
           \param moment Time moment to convert.
       */
-      virtual auto convertFrom(const TimeSystem & time_system, const moment_type & moment) const -> moment_type;
+      [[nodiscard]] virtual auto convertFrom(const TimeSystem & time_system, const moment_type & moment) const -> moment_type;
 
       /** \brief Compute time difference between two moments of time, and return it.
           \param moment1 Time moment from which the other time moment is to be subtracted.
           \param moment2 Time moment which is subtracted from the other time moment.
       */
-      virtual auto computeTimeDifference(const moment_type & moment1, const moment_type & moment2) const -> Duration;
+      [[nodiscard]] virtual auto computeTimeDifference(const moment_type & moment1, const moment_type & moment2) const -> Duration;
 
       /** \brief Compute date and time of a given time moment, and return it.
           \param moment Time moment to compute date and time for.
       */
-      virtual auto computeDateTime(const moment_type & moment) const -> datetime_type;
+      [[nodiscard]] virtual auto computeDateTime(const moment_type & moment) const -> datetime_type;
 
       /** \brief Compute a time moment of a given date and time, and return it.
           \param datetime Date and time to compute a time moment for.
       */
-      virtual auto computeMoment(const datetime_type & datetime) const -> moment_type;
+      [[nodiscard]] virtual auto computeMoment(const datetime_type & datetime) const -> moment_type;
 
       /** \brief Check validity of a given time moment.
           \param moment Time moment to be tested.
@@ -120,7 +120,7 @@ namespace {
       static auto getTable() -> LeapSecTable &;
 
       /// \brief Return the file name from which this leap second data is loaded.
-      auto getFileName() const -> std::string;
+      [[nodiscard]] auto getFileName() const -> std::string;
 
       /** \brief Load leap second data from a given FITS file.
           \param leap_sec_file_name Name of a leap-second file in the FITS format.
@@ -132,13 +132,13 @@ namespace {
       /** \brief Return the sum of all leap seconds that are inserted or removed before the beginning of a given MJD.
           \param mjd MJD number upto when leap seconds are summed up.
       */
-      auto getCumulativeLeapSec(long mjd) const -> long;
+      [[nodiscard]] auto getCumulativeLeapSec(long mjd) const -> long;
 
       /// \brief Return the earliest MJD that the loaded leap-second table covers.
-      auto getEarliestMjd() const -> long;
+      [[nodiscard]] auto getEarliestMjd() const -> long;
 
     private:
-      typedef std::map<long, long> table_type;
+      using table_type = std::map<long, long>;
       // A value of this map is the cumulative number of leap seconds since the introduction of leap seconds
       // at the beginning of the date whose MJD in UTC is given by the key of the std::map object.
       table_type m_table;
@@ -427,7 +427,7 @@ namespace {
 
   auto LeapSecTable::getCumulativeLeapSec(long mjd) const -> long {
     // Find the first entry of the leap second table which is <= the given MJD.
-    table_type::const_iterator itor = m_table.upper_bound(mjd);
+    auto itor = m_table.upper_bound(mjd);
     if (itor == m_table.begin()) {
       // The given MJD time is too early for UTC.
       std::ostringstream os;
@@ -443,7 +443,7 @@ namespace {
 
   auto LeapSecTable::getEarliestMjd() const -> long {
     // Look for the first entry.
-    table_type::const_iterator itor = m_table.begin();
+    auto itor = m_table.begin();
     if (itor == m_table.end()) throw std::runtime_error("The leap-second table is empty");
 
     // Return the MJD value of the first entry.
@@ -467,7 +467,7 @@ namespace timeSystem {
 
     // Find a requested TimeSystem object.
     container_type & container(getContainer());
-    container_type::iterator cont_itor = container.find(uc_system_name);
+    auto cont_itor = container.find(uc_system_name);
     if (container.end() == cont_itor) throw std::runtime_error("No such time system implemented: " + system_name);
     const TimeSystem & system(*cont_itor->second);
 
@@ -515,7 +515,7 @@ namespace timeSystem {
     getContainer()[uc_system_name] = this;
   }
 
-  TimeSystem::~TimeSystem() {}
+  TimeSystem::~TimeSystem() = default;
 
   auto TimeSystem::getName() const -> std::string {
     return m_system_name;

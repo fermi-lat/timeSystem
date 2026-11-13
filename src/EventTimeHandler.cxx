@@ -53,8 +53,8 @@ namespace timeSystem {
     }
 
     // Look for an EventTimeHandler that can handle given files.
-    EventTimeHandler * handler(0);
-    for (cont_type::iterator itor = factory_cont.begin(); itor != factory_cont.end(); ++itor) {
+    EventTimeHandler * handler(nullptr);
+    for (auto itor = factory_cont.begin(); itor != factory_cont.end(); ++itor) {
       handler = (*itor)->createInstance(file_name, extension_name, read_only);
       if (handler) break;
     }
@@ -68,21 +68,21 @@ namespace timeSystem {
   }
 
   EventTimeHandler::EventTimeHandler(const std::string & file_name, const std::string & extension_name, bool read_only):
-    m_extension(0), m_table(0) {
+    m_extension(nullptr), m_table(nullptr) {
     // Try to open it as a tip::Table first.
     if (read_only) {
       try {
         // Note: for convenience, read-only and read-write tables are stored as non-const tip::Table pointers in the container.
         m_table = const_cast<tip::Table *>(tip::IFileSvc::instance().readTable(file_name, extension_name));
       } catch (const tip::TipException &) {
-        m_table = 0;
+        m_table = nullptr;
       }
 
     } else {
       try {
         m_table = tip::IFileSvc::instance().editTable(file_name, extension_name);
       } catch (const tip::TipException &) {
-        m_table = 0;
+        m_table = nullptr;
       } 
     }
 
@@ -106,7 +106,7 @@ namespace timeSystem {
 
   auto EventTimeHandler::createInstance(const std::string & /*file_name*/, const std::string & /*extension_name*/,
     bool /*read_only*/) -> EventTimeHandler * {
-    return 0;
+    return nullptr;
   }
 
   void EventTimeHandler::setSourcePosition(double ra, double dec) {
@@ -129,7 +129,7 @@ namespace timeSystem {
   }
 
   auto EventTimeHandler::isEndOfTable() const -> bool {
-    return (m_table == 0 || m_record_itor == m_table->end());
+    return (m_table == nullptr || m_record_itor == m_table->end());
   }
 
   auto EventTimeHandler::getTable() const -> tip::Table & {
